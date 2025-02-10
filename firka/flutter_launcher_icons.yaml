@@ -1,0 +1,11 @@
+flutter_launcher_icons:
+  generate: true
+  android: "launcher_icon"
+  image_path: "assets/images/logos/colored_logo.png"
+  adaptive_icon_monochrome: "assets/images/logos/monochrome_logo.png"
+  adaptive_icon_background: "assets/images/logos/colored_logo_without_mustache.png"
+  adaptive_icon_foreground: "assets/images/logos/colored_logo_only_mustache.png"
+  adaptive_icon_foreground_inset: 0 
+  min_sdk_android: 21
+  ios: true
+  remove_alpha_channel_ios: true

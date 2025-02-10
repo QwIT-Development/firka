@@ -1,0 +1,107 @@
+# /firka
+firka/debug-info/
+
+# /firka/android
+**/.gradle/
+**gradle-wrapper.jar
+**/gradlew
+**/gradlew.bat
+**/.kotlin/
+**/captures/
+
+# flutter
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/pubspec.lock
+**/.pub-cache/
+**/.pub/
+**/build/
+**/.packages
+**/doc/api/
+**/ios/Flutter/.last_build_id
+**/.symlinks/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Miscellaneous
+**.class
+**.log
+**.pyc
+**.swp
+**/.DS_Store
+**/.atom/
+**/.build/
+**/.buildlog/
+**/.history
+**/.svn/
+**/.swiftpm/
+**/migrate_working_dir/
+**/.plugin_symlinks/
+**/local.properties
+
+# symbols, obfuscations
+**/app.*.symbols
+**/app.*.map.json
+
+# android releated
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+**/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+**.jks
+**key.properties
+**.keystore
+**keystore.properties
+**local.properties
+**GenerateedPluginRegistrant.java
+**/android/app/.cxx/
+**.cxx/
+
+# ios releated
+**/Pods
+**/Podfile.lock
+**/UserInterfaceState.xcuserstate
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.vagrant/
+**/ios/**/DerivedData/
+**/ios/**/Icon?
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/profile
+**/ios/**/xcuserdata
+**/ios/.generated/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/Flutter/
+
+# dart
+**/.env*
+**/*.dart.js
+**/*.info.json
+
+# tools.py logs
+tool_logs/build/*.log
+tool_logs/d8dx_fix/*.log
+tool_logs/pub_fix/*.log
