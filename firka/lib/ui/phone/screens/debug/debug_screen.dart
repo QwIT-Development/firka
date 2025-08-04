@@ -2,10 +2,13 @@
 
 import 'dart:typed_data';
 
+import 'package:firka/helpers/db/models/token_model.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/icon_helper.dart';
 import 'package:firka/helpers/profile_picture.dart';
 import 'package:firka/main.dart';
+import 'package:firka/ui/model/style.dart';
+import 'package:firka/ui/phone/screens/login/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -197,6 +200,28 @@ class _DebugScreen extends State<DebugScreen> {
                   setState(() {});
                 },
                 child: const Text('re-render'),
+              ),
+              ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty<Color>.fromMap(<WidgetStatesConstraint, Color>{
+                    WidgetState.any: Colors.red,
+                  }),
+                ),
+                onPressed: () async {
+                  var isar = data.isar;
+
+                  await isar.writeTxn(() async {
+                    await isar.tokenModels.clear();
+                  });
+
+                  widget.data.tokenCount = 0;
+
+                  Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LoginScreen(data)));
+                },
+                child: const Text('wipe users'),
               ),
               SizedBox(
                 height: 600,
