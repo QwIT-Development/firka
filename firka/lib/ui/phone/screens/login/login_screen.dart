@@ -232,21 +232,29 @@ class _LoginScreenState extends State<LoginScreen> {
         'title': AppLocalizations.of(context)!.title1,
         'subtitle': AppLocalizations.of(context)!.subtitle1,
         'picture': 'assets/images/carousel/slide1.png',
+        'background': 'assets/images/carousel/slide1_background.png',
+        'foreground': ''
       },
       {
         'title': AppLocalizations.of(context)!.title2,
         'subtitle': AppLocalizations.of(context)!.subtitle2,
         'picture': 'assets/images/carousel/slide2.png',
+        'background': 'assets/images/carousel/slide2_background.png',
+        'foreground': ''
       },
       {
         'title': AppLocalizations.of(context)!.title3,
         'subtitle': AppLocalizations.of(context)!.subtitle3,
         'picture': 'assets/images/carousel/slide3.png',
+        'background': '',
+        'foreground': 'assets/images/carousel/foreground.png',
       },
       {
         'title': AppLocalizations.of(context)!.title4,
         'subtitle': AppLocalizations.of(context)!.subtitle4,
         'picture': 'assets/images/carousel/slide4.png',
+        'background': 'assets/images/carousel/slide4_background.png',
+        'foreground': ''
       }
     ];
 
@@ -313,16 +321,50 @@ class _LoginScreenState extends State<LoginScreen> {
                             softWrap: true,
                             overflow: TextOverflow.visible,
                           ),
-                          const SizedBox(height: 38),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: Image(
-                              image: AssetImage(slides[index]['picture']!),
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              alignment: Alignment.center,
-                            ),
-                          ),
+                          Stack(
+                            children: [
+                              slides[index]['background']! == ''
+                                  ? SizedBox()
+                                  : SizedBox(
+                                      width: MediaQuery.of(context).size.width,
+                                      child: Image(
+                                        image: AssetImage(
+                                            slides[index]['background']!),
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        alignment: Alignment.center,
+                                      ),
+                                    ),
+                              Column(
+                                children: [
+                                  SizedBox(height: 73),
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width,
+                                    child: Image(
+                                      image:
+                                          AssetImage(slides[index]['picture']!),
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      alignment: Alignment.center,
+                                    ),
+                                  ),
+                                  slides[index]['foreground']! == ''
+                                      ? SizedBox()
+                                      : SizedBox(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          child: Image(
+                                            image: AssetImage(
+                                                slides[index]['foreground']!),
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            alignment: Alignment.center,
+                                          ),
+                                        ),
+                                ],
+                              )
+                            ],
+                          )
                         ],
                       ),
                     ),
