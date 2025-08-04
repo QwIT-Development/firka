@@ -88,7 +88,7 @@ android {
                 // so I decided to use logger.error
                 logger.error("[WARNING] No keystore specified! Using debug keys to sign the apk.")
                 logger.error("[WARNING] DO NOT STORE ANY SENSITIVE DATA INSIDE THE APP")
-                logger.error("[WARNING] Because an attacker could steal it, if you sideload their malicious app.")
+                logger.error("[WARNING] An attacker could steal it, if you sideload their malicious app.")
             }
 
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
