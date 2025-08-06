@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firka/helpers/api/client/kreta_client.dart';
@@ -227,40 +228,59 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final paddingWidthHorizontal = MediaQuery.of(context).size.width -
         MediaQuery.of(context).size.width * 0.95;
-    List<Map<String, String>> slides = [
+    List<Map<String, Object>> slides = [
       {
         'title': AppLocalizations.of(context)!.title1,
         'subtitle': AppLocalizations.of(context)!.subtitle1,
         'picture': 'assets/images/carousel/slide1.png',
-        'background': 'assets/images/carousel/slide1_background.png',
-        'foreground': ''
+        'background': 'assets/images/carousel/slide1_background.gif',
+        'foreground': '',
+        'rotation':
+            180.00, // „Mi nekünk két szám típusunk van, int (egy 32 bites szám) meg a double (egy 64 bites tört szám), KURVA ANYÁDAT”
+        'scale': 1.5,
+        'x': 0.00,
+        'y': 150.00,
       },
       {
         'title': AppLocalizations.of(context)!.title2,
         'subtitle': AppLocalizations.of(context)!.subtitle2,
         'picture': 'assets/images/carousel/slide2.png',
-        'background': 'assets/images/carousel/slide2_background.png',
-        'foreground': ''
+        'background': 'assets/images/carousel/slide2_background.gif',
+        'foreground': '',
+        'rotation':
+            180.00, //Mivel radiáns, és nullával nem lehet osztani (remélem tudtad), ezért ha eggyel osztunk akkor egy marad
+        'scale': 1.55,
+        'x': 10.00,
+        'y': 160.00,
       },
       {
         'title': AppLocalizations.of(context)!.title3,
         'subtitle': AppLocalizations.of(context)!.subtitle3,
         'picture': 'assets/images/carousel/slide3.png',
         'background': '',
-        'foreground': 'assets/images/carousel/foreground.png',
+        'foreground': 'assets/images/carousel/slide3_foreground.gif',
+        'rotation': 180.0,
+        'scale': 0.8,
+        'x': 0.00,
+        'y': 25.00,
       },
       {
         'title': AppLocalizations.of(context)!.title4,
         'subtitle': AppLocalizations.of(context)!.subtitle4,
         'picture': 'assets/images/carousel/slide4.png',
-        'background': 'assets/images/carousel/slide4_background.png',
-        'foreground': ''
+        'background': 'assets/images/carousel/slide4_background.gif',
+        'foreground': '',
+        'rotation': 180.00,
+        'scale': 1.35,
+        'x': -5.00,
+        'y': 80.00,
       }
+      //TODO: implement simulated physics so that the little boxes can move like the phone moves 
     ];
 
     return MaterialApp(
       home: Scaffold(
-        backgroundColor: const Color(0xFFFAFFEF),
+        backgroundColor: appStyle.colors.background,
         body: SafeArea(
             child: Stack(
           children: [
@@ -299,79 +319,122 @@ class _LoginScreenState extends State<LoginScreen> {
                 Expanded(
                   child: CarouselSlider.builder(
                     itemCount: slides.length,
-                    itemBuilder: (context, index, realIndex) => Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: paddingWidthHorizontal),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text(
-                            slides[index]['title']!,
-                            style: appStyle.fonts.H_18px
-                                .copyWith(color: appStyle.colors.textPrimary),
-                            softWrap: true,
-                            overflow: TextOverflow.visible,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            slides[index]['subtitle']!,
-                            style: appStyle.fonts.B_14R
-                                .copyWith(color: appStyle.colors.textPrimary),
-                            softWrap: true,
-                            overflow: TextOverflow.visible,
-                          ),
-                          Stack(
+                    itemBuilder: (context, index, realIndex) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: EdgeInsetsGeometry.symmetric(
+                              horizontal: paddingWidthHorizontal),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              slides[index]['background']! == ''
-                                  ? SizedBox()
-                                  : SizedBox(
-                                      width: MediaQuery.of(context).size.width,
-                                      child: Image(
-                                        image: AssetImage(
-                                            slides[index]['background']!),
-                                        fit: BoxFit.cover,
-                                        width: double.infinity,
-                                        alignment: Alignment.center,
+                              Text(
+                                slides[index]['title']! as String,
+                                style: appStyle.fonts.H_18px.copyWith(
+                                    color: appStyle.colors.textPrimary),
+                                softWrap: true,
+                                overflow: TextOverflow.visible,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                slides[index]['subtitle']! as String,
+                                style: appStyle.fonts.B_14R.copyWith(
+                                    color: appStyle.colors.textPrimary),
+                                softWrap: true,
+                                overflow: TextOverflow.visible,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Stack(
+                          children: [
+                            slides[index]['background']! == ''
+                                ? SizedBox()
+                                : ClipRect(
+                                    clipper:
+                                        ImageClipper(MediaQuery.of(context)),
+                                    child: Transform.rotate(
+                                      angle: -math.pi /
+                                          (slides[index]['rotation']!
+                                              as double),
+                                      child: Transform.translate(
+                                        offset: Offset(
+                                            slides[index]['x'] as double,
+                                            slides[index]['y'] as double),
+                                        child: SizedBox(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          child: Transform.scale(
+                                              scale: slides[index]['scale']
+                                                  as double,
+                                              child: Image(
+                                                image: AssetImage(slides[index]
+                                                    ['background']! as String),
+                                                fit: BoxFit.contain,
+                                                width: double.infinity,
+                                              )),
+                                        ),
                                       ),
-                                    ),
-                              Column(
-                                children: [
-                                  SizedBox(height: 73),
-                                  SizedBox(
+                                    )),
+                            Column(
+                              children: [
+                                SizedBox(height: 73),
+                                Padding(
+                                  padding: EdgeInsetsGeometry.symmetric(
+                                      horizontal: 18),
+                                  child: SizedBox(
                                     width: MediaQuery.of(context).size.width,
                                     child: Image(
-                                      image:
-                                          AssetImage(slides[index]['picture']!),
+                                      image: AssetImage(
+                                          slides[index]['picture']! as String),
                                       fit: BoxFit.cover,
                                       width: double.infinity,
                                       alignment: Alignment.center,
                                     ),
                                   ),
-                                  slides[index]['foreground']! == ''
-                                      ? SizedBox()
-                                      : SizedBox(
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: Image(
-                                            image: AssetImage(
-                                                slides[index]['foreground']!),
-                                            fit: BoxFit.cover,
-                                            width: double.infinity,
-                                            alignment: Alignment.center,
-                                          ),
-                                        ),
-                                ],
-                              )
-                            ],
-                          )
-                        ],
-                      ),
+                                ),
+                              ],
+                            ),
+                            slides[index]['foreground']! == ''
+                                ? SizedBox()
+                                : SizedBox(
+                                    width: MediaQuery.of(context).size.width,
+                                    child: ClipRect(
+                                      clipBehavior: Clip.none,
+                                      child: Transform.rotate(
+                                          angle: -math.pi /
+                                              (slides[index]['rotation']!
+                                                  as double),
+                                          child: Transform.translate(
+                                            offset: Offset(
+                                                slides[index]['x'] as double,
+                                                slides[index]['y'] as double),
+                                            child: Transform.scale(
+                                              scale: slides[index]['scale']
+                                                  as double,
+                                              child: Image(
+                                                image: AssetImage(slides[index]
+                                                    ['foreground']! as String),
+                                                fit: BoxFit.cover,
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                alignment: Alignment.center,
+                                              ),
+                                            ),
+                                          )),
+                                    ),
+                                  ),
+                          ],
+                        )
+                      ],
                     ),
                     options: CarouselOptions(
                       height: double.infinity,
-                      autoPlay: true,
-                      autoPlayInterval: const Duration(milliseconds: 4000),
+                      autoPlay: false,
+                      autoPlayInterval: const Duration(milliseconds: 3000),
                       viewportFraction: 1.0,
                       enableInfiniteScroll: true,
                     ),
@@ -530,5 +593,22 @@ class _LoginScreenState extends State<LoginScreen> {
         )),
       ),
     );
+  }
+}
+
+// this sucks :3
+class ImageClipper extends CustomClipper<Rect> {
+  final MediaQueryData _mediaQuery;
+
+  ImageClipper(this._mediaQuery);
+
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromLTWH(0, -70, _mediaQuery.size.width, _mediaQuery.size.height);
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Rect> oldClipper) {
+    return false;
   }
 }
