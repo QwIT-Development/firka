@@ -31,6 +31,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
   List<Lesson>? lessons;
   Student? student;
   Timer? timer;
+  bool disposed = false;
 
   @override
   void initState() {
@@ -42,6 +43,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
       var resp = await data.client.getTimeTable(
           midnight, midnight.add(Duration(hours: 23, minutes: 59)));
 
+      if (disposed) return;
       setState(() {
         lessons = resp.response!;
       });
@@ -49,12 +51,14 @@ class _HomeMainScreen extends State<HomeMainScreen> {
     (() async {
       var resp = await data.client.getStudent();
 
+      if (disposed) return;
       setState(() {
         student = resp.response!;
       });
     })();
 
     timer = Timer.periodic(Duration(seconds: 1), (timer) async {
+      if (disposed) return;
       setState(() {
         now = timeNow();
       });
@@ -65,6 +69,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
   void dispose() {
     super.dispose();
 
+    disposed = true;
     timer?.cancel();
   }
 

@@ -26,7 +26,15 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
   List<Lesson>? lessons;
   List<DateTime>? dates;
   DateTime? active;
+  bool disposed = false;
   _HomeTimetableScreen(this.data);
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    disposed = true;
+  }
 
   @override
   void initState() {
@@ -58,6 +66,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
         }
       }
 
+      if (disposed) return;
       setState(() {
         this.dates = dates;
         if (timeNow().isAfter(dates.last)) {
