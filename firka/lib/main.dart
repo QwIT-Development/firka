@@ -13,7 +13,6 @@ import 'package:firka/ui/phone/screens/debug/debug_screen.dart';
 import 'package:firka/ui/phone/screens/home/home_screen.dart';
 import 'package:firka/ui/phone/screens/login/login_screen.dart';
 import 'package:firka/ui/phone/screens/wear_login/wear_login_screen.dart';
-import 'package:firka/wear_main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -100,7 +99,8 @@ Future<AppInitialization> initializeApp() async {
     KretaEndpoints.kretaBase = "https://$host";
     KretaEndpoints.kretaIdp = KretaEndpoints.kretaBase;
     KretaEndpoints.kretaLoginUrl =
-        "${KretaEndpoints.kretaBase}/Account/Login?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fprompt%3Dlogin%26nonce%3DwylCrqT4oN6PPgQn2yQB0euKei9nJeZ6_ffJ-VpSKZU%26response_type%3Dcode%26code_challenge_method%3DS256%26scope%3Dopenid%2520email%2520offline_access%2520kreta-ellenorzo-webapi.public%2520kreta-eugyintezes-webapi.public%2520kreta-fileservice-webapi.public%2520kreta-mobile-global-webapi.public%2520kreta-dkt-webapi.public%2520kreta-ier-webapi.public%26code_challenge%3DHByZRRnPGb-Ko_wTI7ibIba1HQ6lor0ws4bcgReuYSQ%26redirect_uri%3Dhttps%253A%252F%252Fmobil.e-kreta.hu%252Fellenorzo-student%252Fprod%252Foauthredirect%26client_id%3Dkreta-ellenorzo-student-mobile-ios%26state%3Dkreta_student_mobile%26suppressed_prompt%3Dlogin";
+    "${KretaEndpoints
+        .kretaBase}/Account/Login?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fprompt%3Dlogin%26nonce%3DwylCrqT4oN6PPgQn2yQB0euKei9nJeZ6_ffJ-VpSKZU%26response_type%3Dcode%26code_challenge_method%3DS256%26scope%3Dopenid%2520email%2520offline_access%2520kreta-ellenorzo-webapi.public%2520kreta-eugyintezes-webapi.public%2520kreta-fileservice-webapi.public%2520kreta-mobile-global-webapi.public%2520kreta-dkt-webapi.public%2520kreta-ier-webapi.public%26code_challenge%3DHByZRRnPGb-Ko_wTI7ibIba1HQ6lor0ws4bcgReuYSQ%26redirect_uri%3Dhttps%253A%252F%252Fmobil.e-kreta.hu%252Fellenorzo-student%252Fprod%252Foauthredirect%26client_id%3Dkreta-ellenorzo-student-mobile-ios%26state%3Dkreta_student_mobile%26suppressed_prompt%3Dlogin";
     KretaEndpoints.tokenGrantUrl = "${KretaEndpoints.kretaBase}/connect/token";
   }
 
@@ -132,17 +132,6 @@ Future<AppInitialization> initializeApp() async {
 void main() async {
   dio.options.connectTimeout = Duration(seconds: 5);
   dio.options.receiveTimeout = Duration(seconds: 3);
-
-  WidgetsFlutterBinding.ensureInitialized();
-  const platform = MethodChannel('firka.app/main');
-  if (Platform.isAndroid) {
-    var isWear = (await platform.invokeMethod("isWear")) as bool;
-
-    if (isWear) {
-      wearMain(platform);
-      return;
-    }
-  }
 
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -249,11 +238,13 @@ class InitializationScreen extends StatelessWidget {
             supportedLocales: AppLocalizations.supportedLocales,
             home: screen,
             routes: {
-              '/login': (context) => LoginScreen(
+              '/login': (context) =>
+                  LoginScreen(
                     initData,
                     key: ValueKey('loginScreen'),
                   ),
-              '/debug': (context) => DebugScreen(
+              '/debug': (context) =>
+                  DebugScreen(
                     initData,
                     key: ValueKey('debugScreen'),
                   ),
