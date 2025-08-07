@@ -46,8 +46,6 @@ dependencies:
   carousel_slider: ^5.0.0
   webview_flutter: ^4.7.0
   dart_jsonwebtoken: ^3.2.0
-  zear_plus:
-    path: vendor/wear_plus
   majesticons_flutter: ^0.0.1
   watch_connectivity: ^0.2.1+1
   permission_handler: ^11.4.0

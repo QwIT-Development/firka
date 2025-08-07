@@ -7,9 +7,6 @@
 [submodule "firka/vendor/isar_flutter_libs"]
 	path = firka/vendor/isar_flutter_libs
 	url = https://git.qwit.cloud/firka/isar_flutter_libs
-[submodule "firka/vendor/wear_plus"]
-	path = firka/vendor/wear_plus
-	url = https://git.qwit.cloud/firka/wear_plus
 [submodule "firka/lib/l10n"]
 	path = firka/lib/l10n
 	url = https://github.com/QwIT-Development/firka-localization
