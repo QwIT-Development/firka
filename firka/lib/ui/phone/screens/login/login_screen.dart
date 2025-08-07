@@ -32,6 +32,23 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    
+    var preloadAssets = [
+      'assets/images/logos/colored_logo.png',
+      'assets/images/carousel/slide1_background.gif',
+      'assets/images/carousel/slide2_background.gif',
+      'assets/images/carousel/slide3_foreground.gif',
+      'assets/images/carousel/slide4_background.gif',
+
+      'assets/images/carousel/slide1.png',
+      'assets/images/carousel/slide2.png',
+      'assets/images/carousel/slide3.png',
+      'assets/images/carousel/slide4.png',
+    ];
+
+    for (var path in preloadAssets) {
+      precacheImage(AssetImage(path), context);
+    }
 
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
