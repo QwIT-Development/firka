@@ -7,6 +7,7 @@ class AppSettingsModel {
   Id? id;
   double? valueDouble;
   bool? valueBool;
+  int? valueIndex;
   String? valueString;
 
   AppSettingsModel();

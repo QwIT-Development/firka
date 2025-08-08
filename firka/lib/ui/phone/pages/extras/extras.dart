@@ -1,6 +1,7 @@
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
+import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../../screens/debug/debug_screen.dart';
@@ -39,6 +40,7 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                   children: [
                     GestureDetector(
                       onTap: () => {
+                        Navigator.pop(context),
                         Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -46,6 +48,20 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                       },
                       child: FirkaCard(
                         left: [Text('Debug screen')],
+                        right: [],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    SettingsScreen(data, data.settings.items)));
+                      },
+                      child: FirkaCard(
+                        left: [Text('Settings')],
                         right: [],
                       ),
                     )
