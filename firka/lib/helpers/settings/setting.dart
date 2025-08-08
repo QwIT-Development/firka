@@ -5,21 +5,71 @@ import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:isar/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
+const bellRing = 1_001;
+const rounding1 = 1_002;
+const rounding2 = 1_003;
+const rounding3 = 1_004;
+const rounding4 = 1_005;
+const classAvgOnGraph = 1_006;
+const leftHandedMode = 1_007;
+const language = 1_008;
+
 class SettingsStore {
   LinkedHashMap<String, SettingsItem> items = LinkedHashMap.of({});
 
   SettingsStore() {
     items["settings"] = SettingsGroup(
-        0_001,
+        0,
         LinkedHashMap.of({
-          "application": SettingsSubGroup(1_001, FirkaIconType.Majesticons,
-              Majesticon.settingsCogSolid, "Alkalmazás", []),
-          "customization": SettingsSubGroup(2_001, FirkaIconType.Majesticons,
-              Majesticon.flower2Solid, "Személyre szabás", []),
-          "notifications": SettingsSubGroup(1_001, FirkaIconType.Majesticons,
-              Majesticon.bellSolid, "Értesítések", []),
-          "extras": SettingsSubGroup(1_001, FirkaIconType.Majesticons,
-              Majesticon.lightningBoltSolid, "Extrák", []),
+          "settings_header": SettingsHeader(0, "Beállítások"),
+          "settings_padding": SettingsPadding(0, 20),
+          "application": SettingsSubGroup(
+              0,
+              FirkaIconType.Majesticons,
+              Majesticon.settingsCogSolid,
+              "Alkalmazás",
+              LinkedHashMap.of({
+                // TODO: Make a back arrow widget
+                "settings_header": SettingsHeader(0, "Általános"),
+                "settings_padding": SettingsPadding(0, 23),
+
+                "bell_delay": SettingsDouble(
+                    bellRing, null, null, "Csengő eltolódása", 0),
+                "rounding_1": SettingsDouble(rounding1, null, null,
+                    "Alapértelmezett kerekítés 1 -> 2", 0.5),
+                "rounding_2": SettingsDouble(rounding2, null, null,
+                    "Alapértelmezett kerekítés 2 -> 3", 0.5),
+                "rounding_3": SettingsDouble(rounding3, null, null,
+                    "Alapértelmezett kerekítés 3 -> 4", 0.5),
+                "rounding_4": SettingsDouble(rounding4, null, null,
+                    "Alapértelmezett kerekítés 4 -> 5", 0.5),
+                "class_avg_on_graph": SettingsBoolean(classAvgOnGraph, null,
+                    null, "Osztályátlag a grafikonon", true),
+                "navbar": SettingsSubGroup(
+                  0,
+                  null, // TODO: icon
+                  null,
+                  "Navigációs sáv",
+                  LinkedHashMap.of({}),
+                ),
+                "left_handed_mode": SettingsBoolean(
+                    leftHandedMode, null, null, "Balkezes mód", false),
+                "language_header": SettingsHeaderSmall(0, "Nyelv"),
+                "language": SettingsItemsRadio(language, null, null,
+                    ["Autómatikus", "Magyar", "Angol", "Német"], 0)
+              })),
+          "customization": SettingsSubGroup(
+              0,
+              FirkaIconType.Majesticons,
+              Majesticon.flower2Solid,
+              "Személyre szabás",
+              LinkedHashMap.of({})),
+          "notifications": SettingsSubGroup(0, FirkaIconType.Majesticons,
+              Majesticon.bellSolid, "Értesítések", LinkedHashMap.of({})),
+          "extras": SettingsSubGroup(0, FirkaIconType.Majesticons,
+              Majesticon.lightningBoltSolid, "Extrák", LinkedHashMap.of({})),
+          "settings_other_padding": SettingsPadding(0, 20),
+          "settings_other_header": SettingsHeaderSmall(0, "Egyéb"),
         }));
 
     items;
@@ -74,8 +124,10 @@ extension SettingExt on LinkedHashMap<String, SettingsItem> {
 
 class SettingsItem {
   Id key;
+  FirkaIconType? iconType;
+  Object? iconData;
 
-  SettingsItem(this.key);
+  SettingsItem(this.key, this.iconType, this.iconData);
 
   void save(IsarCollection<AppSettingsModel> model) {}
 
@@ -85,6 +137,10 @@ class SettingsItem {
 class SettingsGroup implements SettingsItem {
   @override
   Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
   LinkedHashMap<String, SettingsItem> children;
 
   SettingsGroup(this.key, this.children);
@@ -107,32 +163,56 @@ class SettingsGroup implements SettingsItem {
 class SettingsSubGroup implements SettingsItem {
   @override
   Id key;
+  @override
   FirkaIconType? iconType;
+  @override
   Object? iconData;
   String title;
-  List<SettingsItem> children;
+  LinkedHashMap<String, SettingsItem> children;
 
   SettingsSubGroup(
       this.key, this.iconType, this.iconData, this.title, this.children);
 
   @override
   void load(IsarCollection<AppSettingsModel> model) {
-    for (var item in children) {
+    for (var item in children.values) {
       item.load(model);
     }
   }
 
   @override
   void save(IsarCollection<AppSettingsModel> model) {
-    for (var item in children) {
+    for (var item in children.values) {
       item.save(model);
     }
   }
 }
 
+class SettingsPadding implements SettingsItem {
+  @override
+  Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
+  double padding;
+
+  SettingsPadding(this.key, this.padding);
+
+  @override
+  void load(IsarCollection<AppSettingsModel> model) {}
+
+  @override
+  void save(IsarCollection<AppSettingsModel> model) {}
+}
+
 class SettingsHeader implements SettingsItem {
   @override
   Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
   String title;
 
   SettingsHeader(this.key, this.title);
@@ -144,9 +224,31 @@ class SettingsHeader implements SettingsItem {
   void save(IsarCollection<AppSettingsModel> model) {}
 }
 
+class SettingsHeaderSmall implements SettingsItem {
+  @override
+  Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
+  String title;
+
+  SettingsHeaderSmall(this.key, this.title);
+
+  @override
+  void load(IsarCollection<AppSettingsModel> model) {}
+
+  @override
+  void save(IsarCollection<AppSettingsModel> model) {}
+}
+
 class SettingsSubtitle implements SettingsItem {
   @override
   Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
   String title;
 
   SettingsSubtitle(this.key, this.title);
@@ -161,11 +263,16 @@ class SettingsSubtitle implements SettingsItem {
 class SettingsBoolean implements SettingsItem {
   @override
   Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
   String title;
   bool value = false;
   bool defaultValue;
 
-  SettingsBoolean(this.key, this.title, this.defaultValue);
+  SettingsBoolean(
+      this.key, this.iconType, this.iconData, this.title, this.defaultValue);
 
   @override
   void load(IsarCollection<AppSettingsModel> model) {
@@ -187,14 +294,53 @@ class SettingsBoolean implements SettingsItem {
   }
 }
 
+class SettingsItemsRadio implements SettingsItem {
+  @override
+  Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
+  List<String> values;
+  int activeIndex = 0;
+  int defaultIndex;
+
+  SettingsItemsRadio(
+      this.key, this.iconType, this.iconData, this.values, this.defaultIndex);
+
+  @override
+  void load(IsarCollection<AppSettingsModel> model) {
+    var v = model.getSync(key);
+    if (v == null || v.valueIndex == null) {
+      activeIndex = v!.valueIndex!;
+    } else {
+      activeIndex = defaultIndex;
+    }
+  }
+
+  @override
+  void save(IsarCollection<AppSettingsModel> model) {
+    var v = AppSettingsModel();
+    v.id = key;
+    v.valueIndex = activeIndex;
+
+    model.put(v);
+  }
+}
+
 class SettingsDouble implements SettingsItem {
   @override
   Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
   String title;
   double value = 0;
   double defaultValue;
 
-  SettingsDouble(this.key, this.title, this.defaultValue);
+  SettingsDouble(
+      this.key, this.iconType, this.iconData, this.title, this.defaultValue);
 
   @override
   void load(IsarCollection<AppSettingsModel> model) {
@@ -219,11 +365,16 @@ class SettingsDouble implements SettingsItem {
 class SettingsString implements SettingsItem {
   @override
   Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
   String title;
   String value = "";
   String defaultValue;
 
-  SettingsString(this.key, this.title, this.defaultValue);
+  SettingsString(
+      this.key, this.iconType, this.iconData, this.title, this.defaultValue);
 
   @override
   void load(IsarCollection<AppSettingsModel> model) {
