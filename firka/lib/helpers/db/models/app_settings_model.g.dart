@@ -17,22 +17,22 @@ const AppSettingsModelSchema = CollectionSchema(
   name: r'AppSettingsModel',
   id: -638838212012723081,
   properties: {
-    r'customHost': PropertySchema(
+    r'valueBool': PropertySchema(
       id: 0,
-      name: r'customHost',
-      type: IsarType.string,
-    ),
-    r'useCustomHost': PropertySchema(
-      id: 1,
-      name: r'useCustomHost',
+      name: r'valueBool',
       type: IsarType.bool,
+    ),
+    r'valueDouble': PropertySchema(
+      id: 1,
+      name: r'valueDouble',
+      type: IsarType.double,
     )
   },
   estimateSize: _appSettingsModelEstimateSize,
   serialize: _appSettingsModelSerialize,
   deserialize: _appSettingsModelDeserialize,
   deserializeProp: _appSettingsModelDeserializeProp,
-  idName: r'ignored',
+  idName: r'id',
   indexes: {},
   links: {},
   embeddedSchemas: {},
@@ -48,12 +48,6 @@ int _appSettingsModelEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  {
-    final value = object.customHost;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
   return bytesCount;
 }
 
@@ -63,8 +57,8 @@ void _appSettingsModelSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.customHost);
-  writer.writeBool(offsets[1], object.useCustomHost);
+  writer.writeBool(offsets[0], object.valueBool);
+  writer.writeDouble(offsets[1], object.valueDouble);
 }
 
 AppSettingsModel _appSettingsModelDeserialize(
@@ -74,9 +68,9 @@ AppSettingsModel _appSettingsModelDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = AppSettingsModel();
-  object.customHost = reader.readStringOrNull(offsets[0]);
   object.id = id;
-  object.useCustomHost = reader.readBoolOrNull(offsets[1]);
+  object.valueBool = reader.readBoolOrNull(offsets[0]);
+  object.valueDouble = reader.readDoubleOrNull(offsets[1]);
   return object;
 }
 
@@ -88,9 +82,9 @@ P _appSettingsModelDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readStringOrNull(offset)) as P;
-    case 1:
       return (reader.readBoolOrNull(offset)) as P;
+    case 1:
+      return (reader.readDoubleOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -111,7 +105,7 @@ void _appSettingsModelAttach(
 
 extension AppSettingsModelQueryWhereSort
     on QueryBuilder<AppSettingsModel, AppSettingsModel, QWhere> {
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhere> anyIgnored() {
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
@@ -120,69 +114,68 @@ extension AppSettingsModelQueryWhereSort
 
 extension AppSettingsModelQueryWhere
     on QueryBuilder<AppSettingsModel, AppSettingsModel, QWhereClause> {
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause>
-      ignoredEqualTo(Id ignored) {
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause> idEqualTo(
+      Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
-        lower: ignored,
-        upper: ignored,
+        lower: id,
+        upper: id,
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause>
-      ignoredNotEqualTo(Id ignored) {
+      idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
-              IdWhereClause.lessThan(upper: ignored, includeUpper: false),
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
             )
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: ignored, includeLower: false),
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
             );
       } else {
         return query
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: ignored, includeLower: false),
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
             )
             .addWhereClause(
-              IdWhereClause.lessThan(upper: ignored, includeUpper: false),
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
             );
       }
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause>
-      ignoredGreaterThan(Id ignored, {bool include = false}) {
+      idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: ignored, includeLower: include),
+        IdWhereClause.greaterThan(lower: id, includeLower: include),
       );
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause>
-      ignoredLessThan(Id ignored, {bool include = false}) {
+      idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.lessThan(upper: ignored, includeUpper: include),
+        IdWhereClause.lessThan(upper: id, includeUpper: include),
       );
     });
   }
 
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause>
-      ignoredBetween(
-    Id lowerIgnored,
-    Id upperIgnored, {
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause> idBetween(
+    Id lowerId,
+    Id upperId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
-        lower: lowerIgnored,
+        lower: lowerId,
         includeLower: includeLower,
-        upper: upperIgnored,
+        upper: upperId,
         includeUpper: includeUpper,
       ));
     });
@@ -192,217 +185,63 @@ extension AppSettingsModelQueryWhere
 extension AppSettingsModelQueryFilter
     on QueryBuilder<AppSettingsModel, AppSettingsModel, QFilterCondition> {
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      customHostIsNull() {
+      idIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'customHost',
+        property: r'id',
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      customHostIsNotNull() {
+      idIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'customHost',
+        property: r'id',
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      customHostEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+      idEqualTo(Id? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'customHost',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      customHostGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'customHost',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      customHostLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'customHost',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      customHostBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'customHost',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      customHostStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'customHost',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      customHostEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'customHost',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      customHostContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'customHost',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      customHostMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'customHost',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      customHostIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'customHost',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      customHostIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'customHost',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      ignoredIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'ignored',
-      ));
-    });
-  }
-
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      ignoredIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'ignored',
-      ));
-    });
-  }
-
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      ignoredEqualTo(Id? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'ignored',
+        property: r'id',
         value: value,
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      ignoredGreaterThan(
+      idGreaterThan(
     Id? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'ignored',
+        property: r'id',
         value: value,
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      ignoredLessThan(
+      idLessThan(
     Id? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'ignored',
+        property: r'id',
         value: value,
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      ignoredBetween(
+      idBetween(
     Id? lower,
     Id? upper, {
     bool includeLower = true,
@@ -410,7 +249,7 @@ extension AppSettingsModelQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'ignored',
+        property: r'id',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -420,29 +259,113 @@ extension AppSettingsModelQueryFilter
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      useCustomHostIsNull() {
+      valueBoolIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'useCustomHost',
+        property: r'valueBool',
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      useCustomHostIsNotNull() {
+      valueBoolIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'useCustomHost',
+        property: r'valueBool',
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      useCustomHostEqualTo(bool? value) {
+      valueBoolEqualTo(bool? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'useCustomHost',
+        property: r'valueBool',
         value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
+      valueDoubleIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'valueDouble',
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
+      valueDoubleIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'valueDouble',
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
+      valueDoubleEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'valueDouble',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
+      valueDoubleGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'valueDouble',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
+      valueDoubleLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'valueDouble',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
+      valueDoubleBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'valueDouble',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
       ));
     });
   }
@@ -457,75 +380,74 @@ extension AppSettingsModelQueryLinks
 extension AppSettingsModelQuerySortBy
     on QueryBuilder<AppSettingsModel, AppSettingsModel, QSortBy> {
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
-      sortByCustomHost() {
+      sortByValueBool() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'customHost', Sort.asc);
+      return query.addSortBy(r'valueBool', Sort.asc);
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
-      sortByCustomHostDesc() {
+      sortByValueBoolDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'customHost', Sort.desc);
+      return query.addSortBy(r'valueBool', Sort.desc);
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
-      sortByUseCustomHost() {
+      sortByValueDouble() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'useCustomHost', Sort.asc);
+      return query.addSortBy(r'valueDouble', Sort.asc);
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
-      sortByUseCustomHostDesc() {
+      sortByValueDoubleDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'useCustomHost', Sort.desc);
+      return query.addSortBy(r'valueDouble', Sort.desc);
     });
   }
 }
 
 extension AppSettingsModelQuerySortThenBy
     on QueryBuilder<AppSettingsModel, AppSettingsModel, QSortThenBy> {
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
-      thenByCustomHost() {
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'customHost', Sort.asc);
+      return query.addSortBy(r'id', Sort.asc);
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
-      thenByCustomHostDesc() {
+      thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'customHost', Sort.desc);
+      return query.addSortBy(r'id', Sort.desc);
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
-      thenByIgnored() {
+      thenByValueBool() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'ignored', Sort.asc);
+      return query.addSortBy(r'valueBool', Sort.asc);
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
-      thenByIgnoredDesc() {
+      thenByValueBoolDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'ignored', Sort.desc);
+      return query.addSortBy(r'valueBool', Sort.desc);
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
-      thenByUseCustomHost() {
+      thenByValueDouble() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'useCustomHost', Sort.asc);
+      return query.addSortBy(r'valueDouble', Sort.asc);
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
-      thenByUseCustomHostDesc() {
+      thenByValueDoubleDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'useCustomHost', Sort.desc);
+      return query.addSortBy(r'valueDouble', Sort.desc);
     });
   }
 }
@@ -533,39 +455,38 @@ extension AppSettingsModelQuerySortThenBy
 extension AppSettingsModelQueryWhereDistinct
     on QueryBuilder<AppSettingsModel, AppSettingsModel, QDistinct> {
   QueryBuilder<AppSettingsModel, AppSettingsModel, QDistinct>
-      distinctByCustomHost({bool caseSensitive = true}) {
+      distinctByValueBool() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'customHost', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'valueBool');
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QDistinct>
-      distinctByUseCustomHost() {
+      distinctByValueDouble() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'useCustomHost');
+      return query.addDistinctBy(r'valueDouble');
     });
   }
 }
 
 extension AppSettingsModelQueryProperty
     on QueryBuilder<AppSettingsModel, AppSettingsModel, QQueryProperty> {
-  QueryBuilder<AppSettingsModel, int, QQueryOperations> ignoredProperty() {
+  QueryBuilder<AppSettingsModel, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'ignored');
+      return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<AppSettingsModel, String?, QQueryOperations>
-      customHostProperty() {
+  QueryBuilder<AppSettingsModel, bool?, QQueryOperations> valueBoolProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'customHost');
+      return query.addPropertyName(r'valueBool');
     });
   }
 
-  QueryBuilder<AppSettingsModel, bool?, QQueryOperations>
-      useCustomHostProperty() {
+  QueryBuilder<AppSettingsModel, double?, QQueryOperations>
+      valueDoubleProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'useCustomHost');
+      return query.addPropertyName(r'valueDouble');
     });
   }
 }
