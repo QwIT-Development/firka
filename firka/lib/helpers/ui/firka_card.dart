@@ -2,22 +2,41 @@ import 'package:flutter/material.dart';
 
 import '../../ui/model/style.dart';
 
+enum Attach { none, bottom, top }
+
 class FirkaCard extends StatelessWidget {
   final List<Widget> left;
   final List<Widget>? right;
   final Widget? extra;
+  final Attach? attached;
 
-  const FirkaCard({required this.left, this.right, this.extra, super.key});
+  const FirkaCard(
+      {required this.left, this.right, this.extra, this.attached, super.key});
 
   @override
   Widget build(BuildContext context) {
     var right = this.right ?? [];
+
+    var _attached = attached != null ? attached! : Attach.none;
+    final defaultRounding = 16.0;
+    final attachedRounding = 8.0;
 
     if (extra != null) {
       return SizedBox(
         width: MediaQuery.of(context).size.width,
         child: Card(
           color: appStyle.colors.card,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(
+                    _attached == Attach.top ? attachedRounding : defaultRounding),
+                topRight: Radius.circular(
+                    _attached == Attach.top ? attachedRounding : defaultRounding),
+                bottomLeft: Radius.circular(
+                    _attached == Attach.bottom ? attachedRounding : defaultRounding),
+                bottomRight: Radius.circular(
+                    _attached == Attach.bottom ? attachedRounding : defaultRounding)),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -40,6 +59,17 @@ class FirkaCard extends StatelessWidget {
         width: MediaQuery.of(context).size.width,
         child: Card(
           color: appStyle.colors.card,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(
+                    _attached == Attach.top ? attachedRounding : defaultRounding),
+                topRight: Radius.circular(
+                    _attached == Attach.top ? attachedRounding : defaultRounding),
+                bottomLeft: Radius.circular(
+                    _attached == Attach.bottom ? attachedRounding : defaultRounding),
+                bottomRight: Radius.circular(
+                    _attached == Attach.bottom ? attachedRounding : defaultRounding)),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
