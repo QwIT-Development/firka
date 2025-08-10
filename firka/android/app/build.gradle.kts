@@ -10,6 +10,7 @@ import java.util.zip.ZipOutputStream.STORED
 plugins {
     id("com.android.application")
     id("kotlin-android")
+    id("org.jetbrains.kotlin.plugin.compose") version "2.2.0"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -30,6 +31,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        compose = true
     }
 
     kotlinOptions {
@@ -97,6 +102,7 @@ android {
 }
 dependencies {
     implementation("androidx.wear:wear-ongoing:1.0.0")
+    implementation("androidx.glance:glance-appwidget:1.1.1")
 }
 
 flutter {

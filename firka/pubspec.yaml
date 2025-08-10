@@ -60,6 +60,7 @@ dependencies:
   flutter_svg: ^1.1.6
   fmb_dart:
     path: vendor/fmb_dart
+  home_widget: ^0.8.0
 
 dev_dependencies:
   flutter_test:
