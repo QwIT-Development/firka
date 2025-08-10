@@ -39,7 +39,6 @@ class AppInitialization {
   bool hasWatchListener = false;
   Uint8List? profilePicture;
   SettingsStore settings;
-
   AppInitialization({
     required this.isar,
     required this.tokenCount,

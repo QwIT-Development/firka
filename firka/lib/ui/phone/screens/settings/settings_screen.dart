@@ -122,6 +122,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Switch(
                 value: item.value,
                 activeColor: appStyle.colors.accent,
+                thumbColor: WidgetStateColor.fromMap({
+                  WidgetState.selected: appStyle.colors.buttonSecondaryFill,
+                  WidgetState.any: appStyle.colors.accent,
+                }),
+                inactiveTrackColor: Colors.transparent,
+                inactiveThumbColor: appStyle.colors.accent,
+                trackOutlineColor: WidgetStateProperty<Color>.fromMap({
+                  WidgetState.any: appStyle.colors.a15p,
+                  WidgetState.selected: appStyle.colors.accent,
+                }),
                 onChanged: (v) {
                   setState(() {
                     item.value = v;
@@ -138,27 +148,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
         for (var i = 0; i < item.values.length; i++) {
           var k = item.values[i];
 
-          widgets.add(FirkaCard(left: [
-            Text(k,
-                style: appStyle.fonts.B_16R
-                    .apply(color: appStyle.colors.textPrimary))
-          ], right: [
-            Checkbox(
-                value: item.values[item.activeIndex] == k,
-                fillColor: WidgetStateProperty.resolveWith<Color>(
-                    (Set<WidgetState> states) {
-                  return appStyle.colors.secondary;
-                }),
-                onChanged: (_) {
-                  setState(() {
-                    item.activeIndex = i;
-                  });
+          widgets.add(GestureDetector(
+            child: FirkaCard(left: [
+              Text(k,
+                  style: appStyle.fonts.B_16R
+                      .apply(color: appStyle.colors.textPrimary))
+            ], right: [
+              item.values[item.activeIndex] == k
+                  ? Checkbox(
+                      value: true,
+                      fillColor: WidgetStateProperty.resolveWith<Color>(
+                          (Set<WidgetState> states) {
+                        return appStyle.colors.secondary;
+                      }),
+                      onChanged: (_) => {},
+                    )
+                  : SizedBox(height: 48)
+            ]),
+            onTap: () {
+              setState(() {
+                item.activeIndex = i;
+              });
 
-                  data.isar.writeTxn(() async {
-                    item.save(data.isar.appSettingsModels);
-                  });
-                })
-          ]));
+              data.isar.writeTxn(() async {
+                item.save(data.isar.appSettingsModels);
+              });
+            },
+          ));
         }
       }
     }

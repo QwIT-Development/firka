@@ -61,6 +61,8 @@ dependencies:
   fmb_dart:
     path: vendor/fmb_dart
   home_widget: ^0.8.0
+  fl_chart:
+    path: vendor/fl_chart
 
 dev_dependencies:
   flutter_test:
@@ -83,6 +85,8 @@ android_notification_icons:
 flutter:
   generate: true
   uses-material-design: true
+  shaders:
+    - shaders/gradient.frag
   assets:
     - assets/images/logos/colored_logo.png
     - assets/images/logos/dave.svg

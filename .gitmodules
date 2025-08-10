@@ -13,3 +13,6 @@
 [submodule "firka/vendor/fmb_dart"]
 	path = firka/vendor/fmb_dart
 	url = https://git.firka.app/firka/fmb_dart
+[submodule "firka/vendor/fl_chart"]
+	path = firka/vendor/fl_chart
+	url = https://git.firka.app/firka/fl_chart

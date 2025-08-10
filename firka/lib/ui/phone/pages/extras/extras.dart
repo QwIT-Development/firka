@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import '../../screens/debug/debug_screen.dart';
 
 void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
-  showModalBottomSheet(
+  showModalBottomSheet( // TODO: vendor this and add an offset
     context: context,
     elevation: 100,
     isScrollControlled: true,
