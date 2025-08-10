@@ -58,6 +58,7 @@ dependencies:
   flutter_screenutil: ^5.9.3
   flutter_arc_text: ^0.6.0
   flutter_svg: ^1.1.6
+  home_widget: ^0.8.0
 
 dev_dependencies:
   flutter_test:
