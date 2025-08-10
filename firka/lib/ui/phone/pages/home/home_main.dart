@@ -77,6 +77,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
   Widget build(BuildContext context) {
     Widget welcomeWidget = SizedBox();
     Widget nextClass = SizedBox();
+    bool lessonActive = false;
 
     if (lessons != null && lessons!.isNotEmpty) {
       if (now.isBefore(lessons!.first.start)) {
@@ -93,6 +94,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
 
         if (currentLesson != null) {
           lessonIndex = lessons!.getLessonNo(currentLesson);
+          lessonActive = true;
         }
 
         welcomeWidget = LessonBigWidget(
@@ -101,7 +103,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
     }
     if (lessons != null && lessons!.isNotEmpty) {
       var nextLesson = lessons!.getNextLesson(now);
-      if (nextLesson != null) nextClass = LessonSmallWidget(nextLesson);
+      if (nextLesson != null) nextClass = LessonSmallWidget(nextLesson, lessonActive);
     }
 
     if (student != null && lessons != null) {
@@ -118,6 +120,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
               WelcomeWidget(now, student!, lessons!),
               SizedBox(height: 48),
               welcomeWidget,
+              lessonActive ? SizedBox(height: 5) : SizedBox(height: 0),
               nextClass
             ],
           ),

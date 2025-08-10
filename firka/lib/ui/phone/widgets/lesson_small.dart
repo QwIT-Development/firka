@@ -8,8 +8,9 @@ import '../../widget/class_icon.dart';
 
 class LessonSmallWidget extends StatelessWidget {
   final Lesson lesson;
+  final bool lessonActive;
 
-  const LessonSmallWidget(this.lesson, {super.key});
+  const LessonSmallWidget(this.lesson, this.lessonActive, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +18,7 @@ class LessonSmallWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         FirkaCard(
+          attached: lessonActive ? Attach.none : Attach.top,
           left: [
             ClassIconWidget(
               color: wearStyle.colors.accent,

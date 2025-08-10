@@ -33,6 +33,7 @@ class StartingSoonWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         FirkaCard(
+          attached: Attach.bottom,
           left: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
