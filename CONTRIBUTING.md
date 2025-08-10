@@ -1,6 +1,11 @@
 # Flutter telepítése
 
-A flutter telepítéséhez a dokumentáció [itt](https://docs.flutter.dev/get-started/install) található.
+A firka lebuildeléséhez kötelező a saját Flutter fork használata,
+illetve a release buildekhez a custom Flutter engine használata.
+
+A Flutter telepítéséhez a dokumentáció [itt](https://docs.flutter.dev/get-started/install) található.
+
+A Flutter zip letöltése helyett [a custom engine zip-et töltsd le](https://git.firka.app/firka/flutter/archive/main.zip)
 
 # Brotli
 
@@ -25,7 +30,7 @@ Telepítsd fel a brotli packaget a distro-d package managerével
 Flutter l10n fileok generálása
 
 ```shell
-flutter gen-l10n --template-arb-file app_hu.arb
+Flutter gen-l10n --template-arb-file app_hu.arb
 ```
 
 # Android debug build
@@ -33,14 +38,14 @@ flutter gen-l10n --template-arb-file app_hu.arb
 A dev buildhez nem közelező keystore használata
 ```shell
 $ cd firka
-$ flutter build apk --debug --target-platform android-arm,android-arm64,android-x64
+$ Flutter build apk --debug --target-platform android-arm,android-arm64,android-x64
 ```
 
 # Android release build
 
-A release buildhez közelező egy keystore használata, illetve a saját flutter forkunk használata.
+A release buildhez közelező egy keystore használata, illetve a saját Flutter engineünk használata.
 
-## Custom flutter engine setupolása
+## Custom Flutter engine setupolása
 
 ```shell
 $ git clone https://git.firka.app/firka/flutter
