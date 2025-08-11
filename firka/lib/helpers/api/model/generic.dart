@@ -11,6 +11,10 @@ class NameUidDesc {
         uid: json['Uid'], name: json['Nev'], description: json['Leiras']);
   }
 
+  Map<String, dynamic> toJson() {
+    return {'Uid': uid, 'Nev': name, 'Leiras': description};
+  }
+
   @override
   String toString() {
     return 'NameUidDesc('
@@ -35,6 +39,13 @@ class NameUid {
       uid: json['Uid'],
       name: json['Nev'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'Uid': uid,
+      'Nev': name,
+    };
   }
 }
 

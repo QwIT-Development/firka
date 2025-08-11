@@ -20,6 +20,15 @@ class Subject {
         sortIndex: json['SortIndex']);
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'Uid': uid,
+      'Nev': name,
+      'Kategoria': category.toJson(),
+      'SortIndex': sortIndex,
+    };
+  }
+
   @override
   String toString() {
     return 'Subject('
