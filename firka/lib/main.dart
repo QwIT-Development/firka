@@ -89,6 +89,8 @@ Future<AppInitialization> initializeApp() async {
   if (tokenCount > 0) {
     init.client =
         KretaClient((await isar.tokenModels.where().findFirst())!, isar);
+
+    await WidgetCacheHelper.updateWidgetCache(appStyle, init.client);
   }
 
   final dataDir = await getApplicationDocumentsDirectory();
@@ -97,8 +99,6 @@ Future<AppInitialization> initializeApp() async {
   if (await pfpFile.exists()) {
     init.profilePicture = await pfpFile.readAsBytes();
   }
-
-  await WidgetCacheHelper.updateWidgetCache(appStyle, init.client);
 
   return init;
 }
