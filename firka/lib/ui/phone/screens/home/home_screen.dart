@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-
+import '../../../../helpers/db/widget.dart';
 import '../../../../helpers/debug_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../widget/firka_icon.dart';
@@ -19,7 +19,6 @@ import '../../pages/extras/extras.dart';
 import '../../pages/extras/main_error.dart';
 import '../../pages/home/home_grades_subject.dart';
 import '../../pages/home/home_timetable.dart';
-import '../debug/debug_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final AppInitialization data;
@@ -85,9 +84,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
       var now = timeNow();
       var start = now.subtract(Duration(days: now.weekday - 1));
-      var end = start.add(Duration(days: 6));
+      var end = start.add(Duration(days: 7));
 
       res = await data.client.getTimeTable(start, end, forceCache: false);
+
+      await WidgetCacheHelper.updateWidgetCache(appStyle, data.client);
 
       if (res.err != null) throw res.err!;
     } catch (e) {
