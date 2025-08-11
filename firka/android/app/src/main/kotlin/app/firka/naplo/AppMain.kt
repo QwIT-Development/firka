@@ -25,6 +25,8 @@ class AppMain : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        var useUncompressedLibs = false
+
         val abi = Build.SUPPORTED_ABIS[0]
 
         val apks = File(applicationInfo.nativeLibraryDir, "../..").absoluteFile
@@ -42,13 +44,22 @@ class AppMain : Application() {
             while (entries.hasMoreElements()) {
                 val entry = entries.nextElement()
 
-                entry.name.endsWith("$abi/index.so")
-                zip.close()
-                nativesApkN = ZipFile(apk)
-                break
+                if (entry.name.endsWith("$abi/index.so")) {
+                    zip.close()
+                    nativesApkN = ZipFile(apk)
+                    break
+                }
+                if (entry.name.endsWith("$abi/libflutter.so")) {
+                    useUncompressedLibs = true
+                    break
+                }
             }
 
             zip.close()
+        }
+
+        if (useUncompressedLibs) {
+            return;
         }
 
         if (nativesApkN == null) {
