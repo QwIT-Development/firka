@@ -112,6 +112,46 @@ class Lesson {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    List<dynamic> rawAttachments = [];
+
+    for (var item in attachments) {
+      rawAttachments.add(item.toJson());
+    }
+
+    return {
+      'Uid': uid,
+      'Datum': date,
+      'KezdetIdopont': start.toIso8601String(),
+      'VegIdopont': end.toIso8601String(),
+      'Nev': name,
+      'Oraszam': lessonNumber,
+      'OraEvesSorszama': lessonSeqNumber,
+      'OsztalyCsoport': classGroup,
+      'TanarNeve': teacher,
+      'Tantargy': subject?.toJson(),
+      'Tema': theme,
+      'TeremNeve': roomName,
+      'Tipus': type.toJson(),
+      'TanuloJelenlet': studentPresence?.toJson(),
+      'Allapot': state.toJson(),
+      'HelyettesTanarNeve': substituteTeacher,
+      'HaziFeladatUid': homeworkUid,
+      'FeladatGroupUid': taskGroupUid,
+      'NyelviFeladatGroupUid': languageTaskGroupUid,
+      'BejelentettSzamonkeresUid': assessmentUid,
+      'IsTanuloHaziFeladatEnabled': canStudentEditHomework,
+      'IsHaziFeladatMegoldva': isHomeworkComplete,
+      'Csatolmanyok': rawAttachments,
+      'IsDigitalisOra': isDigitalLesson,
+      'DigitalisEszkozTipus': digitalDeviceList,
+      'DigitalisPlatformTipus': digitalPlatformType,
+      'DigitalisTamogatoEszkozTipusList': digitalSupportDeviceTypeList,
+      'Letrehozas': createdAt.toIso8601String(),
+      'UtolsoModositas': lastModifiedAt.toIso8601String(),
+    };
+  }
+
   @override
   String toString() {
     return 'Lesson('
