@@ -7,8 +7,10 @@ import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/helpers/db/models/generic_cache_model.dart';
 import 'package:firka/helpers/db/models/timetable_cache_model.dart';
 import 'package:firka/helpers/db/models/token_model.dart';
+import 'package:firka/helpers/db/widget.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/settings/setting.dart';
+import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/pages/error/error_page.dart';
 import 'package:firka/ui/phone/screens/debug/debug_screen.dart';
 import 'package:firka/ui/phone/screens/home/home_screen.dart';
@@ -74,8 +76,6 @@ Future<AppInitialization> initializeApp() async {
     print('Token count: $tokenCount');
   }
 
-  var settings = SettingsStore();
-
   var init = AppInitialization(
     isar: isar,
     tokenCount: tokenCount,
@@ -97,6 +97,8 @@ Future<AppInitialization> initializeApp() async {
   if (await pfpFile.exists()) {
     init.profilePicture = await pfpFile.readAsBytes();
   }
+
+  await WidgetCacheHelper.updateWidgetCache(appStyle, init.client);
 
   return init;
 }
@@ -137,7 +139,9 @@ class InitializationScreen extends StatelessWidget {
         // Check if initialization is complete
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasError) {
-            debugPrintStack(label: snapshot.error.toString());
+            debugPrintStack(
+                stackTrace: snapshot.stackTrace,
+                label: snapshot.error.toString());
 
             // Handle initialization error
             return MaterialApp(
