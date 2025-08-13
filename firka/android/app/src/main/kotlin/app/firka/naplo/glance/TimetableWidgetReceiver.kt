@@ -2,6 +2,6 @@ package app.firka.naplo.glance
 
 import HomeWidgetGlanceWidgetReceiver
 
-class TimetableWidgetReceiver : HomeWidgetGlanceWidgetReceiver<AppWidget>() {
-    override val glanceAppWidget = AppWidget()
+class TimetableWidgetReceiver : HomeWidgetGlanceWidgetReceiver<TimetableWidget>() {
+    override val glanceAppWidget = TimetableWidget()
 }
