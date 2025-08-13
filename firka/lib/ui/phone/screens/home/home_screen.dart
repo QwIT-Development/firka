@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/main.dart';
@@ -9,6 +10,7 @@ import 'package:firka/ui/phone/widgets/bottom_nav_icon.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../../../helpers/db/widget.dart';
@@ -77,20 +79,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       _prefetched = true;
+      var random = Random();
 
       ApiResponse<Object> res = await data.client.getGrades(forceCache: false);
 
-      if (res.err != null) throw res.err!;
+      if (res.err != null) throw "await data.client.getGrades\n${res.err!}";
+
+      await Future.delayed(Duration(seconds: 1 + random.nextInt(2)));
 
       var now = timeNow();
       var start = now.subtract(Duration(days: now.weekday - 1));
-      var end = start.add(Duration(days: 7));
+      var end = start.add(Duration(days: 6));
 
       res = await data.client.getTimeTable(start, end, forceCache: false);
+      if (res.err != null) throw "await data.client.getTimeTable\n${res.err!}";
 
       await WidgetCacheHelper.updateWidgetCache(appStyle, data.client);
-
-      if (res.err != null) throw res.err!;
+      await HomeWidget.updateWidget(
+          qualifiedAndroidName: "app.firka.naplo.glance.TimetableWidget");
     } catch (e) {
       activeToast = ActiveToastType.error;
 
@@ -133,7 +139,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           Majesticon.questionCircleSolid,
                           color: appStyle.colors.errorAccent, size: 24),
                       onTap: () {
-                        showErrorBottomSheet(context, e.toString());
+                        var stackTrace = "";
+                        if (e is Error && e.stackTrace != null) {
+                          stackTrace = e.stackTrace.toString();
+                        }
+                        showErrorBottomSheet(context, "$e\n$stackTrace");
                       },
                     ),
                   ],
