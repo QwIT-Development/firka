@@ -22,6 +22,10 @@ import '../model/student.dart';
 import '../model/test.dart';
 import '../token_grant.dart';
 
+const backoffCount = 4;
+const backoffMin = 100;
+const backoffStep = 500;
+
 class ApiResponse<T> {
   T? response;
   int statusCode;
@@ -104,7 +108,7 @@ class KretaClient {
   }
 
   Future<(dynamic, int, Object?, bool)> _cachingGet(
-      CacheId id, String url, bool forceCache) async {
+      CacheId id, String url, bool forceCache, int counter) async {
     // it would be *ideal* to use xor and left shift here, however
     // binary operations seem to round the number down to
     // 32 bits for some reason???
@@ -117,12 +121,24 @@ class KretaClient {
       if (forceCache && cache != null) {
         return (jsonDecode(cache.cacheData!), 200, null, true);
       }
-      (resp, statusCode) = await _authJson("GET", url);
 
-      if (statusCode >= 400) {
-        if (cache != null) {
-          return (jsonDecode(cache.cacheData!), statusCode, null, true);
+      try {
+        (resp, statusCode) = await _authJson("GET", url);
+
+        if (statusCode >= 400) {
+          if (cache != null) {
+            return (jsonDecode(cache.cacheData!), statusCode, null, true);
+          }
         }
+      } catch (ex) {
+        if (ex is! DioException || counter >= backoffCount) {
+          rethrow;
+        }
+
+        await Future.delayed(
+            Duration(milliseconds: backoffMin + (counter * backoffStep)));
+
+        return _cachingGet(id, url, forceCache, counter + 1);
       }
     } catch (ex) {
       if (cache != null) {
@@ -148,7 +164,7 @@ class KretaClient {
   Future<ApiResponse<Student>> getStudent({bool forceCache = true}) async {
     if (forceCache && studentCache != null) return studentCache!;
     var (resp, status, ex, cached) = await _cachingGet(CacheId.getStudent,
-        KretaEndpoints.getStudentUrl(model.iss!), forceCache);
+        KretaEndpoints.getStudentUrl(model.iss!), forceCache, 0);
 
     Student? student;
     String? err;
@@ -173,7 +189,7 @@ class KretaClient {
       {bool forceCache = true}) async {
     if (forceCache && noticeBoardCache != null) return noticeBoardCache!;
     var (resp, status, ex, cached) = await _cachingGet(CacheId.getNoticeBoard,
-        KretaEndpoints.getNoticeBoard(model.iss!), forceCache);
+        KretaEndpoints.getNoticeBoard(model.iss!), forceCache, 0);
 
     var items = List<NoticeBoardItem>.empty(growable: true);
     String? err;
@@ -202,7 +218,7 @@ class KretaClient {
       return gradeCache!;
     }
     var (resp, status, ex, cached) = await _cachingGet(
-        CacheId.getGrades, KretaEndpoints.getGrades(model.iss!), forceCache);
+        CacheId.getGrades, KretaEndpoints.getGrades(model.iss!), forceCache, 0);
 
     var items = List<Grade>.empty(growable: true);
     String? err;
@@ -233,6 +249,7 @@ class KretaClient {
           DateTime from,
           DateTime? to,
           bool forceCache,
+          int counter,
           Future<void> Function(dynamic, int) storeCache) async {
     var cacheKey = genCacheKey(from, model.studentId!);
     var cache = await cacheModel.get(cacheKey);
@@ -256,26 +273,38 @@ class KretaClient {
 
         return (items, 200, null, true);
       }
-      if (toStr == null) {
-        (resp, statusCode) = await _authJson(
-            "GET",
-            "$endpoint?"
-                "datumTol=$fromStr");
-      } else {
-        (resp, statusCode) = await _authJson(
-            "GET",
-            "$endpoint?"
-                "datumTol=$fromStr&datumIg=$toStr");
-      }
-
-      if (statusCode >= 400) {
-        if (cache != null) {
-          var items = List<dynamic>.empty(growable: true);
-          for (var item in (cache as dynamic).values) {
-            items.add(jsonDecode(item));
-          }
-          return (items, statusCode, null, true);
+      try {
+        if (toStr == null) {
+          (resp, statusCode) = await _authJson(
+              "GET",
+              "$endpoint?"
+                  "datumTol=$fromStr");
+        } else {
+          (resp, statusCode) = await _authJson(
+              "GET",
+              "$endpoint?"
+                  "datumTol=$fromStr&datumIg=$toStr");
         }
+
+        if (statusCode >= 400) {
+          if (cache != null) {
+            var items = List<dynamic>.empty(growable: true);
+            for (var item in (cache as dynamic).values) {
+              items.add(jsonDecode(item));
+            }
+            return (items, statusCode, null, true);
+          }
+        }
+      } catch (ex) {
+        if (ex is! DioException || counter >= backoffCount) {
+          rethrow;
+        }
+
+        await Future.delayed(
+            Duration(milliseconds: backoffMin + (counter * backoffStep)));
+
+        return _timedCachingGet(cacheModel, endpoint, from, to, forceCache,
+            counter + 1, storeCache);
       }
     } catch (ex) {
       if (cache != null) {
@@ -313,7 +342,8 @@ class KretaClient {
             KretaEndpoints.getTimeTable(model.iss!),
             from,
             to,
-            forceCache, (dynamic resp, int cacheKey) async {
+            forceCache,
+            0, (dynamic resp, int cacheKey) async {
       TimetableCacheModel cache = TimetableCacheModel();
       var rawClasses = List<String>.empty(growable: true);
 
@@ -353,7 +383,8 @@ class KretaClient {
         KretaEndpoints.getHomework(model.iss!),
         from,
         null,
-        forceCache, (dynamic resp, int cacheKey) async {
+        forceCache,
+        0, (dynamic resp, int cacheKey) async {
       HomeworkCacheModel cache = HomeworkCacheModel();
       var rawClasses = List<String>.empty(growable: true);
 
@@ -458,7 +489,7 @@ class KretaClient {
 
   Future<ApiResponse<List<Test>>> getTests({bool forceCache = true}) async {
     var (resp, status, ex, cached) = await _cachingGet(
-        CacheId.getTests, KretaEndpoints.getTests(model.iss!), forceCache);
+        CacheId.getTests, KretaEndpoints.getTests(model.iss!), forceCache, 0);
 
     var items = List<Test>.empty(growable: true);
     String? err;
@@ -486,7 +517,7 @@ class KretaClient {
       {bool forceCache = true}) async {
     if (omissionsCache != null) return omissionsCache!;
     var (resp, status, ex, cached) = await _cachingGet(CacheId.getOmissions,
-        KretaEndpoints.getOmissions(model.iss!), forceCache);
+        KretaEndpoints.getOmissions(model.iss!), forceCache, 0);
 
     var items = List<Omission>.empty(growable: true);
     String? err;
