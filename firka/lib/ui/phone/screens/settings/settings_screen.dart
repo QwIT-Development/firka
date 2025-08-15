@@ -119,7 +119,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           right: [
             Switch(
                 value: item.value,
-                activeColor: appStyle.colors.accent,
+                // activeColor: appStyle.colors.accent,
+                thumbColor: WidgetStateProperty.fromMap({
+                  WidgetState.selected: appStyle.colors.buttonSecondaryFill,
+                  WidgetState.any: appStyle.colors.accent
+                }),
+                trackColor: WidgetStateProperty.fromMap({
+                  WidgetState.selected: appStyle.colors.accent,
+                  WidgetState.any: Colors.transparent
+                }),
+                trackOutlineColor: WidgetStateProperty.fromMap({
+                  WidgetState.selected: appStyle.colors.accent,
+                  WidgetState.any: appStyle.colors.a15p
+                }),
                 onChanged: (v) async {
                   setState(() {
                     item.value = v;
@@ -136,28 +148,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
         for (var i = 0; i < item.values.length; i++) {
           var k = item.values[i];
 
-          widgets.add(FirkaCard(left: [
-            Text(k,
-                style: appStyle.fonts.B_16R
-                    .apply(color: appStyle.colors.textPrimary))
-          ], right: [
-            Checkbox(
-                value: item.values[item.activeIndex] == k,
-                fillColor: WidgetStateProperty.resolveWith<Color>(
-                    (Set<WidgetState> states) {
-                  return appStyle.colors.secondary;
-                }),
-                onChanged: (_) async {
-                  setState(() {
-                    item.activeIndex = i;
-                  });
+          if (item.values[item.activeIndex] == k) {
+            widgets.add(FirkaCard(left: [
+              Text(k,
+                  style: appStyle.fonts.B_16R
+                      .apply(color: appStyle.colors.textPrimary))
+            ], right: [
+              Checkbox(
+                  value: true,
+                  fillColor: WidgetStateProperty.resolveWith<Color>(
+                      (Set<WidgetState> states) {
+                    return appStyle.colors.secondary;
+                  }),
+                  onChanged: (_) async {
+                    setState(() {
+                      item.activeIndex = i;
+                    });
 
-                  await widget.data.isar.writeTxn(() async {
-                    await item.save(widget.data.isar.appSettingsModels);
-                  });
-                  debugPrint('Settings saved');
-                })
-          ]));
+                    await widget.data.isar.writeTxn(() async {
+                      await item.save(widget.data.isar.appSettingsModels);
+                    });
+                    debugPrint('Settings saved');
+                  })
+            ]));
+          } else {
+            widgets.add(GestureDetector(
+              child: FirkaCard(left: [
+                Text(k,
+                    style: appStyle.fonts.B_16R
+                        .apply(color: appStyle.colors.textPrimary))
+              ], right: [
+                SizedBox(height: 48),
+              ]),
+              onTap: () async {
+                setState(() {
+                  item.activeIndex = i;
+                });
+
+                await widget.data.isar.writeTxn(() async {
+                  await item.save(widget.data.isar.appSettingsModels);
+                });
+              },
+            ));
+          }
         }
       }
     }
