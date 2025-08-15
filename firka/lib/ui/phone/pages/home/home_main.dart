@@ -19,13 +19,11 @@ class HomeMainScreen extends StatefulWidget {
   const HomeMainScreen(this.data, {super.key});
 
   @override
-  State<HomeMainScreen> createState() => _HomeMainScreen(data);
+  State<HomeMainScreen> createState() => _HomeMainScreen();
 }
 
 class _HomeMainScreen extends State<HomeMainScreen> {
-  final AppInitialization data;
-
-  _HomeMainScreen(this.data);
+  _HomeMainScreen();
 
   DateTime now = timeNow();
   List<Lesson>? lessons;
@@ -40,7 +38,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
     now = timeNow();
     var midnight = now.getMidnight();
     (() async {
-      var resp = await data.client.getTimeTable(
+      var resp = await widget.data.client.getTimeTable(
           midnight, midnight.add(Duration(hours: 23, minutes: 59)));
 
       if (disposed) return;
@@ -49,7 +47,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
       });
     })();
     (() async {
-      var resp = await data.client.getStudent();
+      var resp = await widget.data.client.getStudent();
 
       if (disposed) return;
       setState(() {
@@ -81,7 +79,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
 
     if (lessons != null && lessons!.isNotEmpty) {
       if (now.isBefore(lessons!.first.start)) {
-        welcomeWidget = StartingSoonWidget(now, lessons!);
+        welcomeWidget = StartingSoonWidget(widget.data.l10n, now, lessons!);
       } else {
         var currentLesson = lessons!.firstWhereOrNull(
             (lesson) => now.isAfter(lesson.start) && now.isBefore(lesson.end));
@@ -97,13 +95,16 @@ class _HomeMainScreen extends State<HomeMainScreen> {
           lessonActive = true;
         }
 
-        welcomeWidget = LessonBigWidget(
-            now, lessonIndex, currentLesson, prevLesson, nextLesson);
+        welcomeWidget = LessonBigWidget(widget.data.l10n, now, lessonIndex,
+            currentLesson, prevLesson, nextLesson);
       }
     }
     if (lessons != null && lessons!.isNotEmpty) {
       var nextLesson = lessons!.getNextLesson(now);
-      if (nextLesson != null) nextClass = LessonSmallWidget(nextLesson, lessonActive);
+      if (nextLesson != null) {
+        nextClass =
+            LessonSmallWidget(widget.data.l10n, nextLesson, lessonActive);
+      }
     }
 
     if (student != null && lessons != null) {
@@ -117,7 +118,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              WelcomeWidget(now, student!, lessons!),
+              WelcomeWidget(widget.data.l10n, now, student!, lessons!),
               SizedBox(height: 48),
               welcomeWidget,
               lessonActive ? SizedBox(height: 5) : SizedBox(height: 0),

@@ -17,25 +17,36 @@ class FirkaCard extends StatelessWidget {
   Widget build(BuildContext context) {
     var right = this.right ?? [];
 
-    var _attached = attached != null ? attached! : Attach.none;
+    var attached = this.attached != null ? this.attached! : Attach.none;
     final defaultRounding = 16.0;
     final attachedRounding = 8.0;
 
     if (extra != null) {
       return SizedBox(
-        width: MediaQuery.of(context).size.width,
+        width: MediaQuery
+            .of(context)
+            .size
+            .width,
         child: Card(
           color: appStyle.colors.card,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(
-                    _attached == Attach.top ? attachedRounding : defaultRounding),
+                    attached == Attach.top
+                        ? attachedRounding
+                        : defaultRounding),
                 topRight: Radius.circular(
-                    _attached == Attach.top ? attachedRounding : defaultRounding),
+                    attached == Attach.top
+                        ? attachedRounding
+                        : defaultRounding),
                 bottomLeft: Radius.circular(
-                    _attached == Attach.bottom ? attachedRounding : defaultRounding),
+                    attached == Attach.bottom
+                        ? attachedRounding
+                        : defaultRounding),
                 bottomRight: Radius.circular(
-                    _attached == Attach.bottom ? attachedRounding : defaultRounding)),
+                    attached == Attach.bottom
+                        ? attachedRounding
+                        : defaultRounding)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -56,19 +67,30 @@ class FirkaCard extends StatelessWidget {
       );
     } else {
       return SizedBox(
-        width: MediaQuery.of(context).size.width,
+        width: MediaQuery
+            .of(context)
+            .size
+            .width,
         child: Card(
           color: appStyle.colors.card,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(
-                    _attached == Attach.top ? attachedRounding : defaultRounding),
+                    attached == Attach.top
+                        ? attachedRounding
+                        : defaultRounding),
                 topRight: Radius.circular(
-                    _attached == Attach.top ? attachedRounding : defaultRounding),
+                    attached == Attach.top
+                        ? attachedRounding
+                        : defaultRounding),
                 bottomLeft: Radius.circular(
-                    _attached == Attach.bottom ? attachedRounding : defaultRounding),
+                    attached == Attach.bottom
+                        ? attachedRounding
+                        : defaultRounding),
                 bottomRight: Radius.circular(
-                    _attached == Attach.bottom ? attachedRounding : defaultRounding)),
+                    attached == Attach.bottom
+                        ? attachedRounding
+                        : defaultRounding)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),

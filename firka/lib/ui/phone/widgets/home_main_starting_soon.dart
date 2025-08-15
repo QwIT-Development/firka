@@ -7,10 +7,11 @@ import 'package:flutter/material.dart';
 import '../../../helpers/api/model/timetable.dart';
 
 class StartingSoonWidget extends StatelessWidget {
+  final AppLocalizations l10n;
   final List<Lesson> lessons;
   final DateTime now;
 
-  const StartingSoonWidget(this.now, this.lessons, {super.key});
+  const StartingSoonWidget(this.l10n, this.now, this.lessons, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,15 +20,9 @@ class StartingSoonWidget extends StatelessWidget {
     var min = diff.inMinutes % 60;
     var sec = diff.inSeconds % 60;
 
-    var hourTxt = hour == 1
-        ? AppLocalizations.of(context)!.starting_hour
-        : AppLocalizations.of(context)!.starting_hour_plural;
-    var minTxt = hour == 1
-        ? AppLocalizations.of(context)!.starting_min
-        : AppLocalizations.of(context)!.starting_min_plural;
-    var secTxt = hour == 1
-        ? AppLocalizations.of(context)!.starting_sec
-        : AppLocalizations.of(context)!.starting_sec_plural;
+    var hourTxt = hour == 1 ? l10n.starting_hour : l10n.starting_hour_plural;
+    var minTxt = hour == 1 ? l10n.starting_min : l10n.starting_min_plural;
+    var secTxt = hour == 1 ? l10n.starting_sec : l10n.starting_sec_plural;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -42,7 +37,7 @@ class StartingSoonWidget extends StatelessWidget {
                   children: [
                     SizedBox(width: 6),
                     Text(
-                      AppLocalizations.of(context)!.starting_soon,
+                      l10n.starting_soon,
                       style: appStyle.fonts.H_16px
                           .apply(color: appStyle.colors.textPrimary),
                     ),

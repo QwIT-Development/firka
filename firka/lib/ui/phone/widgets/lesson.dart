@@ -8,11 +8,13 @@ import '../../../helpers/api/model/timetable.dart';
 import '../../widget/class_icon.dart';
 
 class LessonWidget extends StatelessWidget {
+  final AppLocalizations l10n;
   final int? lessonNo;
   final Lesson lesson;
   final Lesson? nextLesson;
 
-  const LessonWidget(this.lessonNo, this.lesson, this.nextLesson, {super.key});
+  const LessonWidget(this.l10n, this.lessonNo, this.lesson, this.nextLesson,
+      {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +41,7 @@ class LessonWidget extends StatelessWidget {
     elements.add(GestureDetector(
       onTap: () {
         showLessonBottomSheet(
-            context, lesson, lessonNo, accent, secondary, bgColor);
+            context, l10n, lesson, lessonNo, accent, secondary, bgColor);
       },
       child: FirkaCard(
         left: [
@@ -75,8 +77,8 @@ class LessonWidget extends StatelessWidget {
         right: [
           Text(
               isDismissed
-                  ? AppLocalizations.of(context)!.class_dismissed
-                  : lesson.start.toLocal().format(context, FormatMode.hmm),
+                  ? l10n.class_dismissed
+                  : lesson.start.toLocal().format(l10n, FormatMode.hmm),
               style: appStyle.fonts.B_14R
                   .apply(color: appStyle.colors.textPrimary)),
           isDismissed
@@ -98,7 +100,7 @@ class LessonWidget extends StatelessWidget {
     if (isSubstituted) {
       elements.add(FirkaCard(
         left: [
-          Text(AppLocalizations.of(context)!.class_substitution,
+          Text(l10n.class_substitution,
               style: appStyle.fonts.H_14px
                   .apply(color: appStyle.colors.textPrimary))
         ],
@@ -116,13 +118,13 @@ class LessonWidget extends StatelessWidget {
 
       elements.add(FirkaCard(
         left: [
-          Text(AppLocalizations.of(context)!.breakTxt,
+          Text(l10n.breakTxt,
               style: appStyle.fonts.B_14SB
                   .apply(color: appStyle.colors.textSecondary))
         ],
         right: [
           Text(
-              "$breakMins ${breakMins == 1 ? AppLocalizations.of(context)!.starting_min : AppLocalizations.of(context)!.starting_min_plural}",
+              "$breakMins ${breakMins == 1 ? l10n.starting_min : l10n.starting_min_plural}",
               style: appStyle.fonts.B_14R
                   .apply(color: appStyle.colors.textTertiary))
         ],
@@ -137,8 +139,14 @@ class LessonWidget extends StatelessWidget {
   }
 }
 
-void showLessonBottomSheet(BuildContext context, Lesson lesson, int? lessonNo,
-    Color accent, Color secondary, Color bgColor) {
+void showLessonBottomSheet(
+    BuildContext context,
+    AppLocalizations l10n,
+    Lesson lesson,
+    int? lessonNo,
+    Color accent,
+    Color secondary,
+    Color bgColor) {
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -216,7 +224,7 @@ void showLessonBottomSheet(BuildContext context, Lesson lesson, int? lessonNo,
                                 .apply(color: appStyle.colors.textPrimary),
                           ),
                           Text(
-                            '${lesson.start.format(context, FormatMode.hmm)} - ${lesson.end.format(context, FormatMode.hmm)}',
+                            '${lesson.start.format(l10n, FormatMode.hmm)} - ${lesson.end.format(l10n, FormatMode.hmm)}',
                             style: appStyle.fonts.B_14R
                                 .apply(color: appStyle.colors.textPrimary),
                           ),
@@ -229,7 +237,7 @@ void showLessonBottomSheet(BuildContext context, Lesson lesson, int? lessonNo,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            AppLocalizations.of(context)!.lesson_subject,
+                            l10n.lesson_subject,
                             style: appStyle.fonts.H_14px,
                           ),
                           SizedBox(height: 4),

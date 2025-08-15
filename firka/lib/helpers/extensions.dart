@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../l10n/app_localizations.dart';
@@ -39,7 +38,7 @@ enum FormatMode { yearly, grades, welcome, hmm, da, dd }
 enum Cycle { morning, day, afternoon, night }
 
 extension DateExtension on DateTime {
-  String format(BuildContext context, FormatMode mode) {
+  String format(AppLocalizations l10n, FormatMode mode) {
     var today = timeNow();
     today = today.subtract(Duration(
         hours: today.hour,
@@ -55,19 +54,19 @@ extension DateExtension on DateTime {
     switch (mode) {
       case FormatMode.grades:
         if (isBefore(yesterdayLim)) {
-          return format(context, FormatMode.yearly);
+          return format(l10n, FormatMode.yearly);
         }
         if (isAfter(yesterdayLim) && isBefore(today)) {
-          return AppLocalizations.of(context)!.yesterday;
+          return l10n.yesterday;
         }
         if (isAfter(yesterday) && isBefore(tomorrow)) {
-          return AppLocalizations.of(context)!.today;
+          return l10n.today;
         }
         if (isAfter(today) && isBefore(tomorrowLim)) {
-          return AppLocalizations.of(context)!.tomorrow;
+          return l10n.tomorrow;
         }
 
-        return format(context, FormatMode.yearly);
+        return format(l10n, FormatMode.yearly);
       case FormatMode.yearly:
         return DateFormat('MMMM dd').format(this);
       case FormatMode.hmm:

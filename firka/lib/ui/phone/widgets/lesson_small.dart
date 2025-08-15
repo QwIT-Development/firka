@@ -1,5 +1,6 @@
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
+import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:flutter/material.dart';
 
@@ -7,10 +8,12 @@ import '../../../helpers/api/model/timetable.dart';
 import '../../widget/class_icon.dart';
 
 class LessonSmallWidget extends StatelessWidget {
+  final AppLocalizations l10n;
   final Lesson lesson;
   final bool lessonActive;
 
-  const LessonSmallWidget(this.lesson, this.lessonActive, {super.key});
+  const LessonSmallWidget(this.l10n, this.lesson, this.lessonActive,
+      {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +47,7 @@ class LessonSmallWidget extends StatelessWidget {
               ),
             ),
             Text(
-                "${lesson.start.toLocal().format(context, FormatMode.hmm)} - ${lesson.end.toLocal().format(context, FormatMode.hmm)}",
+                "${lesson.start.toLocal().format(l10n, FormatMode.hmm)} - ${lesson.end.toLocal().format(l10n, FormatMode.hmm)}",
                 style: appStyle.fonts.B_14R
                     .apply(color: appStyle.colors.textPrimary)),
           ],

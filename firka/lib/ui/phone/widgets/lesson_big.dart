@@ -9,14 +9,15 @@ import '../../../helpers/api/model/timetable.dart';
 import '../../widget/class_icon.dart';
 
 class LessonBigWidget extends StatelessWidget {
+  final AppLocalizations l10n;
   final DateTime now;
   final int? lessonNo;
   final Lesson? lesson;
   final Lesson? prevLesson;
   final Lesson? nextLesson;
 
-  const LessonBigWidget(
-      this.now, this.lessonNo, this.lesson, this.prevLesson, this.nextLesson,
+  const LessonBigWidget(this.l10n, this.now, this.lessonNo, this.lesson,
+      this.prevLesson, this.nextLesson,
       {super.key});
 
   @override
@@ -40,10 +41,10 @@ class LessonBigWidget extends StatelessWidget {
       var secsLeft = timeLeft.inSeconds;
 
       var timeLeftStr =
-          "$minsLeft ${minsLeft == 1 ? AppLocalizations.of(context)!.starting_min : AppLocalizations.of(context)!.starting_min_plural}";
+          "$minsLeft ${minsLeft == 1 ? l10n.starting_min : l10n.starting_min_plural}";
       if (minsLeft < 1) {
         timeLeftStr =
-            "$secsLeft ${secsLeft == 1 ? AppLocalizations.of(context)!.starting_sec : AppLocalizations.of(context)!.starting_sec_plural}";
+            "$secsLeft ${secsLeft == 1 ? l10n.starting_sec : l10n.starting_sec_plural}";
       }
 
       return Column(
@@ -101,10 +102,7 @@ class LessonBigWidget extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
-                          lesson!.start
-                              .toLocal()
-                              .format(context, FormatMode.hmm),
+                      Text(lesson!.start.toLocal().format(l10n, FormatMode.hmm),
                           style: appStyle.fonts.B_14R
                               .apply(color: appStyle.colors.textPrimary)),
                       Card(
@@ -122,8 +120,7 @@ class LessonBigWidget extends StatelessWidget {
                   Row(
                     children: [
                       SizedBox(width: 18),
-                      Text(
-                          lesson!.end.toLocal().format(context, FormatMode.hmm),
+                      Text(lesson!.end.toLocal().format(l10n, FormatMode.hmm),
                           style: appStyle.fonts.B_12R
                               .apply(color: appStyle.colors.textSecondary)),
                     ],
@@ -147,8 +144,7 @@ class LessonBigWidget extends StatelessWidget {
           duration - nextLesson!.start.difference(now).inMilliseconds;
       var timeLeft = nextLesson!.start.difference(now);
 
-      var timeLeftStr =
-          AppLocalizations.of(context)!.timeLeft(timeLeft.inMinutes + 1);
+      var timeLeftStr = l10n.timeLeft(timeLeft.inMinutes + 1);
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -166,11 +162,11 @@ class LessonBigWidget extends StatelessWidget {
                         child: Padding(
                           padding: EdgeInsets.all(4),
                           child: FirkaIconWidget(
-                              FirkaIconType.MajesticonsLocal, 'cupFilled',
+                              FirkaIconType.majesticonsLocal, 'cupFilled',
                               color: wearStyle.colors.accent, size: 24),
                         ),
                       ),
-                      Text(AppLocalizations.of(context)!.breakTxt,
+                      Text(l10n.breakTxt,
                           style: appStyle.fonts.B_16SB
                               .apply(color: appStyle.colors.textPrimary)),
                     ],
@@ -193,7 +189,7 @@ class LessonBigWidget extends StatelessWidget {
                       Text(
                           prevLesson!.end
                               .toLocal()
-                              .format(context, FormatMode.hmm),
+                              .format(l10n, FormatMode.hmm),
                           style: appStyle.fonts.B_14R
                               .apply(color: appStyle.colors.textPrimary)),
                     ],
@@ -203,7 +199,7 @@ class LessonBigWidget extends StatelessWidget {
                       Text(
                           nextLesson!.start
                               .toLocal()
-                              .format(context, FormatMode.hmm),
+                              .format(l10n, FormatMode.hmm),
                           style: appStyle.fonts.B_14R
                               .apply(color: appStyle.colors.textPrimary)),
                     ],

@@ -5,8 +5,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 enum FirkaIconType {
-  Majesticons,
-  MajesticonsLocal,
+  majesticons,
+  majesticonsLocal,
 }
 
 class FirkaIconWidget extends StatelessWidget {
@@ -21,9 +21,9 @@ class FirkaIconWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (iconType) {
-      case FirkaIconType.Majesticons:
+      case FirkaIconType.majesticons:
         return Majesticon(iconData as Uint8List, color: color, size: size);
-      case FirkaIconType.MajesticonsLocal:
+      case FirkaIconType.majesticonsLocal:
         return SvgPicture.asset(
           'assets/majesticons/${iconData as String}.svg',
           color: color,

@@ -10,6 +10,7 @@ import 'package:firka/helpers/db/models/token_model.dart';
 import 'package:firka/helpers/db/widget.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/settings/setting.dart';
+import 'package:firka/l10n/app_localizations_hu.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/pages/error/error_page.dart';
 import 'package:firka/ui/phone/screens/debug/debug_screen.dart';
@@ -41,11 +42,13 @@ class AppInitialization {
   bool hasWatchListener = false;
   Uint8List? profilePicture;
   SettingsStore settings;
+  AppLocalizations l10n;
 
   AppInitialization({
     required this.isar,
     required this.tokenCount,
     required this.settings,
+    required this.l10n,
   });
 }
 
@@ -80,6 +83,7 @@ Future<AppInitialization> initializeApp() async {
     isar: isar,
     tokenCount: tokenCount,
     settings: SettingsStore(),
+    l10n: AppLocalizationsHu(),
   );
 
   resetOldTimeTableCache(isar);
@@ -128,13 +132,12 @@ void main() async {
 class InitializationScreen extends StatelessWidget {
   InitializationScreen({super.key});
 
-  // Place to store the initialization future
-  final Future<AppInitialization> _initialization = initializeApp();
+  final Future<AppInitialization> _init = initializeApp();
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<AppInitialization>(
-      future: _initialization,
+      future: _init,
       builder: (context, snapshot) {
         // Check if initialization is complete
         if (snapshot.connectionState == ConnectionState.done) {

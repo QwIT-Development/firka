@@ -17,14 +17,13 @@ class WearLoginScreen extends StatefulWidget {
   const WearLoginScreen(this.data, {super.key});
 
   @override
-  State<WearLoginScreen> createState() => _WearLoginScreenState(data);
+  State<WearLoginScreen> createState() => _WearLoginScreenState();
 }
 
 class _WearLoginScreenState extends State<WearLoginScreen> {
   late WebViewController _webViewController;
-  final AppInitialization data;
 
-  _WearLoginScreenState(this.data);
+  _WearLoginScreenState();
 
   final watch = WatchConnectivity();
 

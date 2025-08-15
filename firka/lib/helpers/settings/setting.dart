@@ -25,7 +25,7 @@ class SettingsStore {
           "settings_padding": SettingsPadding(0, 20),
           "application": SettingsSubGroup(
               0,
-              FirkaIconType.Majesticons,
+              FirkaIconType.majesticons,
               Majesticon.settingsCogSolid,
               "Alkalmazás",
               LinkedHashMap.of({
@@ -60,13 +60,13 @@ class SettingsStore {
               })),
           "customization": SettingsSubGroup(
               0,
-              FirkaIconType.Majesticons,
+              FirkaIconType.majesticons,
               Majesticon.flower2Solid,
               "Személyre szabás",
               LinkedHashMap.of({})),
-          "notifications": SettingsSubGroup(0, FirkaIconType.Majesticons,
+          "notifications": SettingsSubGroup(0, FirkaIconType.majesticons,
               Majesticon.bellSolid, "Értesítések", LinkedHashMap.of({})),
-          "extras": SettingsSubGroup(0, FirkaIconType.Majesticons,
+          "extras": SettingsSubGroup(0, FirkaIconType.majesticons,
               Majesticon.lightningBoltSolid, "Extrák", LinkedHashMap.of({})),
           "settings_other_padding": SettingsPadding(0, 20),
           "settings_other_header": SettingsHeaderSmall(0, "Egyéb"),
