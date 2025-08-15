@@ -97,17 +97,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
 
       if (item is SettingsDouble) {
-        var v = item.value.toStringAsPrecision(2);
+        var v = item.toRoundedString();
 
-        widgets.add(FirkaCard(left: [
-          Text(item.title,
-              style: appStyle.fonts.B_16SB
-                  .apply(color: appStyle.colors.textPrimary))
-        ], right: [
-          Text(v == "0.0" ? "0" : v,
-              style: appStyle.fonts.B_14R
-                  .apply(color: appStyle.colors.textPrimary))
-        ]));
+        widgets.add(GestureDetector(
+          child: FirkaCard(left: [
+            Text(item.title,
+                style: appStyle.fonts.B_16SB
+                    .apply(color: appStyle.colors.textPrimary))
+          ], right: [
+            Text(v == "0.0" ? "0" : v,
+                style: appStyle.fonts.B_14R
+                    .apply(color: appStyle.colors.textPrimary))
+          ]),
+          onTap: () async {
+            showSetDoubleSheet(context, item, widget.data, setState);
+          },
+        ));
       }
       if (item is SettingsBoolean) {
         widgets.add(FirkaCard(
@@ -224,4 +229,92 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+}
+
+void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
+    AppInitialization data, void Function(VoidCallback fn) setStateOuter) {
+  showModalBottomSheet(
+    context: context,
+    elevation: 100,
+    isScrollControlled: true,
+    enableDrag: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: appStyle.colors.a15p,
+    constraints: BoxConstraints(
+      maxHeight: MediaQuery.of(context).size.height * 0.13,
+    ),
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+          builder: (BuildContext context, setState) => Stack(
+                children: [
+                  Positioned.fill(
+                    child: GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(color: Colors.transparent),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: appStyle.colors.card,
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(16)),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                            left: 18.0, right: 16.0, bottom: 30.0, top: 20.0),
+                        child: Column(
+                          children: [
+                            Center(
+                                child: Text(
+                              setting.title,
+                              style: appStyle.fonts.B_14R,
+                            )),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 0, horizontal: 40),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Expanded(
+                                    // TODO: Make a firka slider
+                                    child: Slider(
+                                        min: setting.minValue,
+                                        value: setting.value,
+                                        max: setting.maxValue,
+                                        thumbColor: appStyle.colors.accent,
+                                        activeColor: appStyle.colors.secondary,
+                                        inactiveColor: appStyle.colors.a15p,
+                                        onChanged: (v) async {
+                                          setState(() {
+                                            setting.value = v;
+                                            setting.value =
+                                                setting.toRoundedDouble();
+                                          });
+
+                                          await data.isar.writeTxn(() async {
+                                            await setting.save(
+                                                data.isar.appSettingsModels);
+
+                                            setStateOuter(() {});
+                                          });
+                                        }),
+                                  ),
+                                  Text(setting.toRoundedString(),
+                                      style: appStyle.fonts.B_14R.apply(
+                                          color: appStyle.colors.textPrimary))
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ));
+    },
+  );
 }
