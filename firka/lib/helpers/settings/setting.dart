@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:core';
 
 import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
@@ -14,6 +15,14 @@ const classAvgOnGraph = 1006;
 const leftHandedMode = 1007;
 const language = 1008;
 
+bool always() {
+  return true;
+}
+
+bool never() {
+  return false;
+}
+
 class SettingsStore {
   LinkedHashMap<String, SettingsItem> items = LinkedHashMap.of({});
 
@@ -21,8 +30,8 @@ class SettingsStore {
     items["settings"] = SettingsGroup(
         0,
         LinkedHashMap.of({
-          "settings_header": SettingsHeader(0, "Beállítások"),
-          "settings_padding": SettingsPadding(0, 20),
+          "settings_header": SettingsHeader(0, "Beállítások", always),
+          "settings_padding": SettingsPadding(0, 20, always),
           "application": SettingsSubGroup(
               0,
               FirkaIconType.majesticons,
@@ -30,54 +39,63 @@ class SettingsStore {
               "Alkalmazás",
               LinkedHashMap.of({
                 // TODO: Make a back arrow widget
-                "settings_header": SettingsHeader(0, "Általános"),
-                "settings_padding": SettingsPadding(0, 23),
+                "settings_header": SettingsHeader(0, "Általános", always),
+                "settings_padding": SettingsPadding(0, 23, always),
 
-                "bell_delay": SettingsDouble(
-                    bellRing, null, null, "Csengő eltolódása", 0, 0, 120, 0),
+                "bell_delay": SettingsDouble(bellRing, null, null,
+                    "Csengő eltolódása", 0, 0, 120, 0, always),
                 "rounding": SettingsSubGroup(
                     0,
                     null,
                     null,
                     "Alapértelmezett kerekítés",
                     LinkedHashMap.of({
-                      "1": SettingsDouble(
-                          rounding1, null, null, "1 → 2", 0.1, 0.5, 0.99, 2),
-                      "2": SettingsDouble(
-                          rounding2, null, null, "2 → 3", 0.1, 0.5, 0.99, 2),
-                      "3": SettingsDouble(
-                          rounding3, null, null, "3 → 4", 0.1, 0.5, 0.99, 2),
-                      "4": SettingsDouble(
-                          rounding4, null, null, "4 → 5", 0.1, 0.5, 0.99, 2),
-                    })),
+                      "1": SettingsDouble(rounding1, null, null, "1 → 2", 0.1,
+                          0.5, 0.99, 2, always),
+                      "2": SettingsDouble(rounding2, null, null, "2 → 3", 0.1,
+                          0.5, 0.99, 2, always),
+                      "3": SettingsDouble(rounding3, null, null, "3 → 4", 0.1,
+                          0.5, 0.99, 2, always),
+                      "4": SettingsDouble(rounding4, null, null, "4 → 5", 0.1,
+                          0.5, 0.99, 2, always),
+                    }),
+                    always),
                 "class_avg_on_graph": SettingsBoolean(classAvgOnGraph, null,
-                    null, "Osztályátlag a grafikonon", true),
+                    null, "Osztályátlag a grafikonon", true, never),
                 "navbar": SettingsSubGroup(
-                  0,
-                  null, // TODO: icon
-                  null,
-                  "Navigációs sáv",
-                  LinkedHashMap.of({}),
-                ),
+                    0,
+                    null, // TODO: icon
+                    null,
+                    "Navigációs sáv",
+                    LinkedHashMap.of({}),
+                    never),
                 "left_handed_mode": SettingsBoolean(
-                    leftHandedMode, null, null, "Balkezes mód", false),
-                "language_header": SettingsHeaderSmall(0, "Nyelv"),
+                    leftHandedMode, null, null, "Balkezes mód", false, never),
+                "language_header": SettingsHeaderSmall(0, "Nyelv", always),
                 "language": SettingsItemsRadio(language, null, null,
-                    ["Autómatikus", "Magyar", "Angol", "Német"], 0)
-              })),
+                    ["Autómatikus", "Magyar", "Angol", "Német"], 0, always)
+              }),
+              always),
           "customization": SettingsSubGroup(
               0,
               FirkaIconType.majesticons,
               Majesticon.flower2Solid,
               "Személyre szabás",
-              LinkedHashMap.of({})),
+              LinkedHashMap.of({}),
+              always),
           "notifications": SettingsSubGroup(0, FirkaIconType.majesticons,
-              Majesticon.bellSolid, "Értesítések", LinkedHashMap.of({})),
-          "extras": SettingsSubGroup(0, FirkaIconType.majesticons,
-              Majesticon.lightningBoltSolid, "Extrák", LinkedHashMap.of({})),
-          "settings_other_padding": SettingsPadding(0, 20),
-          "settings_other_header": SettingsHeaderSmall(0, "Egyéb"),
-        }));
+              Majesticon.bellSolid, "Értesítések", LinkedHashMap.of({}), never),
+          "extras": SettingsSubGroup(
+              0,
+              FirkaIconType.majesticons,
+              Majesticon.lightningBoltSolid,
+              "Extrák",
+              LinkedHashMap.of({}),
+              never),
+          "settings_other_padding": SettingsPadding(0, 20, never),
+          "settings_other_header": SettingsHeaderSmall(0, "Egyéb", never),
+        }),
+        always);
 
     items;
   }
@@ -137,8 +155,9 @@ class SettingsItem {
   Id key;
   FirkaIconType? iconType;
   Object? iconData;
+  bool Function() visibilityProvider;
 
-  SettingsItem(this.key, this.iconType, this.iconData);
+  SettingsItem(this.key, this.iconType, this.iconData, this.visibilityProvider);
 
   Future<void> save(IsarCollection<AppSettingsModel> model) async {}
 
@@ -152,9 +171,11 @@ class SettingsGroup implements SettingsItem {
   FirkaIconType? iconType;
   @override
   Object? iconData;
+  @override
+  bool Function() visibilityProvider;
   LinkedHashMap<String, SettingsItem> children;
 
-  SettingsGroup(this.key, this.children);
+  SettingsGroup(this.key, this.children, this.visibilityProvider);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -178,11 +199,13 @@ class SettingsSubGroup implements SettingsItem {
   FirkaIconType? iconType;
   @override
   Object? iconData;
+  @override
+  bool Function() visibilityProvider;
   String title;
   LinkedHashMap<String, SettingsItem> children;
 
-  SettingsSubGroup(
-      this.key, this.iconType, this.iconData, this.title, this.children);
+  SettingsSubGroup(this.key, this.iconType, this.iconData, this.title,
+      this.children, this.visibilityProvider);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -206,9 +229,11 @@ class SettingsPadding implements SettingsItem {
   FirkaIconType? iconType;
   @override
   Object? iconData;
+  @override
+  bool Function() visibilityProvider;
   double padding;
 
-  SettingsPadding(this.key, this.padding);
+  SettingsPadding(this.key, this.padding, this.visibilityProvider);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {}
@@ -224,9 +249,11 @@ class SettingsHeader implements SettingsItem {
   FirkaIconType? iconType;
   @override
   Object? iconData;
+  @override
+  bool Function() visibilityProvider;
   String title;
 
-  SettingsHeader(this.key, this.title);
+  SettingsHeader(this.key, this.title, this.visibilityProvider);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {}
@@ -242,9 +269,11 @@ class SettingsHeaderSmall implements SettingsItem {
   FirkaIconType? iconType;
   @override
   Object? iconData;
+  @override
+  bool Function() visibilityProvider;
   String title;
 
-  SettingsHeaderSmall(this.key, this.title);
+  SettingsHeaderSmall(this.key, this.title, this.visibilityProvider);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {}
@@ -260,9 +289,11 @@ class SettingsSubtitle implements SettingsItem {
   FirkaIconType? iconType;
   @override
   Object? iconData;
+  @override
+  bool Function() visibilityProvider;
   String title;
 
-  SettingsSubtitle(this.key, this.title);
+  SettingsSubtitle(this.key, this.title, this.visibilityProvider);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {}
@@ -278,12 +309,14 @@ class SettingsBoolean implements SettingsItem {
   FirkaIconType? iconType;
   @override
   Object? iconData;
+  @override
+  bool Function() visibilityProvider;
   String title;
   bool value = false;
   bool defaultValue;
 
-  SettingsBoolean(
-      this.key, this.iconType, this.iconData, this.title, this.defaultValue);
+  SettingsBoolean(this.key, this.iconType, this.iconData, this.title,
+      this.defaultValue, this.visibilityProvider);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -312,12 +345,14 @@ class SettingsItemsRadio implements SettingsItem {
   FirkaIconType? iconType;
   @override
   Object? iconData;
+  @override
+  bool Function() visibilityProvider;
   List<String> values;
   int activeIndex = 0;
   int defaultIndex;
 
-  SettingsItemsRadio(
-      this.key, this.iconType, this.iconData, this.values, this.defaultIndex);
+  SettingsItemsRadio(this.key, this.iconType, this.iconData, this.values,
+      this.defaultIndex, this.visibilityProvider);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -346,6 +381,8 @@ class SettingsDouble implements SettingsItem {
   FirkaIconType? iconType;
   @override
   Object? iconData;
+  @override
+  bool Function() visibilityProvider;
   String title;
   double value = 0;
   double minValue = 0.0;
@@ -353,8 +390,16 @@ class SettingsDouble implements SettingsItem {
   double maxValue = 0.0;
   int precision;
 
-  SettingsDouble(this.key, this.iconType, this.iconData, this.title,
-      this.minValue, this.defaultValue, this.maxValue, this.precision);
+  SettingsDouble(
+      this.key,
+      this.iconType,
+      this.iconData,
+      this.title,
+      this.minValue,
+      this.defaultValue,
+      this.maxValue,
+      this.precision,
+      this.visibilityProvider);
 
   double toRoundedDouble() {
     return double.parse(toRoundedString());
@@ -395,12 +440,14 @@ class SettingsString implements SettingsItem {
   FirkaIconType? iconType;
   @override
   Object? iconData;
+  @override
+  bool Function() visibilityProvider;
   String title;
   String value = "";
   String defaultValue;
 
-  SettingsString(
-      this.key, this.iconType, this.iconData, this.title, this.defaultValue);
+  SettingsString(this.key, this.iconType, this.iconData, this.title,
+      this.defaultValue, this.visibilityProvider);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
