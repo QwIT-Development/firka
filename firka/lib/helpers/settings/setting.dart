@@ -5,14 +5,14 @@ import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:isar/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-const bellRing = 1_001;
-const rounding1 = 1_002;
-const rounding2 = 1_003;
-const rounding3 = 1_004;
-const rounding4 = 1_005;
-const classAvgOnGraph = 1_006;
-const leftHandedMode = 1_007;
-const language = 1_008;
+const bellRing = 1001;
+const rounding1 = 1002;
+const rounding2 = 1003;
+const rounding3 = 1004;
+const rounding4 = 1005;
+const classAvgOnGraph = 1006;
+const leftHandedMode = 1007;
+const language = 1008;
 
 class SettingsStore {
   LinkedHashMap<String, SettingsItem> items = LinkedHashMap.of({});
@@ -81,13 +81,13 @@ class SettingsStore {
 
   Future<void> save(IsarCollection<AppSettingsModel> model) async {
     for (var item in items.values) {
-      item.save(model);
+      await item.save(model);
     }
   }
 
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
     for (var item in items.values) {
-      item.load(model);
+      await item.load(model);
     }
   }
 }
@@ -95,6 +95,10 @@ class SettingsStore {
 extension SettingExt on LinkedHashMap<String, SettingsItem> {
   LinkedHashMap<String, SettingsItem> group(String key) {
     return (this[key] as SettingsGroup).children;
+  }
+
+  LinkedHashMap<String, SettingsItem> subGroup(String key) {
+    return (this[key] as SettingsSubGroup).children;
   }
 
   String string(String key) {
@@ -129,9 +133,9 @@ class SettingsItem {
 
   SettingsItem(this.key, this.iconType, this.iconData);
 
-  void save(IsarCollection<AppSettingsModel> model) {}
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
 
-  void load(IsarCollection<AppSettingsModel> model) {}
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
 }
 
 class SettingsGroup implements SettingsItem {
@@ -146,16 +150,16 @@ class SettingsGroup implements SettingsItem {
   SettingsGroup(this.key, this.children);
 
   @override
-  void load(IsarCollection<AppSettingsModel> model) {
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {
     for (var item in children.values) {
-      item.load(model);
+      await item.load(model);
     }
   }
 
   @override
-  void save(IsarCollection<AppSettingsModel> model) {
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {
     for (var item in children.values) {
-      item.save(model);
+      await item.save(model);
     }
   }
 }
@@ -174,16 +178,16 @@ class SettingsSubGroup implements SettingsItem {
       this.key, this.iconType, this.iconData, this.title, this.children);
 
   @override
-  void load(IsarCollection<AppSettingsModel> model) {
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {
     for (var item in children.values) {
-      item.load(model);
+      await item.load(model);
     }
   }
 
   @override
-  void save(IsarCollection<AppSettingsModel> model) {
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {
     for (var item in children.values) {
-      item.save(model);
+      await item.save(model);
     }
   }
 }
@@ -200,10 +204,10 @@ class SettingsPadding implements SettingsItem {
   SettingsPadding(this.key, this.padding);
 
   @override
-  void load(IsarCollection<AppSettingsModel> model) {}
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
 
   @override
-  void save(IsarCollection<AppSettingsModel> model) {}
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
 }
 
 class SettingsHeader implements SettingsItem {
@@ -218,10 +222,10 @@ class SettingsHeader implements SettingsItem {
   SettingsHeader(this.key, this.title);
 
   @override
-  void load(IsarCollection<AppSettingsModel> model) {}
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
 
   @override
-  void save(IsarCollection<AppSettingsModel> model) {}
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
 }
 
 class SettingsHeaderSmall implements SettingsItem {
@@ -236,10 +240,10 @@ class SettingsHeaderSmall implements SettingsItem {
   SettingsHeaderSmall(this.key, this.title);
 
   @override
-  void load(IsarCollection<AppSettingsModel> model) {}
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
 
   @override
-  void save(IsarCollection<AppSettingsModel> model) {}
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
 }
 
 class SettingsSubtitle implements SettingsItem {
@@ -254,10 +258,10 @@ class SettingsSubtitle implements SettingsItem {
   SettingsSubtitle(this.key, this.title);
 
   @override
-  void load(IsarCollection<AppSettingsModel> model) {}
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
 
   @override
-  void save(IsarCollection<AppSettingsModel> model) {}
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
 }
 
 class SettingsBoolean implements SettingsItem {
@@ -275,8 +279,8 @@ class SettingsBoolean implements SettingsItem {
       this.key, this.iconType, this.iconData, this.title, this.defaultValue);
 
   @override
-  void load(IsarCollection<AppSettingsModel> model) {
-    var v = model.getSync(key);
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {
+    var v = await model.get(key);
     if (v == null || v.valueBool == null) {
       value = defaultValue;
     } else {
@@ -285,12 +289,12 @@ class SettingsBoolean implements SettingsItem {
   }
 
   @override
-  void save(IsarCollection<AppSettingsModel> model) {
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {
     var v = AppSettingsModel();
     v.id = key;
     v.valueBool = value;
 
-    model.put(v);
+    await model.put(v);
   }
 }
 
@@ -309,22 +313,22 @@ class SettingsItemsRadio implements SettingsItem {
       this.key, this.iconType, this.iconData, this.values, this.defaultIndex);
 
   @override
-  void load(IsarCollection<AppSettingsModel> model) {
-    var v = model.getSync(key);
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {
+    var v = await model.get(key);
     if (v == null || v.valueIndex == null) {
-      activeIndex = v!.valueIndex!;
-    } else {
       activeIndex = defaultIndex;
+    } else {
+      activeIndex = v.valueIndex!;
     }
   }
 
   @override
-  void save(IsarCollection<AppSettingsModel> model) {
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {
     var v = AppSettingsModel();
     v.id = key;
     v.valueIndex = activeIndex;
 
-    model.put(v);
+    await model.put(v);
   }
 }
 
@@ -343,8 +347,8 @@ class SettingsDouble implements SettingsItem {
       this.key, this.iconType, this.iconData, this.title, this.defaultValue);
 
   @override
-  void load(IsarCollection<AppSettingsModel> model) {
-    var v = model.getSync(key);
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {
+    var v = await model.get(key);
     if (v == null || v.valueDouble == null) {
       value = defaultValue;
     } else {
@@ -353,12 +357,12 @@ class SettingsDouble implements SettingsItem {
   }
 
   @override
-  void save(IsarCollection<AppSettingsModel> model) {
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {
     var v = AppSettingsModel();
     v.id = key;
     v.valueDouble = value;
 
-    model.put(v);
+    await model.put(v);
   }
 }
 
@@ -377,8 +381,8 @@ class SettingsString implements SettingsItem {
       this.key, this.iconType, this.iconData, this.title, this.defaultValue);
 
   @override
-  void load(IsarCollection<AppSettingsModel> model) {
-    var v = model.getSync(key);
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {
+    var v = await model.get(key);
     if (v == null || v.valueString == null) {
       value = defaultValue;
     } else {
@@ -387,11 +391,11 @@ class SettingsString implements SettingsItem {
   }
 
   @override
-  void save(IsarCollection<AppSettingsModel> model) {
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {
     var v = AppSettingsModel();
     v.id = key;
     v.valueString = value;
 
-    model.put(v);
+    await model.put(v);
   }
 }

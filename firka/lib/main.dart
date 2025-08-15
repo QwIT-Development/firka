@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:dio/dio.dart';
 import 'package:firka/helpers/api/client/kreta_client.dart';
@@ -28,6 +29,8 @@ import 'package:watch_connectivity/watch_connectivity.dart';
 
 import 'helpers/db/models/homework_cache_model.dart';
 import 'l10n/app_localizations.dart';
+import 'l10n/app_localizations_de.dart';
+import 'l10n/app_localizations_en.dart';
 
 Isar? isarInit;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -85,6 +88,34 @@ Future<AppInitialization> initializeApp() async {
     settings: SettingsStore(),
     l10n: AppLocalizationsHu(),
   );
+
+  await init.settings.load(init.isar.appSettingsModels);
+  switch ((init.settings.group("settings").subGroup("application")["language"]
+          as SettingsItemsRadio)
+      .activeIndex) {
+    case 1: // hu
+      init.l10n = AppLocalizationsHu();
+      break;
+    case 2: // en
+      init.l10n = AppLocalizationsEn();
+      break;
+    case 3: // de
+      init.l10n = AppLocalizationsDe();
+      break;
+    default: // auto
+      switch (ui.window.locale.languageCode) {
+        case 'hu':
+          init.l10n = AppLocalizationsHu();
+          break;
+        case 'en':
+          init.l10n = AppLocalizationsEn();
+          break;
+        case 'de':
+          init.l10n = AppLocalizationsDe();
+          break;
+      }
+      break;
+  }
 
   resetOldTimeTableCache(isar);
   resetOldHomeworkCache(isar);
