@@ -46,6 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     var widgets = List<Widget>.empty(growable: true);
 
     for (var item in items) {
+      if (!item.visibilityProvider()) continue;
       if (item is SettingsGroup) {
         widgets.addAll(createWidgetTree(item.children.values));
       }
