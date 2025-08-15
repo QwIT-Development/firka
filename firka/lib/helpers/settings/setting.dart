@@ -35,14 +35,21 @@ class SettingsStore {
 
                 "bell_delay": SettingsDouble(
                     bellRing, null, null, "Csengő eltolódása", 0, 0, 120, 0),
-                "rounding_1": SettingsDouble(rounding1, null, null,
-                    "Alapértelmezett kerekítés 1 -> 2", 0.1, 0.5, 0.99, 2),
-                "rounding_2": SettingsDouble(rounding2, null, null,
-                    "Alapértelmezett kerekítés 2 -> 3", 0.1, 0.5, 0.99, 2),
-                "rounding_3": SettingsDouble(rounding3, null, null,
-                    "Alapértelmezett kerekítés 3 -> 4", 0.1, 0.5, 0.99, 2),
-                "rounding_4": SettingsDouble(rounding4, null, null,
-                    "Alapértelmezett kerekítés 4 -> 5", 0.1, 0.5, 0.99, 2),
+                "rounding": SettingsSubGroup(
+                    0,
+                    null,
+                    null,
+                    "Alapértelmezett kerekítés",
+                    LinkedHashMap.of({
+                      "1": SettingsDouble(
+                          rounding1, null, null, "1 → 2", 0.1, 0.5, 0.99, 2),
+                      "2": SettingsDouble(
+                          rounding2, null, null, "2 → 3", 0.1, 0.5, 0.99, 2),
+                      "3": SettingsDouble(
+                          rounding3, null, null, "3 → 4", 0.1, 0.5, 0.99, 2),
+                      "4": SettingsDouble(
+                          rounding4, null, null, "4 → 5", 0.1, 0.5, 0.99, 2),
+                    })),
                 "class_avg_on_graph": SettingsBoolean(classAvgOnGraph, null,
                     null, "Osztályátlag a grafikonon", true),
                 "navbar": SettingsSubGroup(
