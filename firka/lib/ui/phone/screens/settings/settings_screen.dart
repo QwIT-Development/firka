@@ -120,13 +120,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Switch(
                 value: item.value,
                 activeColor: appStyle.colors.accent,
-                onChanged: (v) {
+                onChanged: (v) async {
                   setState(() {
                     item.value = v;
                   });
 
-                  widget.data.isar.writeTxn(() async {
-                    item.save(widget.data.isar.appSettingsModels);
+                  await widget.data.isar.writeTxn(() async {
+                    await item.save(widget.data.isar.appSettingsModels);
                   });
                 })
           ],
@@ -147,14 +147,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     (Set<WidgetState> states) {
                   return appStyle.colors.secondary;
                 }),
-                onChanged: (_) {
+                onChanged: (_) async {
                   setState(() {
                     item.activeIndex = i;
                   });
 
-                  widget.data.isar.writeTxn(() async {
-                    item.save(widget.data.isar.appSettingsModels);
+                  await widget.data.isar.writeTxn(() async {
+                    await item.save(widget.data.isar.appSettingsModels);
                   });
+                  debugPrint('Settings saved');
                 })
           ]));
         }
