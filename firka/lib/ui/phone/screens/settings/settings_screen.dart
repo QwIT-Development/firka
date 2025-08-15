@@ -131,7 +131,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }),
                 trackColor: WidgetStateProperty.fromMap({
                   WidgetState.selected: appStyle.colors.accent,
-                  WidgetState.any: Colors.transparent
+                  WidgetState.any: appStyle.colors.a10p
                 }),
                 trackOutlineColor: WidgetStateProperty.fromMap({
                   WidgetState.selected: appStyle.colors.accent,
