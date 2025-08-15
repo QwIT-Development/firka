@@ -1,7 +1,6 @@
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
-import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/widgets/bottom_tt_icon.dart';
 import 'package:firka/ui/phone/widgets/lesson.dart';
@@ -15,19 +14,20 @@ import '../../../../main.dart';
 
 class HomeTimetableScreen extends StatefulWidget {
   final AppInitialization data;
+
   const HomeTimetableScreen(this.data, {super.key});
 
   @override
-  State<HomeTimetableScreen> createState() => _HomeTimetableScreen(data);
+  State<HomeTimetableScreen> createState() => _HomeTimetableScreen();
 }
 
 class _HomeTimetableScreen extends State<HomeTimetableScreen> {
-  final AppInitialization data;
   List<Lesson>? lessons;
   List<DateTime>? dates;
   DateTime? active;
   bool disposed = false;
-  _HomeTimetableScreen(this.data);
+
+  _HomeTimetableScreen();
 
   @override
   void dispose() {
@@ -44,7 +44,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
     var sunday = monday.add(Duration(days: 6));
 
     (() async {
-      var lessonsResp = await data.client.getTimeTable(monday, sunday);
+      var lessonsResp = await widget.data.client.getTimeTable(monday, sunday);
       List<DateTime> dates = List.empty(growable: true);
 
       if (lessonsResp.response != null) {
@@ -89,7 +89,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
           .toList();
 
       for (final date in dates!) {
-        ttWidgets.add(BottomTimeTableNavIconWidget(() {
+        ttWidgets.add(BottomTimeTableNavIconWidget(widget.data.l10n, () {
           setState(() {
             active = date;
           });
@@ -109,8 +109,8 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                 SvgPicture.asset("assets/images/logos/dave.svg",
                     width: 48, height: 48),
                 SizedBox(height: 12),
-                Text(AppLocalizations.of(context)!.tt_no_classes_l1),
-                Text(AppLocalizations.of(context)!.tt_no_classes_l2)
+                Text(widget.data.l10n.tt_no_classes_l1),
+                Text(widget.data.l10n.tt_no_classes_l2)
               ]),
         );
       } else {
@@ -118,7 +118,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
           var lesson = lessonsToday[i];
           Lesson? nextLesson =
               lessonsToday.length > i + 1 ? lessonsToday[i + 1] : null;
-          ttBody.add(LessonWidget(
+          ttBody.add(LessonWidget(widget.data.l10n,
               lessonsToday.getLessonNo(lesson), lesson, nextLesson));
         }
       }
@@ -138,7 +138,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    AppLocalizations.of(context)!.timetable,
+                    widget.data.l10n.timetable,
                     style: appStyle.fonts.H_H2
                         .apply(color: appStyle.colors.textPrimary),
                   ),
@@ -149,7 +149,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                         child: Padding(
                           padding: const EdgeInsets.all(8),
                           child: FirkaIconWidget(
-                            FirkaIconType.Majesticons,
+                            FirkaIconType.majesticons,
                             Majesticon.tableSolid,
                             size: 26.0,
                             color: appStyle.colors.accent,
@@ -161,7 +161,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                         child: Padding(
                           padding: const EdgeInsets.all(4),
                           child: FirkaIconWidget(
-                            FirkaIconType.Majesticons,
+                            FirkaIconType.majesticons,
                             Majesticon.plusLine,
                             size: 32.0,
                             color: appStyle.colors.accent,
@@ -173,7 +173,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                         child: Padding(
                           padding: const EdgeInsets.all(8),
                           child: FirkaIconWidget(
-                            FirkaIconType.Majesticons,
+                            FirkaIconType.majesticons,
                             Majesticon.settingsCogSolid,
                             size: 26.0,
                             color: appStyle.colors.accent,

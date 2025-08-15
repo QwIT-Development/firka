@@ -15,7 +15,6 @@ import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../../../helpers/db/widget.dart';
 import '../../../../helpers/debug_helper.dart';
-import '../../../../l10n/app_localizations.dart';
 import '../../../widget/firka_icon.dart';
 import '../../pages/extras/extras.dart';
 import '../../pages/extras/main_error.dart';
@@ -28,7 +27,7 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen(this.data, {super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState(data);
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 enum HomePages { home, grades, timetable }
@@ -55,9 +54,7 @@ bool _prefetched = false;
 bool canPop = true;
 
 class _HomeScreenState extends State<HomeScreen> {
-  final AppInitialization data;
-
-  _HomeScreenState(this.data);
+  _HomeScreenState();
 
   ActiveHomePage page = ActiveHomePage(HomePages.home);
   List<ActiveHomePage> previousPages = List.empty(growable: true);
@@ -81,9 +78,12 @@ class _HomeScreenState extends State<HomeScreen> {
       _prefetched = true;
       var random = Random();
 
-      ApiResponse<Object> res = await data.client.getGrades(forceCache: false);
+      ApiResponse<Object> res =
+          await widget.data.client.getGrades(forceCache: false);
 
-      if (res.err != null) throw "await data.client.getGrades\n${res.err!}";
+      if (res.err != null) {
+        throw "await widget.data.client.getGrades\n${res.err!}";
+      }
 
       await Future.delayed(Duration(seconds: 1 + random.nextInt(2)));
 
@@ -91,10 +91,13 @@ class _HomeScreenState extends State<HomeScreen> {
       var start = now.subtract(Duration(days: now.weekday - 1));
       var end = start.add(Duration(days: 6));
 
-      res = await data.client.getTimeTable(start, end, forceCache: false);
-      if (res.err != null) throw "await data.client.getTimeTable\n${res.err!}";
+      res =
+          await widget.data.client.getTimeTable(start, end, forceCache: false);
+      if (res.err != null) {
+        throw "await widget.data.client.getTimeTable\n${res.err!}";
+      }
 
-      await WidgetCacheHelper.updateWidgetCache(appStyle, data.client);
+      await WidgetCacheHelper.updateWidgetCache(appStyle, widget.data.client);
       await HomeWidget.updateWidget(
           qualifiedAndroidName: "app.firka.naplo.glance.TimetableWidget");
     } catch (e) {
@@ -129,13 +132,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Use min to prevent filling the width
                   children: [
                     Text(
-                      AppLocalizations.of(context)!.api_error,
+                      widget.data.l10n.api_error,
                       style: appStyle.fonts.B_14SB
                           .copyWith(color: appStyle.colors.errorText),
                     ),
                     SizedBox(width: 8),
                     GestureDetector(
-                      child: FirkaIconWidget(FirkaIconType.Majesticons,
+                      child: FirkaIconWidget(FirkaIconType.majesticons,
                           Majesticon.questionCircleSolid,
                           color: appStyle.colors.errorAccent, size: 24),
                       onTap: () {
@@ -214,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SizedBox(width: 16),
                     Text(
-                      AppLocalizations.of(context)!.refreshing,
+                      widget.data.l10n.refreshing,
                       style: appStyle.fonts.B_14SB
                           .copyWith(color: appStyle.colors.textPrimary),
                     )
@@ -242,7 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [HomeSubPage(page, setPageCB, data)],
+                      children: [HomeSubPage(page, setPageCB, widget.data)],
                     ),
                     Container(
                       decoration: BoxDecoration(
@@ -279,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 page.page == HomePages.home
                                     ? Majesticon.homeSolid
                                     : Majesticon.homeLine,
-                                AppLocalizations.of(context)!.home,
+                                widget.data.l10n.home,
                                 page.page == HomePages.home
                                     ? appStyle.colors.accent
                                     : appStyle.colors.secondary,
@@ -300,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 page.page == HomePages.grades
                                     ? Majesticon.bookmarkSolid
                                     : Majesticon.bookmarkLine,
-                                AppLocalizations.of(context)!.grades,
+                                widget.data.l10n.grades,
                                 page.page == HomePages.grades
                                     ? appStyle.colors.accent
                                     : appStyle.colors.secondary,
@@ -321,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 page.page == HomePages.timetable
                                     ? Majesticon.calendarSolid
                                     : Majesticon.calendarLine,
-                                AppLocalizations.of(context)!.timetable,
+                                widget.data.l10n.timetable,
                                 page.page == HomePages.timetable
                                     ? appStyle.colors.accent
                                     : appStyle.colors.secondary,
@@ -329,11 +332,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             // More Button
                             BottomNavIconWidget(() {
                               HapticFeedback.lightImpact();
-                              showExtrasBottomSheet(context, data);
+                              showExtrasBottomSheet(context, widget.data);
                             },
                                 false,
                                 Majesticon.globeEarthLine,
-                                AppLocalizations.of(context)!.other,
+                                widget.data.l10n.other,
                                 appStyle.colors.secondary,
                                 appStyle.colors.textPrimary),
                           ],

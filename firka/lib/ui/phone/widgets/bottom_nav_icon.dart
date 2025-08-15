@@ -30,7 +30,7 @@ class BottomNavIconWidget extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              FirkaIconWidget(FirkaIconType.Majesticons, icon,
+              FirkaIconWidget(FirkaIconType.majesticons, icon,
                       color: iconColor, size: 24)
                   .build(context),
               const SizedBox(height: 4),

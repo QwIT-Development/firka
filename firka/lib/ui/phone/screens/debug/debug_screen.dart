@@ -7,7 +7,6 @@ import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/icon_helper.dart';
 import 'package:firka/helpers/profile_picture.dart';
 import 'package:firka/main.dart';
-import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/screens/login/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -21,13 +20,11 @@ class DebugScreen extends StatefulWidget {
   const DebugScreen(this.data, {super.key});
 
   @override
-  State<DebugScreen> createState() => _DebugScreen(data);
+  State<DebugScreen> createState() => _DebugScreen();
 }
 
 class _DebugScreen extends State<DebugScreen> {
-  final AppInitialization data;
-
-  _DebugScreen(this.data);
+  _DebugScreen();
 
   late ImagePicker _picker;
   Uint8List? profilePictureData;
@@ -39,7 +36,7 @@ class _DebugScreen extends State<DebugScreen> {
     super.initState();
 
     _picker = ImagePicker();
-    profilePictureData = data.profilePicture;
+    profilePictureData = widget.data.profilePicture;
   }
 
   @override
@@ -98,11 +95,11 @@ class _DebugScreen extends State<DebugScreen> {
               profilePicture,
               ElevatedButton(
                 onPressed: () async {
-                  await pickProfilePicture(data, _picker);
+                  await pickProfilePicture(widget.data, _picker);
 
                   setState(() {
-                    if (data.profilePicture != null) {
-                      profilePictureData = data.profilePicture;
+                    if (widget.data.profilePicture != null) {
+                      profilePictureData = widget.data.profilePicture;
                     }
                   });
                 },
@@ -139,21 +136,21 @@ class _DebugScreen extends State<DebugScreen> {
               ElevatedButton(
                 onPressed: () async {
                   print(
-                      "getStudent(): ${await data.client.getStudent(forceCache: useCache)}");
+                      "getStudent(): ${await widget.data.client.getStudent(forceCache: useCache)}");
                 },
                 child: const Text('getStudent()'),
               ),
               ElevatedButton(
                 onPressed: () async {
                   print(
-                      "getNoticeBoard(): ${await data.client.getNoticeBoard(forceCache: useCache)}");
+                      "getNoticeBoard(): ${await widget.data.client.getNoticeBoard(forceCache: useCache)}");
                 },
                 child: const Text('getNoticeBoard()'),
               ),
               ElevatedButton(
                 onPressed: () async {
                   print(
-                      "getGrades(): ${await data.client.getGrades(forceCache: useCache)}");
+                      "getGrades(): ${await widget.data.client.getGrades(forceCache: useCache)}");
                 },
                 child: const Text('getGrades()'),
               ),
@@ -165,7 +162,7 @@ class _DebugScreen extends State<DebugScreen> {
                   var end = now.add(Duration(days: 7));
 
                   print(
-                      "getLessons(): ${await data.client.getTimeTable(start, end, forceCache: useCache)}");
+                      "getLessons(): ${await widget.data.client.getTimeTable(start, end, forceCache: useCache)}");
                 },
                 child: const Text('getLessons()'),
               ),
@@ -177,21 +174,21 @@ class _DebugScreen extends State<DebugScreen> {
                   var end = now.add(Duration(days: 14));
 
                   print(
-                      "getHomework(): ${await data.client.getHomework(start, end, forceCache: useCache)}");
+                      "getHomework(): ${await widget.data.client.getHomework(start, end, forceCache: useCache)}");
                 },
                 child: const Text('getHomework()'),
               ),
               ElevatedButton(
                 onPressed: () async {
                   print(
-                      "getTests(): ${await data.client.getTests(forceCache: useCache)}");
+                      "getTests(): ${await widget.data.client.getTests(forceCache: useCache)}");
                 },
                 child: const Text('getTests()'),
               ),
               ElevatedButton(
                 onPressed: () async {
                   print(
-                      "getOmissions(): ${await data.client.getOmissions(forceCache: useCache)}");
+                      "getOmissions(): ${await widget.data.client.getOmissions(forceCache: useCache)}");
                 },
                 child: const Text('getOmissions()'),
               ),
@@ -203,12 +200,13 @@ class _DebugScreen extends State<DebugScreen> {
               ),
               ElevatedButton(
                 style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty<Color>.fromMap(<WidgetStatesConstraint, Color>{
+                  backgroundColor: WidgetStateProperty<
+                      Color>.fromMap(<WidgetStatesConstraint, Color>{
                     WidgetState.any: Colors.red,
                   }),
                 ),
                 onPressed: () async {
-                  var isar = data.isar;
+                  var isar = widget.data.isar;
 
                   await isar.writeTxn(() async {
                     await isar.tokenModels.clear();
@@ -217,9 +215,9 @@ class _DebugScreen extends State<DebugScreen> {
                   widget.data.tokenCount = 0;
 
                   Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => LoginScreen(data)));
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => LoginScreen(widget.data)));
                 },
                 child: const Text('wipe users'),
               ),
@@ -238,7 +236,7 @@ class _DebugScreen extends State<DebugScreen> {
                         ),
                         Center(
                           child: FirkaIconWidget(
-                              FirkaIconType.Majesticons, getIconData(e),
+                              FirkaIconType.majesticons, getIconData(e),
                               color: Colors.black),
                         )
                       ],

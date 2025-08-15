@@ -17,14 +17,11 @@ class SettingsScreen extends StatefulWidget {
   const SettingsScreen(this.data, this.items, {super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState(data, items);
+  State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final AppInitialization data;
-  final LinkedHashMap<String, SettingsItem> items;
-
-  _SettingsScreenState(this.data, this.items);
+  _SettingsScreenState();
 
   @override
   void initState() {
@@ -92,7 +89,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => SettingsScreen(data, item.children)));
+                    builder: (context) =>
+                        SettingsScreen(widget.data, item.children)));
           },
           child: FirkaCard(left: cardWidgets),
         ));
@@ -127,8 +125,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     item.value = v;
                   });
 
-                  data.isar.writeTxn(() async {
-                    item.save(data.isar.appSettingsModels);
+                  widget.data.isar.writeTxn(() async {
+                    item.save(widget.data.isar.appSettingsModels);
                   });
                 })
           ],
@@ -154,8 +152,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     item.activeIndex = i;
                   });
 
-                  data.isar.writeTxn(() async {
-                    item.save(data.isar.appSettingsModels);
+                  widget.data.isar.writeTxn(() async {
+                    item.save(widget.data.isar.appSettingsModels);
                   });
                 })
           ]));
@@ -170,7 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     _updateSystemUI(); // Update system UI on every build, to compensate for the android system being dumb
 
-    var body = createWidgetTree(items.values);
+    var body = createWidgetTree(widget.items.values);
 
     return Scaffold(
       backgroundColor: appStyle.colors.background,

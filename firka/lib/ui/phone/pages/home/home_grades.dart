@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../helpers/api/model/subject.dart';
 import '../../../../helpers/debug_helper.dart';
-import '../../../../l10n/app_localizations.dart';
 import '../../../../main.dart';
 import '../../../model/style.dart';
 
@@ -82,7 +81,7 @@ class HomeGradesScreen extends StatelessAsyncWidget {
             Row(
               children: [
                 Text(
-                  AppLocalizations.of(context)!.subjects,
+                  data.l10n.subjects,
                   style: appStyle.fonts.H_H2
                       .apply(color: appStyle.colors.textSecondary),
                 )
@@ -97,7 +96,7 @@ class HomeGradesScreen extends StatelessAsyncWidget {
               child: ListView(
                 children: [
                   Text(
-                    AppLocalizations.of(context)!.your_subjects,
+                    data.l10n.your_subjects,
                     style: appStyle.fonts.H_14px
                         .apply(color: appStyle.colors.textSecondary),
                   ),
@@ -105,7 +104,7 @@ class HomeGradesScreen extends StatelessAsyncWidget {
                   ...gradeCards,
                   SizedBox(height: 16),
                   Text(
-                    AppLocalizations.of(context)!.data,
+                    data.l10n.data,
                     style: appStyle.fonts.B_16SB
                         .apply(color: appStyle.colors.textSecondary),
                   ),
@@ -113,7 +112,7 @@ class HomeGradesScreen extends StatelessAsyncWidget {
                   FirkaCard(
                     left: [
                       Text(
-                        AppLocalizations.of(context)!.subject_avg,
+                        data.l10n.subject_avg,
                         style: appStyle.fonts.B_16SB
                             .apply(color: appStyle.colors.textPrimary),
                       ),
@@ -136,7 +135,7 @@ class HomeGradesScreen extends StatelessAsyncWidget {
                   ),
                   FirkaCard(left: [
                     Text(
-                      AppLocalizations.of(context)!.class_avg,
+                      data.l10n.class_avg,
                       style: appStyle.fonts.B_16SB
                           .apply(color: appStyle.colors.textPrimary),
                     ),
@@ -144,7 +143,7 @@ class HomeGradesScreen extends StatelessAsyncWidget {
                   FirkaCard(
                     left: [
                       Text(
-                        AppLocalizations.of(context)!.class_n,
+                        data.l10n.class_n,
                         style: appStyle.fonts.B_16SB
                             .apply(color: appStyle.colors.textPrimary),
                       ),
