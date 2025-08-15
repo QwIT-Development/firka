@@ -4,7 +4,6 @@ import 'package:firka/helpers/ui/grade.dart';
 import 'package:firka/helpers/ui/stateless_async_widget.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../l10n/app_localizations.dart';
 import '../../../../main.dart';
 import '../../../model/style.dart';
 
@@ -30,7 +29,7 @@ class HomeGradesSubjectScreen extends StatelessAsyncWidget {
         height: 8,
       ));
       gradeWidgets.add(Text(
-        group.key.format(context, FormatMode.grades),
+        group.key.format(data.l10n, FormatMode.grades),
         style: appStyle.fonts.H_14px,
       ));
       gradeWidgets.add(SizedBox(
@@ -75,7 +74,7 @@ class HomeGradesSubjectScreen extends StatelessAsyncWidget {
             Row(
               children: [
                 Text(
-                  AppLocalizations.of(context)!.subjects,
+                  data.l10n.subjects,
                   style: appStyle
                       .fonts.H_16px // TODO: Replace this with the proper font
                       .apply(color: appStyle.colors.textPrimary),

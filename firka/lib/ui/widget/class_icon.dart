@@ -25,7 +25,7 @@ class ClassIconWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     var iconCategory = getIconType(_uid, _className, _category);
 
-    return FirkaIconWidget(FirkaIconType.Majesticons, getIconData(iconCategory),
+    return FirkaIconWidget(FirkaIconType.majesticons, getIconData(iconCategory),
         color: color, size: size);
   }
 }

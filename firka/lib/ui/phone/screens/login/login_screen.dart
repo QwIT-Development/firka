@@ -11,7 +11,6 @@ import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../helpers/api/token_grant.dart';
-import '../../../../l10n/app_localizations.dart';
 import '../../../model/style.dart';
 import '../home/home_screen.dart';
 
@@ -101,8 +100,8 @@ class _LoginScreenState extends State<LoginScreen> {
         MediaQuery.of(context).size.width * 0.95;
     List<Map<String, Object>> slides = [
       {
-        'title': AppLocalizations.of(context)!.title1,
-        'subtitle': AppLocalizations.of(context)!.subtitle1,
+        'title': widget.data.l10n.title1,
+        'subtitle': widget.data.l10n.subtitle1,
         'picture': 'assets/images/carousel/slide1.png',
         'background': 'assets/images/carousel/slide1_background.gif',
         'foreground': '',
@@ -113,8 +112,8 @@ class _LoginScreenState extends State<LoginScreen> {
         'y': 150.00,
       },
       {
-        'title': AppLocalizations.of(context)!.title2,
-        'subtitle': AppLocalizations.of(context)!.subtitle2,
+        'title': widget.data.l10n.title2,
+        'subtitle': widget.data.l10n.subtitle2,
         'picture': 'assets/images/carousel/slide2.png',
         'background': 'assets/images/carousel/slide2_background.gif',
         'foreground': '',
@@ -125,8 +124,8 @@ class _LoginScreenState extends State<LoginScreen> {
         'y': 160.00,
       },
       {
-        'title': AppLocalizations.of(context)!.title3,
-        'subtitle': AppLocalizations.of(context)!.subtitle3,
+        'title': widget.data.l10n.title3,
+        'subtitle': widget.data.l10n.subtitle3,
         'picture': 'assets/images/carousel/slide3.png',
         'background': '',
         'foreground': 'assets/images/carousel/slide3_foreground.gif',
@@ -136,8 +135,8 @@ class _LoginScreenState extends State<LoginScreen> {
         'y': 25.00,
       },
       {
-        'title': AppLocalizations.of(context)!.title4,
-        'subtitle': AppLocalizations.of(context)!.subtitle4,
+        'title': widget.data.l10n.title4,
+        'subtitle': widget.data.l10n.subtitle4,
         'picture': 'assets/images/carousel/slide4.png',
         'background': 'assets/images/carousel/slide4_background.gif',
         'foreground': '',
@@ -431,7 +430,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           child: Center(
                             child: Text(
-                              AppLocalizations.of(context)!.loginBtn,
+                              widget.data.l10n.loginBtn,
                               textAlign: TextAlign.center,
                               style: appStyle.fonts.H_16px.copyWith(
                                   color: appStyle.colors.textPrimary,
@@ -445,7 +444,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
                   GestureDetector(
                     child: Text(
-                      AppLocalizations.of(context)!.privacyLabel,
+                      widget.data.l10n.privacyLabel,
                       textAlign: TextAlign.center,
                       style: appStyle.fonts.H_12px
                           .copyWith(color: appStyle.colors.textTertiary),
