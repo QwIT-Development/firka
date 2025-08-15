@@ -61,6 +61,7 @@ class FirkaColors {
   Color accent;
   Color secondary;
   Color shadowColor;
+  Color a10p; // 10%
   Color a15p; // 15%
 
   Color warningAccent;
@@ -94,6 +95,7 @@ class FirkaColors {
     required this.accent,
     required this.secondary,
     required this.shadowColor,
+    required this.a10p,
     required this.a15p,
     required this.warningAccent,
     required this.warningText,
@@ -209,6 +211,7 @@ final FirkaStyle lightStyle = FirkaStyle(
       accent: Color(0xFFA7DC22),
       secondary: Color(0xFF6E8F1B),
       shadowColor: Color(0x33647e22),
+      a10p: Color(0x1aa7dc22),
       a15p: Color(0x26a7dc22),
       warningAccent: Color(0xFFFFA046),
       warningText: Color(0xFF8F531B),
@@ -242,6 +245,7 @@ final FirkaStyle darkStyle = FirkaStyle(
       accent: Color(0xFFA7DC22),
       secondary: Color(0xFFCBEE71),
       shadowColor: Color(0x26CBEE71),
+      a10p: Color(0x1AA7DC22),
       a15p: Color(0x26A7DC22),
       warningAccent: Color(0xFFFFA046),
       warningText: Color(0xFFF0B37A),
