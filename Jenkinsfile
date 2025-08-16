@@ -18,7 +18,7 @@ pipeline {
 
         stage('Decrypt keys') {
             when {
-                branch 'main'
+                branch 'play'
             }
             steps {
                 script {
@@ -59,18 +59,18 @@ pipeline {
 
         stage('Publish release artifacts') {
             when {
-                branch 'main'
+                branch 'play'
             }
             steps {
-                archiveArtifacts artifacts: 'firka/build/app/outputs/flutter-apk/app-*-release.apk', fingerprint: true
-                sh 'rm firka/build/app/outputs/flutter-apk/app-*-release.apk'
+                archiveArtifacts artifacts: 'firka/build/app/outputs/bundle/*.aab', fingerprint: true
+                sh 'rm firka/build/app/outputs/bundle/*.aab'
             }
         }
 
         stage('Publish debug artifacts') {
             when {
                 not {
-                    branch 'main'
+                    branch 'play'
                 }
             }
             steps {
