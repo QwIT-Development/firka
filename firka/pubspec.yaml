@@ -85,6 +85,8 @@ flutter:
     - assets/images/logos/colored_logo.png
     - assets/images/logos/dave.svg
     - assets/images/carousel/
+    - assets/images/icons/
+    - assets/images/background.png
     - assets/majesticons/
 
   fonts:
