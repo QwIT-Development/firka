@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:firka/helpers/db/models/app_settings_model.dart';
+import 'package:firka/helpers/ui/firka_button.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
@@ -23,12 +24,21 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   _SettingsScreenState();
 
+  bool settingAppIcon = false;
+  late String activeIcon;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _updateSystemUI();
     });
+
+    activeIcon = widget.data.settings
+        .group("settings")
+        .subGroup("customization")
+        .subGroup("icon_picker")
+        .iconString("icon_picker");
   }
 
   void _updateSystemUI() {
@@ -42,25 +52,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ));
   }
 
-  List<Widget> createWidgetTree(Iterable<SettingsItem> items) {
+  List<Widget> createWidgetTree(
+      Iterable<SettingsItem> items, SettingsStore settings) {
     var widgets = List<Widget>.empty(growable: true);
 
     for (var item in items) {
       if (!item.visibilityProvider()) continue;
       if (item is SettingsGroup) {
-        widgets.addAll(createWidgetTree(item.children.values));
+        widgets.addAll(createWidgetTree(item.children.values, settings));
+
+        continue;
       }
       if (item is SettingsPadding) {
         widgets.add(SizedBox(
           width: item.padding,
           height: item.padding,
         ));
+
+        continue;
       }
       if (item is SettingsHeader) {
         widgets.add(Text(
           item.title,
           style: appStyle.fonts.H_H1.apply(color: appStyle.colors.textPrimary),
         ));
+
+        continue;
       }
       if (item is SettingsHeaderSmall) {
         widgets.add(Text(
@@ -68,6 +85,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           style:
               appStyle.fonts.H_14px.apply(color: appStyle.colors.textPrimary),
         ));
+
+        continue;
       }
       if (item is SettingsSubGroup) {
         List<Widget> cardWidgets = [];
@@ -95,6 +114,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           },
           child: FirkaCard(left: cardWidgets),
         ));
+
+        continue;
       }
 
       if (item is SettingsDouble) {
@@ -114,6 +135,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             showSetDoubleSheet(context, item, widget.data, setState);
           },
         ));
+
+        continue;
       }
       if (item is SettingsBoolean) {
         widgets.add(FirkaCard(
@@ -149,6 +172,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 })
           ],
         ));
+
+        continue;
       }
       if (item is SettingsItemsRadio) {
         for (var i = 0; i < item.values.length; i++) {
@@ -198,6 +223,180 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ));
           }
         }
+
+        continue;
+      }
+
+      if (item is SettingsAppIconPreview) {
+        widgets.add(Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage('assets/images/background.png'),
+                fit: BoxFit.cover),
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
+          width: MediaQuery.of(context).size.width,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              children: [
+                Column(
+                  children: [
+                    ClipRRect(
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(16.0)),
+                      child: Image.asset(
+                        "assets/images/icons/$activeIcon.png",
+                        width: 74,
+                        height: 74,
+                      ),
+                    ),
+                    Text(
+                      appIcons[activeIcon]!,
+                      style: appStyle.fonts.H_12px
+                          .apply(color: appStyle.colors.card),
+                    )
+                  ],
+                )
+              ],
+            ),
+          ),
+        ));
+
+        continue;
+      }
+      if (item is SettingsAppIconPicker) {
+        List<Widget> pWidgets = [];
+
+        for (var group in item.iconGroups.keys) {
+          List<Widget> groupIcons = [];
+          for (var icon in item.iconGroups[group]!) {
+            var active = icon == activeIcon;
+
+            groupIcons.add(Column(
+              children: [
+                GestureDetector(
+                  child: active
+                      ? Container(
+                          decoration: BoxDecoration(
+                            color: appStyle.colors.accent,
+                            borderRadius: BorderRadius.all(Radius.circular(16)),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: ClipRRect(
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(12.0)),
+                              child: Image.asset(
+                                "assets/images/icons/$icon.png",
+                                width: 48,
+                                height: 48,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            color: appStyle.colors.accent,
+                            borderRadius: BorderRadius.all(Radius.circular(16)),
+                          ),
+                          child: ClipRRect(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(16.0)),
+                            child: Image.asset(
+                              "assets/images/icons/$icon.png",
+                              width: 54,
+                              height: 54,
+                            ),
+                          ),
+                        ),
+                  onTap: () {
+                    setState(() {
+                      activeIcon = icon;
+                    });
+                  },
+                ),
+                Text(
+                  appIcons[icon]!,
+                  style: appStyle.fonts.B_12R,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ));
+          }
+
+          pWidgets.add(Text(
+            group,
+            style:
+                appStyle.fonts.H_14px.apply(color: appStyle.colors.textPrimary),
+          ));
+          pWidgets.add(SizedBox(height: 12));
+          pWidgets.add(SizedBox(
+            height: (groupIcons.length / 4).ceil() * 100,
+            child: GridView.count(
+              crossAxisCount: 4,
+              physics: NeverScrollableScrollPhysics(),
+              children: groupIcons,
+            ),
+          ));
+        }
+
+        widgets.add(SizedBox(
+          height: MediaQuery.of(context).size.height / 1.7,
+          child: SingleChildScrollView(
+              child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: pWidgets,
+          )),
+        ));
+
+        widgets.add(Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            GestureDetector(
+              child: FirkaButton(
+                  text: "Mégse",
+                  bgColor: appStyle.colors.buttonSecondaryFill,
+                  fontStyle: appStyle.fonts.B_14R
+                      .apply(color: appStyle.colors.textSecondary)),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            GestureDetector(
+              child: FirkaButton(
+                  text: "Mentés",
+                  bgColor: appStyle.colors.accent,
+                  fontStyle: appStyle.fonts.B_14R
+                      .apply(color: appStyle.colors.textSecondary)),
+              onTap: () async {
+                if (settingAppIcon) return;
+                settingAppIcon = true;
+
+                widget.data.settings
+                    .group("settings")
+                    .subGroup("customization")
+                    .subGroup("icon_picker")
+                    .setIconString("icon_picker", activeIcon);
+
+                await widget.data.isar.writeTxn(() async {
+                  await widget.data.settings
+                      .save(widget.data.isar.appSettingsModels);
+                });
+
+                await Future.delayed(Duration(seconds: 1));
+
+                const channel = MethodChannel('firka.app/main');
+                await channel.invokeMethod('set_icon', {
+                  "icon": activeIcon == "original" ? null : activeIcon,
+                  "icons": appIcons.keys.where((e) => e != "original").join(",")
+                });
+              },
+            )
+          ],
+        ));
+
+        continue;
       }
     }
 
@@ -208,7 +407,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     _updateSystemUI(); // Update system UI on every build, to compensate for the android system being dumb
 
-    var body = createWidgetTree(widget.items.values);
+    var body = createWidgetTree(widget.items.values, widget.data.settings);
 
     return Scaffold(
       backgroundColor: appStyle.colors.background,

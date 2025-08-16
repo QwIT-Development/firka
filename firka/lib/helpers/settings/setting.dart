@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:core';
+import 'dart:io';
 
 import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
@@ -14,6 +15,47 @@ const rounding4 = 1005;
 const classAvgOnGraph = 1006;
 const leftHandedMode = 1007;
 const language = 1008;
+const appIcon = 1009;
+
+const appIcons = {
+  "ace": "Aszexuáls",
+  "ace_f": "Aszexuáls",
+  "bi": "Biszexuáls",
+  "bi_f": "Biszexuáls",
+  "cactus": "Kaktuszliget",
+  "cc": "Kreatív Felhő",
+  "enby": "Nembináris",
+  "enby_f": "Nembináris",
+  "fidesz": "Narancs",
+  "filc": "Nosztalgia",
+  "filco": "Filc . O",
+  "galaxy": "Galaxis",
+  "gay": "Meleg",
+  "gay_f": "Meleg",
+  "kreta": "eFIRKA",
+  "lesb": "Leszbikus",
+  "lesb_f": "Leszbikus",
+  "lgbtq": "LMGBTQ+",
+  "lgbtq_f": "LMGBTQ+",
+  "lgbtqp": "Progresszió",
+  "lgbtqp_f": "Progresszió",
+  "mkkp": "Ingyen jegyek",
+  "modern": "Modern",
+  "o1g": "O1G",
+  "original": "Az eredeti",
+  "paper": "Papír",
+  "pixel": "Pixel",
+  "pixelized": "Pixelizált",
+  "refilc": "reFilc",
+  "refulc": "reful’c",
+  "repont": "Ötven forint",
+  "trans": "Transz",
+  "trans_f": "Transz",
+  "void_icon": "Semmi",
+  "xmas1": "Rosszak listája",
+  "xmas2": "Ajándék",
+  "xmas3": "reKarácsony"
+};
 
 bool always() {
   return true;
@@ -21,6 +63,10 @@ bool always() {
 
 bool never() {
   return false;
+}
+
+bool isAndroid() {
+  return Platform.isAndroid;
 }
 
 class SettingsStore {
@@ -81,7 +127,62 @@ class SettingsStore {
               FirkaIconType.majesticons,
               Majesticon.flower2Solid,
               "Személyre szabás",
-              LinkedHashMap.of({}),
+              LinkedHashMap.of({
+                "icon_header": SettingsHeaderSmall(0, "App ikonok", always),
+                "icon_preview": SettingsAppIconPreview(0, always),
+                "icon_picker": SettingsSubGroup(
+                    0,
+                    null,
+                    null,
+                    "Ikon cseréje",
+                    LinkedHashMap.of({
+                      "icon_header": SettingsHeader(0, "App ikon", always),
+                      "icon_subtitle": SettingsSubtitle(
+                          0,
+                          "Válassz egy csodaszép app ikont, ha már unod a zöldet.",
+                          always),
+                      "settings_padding": SettingsPadding(0, 24, always),
+                      "icon_preview": SettingsAppIconPreview(0, always),
+                      "settings_padding2": SettingsPadding(0, 24, always),
+                      "icon_picker": SettingsAppIconPicker(
+                          0,
+                          "original",
+                          {
+                            "Alap ikon": [
+                              "original",
+                              "refilc",
+                              "filc",
+                              "galaxy",
+                              "cactus",
+                              "refulc",
+                              "pixel"
+                            ],
+                            "Újragondolt": ["modern", "paper", "filco", "o1g"],
+                            "reFerencia": [
+                              "kreta",
+                              "cc",
+                              "repont",
+                              "void_icon",
+                              "pixelized",
+                              "fidesz",
+                              "mkkp"
+                            ],
+                            "Közösség": ["xmas1", "xmas2", "xmas3"],
+                            "Pride": [
+                              "lgbtq",
+                              "lgbtqp",
+                              "trans",
+                              "enby",
+                              "ace",
+                              "gay",
+                              "lesb",
+                              "bi"
+                            ]
+                          },
+                          always),
+                    }),
+                    isAndroid),
+              }),
               always),
           "notifications": SettingsSubGroup(0, FirkaIconType.majesticons,
               Majesticon.bellSolid, "Értesítések", LinkedHashMap.of({}), never),
@@ -132,6 +233,14 @@ extension SettingExt on LinkedHashMap<String, SettingsItem> {
 
   void setString(String key, String value) {
     (this[key] as SettingsString).value = value;
+  }
+
+  String iconString(String key) {
+    return (this[key] as SettingsAppIconPicker).icon;
+  }
+
+  void setIconString(String key, String value) {
+    (this[key] as SettingsAppIconPicker).icon = value;
   }
 
   double dbl(String key) {
@@ -300,6 +409,63 @@ class SettingsSubtitle implements SettingsItem {
 
   @override
   Future<void> save(IsarCollection<AppSettingsModel> model) async {}
+}
+
+class SettingsAppIconPreview implements SettingsItem {
+  @override
+  Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
+  @override
+  bool Function() visibilityProvider;
+  String title = "";
+
+  SettingsAppIconPreview(this.key, this.visibilityProvider);
+
+  @override
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
+
+  @override
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
+}
+
+class SettingsAppIconPicker implements SettingsItem {
+  @override
+  Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
+  @override
+  bool Function() visibilityProvider;
+  String title = "";
+  String icon = "";
+  String defaultValue;
+  Map<String, List<String>> iconGroups;
+
+  SettingsAppIconPicker(
+      this.key, this.defaultValue, this.iconGroups, this.visibilityProvider);
+
+  @override
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {
+    var v = await model.get(key);
+    if (v == null || v.valueString == null) {
+      icon = defaultValue;
+    } else {
+      icon = v.valueString!;
+    }
+  }
+
+  @override
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {
+    var v = AppSettingsModel();
+    v.id = key;
+    v.valueString = icon;
+
+    await model.put(v);
+  }
 }
 
 class SettingsBoolean implements SettingsItem {
