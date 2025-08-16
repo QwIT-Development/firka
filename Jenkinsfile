@@ -62,8 +62,8 @@ pipeline {
                 branch 'play'
             }
             steps {
-                archiveArtifacts artifacts: 'firka/build/app/outputs/bundle/*.aab', fingerprint: true
-                sh 'rm firka/build/app/outputs/bundle/*.aab'
+                archiveArtifacts artifacts: 'firka/build/app/outputs/bundle/release/*.aab', fingerprint: true
+                sh 'rm firka/build/app/outputs/bundle/release/*.aab'
             }
         }
 
