@@ -2,6 +2,8 @@ import org.apache.commons.io.FileUtils
 import java.io.FileInputStream
 import java.security.MessageDigest
 import java.util.Properties
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import java.util.zip.ZipOutputStream.DEFLATED
@@ -257,23 +259,38 @@ fun transformApk(input: File, output: File, compressionLevel: String = "Z") {
 
     val topDirL = tempDir.absolutePath.length + 1
     val zos = ZipOutputStream(output.outputStream())
+
+    val coreCount = Runtime.getRuntime().availableProcessors()
+    val pngFiles = tempDir.walkTopDown().filter{f -> f.name.endsWith(".png")}
+
+    if (compressionLevel == "Z" && optipng != null) {
+        val executor = Executors.newFixedThreadPool(coreCount)
+        val futures = mutableListOf<Future<*>>()
+
+        pngFiles.forEach { pngFile ->
+            val future = executor.submit {
+                exec {
+                    commandLine(
+                        optipng,
+                        "-zm", "9",
+                        "-zw", "32k",
+                        "-o9",
+                        pngFile.absolutePath
+                    )
+                }
+            }
+            futures.add(future)
+        }
+
+        futures.forEach { it.get() }
+        executor.shutdown()
+    }
+
     tempDir.walkTopDown().forEach { f ->
         if (f.absolutePath == tempDir.absolutePath) return@forEach
 
         var relName = f.absolutePath.substring(topDirL).replace("\\", "/")
         if (f.isDirectory && !relName.endsWith("/")) relName += "/"
-
-        if (compressionLevel == "Z" && optipng != null && f.extension == "png") {
-            exec {
-                commandLine(
-                    optipng,
-                    "-zm", "9",
-                    "-zw", "32k",
-                    "-o9",
-                    f.absolutePath
-                )
-            }
-        }
 
         val compress = !relName.endsWith(".so") && !relName.endsWith(".arsc")
         zos.setMethod(if (compress) { DEFLATED } else { STORED })
