@@ -206,8 +206,11 @@ fun transformAndSignApk(apkDir: File, name: String, debug: Boolean) {
 
 fun transformApk(input: File, output: File, compressionLevel: String = "Z") {
     val tempDir = File(project.buildDir, "tmp/apk-transform")
+    val cacheDir = File(project.buildDir, "apk-transform-cache")
+    val optipngCacheDir = File(cacheDir, "optipng")
     tempDir.deleteRecursively()
     tempDir.mkdirs()
+    if (!optipngCacheDir.exists()) optipngCacheDir.mkdirs()
 
     val brotli = findToolInPath("brotli")
         ?: throw Exception("Brotli not found in path")
@@ -268,18 +271,27 @@ fun transformApk(input: File, output: File, compressionLevel: String = "Z") {
         val futures = mutableListOf<Future<*>>()
 
         pngFiles.forEach { pngFile ->
-            val future = executor.submit {
-                exec {
-                    commandLine(
-                        optipng,
-                        "-zm", "9",
-                        "-zw", "32k",
-                        "-o9",
-                        pngFile.absolutePath
-                    )
+            val cacheFile = File(optipngCacheDir, pngFile.sha256())
+
+            if (cacheFile.exists()) {
+                cacheFile.copyTo(pngFile, true)
+            } else {
+                val future = executor.submit {
+                    exec {
+                        commandLine(
+                            optipng,
+                            "-zm", "9",
+                            "-zw", "32k",
+                            "-o9",
+                            pngFile.absolutePath
+                        )
+                    }
+
+                    pngFile.copyTo(cacheFile, true)
                 }
+
+                futures.add(future)
             }
-            futures.add(future)
         }
 
         futures.forEach { it.get() }
