@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
+import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
@@ -67,6 +68,10 @@ bool never() {
 
 bool isAndroid() {
   return Platform.isAndroid;
+}
+
+bool isDebug() {
+  return kDebugMode;
 }
 
 class SettingsStore {
@@ -137,6 +142,10 @@ class SettingsStore {
                     "Ikon cseréje",
                     LinkedHashMap.of({
                       "icon_header": SettingsHeader(0, "App ikon", always),
+                      "warning_header": SettingsHeader(
+                          0,
+                          "[!] Debug nem fog működni az ikon megváltoztatása",
+                          isDebug),
                       "icon_subtitle": SettingsSubtitle(
                           0,
                           "Válassz egy csodaszép app ikont, ha már unod a zöldet.",

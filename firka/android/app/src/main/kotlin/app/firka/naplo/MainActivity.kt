@@ -33,6 +33,10 @@ class MainActivity : FlutterActivity() {
                 "set_icon" -> {
                     try {
                         val pn = context.packageName
+                        if (pn.endsWith(".debug")) {
+                            result.success(true)
+                            return@setMethodCallHandler
+                        }
                         val icon = call.argument<String?>("icon")
                         val icons = call.argument<String>("icons")!!.split(",")
 
@@ -86,9 +90,6 @@ class MainActivity : FlutterActivity() {
             }
         }
     }
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
