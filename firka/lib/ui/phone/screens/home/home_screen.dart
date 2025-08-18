@@ -125,8 +125,12 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Card(
               color: appStyle.colors.errorCard,
               shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+                Radius.circular(200)),
+          ),
               child: Padding(
-                padding: EdgeInsets.all(8),
+                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   // Use min to prevent filling the width
