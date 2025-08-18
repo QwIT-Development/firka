@@ -103,7 +103,7 @@ extension DateExtension on DateTime {
       return Cycle.day;
     }
     if (isAfter(midnight.add(Duration(hours: 5, minutes: 30))) &&
-        isBefore(midnight.add(Duration(hours: 20)))) {
+        isBefore(midnight.add(Duration(hours: 18)))) {
       return Cycle.afternoon;
     }
 
