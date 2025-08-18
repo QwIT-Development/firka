@@ -4,6 +4,7 @@ import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../helpers/firka_bundle.dart';
 import '../../screens/debug/debug_screen.dart';
 
 void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
@@ -44,7 +45,9 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => DebugScreen(data)))
+                                builder: (context) => DefaultAssetBundle(
+                                    bundle: FirkaBundle(),
+                                    child: DebugScreen(data))))
                       },
                       child: FirkaCard(
                         left: [Text('Debug screen')],
@@ -57,8 +60,10 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                    SettingsScreen(data, data.settings.items)));
+                                builder: (context) => DefaultAssetBundle(
+                                    bundle: FirkaBundle(),
+                                    child: SettingsScreen(
+                                        data, data.settings.items))));
                       },
                       child: FirkaCard(
                         left: [Text('Settings')],

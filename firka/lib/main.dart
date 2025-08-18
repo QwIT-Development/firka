@@ -10,6 +10,7 @@ import 'package:firka/helpers/db/models/timetable_cache_model.dart';
 import 'package:firka/helpers/db/models/token_model.dart';
 import 'package:firka/helpers/db/widget.dart';
 import 'package:firka/helpers/extensions.dart';
+import 'package:firka/helpers/firka_bundle.dart';
 import 'package:firka/helpers/settings/setting.dart';
 import 'package:firka/l10n/app_localizations_hu.dart';
 import 'package:firka/ui/model/style.dart';
@@ -180,14 +181,16 @@ class InitializationScreen extends StatelessWidget {
             // Handle initialization error
             return MaterialApp(
               key: ValueKey('errorPage'),
-              home: Scaffold(
-                body: Center(
-                  child: Text(
-                    'Error initializing app: ${snapshot.error}',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
-              ),
+              home: DefaultAssetBundle(
+                  bundle: FirkaBundle(),
+                  child: Scaffold(
+                    body: Center(
+                      child: Text(
+                        'Error initializing app: ${snapshot.error}',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  )),
             );
           }
 
@@ -246,30 +249,39 @@ class InitializationScreen extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
-            home: screen,
+            home: DefaultAssetBundle(bundle: FirkaBundle(), child: screen),
             routes: {
-              '/login': (context) => LoginScreen(
-                    initData,
-                    key: ValueKey('loginScreen'),
+              '/login': (context) => DefaultAssetBundle(
+                    bundle: FirkaBundle(),
+                    child: LoginScreen(
+                      initData,
+                      key: ValueKey('loginScreen'),
+                    ),
                   ),
-              '/debug': (context) => DebugScreen(
-                    initData,
-                    key: ValueKey('debugScreen'),
+              '/debug': (context) => DefaultAssetBundle(
+                    bundle: FirkaBundle(),
+                    child: DebugScreen(
+                      initData,
+                      key: ValueKey('debugScreen'),
+                    ),
                   ),
             },
           );
         }
 
         return MaterialApp(
-          home: Scaffold(
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    color: const Color(0xFF7CA021),
-                  )
-                ],
+          home: DefaultAssetBundle(
+            bundle: FirkaBundle(),
+            child: Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      color: const Color(0xFF7CA021),
+                    )
+                  ],
+                ),
               ),
             ),
           ),

@@ -4,6 +4,7 @@ import java.security.MessageDigest
 import java.util.Properties
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import java.util.zip.ZipOutputStream.DEFLATED
@@ -206,11 +207,13 @@ fun transformAndSignApk(apkDir: File, name: String, debug: Boolean) {
 
 fun transformApk(input: File, output: File, compressionLevel: String = "Z") {
     val tempDir = File(project.buildDir, "tmp/apk-transform")
-    val cacheDir = File(project.buildDir, "apk-transform-cache")
+    val cacheDir = File(project.buildDir, "cache")
     val optipngCacheDir = File(cacheDir, "optipng")
+    val assetCompressionDir = File(cacheDir, "assets")
     tempDir.deleteRecursively()
     tempDir.mkdirs()
     if (!optipngCacheDir.exists()) optipngCacheDir.mkdirs()
+    if (!assetCompressionDir.exists()) assetCompressionDir.mkdirs()
 
     val brotli = findToolInPath("brotli")
         ?: throw Exception("Brotli not found in path")
@@ -264,30 +267,159 @@ fun transformApk(input: File, output: File, compressionLevel: String = "Z") {
     val zos = ZipOutputStream(output.outputStream())
 
     val coreCount = Runtime.getRuntime().availableProcessors()
+    val flutterResources = tempDir.walkTopDown().filter{f -> f.absolutePath.contains("flutter_assets")}
     val pngFiles = tempDir.walkTopDown().filter{f -> f.name.endsWith(".png")}
 
-    if (compressionLevel == "Z" && optipng != null) {
+    val assetIndex = mutableMapOf<String, String>()
+    val indexReadWriteLock = ReentrantReadWriteLock()
+
+    if (compressionLevel == "Z") {
+        if (optipng != null) {
+            val executor = Executors.newFixedThreadPool(coreCount)
+            val futures = mutableListOf<Future<*>>()
+
+            pngFiles.forEach { pngFile ->
+                val cacheFile = File(optipngCacheDir, pngFile.sha256())
+
+                if (cacheFile.exists()) {
+                    cacheFile.copyTo(pngFile, true)
+                } else {
+                    val future = executor.submit {
+                        exec {
+                            commandLine(
+                                optipng,
+                                "-zm", "9",
+                                "-zw", "32k",
+                                "-o9",
+                                pngFile.absolutePath
+                            )
+                        }
+
+                        pngFile.copyTo(cacheFile, true)
+                    }
+
+                    futures.add(future)
+                }
+            }
+
+            futures.forEach { it.get() }
+            executor.shutdown()
+        }
+
         val executor = Executors.newFixedThreadPool(coreCount)
         val futures = mutableListOf<Future<*>>()
 
-        pngFiles.forEach { pngFile ->
-            val cacheFile = File(optipngCacheDir, pngFile.sha256())
+        val blacklist = listOf(
+            // "AssetManifest.bin",
+            "AssetManifest.json",
+            "FontManifest.json",
+            "isolate_snapshot_data",
+            "kernel_blob.bin",
+            "NativeAssetsManifest.json",
+            "NOTICES.Z",
+            "vm_snapshot_data",
+            "fonts",
+            "shaders"
+        )
 
-            if (cacheFile.exists()) {
-                cacheFile.copyTo(pngFile, true)
+        flutterResources.forEach { f ->
+            val relName = f.absolutePath.substring(topDirL).replace("\\", "/")
+            if (f.isDirectory) return@forEach
+
+            val cacheFileRaw = File(assetCompressionDir, f.sha256()+".r")
+            val cacheFileGz = File(assetCompressionDir, f.sha256()+".gz")
+            val cacheFileBr = File(assetCompressionDir, f.sha256()+".br")
+
+            if (cacheFileRaw.exists() || cacheFileGz.exists() || cacheFileBr.exists()) {
+                if (cacheFileRaw.exists()) {
+                    cacheFileRaw.copyTo(f, true)
+
+                    indexReadWriteLock.writeLock().lock()
+                    assetIndex[relName] = "r"
+                    indexReadWriteLock.writeLock().unlock()
+                } else if (cacheFileGz.exists()) {
+                    cacheFileGz.copyTo(f, true)
+
+                    indexReadWriteLock.writeLock().lock()
+                    assetIndex[relName] = "g"
+                    indexReadWriteLock.writeLock().unlock()
+                } else {
+                    cacheFileBr.copyTo(f, true)
+
+                    indexReadWriteLock.writeLock().lock()
+                    assetIndex[relName] = "b"
+                    indexReadWriteLock.writeLock().unlock()
+                }
             } else {
                 val future = executor.submit {
-                    exec {
-                        commandLine(
-                            optipng,
-                            "-zm", "9",
-                            "-zw", "32k",
-                            "-o9",
-                            pngFile.absolutePath
-                        )
+                    val brTmp = File(f.absolutePath + ".br.tmp")
+                    val gzTmp = File(f.absolutePath + ".gz.tmp")
+
+                    var blacklisted = false
+                    for (f in blacklist) {
+                        if (relName.contains(f)) {
+                            blacklisted = true
+
+                            break
+                        }
                     }
 
-                    pngFile.copyTo(cacheFile, true)
+                    if (!blacklisted) {
+                        println("$relName: Testing with brotli")
+                        exec {
+                            commandLine(
+                                brotli,
+                                "-$compressionLevel",
+                                f.absolutePath,
+                                "-o", brTmp.absolutePath
+                            )
+                        }
+
+                        println("$relName: Testing with gzip")
+                        ant.invokeMethod(
+                            "gzip", mapOf(
+                                "src" to f.absolutePath,
+                                "destfile" to gzTmp.absolutePath,
+                            )
+                        )
+
+                        println("$brTmp: ${brTmp.length()}")
+                        println("$gzTmp: ${gzTmp.length()}")
+                        if (f.length() < gzTmp.length() && f.length() < brTmp.length()) {
+                            println("$relName: Raw file wins")
+
+                            f.copyTo(cacheFileRaw, true)
+
+                            indexReadWriteLock.writeLock().lock()
+                            assetIndex[relName] = "r"
+                            indexReadWriteLock.writeLock().unlock()
+                        } else {
+                            if (brTmp.length() < gzTmp.length()) {
+                                println("$relName: Brotli wins")
+
+                                f.delete()
+                                brTmp.copyTo(f, true)
+                                brTmp.copyTo(cacheFileBr, true)
+
+                                indexReadWriteLock.writeLock().lock()
+                                assetIndex[relName] = "b"
+                                indexReadWriteLock.writeLock().unlock()
+                            } else {
+                                println("$relName: Gzip wins")
+
+                                f.delete()
+                                gzTmp.copyTo(f, true)
+                                gzTmp.copyTo(cacheFileGz, true)
+
+                                indexReadWriteLock.writeLock().lock()
+                                assetIndex[relName] = "g"
+                                indexReadWriteLock.writeLock().unlock()
+                            }
+                        }
+
+                        brTmp.delete()
+                        gzTmp.delete()
+                    }
                 }
 
                 futures.add(future)
@@ -304,6 +436,12 @@ fun transformApk(input: File, output: File, compressionLevel: String = "Z") {
         var relName = f.absolutePath.substring(topDirL).replace("\\", "/")
         if (f.isDirectory && !relName.endsWith("/")) relName += "/"
 
+        if (compressionLevel == "Z") {
+            if (relName == "assets/flutter_assets/assets/firka.i") return@forEach
+        }
+
+        println(relName)
+
         val compress = !relName.endsWith(".so") && !relName.endsWith(".arsc")
         zos.setMethod(if (compress) { DEFLATED } else { STORED })
         val entry = ZipEntry(relName)
@@ -317,13 +455,34 @@ fun transformApk(input: File, output: File, compressionLevel: String = "Z") {
         }
         zos.closeEntry()
     }
-    zos.close()
+    if (compressionLevel == "Z") {
+        zos.setMethod(DEFLATED)
+        zos.putNextEntry(ZipEntry("assets/flutter_assets/assets/firka.i"))
 
-    ant.invokeMethod("zip", mapOf(
-        "destfile" to output.absolutePath,
-        "basedir" to tempDir.absolutePath,
-        "level" to 0
-    ))
+        val indexUncompressed = File(tempDir, "index.json")
+        indexReadWriteLock.readLock().lock()
+        val json = groovy.json.JsonBuilder(assetIndex)
+        indexReadWriteLock.readLock().unlock()
+        indexUncompressed.writeText(json.toString())
+
+        val indexCompressed = File(tempDir, "index.json.br")
+
+        exec {
+            commandLine(
+                brotli,
+                "-$compressionLevel",
+                indexUncompressed.absolutePath,
+                "-o", indexCompressed.absolutePath
+            )
+        }
+
+        zos.write(indexCompressed.readBytes())
+        indexUncompressed.delete()
+        indexCompressed.delete()
+
+        zos.closeEntry()
+    }
+    zos.close()
 
     tempDir.deleteRecursively()
     println("APK transformed successfully")

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../helpers/debug_helper.dart';
+import '../../../../helpers/firka_bundle.dart';
 import '../../../widget/firka_icon.dart';
 
 class DebugScreen extends StatefulWidget {
@@ -217,7 +218,9 @@ class _DebugScreen extends State<DebugScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => LoginScreen(widget.data)));
+                          builder: (context) => DefaultAssetBundle(
+                              bundle: FirkaBundle(),
+                              child: LoginScreen(widget.data))));
                 },
                 child: const Text('wipe users'),
               ),
