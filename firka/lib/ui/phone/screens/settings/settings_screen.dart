@@ -297,19 +297,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ),
                         )
-                      : Container(
-                          decoration: BoxDecoration(
-                            color: appStyle.colors.accent,
-                            borderRadius: BorderRadius.all(Radius.circular(16)),
-                          ),
-                          child: ClipRRect(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(16.0)),
-                            child: Image.asset(
-                              "assets/images/icons/$icon.png",
-                              width: 54,
-                              height: 54,
-                            ),
+                      : ClipRRect(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(16.0)),
+                          child: Image.asset(
+                            "assets/images/icons/$icon.png",
+                            width: 54,
+                            height: 54,
                           ),
                         ),
                   onTap: () {
