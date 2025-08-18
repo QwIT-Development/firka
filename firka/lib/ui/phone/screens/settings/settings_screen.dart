@@ -9,6 +9,7 @@ import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../helpers/firka_bundle.dart';
 import '../../../../helpers/settings/setting.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -52,8 +53,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ));
   }
 
-  List<Widget> createWidgetTree(Iterable<SettingsItem> items,
-      SettingsStore settings) {
+  List<Widget> createWidgetTree(
+      Iterable<SettingsItem> items, SettingsStore settings) {
     var widgets = List<Widget>.empty(growable: true);
 
     for (var item in items) {
@@ -83,7 +84,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         widgets.add(Text(
           item.title,
           style:
-          appStyle.fonts.H_14px.apply(color: appStyle.colors.textPrimary),
+              appStyle.fonts.H_14px.apply(color: appStyle.colors.textPrimary),
         ));
 
         continue;
@@ -109,8 +110,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) =>
-                        SettingsScreen(widget.data, item.children)));
+                    builder: (context) => DefaultAssetBundle(
+                        bundle: FirkaBundle(),
+                        child: SettingsScreen(widget.data, item.children))));
           },
           child: FirkaCard(left: cardWidgets),
         ));
@@ -188,9 +190,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Checkbox(
                   value: true,
                   fillColor: WidgetStateProperty.resolveWith<Color>(
-                          (Set<WidgetState> states) {
-                        return appStyle.colors.secondary;
-                      }),
+                      (Set<WidgetState> states) {
+                    return appStyle.colors.secondary;
+                  }),
                   onChanged: (_) async {
                     setState(() {
                       item.activeIndex = i;
@@ -235,10 +237,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 fit: BoxFit.cover),
             borderRadius: BorderRadius.all(Radius.circular(16)),
           ),
-          width: MediaQuery
-              .of(context)
-              .size
-              .width,
+          width: MediaQuery.of(context).size.width,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Column(
@@ -247,7 +246,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     ClipRRect(
                       borderRadius:
-                      const BorderRadius.all(Radius.circular(16.0)),
+                          const BorderRadius.all(Radius.circular(16.0)),
                       child: Image.asset(
                         "assets/images/icons/$activeIcon.png",
                         width: 74,
@@ -281,38 +280,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 GestureDetector(
                   child: active
                       ? Container(
-                    decoration: BoxDecoration(
-                      color: appStyle.colors.accent,
-                      borderRadius: BorderRadius.all(Radius.circular(16)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: ClipRRect(
-                        borderRadius:
-                        const BorderRadius.all(Radius.circular(12.0)),
-                        child: Image.asset(
-                          "assets/images/icons/$icon.png",
-                          width: 48,
-                          height: 48,
-                        ),
-                      ),
-                    ),
-                  )
+                          decoration: BoxDecoration(
+                            color: appStyle.colors.accent,
+                            borderRadius: BorderRadius.all(Radius.circular(16)),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: ClipRRect(
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(12.0)),
+                              child: Image.asset(
+                                "assets/images/icons/$icon.png",
+                                width: 48,
+                                height: 48,
+                              ),
+                            ),
+                          ),
+                        )
                       : Container(
-                    decoration: BoxDecoration(
-                      color: appStyle.colors.accent,
-                      borderRadius: BorderRadius.all(Radius.circular(16)),
-                    ),
-                    child: ClipRRect(
-                      borderRadius:
-                      const BorderRadius.all(Radius.circular(16.0)),
-                      child: Image.asset(
-                        "assets/images/icons/$icon.png",
-                        width: 54,
-                        height: 54,
-                      ),
-                    ),
-                  ),
+                          decoration: BoxDecoration(
+                            color: appStyle.colors.accent,
+                            borderRadius: BorderRadius.all(Radius.circular(16)),
+                          ),
+                          child: ClipRRect(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(16.0)),
+                            child: Image.asset(
+                              "assets/images/icons/$icon.png",
+                              width: 54,
+                              height: 54,
+                            ),
+                          ),
+                        ),
                   onTap: () {
                     if (settingAppIcon) return;
 
@@ -333,7 +332,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           pWidgets.add(Text(
             group,
             style:
-            appStyle.fonts.H_14px.apply(color: appStyle.colors.textPrimary),
+                appStyle.fonts.H_14px.apply(color: appStyle.colors.textPrimary),
           ));
           pWidgets.add(SizedBox(height: 12));
           pWidgets.add(SizedBox(
@@ -347,15 +346,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         }
 
         widgets.add(SizedBox(
-          height: MediaQuery
-              .of(context)
-              .size
-              .height / 1.7,
+          height: MediaQuery.of(context).size.height / 1.7,
           child: SingleChildScrollView(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: pWidgets,
-              )),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: pWidgets,
+          )),
         ));
 
         widgets.add(Row(
@@ -421,10 +417,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       backgroundColor: appStyle.colors.background,
       body: SafeArea(
         child: SizedBox(
-          height: MediaQuery
-              .of(context)
-              .size
-              .height,
+          height: MediaQuery.of(context).size.height,
           child: Stack(
             children: [
               Padding(
@@ -452,15 +445,11 @@ void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
     backgroundColor: Colors.transparent,
     barrierColor: appStyle.colors.a15p,
     constraints: BoxConstraints(
-      maxHeight: MediaQuery
-          .of(context)
-          .size
-          .height * 0.13,
+      maxHeight: MediaQuery.of(context).size.height * 0.13,
     ),
     builder: (BuildContext context) {
       return StatefulBuilder(
-          builder: (BuildContext context, setState) =>
-              Stack(
+          builder: (BuildContext context, setState) => Stack(
                 children: [
                   Positioned.fill(
                     child: GestureDetector(
@@ -475,7 +464,7 @@ void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
                       decoration: BoxDecoration(
                         color: appStyle.colors.card,
                         borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(16)),
+                            BorderRadius.vertical(top: Radius.circular(16)),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.only(
@@ -484,9 +473,9 @@ void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
                           children: [
                             Center(
                                 child: Text(
-                                  setting.title,
-                                  style: appStyle.fonts.B_14R,
-                                )),
+                              setting.title,
+                              style: appStyle.fonts.B_14R,
+                            )),
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                   vertical: 0, horizontal: 40),

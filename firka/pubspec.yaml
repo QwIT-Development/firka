@@ -61,6 +61,7 @@ dependencies:
   fmb_dart:
     path: vendor/fmb_dart
   home_widget: ^0.8.0
+  brotli: ^0.6.0
 
 dev_dependencies:
   flutter_test:
@@ -90,6 +91,7 @@ flutter:
     - assets/images/icons/
     - assets/images/background.png
     - assets/majesticons/
+    - assets/firka.i
 
   fonts:
     - family: Montserrat
