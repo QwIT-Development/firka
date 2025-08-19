@@ -151,7 +151,22 @@ afterEvaluate {
     tasks.findByName("bundleRelease")?.finalizedBy("transformAndResignReleaseBundle")
 }
 
-fun transformApks(debug: Boolean) {
+fun transformApks(debug: Boolean, i : Int = 0) {
+    try {
+        _transformApks(debug)
+    } catch (e: Exception) {
+        if (i < 5) {
+            e.printStackTrace()
+
+            println("Retrying: ${i + 1}")
+            transformApks(debug, i + 1)
+        } else {
+            throw e
+        }
+    }
+}
+
+fun _transformApks(debug: Boolean) {
     println("Starting APK transformation process...")
 
     val buildDir = project.buildDir
