@@ -120,7 +120,10 @@ tasks.register("transformAndResignDebugApk") {
     dependsOn("assembleDebug")
 
     doLast {
-        transformApks(true)
+        if (System.getenv("TRANSFORM_APK") != null
+            && System.getenv("TRANSFORM_APK") == "true") {
+            transformApks(true)
+        }
     }
 }
 
@@ -131,7 +134,10 @@ tasks.register("transformAndResignReleaseApk") {
     dependsOn("assembleRelease")
 
     doLast {
-        transformApks(false)
+        if (System.getenv("TRANSFORM_APK") != null
+            && System.getenv("TRANSFORM_APK") == "true") {
+            transformApks(false)
+        }
     }
 }
 
@@ -142,7 +148,10 @@ tasks.register("transformAndResignReleaseBundle") {
     dependsOn("bundleRelease")
 
     doLast {
-        transformAppBundle()
+        if (System.getenv("TRANSFORM_AAB") != null
+            && System.getenv("TRANSFORM_AAB") == "true") {
+            transformAppBundle()
+        }
     }
 }
 

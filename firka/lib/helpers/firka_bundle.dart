@@ -7,7 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 class FirkaBundle extends CachingAssetBundle {
-  final bool _compressedBundle = !kDebugMode && Platform.isAndroid;
+  // final bool _compressedBundle = !kDebugMode && Platform.isAndroid;
+  final bool _compressedBundle = false;
 
   Map<String, dynamic>? index;
 
