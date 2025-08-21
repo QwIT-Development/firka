@@ -33,5 +33,5 @@ if [ "$1" = "main" ]; then
     exit 1
   fi
 else
-  flutter build apk --debug --target-platform android-arm,android-arm64,android-x64
+  TRANSFORM_APK=true flutter build apk --debug --target-platform android-arm,android-arm64,android-x64
 fi
