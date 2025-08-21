@@ -6,6 +6,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 import java.util.zip.ZipOutputStream.DEFLATED
 import java.util.zip.ZipOutputStream.STORED
@@ -506,6 +507,7 @@ fun transformApk(input: File, output: File, compressionLevel: String = "Z") {
 fun transformAppBundle() {
     val buildDir = project.buildDir
     val bundle = File(buildDir, "outputs/bundle/release/app-release.aab")
+    val bundleTmp = File(buildDir, "outputs/bundle/release/tmp.zip")
 
     val apks = getApks(false)
     val apkCount = apks.count { it.name.startsWith("app-") && it.name.endsWith("-release.apk") }
@@ -522,12 +524,121 @@ fun transformAppBundle() {
     aabTempDir.deleteRecursively()
     aabTempDir.mkdirs()
 
+    val apksUnzipped = File(project.buildDir, "tmp/apks-unzipped")
+    apksUnzipped.deleteRecursively()
+
+    val arm32TempDir = File(apksUnzipped, "armeabi-v7a")
+    arm32TempDir.mkdirs()
+    val arm64TempDir = File(apksUnzipped, "arm64-v8a")
+    arm64TempDir.mkdirs()
+    val x86TempDir = File(apksUnzipped, "x86_64")
+    x86TempDir.mkdirs()
+
     copy {
         from(zipTree(bundle))
         into(aabTempDir)
     }
+    copy {
+        from(zipTree(apks.first { it.name.contains("armeabi-v7a") }))
+        into(arm32TempDir)
+    }
+    copy {
+        from(zipTree(apks.first { it.name.contains("arm64-v8a") }))
+        into(arm64TempDir)
+    }
+    copy {
+        from(zipTree(apks.first { it.name.contains("x86_64") }))
+        into(x86TempDir)
+    }
 
-    // TODO: Finish
+    val libs = File(aabTempDir, "base/lib").listFiles()!!
+
+    for (dstLibs in libs) {
+        println("Copying lib: ${dstLibs.name}")
+        val srcDir = File(apksUnzipped, dstLibs.name)
+        if (!srcDir.exists()) {
+            continue
+        }
+        val srcLibs = File(srcDir, "lib/${dstLibs.name}/")
+
+        dstLibs.listFiles()!!.forEach { it.delete() }
+        srcLibs.listFiles()!!.forEach { it.copyTo(File(dstLibs, it.name)) }
+    }
+
+    val zos = ZipOutputStream(bundleTmp.outputStream())
+    val bundleZip = ZipFile(bundle)
+    val bundleEntries = bundleZip.entries()
+
+    val brotli = findToolInPath("brotli")
+        ?: throw Exception("Brotli not found in path")
+    val optipng = findToolInPath("optipng")
+        ?: throw Exception("Optipng not found in path")
+
+    val indexReadWriteLock = ReentrantReadWriteLock()
+    val assetIndex = mutableMapOf<String, String>()
+
+    while (bundleEntries.hasMoreElements()) {
+        val entry = bundleEntries.nextElement()
+
+        /*
+if (entry.name == "base/assets/flutter_assets/assets/firka.i") {
+    println("Patching: ${entry.name}")
+    zos.putNextEntry(ZipEntry("assets/flutter_assets/assets/firka.i"))
+
+    val indexUncompressed = File(aabTempDir, "index.json")
+    indexReadWriteLock.readLock().lock()
+    val json = groovy.json.JsonBuilder(assetIndex)
+    indexReadWriteLock.readLock().unlock()
+    indexUncompressed.writeText(json.toString())
+
+    val indexCompressed = File(aabTempDir, "index.json.br")
+
+    exec {
+        commandLine(
+            brotli,
+            "-Z",
+            indexUncompressed.absolutePath,
+            "-o", indexCompressed.absolutePath
+        )
+    }
+
+    zos.write(indexCompressed.readBytes())
+    indexUncompressed.delete()
+    indexCompressed.delete()
+
+    zos.closeEntry()
+    continue
+}
+if (entry.name.startsWith("base/lib")) {
+    println("Patching: ${entry.name}")
+    zos.putNextEntry(ZipEntry(entry.name))
+
+
+
+    zos.closeEntry()
+    continue
+}
+*/
+
+        println("Adding: ${entry.name}")
+
+        zos.putNextEntry(ZipEntry(entry.name))
+
+        if (!entry.isDirectory) {
+            val data = bundleZip.getInputStream(entry).readAllBytes()
+            zos.write(data)
+        }
+        zos.closeEntry()
+    }
+    bundleZip.close()
+    zos.close()
+
+    bundle.delete()
+    signBundle(bundleTmp, bundle)
+    bundleTmp.delete()
+
+    aabTempDir.deleteRecursively()
+    println("AAB transformed successfully")
 
 }
 
@@ -643,9 +754,9 @@ fun signWithDebugKey(input: File, output: File) {
     val debugKeyPassword = "android"
 
     val zipAlign: String = findToolInSdkPath("zipalign")
-        ?: throw Exception("Could not find zipalign either in ANDROID_SDK")
+        ?: throw Exception("Could not find zipalign in ANDROID_SDK")
     val apksigner: String = findToolInSdkPath("apksigner")
-        ?: throw Exception("Could not find zipalign either in ANDROID_SDK")
+        ?: throw Exception("Could not find zipalign in ANDROID_SDK")
 
     exec {
         commandLine(
@@ -711,4 +822,53 @@ fun signWithReleaseKey(input: File, output: File) {
     }
 
     println("APK signed and aligned successfully")
+}
+
+fun signBundle(input: File, output: File) {
+    val secretsDir = File(projectDir.absolutePath, "../../../secrets/")
+    val propsFile = File(secretsDir, "keystore.properties")
+
+    if (!propsFile.exists()) {
+        throw Exception("Release keystore not found!")
+    }
+
+    val props = loadProperties(propsFile)
+
+    val releaseKeystore = File(secretsDir, props["storeFile"].toString())
+    val releaseKeystorePassword = props["storePassword"] as String
+    val releaseKeyAlias = props["keyAlias"] as String
+    val releaseKeyPassword = props["keyPassword"] as String
+
+    // val zipAlign: String = findToolInSdkPath("zipalign")
+    //     ?: throw Exception("Could not find zipalign in ANDROID_SDK")
+    val jarsigner: String = findToolInPath("jarsigner")
+        ?: throw Exception("Could not find jarsigner in PATH")
+
+    /*
+    exec {
+        commandLine(
+            zipAlign,
+            "-v", "4",
+            input.absolutePath,
+            output.absolutePath
+        )
+    }
+     */
+    input.copyTo(output, true)
+
+    exec {
+        // -keystore $KEYSTORE -storetype $STORETYPE -storepass $STOREPASS -digestalg SHA1 -sigalg SHA256withRSA application.zip $KEYALIAS
+        commandLine(
+            jarsigner,
+            "-verbose",
+            "-sigalg", "SHA256withRSA",
+            "-digestalg", "SHA-256",
+            "-keystore", releaseKeystore,
+            "-storepass", releaseKeystorePassword,
+            output.absolutePath,
+            releaseKeyAlias
+        )
+    }
+
+    println("AAB signed and aligned successfully")
 }
