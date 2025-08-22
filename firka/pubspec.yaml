@@ -62,7 +62,6 @@ dependencies:
     path: vendor/fmb_dart
   home_widget: ^0.8.0
   brotli: ^0.6.0
-  restart_app: ^1.3.2
 
 dev_dependencies:
   flutter_test:

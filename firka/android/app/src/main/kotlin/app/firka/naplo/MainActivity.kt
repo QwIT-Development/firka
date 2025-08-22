@@ -4,9 +4,11 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import kotlin.system.exitProcess
 
 class MainActivity : FlutterActivity() {
 
@@ -43,6 +45,7 @@ class MainActivity : FlutterActivity() {
                         if (icon != null) {
                             for (ic in icons) {
                                 if (ic != icon) {
+                                    Log.d("firka", "Disabling activity: $pn.$ic")
                                     packageManager.setComponentEnabledSetting(
                                         ComponentName(pn, "$pn.$ic"),
                                         PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
@@ -51,12 +54,14 @@ class MainActivity : FlutterActivity() {
                                 }
                             }
 
+                            Log.d("firka", "Enabling acitvity: $pn.$icon")
                             packageManager.setComponentEnabledSetting(
                                 ComponentName(pn, "$pn.$icon"),
                                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                                 PackageManager.DONT_KILL_APP
                             )
 
+                            Log.d("firka" ,"Disabling activity: $pn.MainActivity")
                             packageManager.setComponentEnabledSetting(
                                 ComponentName(pn, "$pn.MainActivity"),
                                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
@@ -64,6 +69,7 @@ class MainActivity : FlutterActivity() {
                             )
                         } else {
                             for (ic in icons) {
+                                Log.d("firka", "Disabling activity: $pn.$ic")
                                 packageManager.setComponentEnabledSetting(
                                     ComponentName(pn, "$pn.$ic"),
                                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
@@ -71,6 +77,7 @@ class MainActivity : FlutterActivity() {
                                 )
                             }
 
+                            Log.d("firka", "Enabling acitvity: $pn.MainActivity")
                             packageManager.setComponentEnabledSetting(
                                 ComponentName(pn, "$pn.MainActivity"),
                                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
@@ -79,6 +86,8 @@ class MainActivity : FlutterActivity() {
                         }
 
                         forceIconUpdate()
+
+                        exitProcess(-1)
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }

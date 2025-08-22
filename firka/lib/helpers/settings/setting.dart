@@ -6,9 +6,14 @@ import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
-import 'package:restart_app/restart_app.dart';
+
+import '../../main.dart';
+import '../../ui/phone/screens/home/home_screen.dart';
+import '../firka_bundle.dart';
+// import 'package:restart_app/restart_app.dart';
 
 const bellRing = 1001;
 const rounding1 = 1002;
@@ -101,9 +106,22 @@ class SettingsStore {
                     ],
                     0,
                     always, () async {
-                  Restart.restartApp(
-                    notificationTitle: l10n.restart_title,
-                    notificationBody: l10n.restart_body,
+                  Navigator.of(navigatorKey.currentContext!)
+                      .popUntil((route) => false);
+
+                  initLang(initData);
+                  initData.settings = SettingsStore(initData.l10n);
+                  await initData.settings.load(initData.isar.appSettingsModels);
+
+                  Navigator.push(
+                    navigatorKey.currentContext!,
+                    MaterialPageRoute(
+                        builder: (context) => DefaultAssetBundle(
+                            bundle: FirkaBundle(),
+                            child: HomeScreen(
+                              initData,
+                              key: ValueKey('homeScreen'),
+                            ))),
                   );
                 })
               }),
@@ -534,7 +552,6 @@ class SettingsAppIconPicker implements SettingsItem {
     v.valueString = icon;
 
     await model.put(v);
-    await postUpdate();
   }
 }
 
