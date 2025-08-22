@@ -4,6 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/helpers/api/consts.dart';
 import 'package:firka/helpers/db/models/token_model.dart';
+import 'package:firka/helpers/firka_bundle.dart';
 import 'package:firka/main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../helpers/api/token_grant.dart';
+import '../../../../helpers/cache_memory_image_provider.dart';
 import '../../../model/style.dart';
 import '../home/home_screen.dart';
 
@@ -25,6 +27,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   late WebViewController _webViewController;
+
+  bool _preloadDone = false;
 
   @override
   void initState() {
@@ -87,6 +91,25 @@ class _LoginScreenState extends State<LoginScreen> {
       statusBarColor: Colors.transparent,
       systemNavigationBarColor: Color(0xFFFAFFF0),
     ));
+
+    () async {
+      final firkaBundle = FirkaBundle();
+
+      await precacheAssets(firkaBundle, [
+        "assets/images/carousel/slide1.png",
+        "assets/images/carousel/slide1_background.gif",
+        "assets/images/carousel/slide2.png",
+        "assets/images/carousel/slide2_background.gif",
+        "assets/images/carousel/slide3.png",
+        "assets/images/carousel/slide3_foreground.gif",
+        "assets/images/carousel/slide4.png",
+        "assets/images/carousel/slide4_background.gif"
+      ]);
+
+      setState(() {
+        _preloadDone = true;
+      });
+    }();
   }
 
   @override
@@ -96,6 +119,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_preloadDone) {
+      return MaterialApp(
+      home: SizedBox(),
+    );
+    }
+
     final paddingWidthHorizontal = MediaQuery.of(context).size.width -
         MediaQuery.of(context).size.width * 0.95;
     List<Map<String, Object>> slides = [
@@ -167,8 +196,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 30,
                         clipBehavior: Clip.antiAlias,
                         decoration: ShapeDecoration(
-                          image: const DecorationImage(
-                            image: AssetImage(
+                          image: DecorationImage(
+                            image: CacheMemoryImageProvider(
+                                DefaultAssetBundle.of(context),
                                 'assets/images/logos/colored_logo.png'),
                             fit: BoxFit.cover,
                           ),
@@ -240,8 +270,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                               scale: slides[index]['scale']
                                                   as double,
                                               child: Image(
-                                                image: AssetImage(slides[index]
-                                                    ['background']! as String),
+                                                image: CacheMemoryImageProvider(
+                                                    DefaultAssetBundle.of(
+                                                        context),
+                                                    slides[index]['background']!
+                                                        as String),
                                                 fit: BoxFit.contain,
                                                 width: double.infinity,
                                               )),
@@ -257,7 +290,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child: SizedBox(
                                     width: MediaQuery.of(context).size.width,
                                     child: Image(
-                                      image: AssetImage(
+                                      image: CacheMemoryImageProvider(
+                                          DefaultAssetBundle.of(context),
                                           slides[index]['picture']! as String),
                                       fit: BoxFit.cover,
                                       width: double.infinity,
@@ -285,8 +319,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                               scale: slides[index]['scale']
                                                   as double,
                                               child: Image(
-                                                image: AssetImage(slides[index]
-                                                    ['foreground']! as String),
+                                                image: CacheMemoryImageProvider(
+                                                    DefaultAssetBundle.of(
+                                                        context),
+                                                    slides[index]['foreground']!
+                                                        as String),
                                                 fit: BoxFit.cover,
                                                 width: MediaQuery.of(context)
                                                     .size
