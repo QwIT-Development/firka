@@ -54,11 +54,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   List<Widget> createWidgetTree(
-      Iterable<SettingsItem> items, SettingsStore settings) {
+      Iterable<SettingsItem> items, SettingsStore settings,
+      {bool forceRender = false}) {
     var widgets = List<Widget>.empty(growable: true);
 
     for (var item in items) {
-      if (!item.visibilityProvider()) continue;
+      if (!forceRender && !item.visibilityProvider()) continue;
       if (item is SettingsGroup) {
         widgets.addAll(createWidgetTree(item.children.values, settings));
 
@@ -271,6 +272,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         List<Widget> pWidgets = [];
 
         for (var group in item.iconGroups.keys) {
+          if (widget.data.settings
+              .group("settings")
+              .subGroup("customization")
+              .subGroup("icon_picker")
+              .boolean("child_protection")) {
+            if (group == widget.data.l10n.s_ci_icon_g5) {
+              continue;
+            }
+          } else {
+            if (group == widget.data.l10n.s_ci_icon_g6) {
+              continue;
+            }
+          }
           List<Widget> groupIcons = [];
           for (var icon in item.iconGroups[group]!) {
             var active = icon == activeIcon;
@@ -328,6 +342,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style:
                 appStyle.fonts.H_14px.apply(color: appStyle.colors.textPrimary),
           ));
+
+          if (group == widget.data.l10n.s_ci_icon_g5 ||
+              group == widget.data.l10n.s_ci_icon_g6) {
+            var settingsWidgets = createWidgetTree([
+              widget.data.settings
+                      .group("settings")
+                      .subGroup("customization")
+                      .subGroup("icon_picker")["child_protection"]
+                  as SettingsBoolean
+            ], settings, forceRender: true);
+
+            pWidgets.add(SizedBox(height: 12));
+            for (var w in settingsWidgets) {
+              pWidgets.add(w);
+            }
+          }
+
           pWidgets.add(SizedBox(height: 12));
           pWidgets.add(SizedBox(
             height: (groupIcons.length / 4).ceil() * 100,

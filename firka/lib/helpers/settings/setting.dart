@@ -19,6 +19,7 @@ const classAvgOnGraph = 1006;
 const leftHandedMode = 1007;
 const language = 1008;
 const appIcon = 1009;
+const child_protection = 1010;
 
 bool always() {
   return true;
@@ -131,6 +132,13 @@ class SettingsStore {
                       "settings_padding": SettingsPadding(0, 24, always),
                       "icon_preview": SettingsAppIconPreview(0, always),
                       "settings_padding2": SettingsPadding(0, 24, always),
+                      "child_protection": SettingsBoolean(
+                          child_protection,
+                          FirkaIconType.majesticons,
+                          Majesticon.shieldSolid,
+                          l10n.s_ci_child_protection,
+                          true,
+                          never),
                       "icon_picker": SettingsAppIconPicker(
                           0,
                           "original",
@@ -169,6 +177,16 @@ class SettingsStore {
                               "gay",
                               "lesb",
                               "bi"
+                            ],
+                            l10n.s_ci_icon_g6: [
+                              "lgbtq_f",
+                              "lgbtqp_f",
+                              "trans_f",
+                              "enby_f",
+                              "ace_f",
+                              "gay_f",
+                              "lesb_f",
+                              "bi_f"
                             ]
                           },
                           always),
