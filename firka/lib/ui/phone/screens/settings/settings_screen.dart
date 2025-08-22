@@ -254,7 +254,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     Text(
-                      appIcons[activeIcon]!,
+                      settings.appIcons[activeIcon]!,
                       style: appStyle.fonts.H_12px
                           .apply(color: appStyle.colors.card),
                     )
@@ -315,7 +315,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 Text(
-                  appIcons[icon]!,
+                  settings.appIcons[icon]!,
                   style: appStyle.fonts.B_12R,
                   textAlign: TextAlign.center,
                 ),
@@ -387,7 +387,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const channel = MethodChannel('firka.app/main');
                 await channel.invokeMethod('set_icon', {
                   "icon": activeIcon == "original" ? null : activeIcon,
-                  "icons": appIcons.keys.where((e) => e != "original").join(",")
+                  "icons": settings.appIcons.keys
+                      .where((e) => e != "original")
+                      .join(",")
                 });
               },
             )

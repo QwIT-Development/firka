@@ -86,7 +86,7 @@ Future<AppInitialization> initializeApp() async {
   var init = AppInitialization(
     isar: isar,
     tokenCount: tokenCount,
-    settings: SettingsStore(),
+    settings: SettingsStore(AppLocalizationsHu()),
     l10n: AppLocalizationsHu(),
   );
 
@@ -117,6 +117,9 @@ Future<AppInitialization> initializeApp() async {
       }
       break;
   }
+
+  init.settings = SettingsStore(init.l10n);
+  await init.settings.load(init.isar.appSettingsModels);
 
   resetOldTimeTableCache(isar);
   resetOldHomeworkCache(isar);
