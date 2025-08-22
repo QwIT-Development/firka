@@ -75,6 +75,35 @@ Future<Isar> initDB() async {
   return isarInit!;
 }
 
+void initLang(AppInitialization data) {
+  switch ((data.settings.group("settings").subGroup("application")["language"]
+          as SettingsItemsRadio)
+      .activeIndex) {
+    case 1: // hu
+      data.l10n = AppLocalizationsHu();
+      break;
+    case 2: // en
+      data.l10n = AppLocalizationsEn();
+      break;
+    case 3: // de
+      data.l10n = AppLocalizationsDe();
+      break;
+    default: // auto
+      switch (ui.window.locale.languageCode) {
+        case 'hu':
+          data.l10n = AppLocalizationsHu();
+          break;
+        case 'en':
+          data.l10n = AppLocalizationsEn();
+          break;
+        case 'de':
+          data.l10n = AppLocalizationsDe();
+          break;
+      }
+      break;
+  }
+}
+
 Future<AppInitialization> initializeApp() async {
   final isar = await initDB();
   final tokenCount = await isar.tokenModels.count();
@@ -91,33 +120,7 @@ Future<AppInitialization> initializeApp() async {
   );
 
   await init.settings.load(init.isar.appSettingsModels);
-  switch ((init.settings.group("settings").subGroup("application")["language"]
-          as SettingsItemsRadio)
-      .activeIndex) {
-    case 1: // hu
-      init.l10n = AppLocalizationsHu();
-      break;
-    case 2: // en
-      init.l10n = AppLocalizationsEn();
-      break;
-    case 3: // de
-      init.l10n = AppLocalizationsDe();
-      break;
-    default: // auto
-      switch (ui.window.locale.languageCode) {
-        case 'hu':
-          init.l10n = AppLocalizationsHu();
-          break;
-        case 'en':
-          init.l10n = AppLocalizationsEn();
-          break;
-        case 'de':
-          init.l10n = AppLocalizationsDe();
-          break;
-      }
-      break;
-  }
-
+  initLang(init);
   init.settings = SettingsStore(init.l10n);
   await init.settings.load(init.isar.appSettingsModels);
 
