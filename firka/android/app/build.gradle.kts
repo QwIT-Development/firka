@@ -62,12 +62,6 @@ android {
         val props = loadProperties(propsFile)
         val store = File(secretsDir, props["storeFile"].toString())
 
-        println(
-            "Signing with:\n" +
-                    "\t- store: ${store.name}\n" +
-                    "\t- key: ${props["keyAlias"]}"
-        )
-
         signingConfigs {
             create("release") {
                 storeFile = store
@@ -88,16 +82,6 @@ android {
 
             if (config != null) {
                 signingConfig = config
-            } else {
-                // This isn't an error, however by default flutter will hide warnings and etc.
-                // so the only way to make this show up in flutter build is to
-                // 1. make it an error
-                // 2. use println
-                // however, println doesn't bring enough attention to the warning
-                // so I decided to use logger.error
-                logger.error("[WARNING] No keystore specified! Using debug keys to sign the apk.")
-                logger.error("[WARNING] DO NOT STORE ANY SENSITIVE DATA INSIDE THE APP")
-                logger.error("[WARNING] An attacker could steal it, if you sideload their malicious app.")
             }
 
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -134,6 +118,7 @@ tasks.register("transformAndResignReleaseApk") {
     dependsOn("assembleRelease")
 
     doLast {
+        checkReleaseKey()
         if (System.getenv("TRANSFORM_APK") != null
             && System.getenv("TRANSFORM_APK") == "true") {
             transformApks(false)
@@ -159,6 +144,24 @@ afterEvaluate {
     tasks.findByName("assembleDebug")?.finalizedBy("transformAndResignDebugApk")
     tasks.findByName("assembleRelease")?.finalizedBy("transformAndResignReleaseApk")
     tasks.findByName("bundleRelease")?.finalizedBy("transformAndResignReleaseBundle")
+}
+
+fun checkReleaseKey() {
+    val secretsDir = File(projectDir.absolutePath, "../../../secrets/")
+    val propsFile = File(secretsDir, "keystore.properties")
+
+    if (propsFile.exists()) {
+        val props = loadProperties(propsFile)
+        val store = File(secretsDir, props["storeFile"].toString())
+
+        println(
+            "Signing with:\n" +
+                    "\t- store: ${store.name}\n" +
+                    "\t- key: ${props["keyAlias"]}"
+        )
+    } else {
+        throw Exception("Release keystore not found!")
+    }
 }
 
 fun transformApks(debug: Boolean, i : Int = 0) {
