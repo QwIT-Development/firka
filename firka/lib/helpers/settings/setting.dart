@@ -3,10 +3,12 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:firka/helpers/db/models/app_settings_model.dart';
+import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
+import 'package:restart_app/restart_app.dart';
 
 const bellRing = 1001;
 const rounding1 = 1002;
@@ -17,46 +19,6 @@ const classAvgOnGraph = 1006;
 const leftHandedMode = 1007;
 const language = 1008;
 const appIcon = 1009;
-
-const appIcons = {
-  "ace": "Aszexuáls",
-  "ace_f": "Aszexuáls",
-  "bi": "Biszexuáls",
-  "bi_f": "Biszexuáls",
-  "cactus": "Kaktuszliget",
-  "cc": "Kreatív Felhő",
-  "enby": "Nembináris",
-  "enby_f": "Nembináris",
-  "fidesz": "Narancs",
-  "filc": "Nosztalgia",
-  "filco": "Filc . O",
-  "galaxy": "Galaxis",
-  "gay": "Meleg",
-  "gay_f": "Meleg",
-  "kreta": "eFIRKA",
-  "lesb": "Leszbikus",
-  "lesb_f": "Leszbikus",
-  "lgbtq": "LMGBTQ+",
-  "lgbtq_f": "LMGBTQ+",
-  "lgbtqp": "Progresszió",
-  "lgbtqp_f": "Progresszió",
-  "mkkp": "Ingyen jegyek",
-  "modern": "Modern",
-  "o1g": "O1G",
-  "original": "Az eredeti",
-  "paper": "Papír",
-  "pixel": "Pixel",
-  "pixelized": "Pixelizált",
-  "refilc": "reFilc",
-  "refulc": "reful’c",
-  "repont": "Ötven forint",
-  "trans": "Transz",
-  "trans_f": "Transz",
-  "void_icon": "Semmi",
-  "xmas1": "Rosszak listája",
-  "xmas2": "Ajándék",
-  "xmas3": "reKarácsony"
-};
 
 bool always() {
   return true;
@@ -77,79 +39,95 @@ bool isDebug() {
 class SettingsStore {
   LinkedHashMap<String, SettingsItem> items = LinkedHashMap.of({});
 
-  SettingsStore() {
+  Map<String, String> appIcons = {};
+
+  SettingsStore(AppLocalizations l10n) {
     items["settings"] = SettingsGroup(
         0,
         LinkedHashMap.of({
-          "settings_header": SettingsHeader(0, "Beállítások", always),
+          "settings_header": SettingsHeader(0, l10n.s_settings, always),
           "settings_padding": SettingsPadding(0, 20, always),
           "application": SettingsSubGroup(
               0,
               FirkaIconType.majesticons,
               Majesticon.settingsCogSolid,
-              "Alkalmazás",
+              l10n.s_a,
               LinkedHashMap.of({
                 // TODO: Make a back arrow widget
-                "settings_header": SettingsHeader(0, "Általános", always),
+                "settings_header": SettingsHeader(0, l10n.s_ag, always),
                 "settings_padding": SettingsPadding(0, 23, always),
 
                 "bell_delay": SettingsDouble(bellRing, null, null,
-                    "Csengő eltolódása", 0, 0, 120, 0, always),
+                    l10n.s_ag_bell_delay, 0, 0, 120, 0, always),
                 "rounding": SettingsSubGroup(
                     0,
                     null,
                     null,
-                    "Alapértelmezett kerekítés",
+                    l10n.s_ag_rounding,
                     LinkedHashMap.of({
-                      "1": SettingsDouble(rounding1, null, null, "1 → 2", 0.1,
-                          0.5, 0.99, 2, always),
-                      "2": SettingsDouble(rounding2, null, null, "2 → 3", 0.1,
-                          0.5, 0.99, 2, always),
-                      "3": SettingsDouble(rounding3, null, null, "3 → 4", 0.1,
-                          0.5, 0.99, 2, always),
-                      "4": SettingsDouble(rounding4, null, null, "4 → 5", 0.1,
-                          0.5, 0.99, 2, always),
+                      "1": SettingsDouble(rounding1, null, null, l10n.s_ag_r1,
+                          0.1, 0.5, 0.99, 2, always),
+                      "2": SettingsDouble(rounding2, null, null, l10n.s_ag_r2,
+                          0.1, 0.5, 0.99, 2, always),
+                      "3": SettingsDouble(rounding3, null, null, l10n.s_ag_r3,
+                          0.1, 0.5, 0.99, 2, always),
+                      "4": SettingsDouble(rounding4, null, null, l10n.s_ag_r4,
+                          0.1, 0.5, 0.99, 2, always),
                     }),
                     always),
                 "class_avg_on_graph": SettingsBoolean(classAvgOnGraph, null,
-                    null, "Osztályátlag a grafikonon", true, never),
+                    null, l10n.s_ag_class_avg_on_graph, true, never),
                 "navbar": SettingsSubGroup(
                     0,
                     null, // TODO: icon
                     null,
-                    "Navigációs sáv",
+                    l10n.s_ag_navbar,
                     LinkedHashMap.of({}),
                     never),
-                "left_handed_mode": SettingsBoolean(
-                    leftHandedMode, null, null, "Balkezes mód", false, never),
-                "language_header": SettingsHeaderSmall(0, "Nyelv", always),
-                "language": SettingsItemsRadio(language, null, null,
-                    ["Autómatikus", "Magyar", "Angol", "Német"], 0, always)
+                "left_handed_mode": SettingsBoolean(leftHandedMode, null, null,
+                    l10n.s_ag_left_handed_mode, false, never),
+                "language_header":
+                    SettingsHeaderSmall(0, l10n.s_ag_language_header, always),
+                "language": SettingsItemsRadio(
+                    language,
+                    null,
+                    null,
+                    [
+                      l10n.s_ag_language_auto,
+                      l10n.s_ag_language_hu,
+                      l10n.s_ag_language_en,
+                      l10n.s_ag_language_de
+                    ],
+                    0,
+                    always, () async {
+                  Restart.restartApp(
+                    notificationTitle: l10n.restart_title,
+                    notificationBody: l10n.restart_body,
+                  );
+                })
               }),
               always),
           "customization": SettingsSubGroup(
               0,
               FirkaIconType.majesticons,
               Majesticon.flower2Solid,
-              "Személyre szabás",
+              l10n.s_c,
               LinkedHashMap.of({
-                "icon_header": SettingsHeaderSmall(0, "App ikonok", always),
+                "icon_header":
+                    SettingsHeaderSmall(0, l10n.s_c_icon_header, always),
                 "icon_preview": SettingsAppIconPreview(0, always),
                 "icon_picker": SettingsSubGroup(
                     0,
                     null,
                     null,
-                    "Ikon cseréje",
+                    l10n.s_c_replace_icon,
                     LinkedHashMap.of({
-                      "icon_header": SettingsHeader(0, "App ikon", always),
-                      "warning_header": SettingsHeader(
-                          0,
-                          "[!] Debug nem fog működni az ikon megváltoztatása",
-                          isDebug),
-                      "icon_subtitle": SettingsSubtitle(
-                          0,
-                          "Válassz egy csodaszép app ikont, ha már unod a zöldet.",
-                          always),
+                      "icon_header":
+                          SettingsHeader(0, l10n.s_ci_icon_header, always),
+                      "warning_header":
+                          SettingsHeader(0, l10n.s_ci_warning_header, isDebug),
+                      "icon_subtitle":
+                          SettingsSubtitle(0, l10n.s_ci_icon_subtitle, always),
                       "settings_padding": SettingsPadding(0, 24, always),
                       "icon_preview": SettingsAppIconPreview(0, always),
                       "settings_padding2": SettingsPadding(0, 24, always),
@@ -157,7 +135,7 @@ class SettingsStore {
                           0,
                           "original",
                           {
-                            "Alap ikon": [
+                            l10n.s_ci_icon_g1: [
                               "original",
                               "refilc",
                               "filc",
@@ -166,8 +144,13 @@ class SettingsStore {
                               "refulc",
                               "pixel"
                             ],
-                            "Újragondolt": ["modern", "paper", "filco", "o1g"],
-                            "reFerencia": [
+                            l10n.s_ci_icon_g2: [
+                              "modern",
+                              "paper",
+                              "filco",
+                              "o1g"
+                            ],
+                            l10n.s_ci_icon_g3: [
                               "kreta",
                               "cc",
                               "repont",
@@ -176,8 +159,8 @@ class SettingsStore {
                               "fidesz",
                               "mkkp"
                             ],
-                            "Közösség": ["xmas1", "xmas2", "xmas3"],
-                            "Pride": [
+                            l10n.s_ci_icon_g4: ["xmas1", "xmas2", "xmas3"],
+                            l10n.s_ci_icon_g5: [
                               "lgbtq",
                               "lgbtqp",
                               "trans",
@@ -207,7 +190,45 @@ class SettingsStore {
         }),
         always);
 
-    items;
+    appIcons = {
+      "ace": l10n.ic_ace,
+      "ace_f": l10n.ic_ace_f,
+      "bi": l10n.ic_bi,
+      "bi_f": l10n.ic_bi_f,
+      "cactus": l10n.ic_cactus,
+      "cc": l10n.ic_cc,
+      "enby": l10n.ic_enby,
+      "enby_f": l10n.ic_enby_f,
+      "fidesz": l10n.ic_fidesz,
+      "filc": l10n.ic_filc,
+      "filco": l10n.ic_filco,
+      "galaxy": l10n.ic_galaxy,
+      "gay": l10n.ic_gay,
+      "gay_f": l10n.ic_gay_f,
+      "kreta": l10n.ic_kreta,
+      "lesb": l10n.ic_lesb,
+      "lesb_f": l10n.ic_lesb_f,
+      "lgbtq": l10n.ic_lgbtq,
+      "lgbtq_f": l10n.ic_lgbtq_f,
+      "lgbtqp": l10n.ic_lgbtqp,
+      "lgbtqp_f": l10n.ic_lgbtqp_f,
+      "mkkp": l10n.ic_mkkp,
+      "modern": l10n.ic_modern,
+      "o1g": l10n.ic_o1g,
+      "original": l10n.ic_original,
+      "paper": l10n.ic_paper,
+      "pixel": l10n.ic_pixel,
+      "pixelized": l10n.ic_pixelized,
+      "refilc": l10n.ic_refilc,
+      "refulc": l10n.ic_refulc,
+      "repont": l10n.ic_repont,
+      "trans": l10n.ic_trans,
+      "trans_f": l10n.ic_trans_f,
+      "void_icon": l10n.ic_void_icon,
+      "xmas1": l10n.ic_xmas1,
+      "xmas2": l10n.ic_xmas2,
+      "xmas3": l10n.ic_xmas3
+    };
   }
 
   LinkedHashMap<String, SettingsItem> group(String key) {
@@ -274,6 +295,7 @@ class SettingsItem {
   FirkaIconType? iconType;
   Object? iconData;
   bool Function() visibilityProvider;
+  Future<void> Function() postUpdate = () async {};
 
   SettingsItem(this.key, this.iconType, this.iconData, this.visibilityProvider);
 
@@ -291,6 +313,8 @@ class SettingsGroup implements SettingsItem {
   Object? iconData;
   @override
   bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
   LinkedHashMap<String, SettingsItem> children;
 
   SettingsGroup(this.key, this.children, this.visibilityProvider);
@@ -307,6 +331,8 @@ class SettingsGroup implements SettingsItem {
     for (var item in children.values) {
       await item.save(model);
     }
+
+    await postUpdate();
   }
 }
 
@@ -319,6 +345,8 @@ class SettingsSubGroup implements SettingsItem {
   Object? iconData;
   @override
   bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
   String title;
   LinkedHashMap<String, SettingsItem> children;
 
@@ -337,6 +365,8 @@ class SettingsSubGroup implements SettingsItem {
     for (var item in children.values) {
       await item.save(model);
     }
+
+    await postUpdate();
   }
 }
 
@@ -349,6 +379,8 @@ class SettingsPadding implements SettingsItem {
   Object? iconData;
   @override
   bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
   double padding;
 
   SettingsPadding(this.key, this.padding, this.visibilityProvider);
@@ -369,6 +401,8 @@ class SettingsHeader implements SettingsItem {
   Object? iconData;
   @override
   bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
   String title;
 
   SettingsHeader(this.key, this.title, this.visibilityProvider);
@@ -389,6 +423,8 @@ class SettingsHeaderSmall implements SettingsItem {
   Object? iconData;
   @override
   bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
   String title;
 
   SettingsHeaderSmall(this.key, this.title, this.visibilityProvider);
@@ -409,6 +445,8 @@ class SettingsSubtitle implements SettingsItem {
   Object? iconData;
   @override
   bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
   String title;
 
   SettingsSubtitle(this.key, this.title, this.visibilityProvider);
@@ -429,6 +467,8 @@ class SettingsAppIconPreview implements SettingsItem {
   Object? iconData;
   @override
   bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
   String title = "";
 
   SettingsAppIconPreview(this.key, this.visibilityProvider);
@@ -449,6 +489,8 @@ class SettingsAppIconPicker implements SettingsItem {
   Object? iconData;
   @override
   bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
   String title = "";
   String icon = "";
   String defaultValue;
@@ -474,6 +516,7 @@ class SettingsAppIconPicker implements SettingsItem {
     v.valueString = icon;
 
     await model.put(v);
+    await postUpdate();
   }
 }
 
@@ -486,6 +529,8 @@ class SettingsBoolean implements SettingsItem {
   Object? iconData;
   @override
   bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
   String title;
   bool value = false;
   bool defaultValue;
@@ -510,6 +555,7 @@ class SettingsBoolean implements SettingsItem {
     v.valueBool = value;
 
     await model.put(v);
+    await postUpdate();
   }
 }
 
@@ -522,12 +568,14 @@ class SettingsItemsRadio implements SettingsItem {
   Object? iconData;
   @override
   bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate;
   List<String> values;
   int activeIndex = 0;
   int defaultIndex;
 
   SettingsItemsRadio(this.key, this.iconType, this.iconData, this.values,
-      this.defaultIndex, this.visibilityProvider);
+      this.defaultIndex, this.visibilityProvider, this.postUpdate);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -546,6 +594,7 @@ class SettingsItemsRadio implements SettingsItem {
     v.valueIndex = activeIndex;
 
     await model.put(v);
+    await postUpdate();
   }
 }
 
@@ -558,6 +607,8 @@ class SettingsDouble implements SettingsItem {
   Object? iconData;
   @override
   bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
   String title;
   double value = 0;
   double minValue = 0.0;
@@ -605,6 +656,7 @@ class SettingsDouble implements SettingsItem {
     v.valueDouble = value;
 
     await model.put(v);
+    await postUpdate();
   }
 }
 
@@ -617,6 +669,8 @@ class SettingsString implements SettingsItem {
   Object? iconData;
   @override
   bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
   String title;
   String value = "";
   String defaultValue;
@@ -641,5 +695,6 @@ class SettingsString implements SettingsItem {
     v.valueString = value;
 
     await model.put(v);
+    await postUpdate();
   }
 }
