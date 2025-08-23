@@ -39,8 +39,24 @@ late AppInitialization initData;
 
 final dio = Dio();
 
+class DeviceInfo {
+  String model;
+
+  String versionRelease;
+  String versionSdkInt;
+
+  DeviceInfo(this.model, this.versionRelease, this.versionSdkInt);
+
+  @override
+  String toString() {
+    return "DeviceInfo(model = \"$model\", versionRelease = \"$versionRelease\""
+        ", versionSdkInt = \"$versionSdkInt\"";
+  }
+}
+
 class AppInitialization {
   final Isar isar;
+  final DeviceInfo devInfo;
   late KretaClient client;
   int tokenCount;
   bool hasWatchListener = false;
@@ -50,6 +66,7 @@ class AppInitialization {
 
   AppInitialization({
     required this.isar,
+    required this.devInfo,
     required this.tokenCount,
     required this.settings,
     required this.l10n,
@@ -112,8 +129,32 @@ Future<AppInitialization> initializeApp() async {
     print('Token count: $tokenCount');
   }
 
+  var devInfoFetched = false;
+  var devInfo = DeviceInfo("SM-A705FN", "11", "30");
+
+  try {
+    if (Platform.isAndroid) {
+      const channel = MethodChannel("firka.app/main");
+      final rawInfo =
+          ((await channel.invokeMethod("get_info")) as String).split(";");
+
+      devInfo = DeviceInfo(rawInfo[0], rawInfo[1], rawInfo[2]);
+      devInfoFetched = true;
+    }
+  } catch (e) {
+    if (e is Error) {
+      debugPrintStack(stackTrace: e.stackTrace, label: e.toString());
+    } else {
+      debugPrint(e.toString());
+    }
+  }
+
+  debugPrint("Fetched device info: ${devInfoFetched ? "yes" : "no"}");
+  debugPrint("Using device info: ${devInfo.toString()}");
+
   var init = AppInitialization(
     isar: isar,
+    devInfo: devInfo,
     tokenCount: tokenCount,
     settings: SettingsStore(AppLocalizationsHu()),
     l10n: AppLocalizationsHu(),

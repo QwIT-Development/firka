@@ -3,6 +3,7 @@ package app.firka.naplo
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
@@ -32,6 +33,11 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channel).setMethodCallHandler {
                 call, result ->
             when (call.method) {
+                "get_info" -> {
+                    result.success("${Build.MODEL};" +
+                            "${Build.VERSION.RELEASE};" +
+                            "${Build.VERSION.SDK_INT}")
+                }
                 "set_icon" -> {
                     try {
                         val pn = context.packageName
