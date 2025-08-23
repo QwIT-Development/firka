@@ -15,7 +15,7 @@ buildeléséhez hogy a brotli a PATH-ben legyen
 - Töltsd le a `brotli-x64-windows-static.zip`-et a [google/brotli github repoból](https://github.com/google/brotli/releases/latest)
 - Csomagold ki valahol (pl. C:\Users\\<username>\dev\brotli)
 - Add hozzá a mappát ahova kicsomagoltad (C:\Users\\<username>\dev\brotli) a PATH-hez
-- Ne felejtsd el újraindítani az IDE-det illetve parancssorodat utánna hogy frissúljön a PATH
+- Ne felejtsd el újraindítani az IDE-det illetve parancssorodat utánna hogy frissüljön a PATH
 
 ## Linux/MacOS
 Telepítsd fel a brotli packaget a distro-d package managerével
