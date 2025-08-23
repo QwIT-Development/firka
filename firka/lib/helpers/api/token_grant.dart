@@ -6,7 +6,7 @@ import '../../main.dart';
 import 'consts.dart';
 
 Future<TokenGrantResponse> getAccessToken(String code) async {
-  final headers = const <String, String>{
+  final headers = <String, String>{
     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
     "accept": "*/*",
     "user-agent": Constants.userAgent,
@@ -40,7 +40,7 @@ Future<TokenGrantResponse> getAccessToken(String code) async {
 }
 
 Future<TokenGrantResponse> extendToken(TokenModel model) async {
-  final headers = const <String, String>{
+  final headers = <String, String>{
     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
     "accept": "*/*",
     "user-agent": Constants.userAgent,
