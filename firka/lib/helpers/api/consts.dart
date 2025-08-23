@@ -2,10 +2,16 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
+import 'package:firka/main.dart';
 
 class Constants {
   static const clientId = "kreta-ellenorzo-student-mobile-android";
-  static const userAgent = "hu.ekreta.student/5.7.0/SM-A705FN/11/30";
+  static const applicationId = "hu.ekreta.student";
+  static const applicationVersion = "5.7.0";
+  static String userAgent = "$applicationId/$applicationVersion"
+      "/${initData.devInfo.model}"
+      "/${initData.devInfo.versionRelease}"
+      "/${initData.devInfo.versionSdkInt}";
 }
 
 class KretaEndpoints {
