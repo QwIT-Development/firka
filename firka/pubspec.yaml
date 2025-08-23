@@ -60,6 +60,7 @@ dependencies:
   flutter_svg: ^1.1.6
   home_widget: ^0.8.0
   brotli: ^0.6.0
+  crypto: ^3.0.6
 
 dev_dependencies:
   flutter_test:

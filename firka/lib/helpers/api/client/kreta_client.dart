@@ -91,7 +91,7 @@ class KretaClient {
     final headers = <String, String>{
       // "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
       "accept": "*/*",
-      "user-agent": "eKretaStudent/264745 CFNetwork/1494.0.7 Darwin/23.4.0",
+      "user-agent": Constants.userAgent,
       "authorization": "Bearer $localToken",
       "apiKey": "21ff6c25-d1da-4a68-a811-c881a6057463"
     };
