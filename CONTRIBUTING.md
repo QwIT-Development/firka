@@ -1,7 +1,6 @@
 # Flutter telepítése
 
-A firka lebuildeléséhez kötelező a saját Flutter fork használata,
-illetve a release buildekhez a custom Flutter engine használata.
+A firka androidra való lebuildeléséhez kötelező a saját Flutter fork használata, illetve minden más fajta --release buildhez is.
 
 A Flutter telepítéséhez a dokumentáció [itt](https://docs.flutter.dev/get-started/install) található.
 
