@@ -318,12 +318,12 @@ class KretaClient {
       }
     }
 
-    // only cache stuff in a 1 month frame
+    // only cache stuff 4 months ago and a week in advance
     if (from.millisecondsSinceEpoch >=
-        now.subtract(Duration(days: 30)).millisecondsSinceEpoch) {
+        now.subtract(Duration(days: 120)).millisecondsSinceEpoch) {
       if (to == null ||
           to.millisecondsSinceEpoch <=
-              now.add(Duration(days: 30)).millisecondsSinceEpoch) {
+              now.add(Duration(days: 7)).millisecondsSinceEpoch) {
         await isar.writeTxn(() async {
           await storeCache(resp, cacheKey);
         });
