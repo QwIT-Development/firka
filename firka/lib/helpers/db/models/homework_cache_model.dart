@@ -19,7 +19,7 @@ Future<void> resetOldHomeworkCache(Isar isar) async {
     var date = getDate(week.cacheKey!);
 
     if (date.millisecondsSinceEpoch <
-        now.subtract(Duration(days: 30)).millisecondsSinceEpoch) {
+        now.subtract(Duration(days: 120)).millisecondsSinceEpoch) {
       weeksToRemove.add(week.cacheKey!);
     }
   }
