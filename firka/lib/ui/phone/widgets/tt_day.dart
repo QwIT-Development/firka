@@ -10,10 +10,8 @@ class TimeTableDayWidget extends StatelessWidget {
   final AppLocalizations l10n;
   final DateTime date;
   final List<Lesson> lessons;
-  final bool active;
 
-  const TimeTableDayWidget(this.l10n, this.date, this.lessons, this.active,
-      {super.key});
+  const TimeTableDayWidget(this.l10n, this.date, this.lessons, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -41,15 +39,18 @@ class TimeTableDayWidget extends StatelessWidget {
     }
 
     return SizedBox(
-      width: MediaQuery.of(context).size.width / (active ? 1 : 1.6),
+      width: MediaQuery.of(context).size.width / 1.1,
       child: lessons.isEmpty
           ? noLessonsWidget
           : Padding(
-              padding: const EdgeInsets.only(top: 50 + 20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: ttBody,
+              padding:
+                  const EdgeInsets.only(top: 70 + 16 + 20, left: 4, right: 4),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: ttBody,
+                ),
               ),
             ),
     );
