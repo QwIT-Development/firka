@@ -63,6 +63,7 @@ dependencies:
   home_widget: ^0.8.0
   brotli: ^0.6.0
   crypto: ^3.0.6
+  transparent_pointer: ^1.0.1
 
 dev_dependencies:
   flutter_test:
@@ -91,6 +92,7 @@ flutter:
     - assets/images/carousel/
     - assets/images/icons/
     - assets/images/background.png
+    - assets/icons/
     - assets/majesticons/
     - assets/firka.i
 
