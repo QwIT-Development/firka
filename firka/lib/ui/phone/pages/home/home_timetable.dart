@@ -1,16 +1,16 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/ui/model/style.dart';
-import 'package:firka/ui/phone/widgets/bottom_tt_icon.dart';
-import 'package:firka/ui/phone/widgets/lesson.dart';
 import 'package:firka/ui/widget/delayed_spinner.dart';
-import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../../../main.dart';
+import '../../../widget/firka_icon.dart';
+import '../../widgets/bottom_tt_icon.dart';
+import '../../widgets/tt_day.dart';
 
 class HomeTimetableScreen extends StatefulWidget {
   final AppInitialization data;
@@ -24,8 +24,9 @@ class HomeTimetableScreen extends StatefulWidget {
 class _HomeTimetableScreen extends State<HomeTimetableScreen> {
   List<Lesson>? lessons;
   List<DateTime>? dates;
-  DateTime? active;
+  int active = 0;
   bool disposed = false;
+  final CarouselSliderController _controller = CarouselSliderController();
 
   _HomeTimetableScreen();
 
@@ -70,9 +71,13 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
       setState(() {
         this.dates = dates;
         if (timeNow().isAfter(dates.last)) {
-          active = dates.last;
+          active = dates.length - 1;
         } else {
-          active = timeNow().getMidnight();
+          active = dates.indexWhere((d) =>
+              d.isAfter(timeNow().getMidnight()) &&
+              d.isBefore(timeNow()
+                  .getMidnight()
+                  .add(Duration(hours: 23, minutes: 59))));
         }
       });
     })();
@@ -80,135 +85,116 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (lessons != null && dates != null && active != null) {
-      List<Widget> ttWidgets = List.empty(growable: true);
-      var lessonsToday = lessons!
-          .where((lesson) =>
-              lesson.start.isAfter(active!) &&
-              lesson.end.isBefore(active!.add(Duration(hours: 24))))
-          .toList();
+    if (lessons != null && dates != null) {
+      List<Widget> ttWidgets = [];
+      List<Widget> ttDays = [];
 
-      for (final date in dates!) {
+      for (var i = 0; i < dates!.length; i++) {
+        final date = dates![i];
+
         ttWidgets.add(BottomTimeTableNavIconWidget(widget.data.l10n, () {
           setState(() {
-            active = date;
+            _controller.jumpToPage(i);
+            active = i;
           });
-        }, date.millisecondsSinceEpoch == active!.millisecondsSinceEpoch,
-            date));
+        }, active == i, date));
+
+        var lessonsOnDate = lessons!
+            .where((lesson) =>
+                lesson.start.isAfter(date) &&
+                lesson.end.isBefore(date.add(Duration(hours: 24))))
+            .toList();
+
+        ttDays.add(TimeTableDayWidget(
+            widget.data.l10n, date, lessonsOnDate, active == i));
       }
 
-      Widget noLessonsWidget = SizedBox();
-      List<Widget> ttBody = List.empty(growable: true);
-
-      if (lessonsToday.isEmpty) {
-        noLessonsWidget = Positioned.fill(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
+      return Stack(children: [
+        SizedBox(
+          width: MediaQuery.of(context).size.width,
+          height: 50,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
               children: [
-                SvgPicture.asset("assets/images/logos/dave.svg",
-                    width: 48, height: 48),
-                SizedBox(height: 12),
-                Text(widget.data.l10n.tt_no_classes_l1),
-                Text(widget.data.l10n.tt_no_classes_l2)
-              ]),
-        );
-      } else {
-        for (var i = 0; i < lessonsToday.length; i++) {
-          var lesson = lessonsToday[i];
-          Lesson? nextLesson =
-              lessonsToday.length > i + 1 ? lessonsToday[i + 1] : null;
-          ttBody.add(LessonWidget(widget.data.l10n,
-              lessonsToday.getLessonNo(lesson), lesson, nextLesson));
-        }
-      }
-
-      return Expanded(
-          child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(
-              top: 16.0,
-              left: 32.0,
-              right: 16.0,
-            ),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    widget.data.l10n.timetable,
-                    style: appStyle.fonts.H_H2
-                        .apply(color: appStyle.colors.textPrimary),
-                  ),
-                  Row(
-                    children: [
-                      Card(
-                        color: appStyle.colors.buttonSecondaryFill,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: FirkaIconWidget(
-                            FirkaIconType.majesticons,
-                            Majesticon.tableSolid,
-                            size: 26.0,
-                            color: appStyle.colors.accent,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      widget.data.l10n.timetable,
+                      style: appStyle.fonts.H_H2
+                          .apply(color: appStyle.colors.textPrimary),
+                    ),
+                    Row(
+                      children: [
+                        Card(
+                          color: appStyle.colors.buttonSecondaryFill,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: FirkaIconWidget(
+                              FirkaIconType.majesticons,
+                              Majesticon.tableSolid,
+                              size: 26.0,
+                              color: appStyle.colors.accent,
+                            ),
                           ),
                         ),
-                      ),
-                      Card(
-                        color: appStyle.colors.buttonSecondaryFill,
-                        child: Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: FirkaIconWidget(
-                            FirkaIconType.majesticons,
-                            Majesticon.plusLine,
-                            size: 32.0,
-                            color: appStyle.colors.accent,
+                        Card(
+                          color: appStyle.colors.buttonSecondaryFill,
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: FirkaIconWidget(
+                              FirkaIconType.majesticons,
+                              Majesticon.plusLine,
+                              size: 32.0,
+                              color: appStyle.colors.accent,
+                            ),
                           ),
                         ),
-                      ),
-                      Card(
-                        color: appStyle.colors.buttonSecondaryFill,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: FirkaIconWidget(
-                            FirkaIconType.majesticons,
-                            Majesticon.settingsCogSolid,
-                            size: 26.0,
-                            color: appStyle.colors.accent,
+                        Card(
+                          color: appStyle.colors.buttonSecondaryFill,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: FirkaIconWidget(
+                              FirkaIconType.majesticons,
+                              Majesticon.settingsCogSolid,
+                              size: 26.0,
+                              color: appStyle.colors.accent,
+                            ),
                           ),
-                        ),
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            ]),
-          ),
-          noLessonsWidget,
-          SizedBox(
-            height: MediaQuery.of(context).size.height -
-                MediaQuery.of(context).padding.top -
-                230,
-            child: Padding(
-              padding:
-                  EdgeInsets.only(top: 70, left: 35, right: 35, bottom: 15),
-              child: ListView(
-                children: ttBody,
-              ),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          Padding(
-            padding:
-                EdgeInsets.only(top: MediaQuery.of(context).size.height - 250),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+        ),
+        Column(
+          children: [
+            SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height / 1.4,
+                child: CarouselSlider(
+                  items: ttDays,
+                  carouselController: _controller,
+                  options: CarouselOptions(
+                      height: MediaQuery.of(context).size.height / 1.36,
+                      enableInfiniteScroll: false,
+                      initialPage: active,
+                      onPageChanged: (i, _) {
+                        setState(() {
+                          active = i;
+                        });
+                      }),
+                )),
+            Row(
               children: ttWidgets,
             ),
-          ),
-        ],
-      ));
+          ],
+        )
+      ]);
     } else {
       return DelayedSpinnerWidget();
     }
