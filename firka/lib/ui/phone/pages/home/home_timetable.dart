@@ -202,7 +202,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                     Row(
                       children: [
                         Text(
-                            dates!.first.format(
+                            now!.format(
                                 widget.data.l10n, FormatMode.yyyymmddwedd),
                             style: appStyle.fonts.B_14R),
                         SizedBox(width: 4),
@@ -211,7 +211,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                                 .apply(color: appStyle.colors.accent)),
                         SizedBox(width: 4),
                         Text(
-                            dates!.first.isAWeek()
+                            now!.isAWeek()
                                 ? widget.data.l10n.a_week
                                 : widget.data.l10n.b_week,
                             style: appStyle.fonts.B_14R),
