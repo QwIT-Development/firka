@@ -33,7 +33,7 @@ extension DurationExtension on Duration {
   }
 }
 
-enum FormatMode { yearly, grades, welcome, hmm, da, dd }
+enum FormatMode { yearly, grades, welcome, hmm, da, dd, yyyymmddwedd }
 
 enum Cycle { morning, day, afternoon, night }
 
@@ -50,6 +50,9 @@ extension DateExtension on DateTime {
     var tomorrow = today.add(Duration(days: 1));
     var yesterday = today.subtract(Duration(days: 1));
     var yesterdayLim = today.subtract(Duration(days: 2));
+
+    var weekStart = today.subtract(Duration(days: today.weekday - 1));
+    var weekEnd = weekStart.add(Duration(days: 6));
 
     switch (mode) {
       case FormatMode.grades:
@@ -77,7 +80,18 @@ extension DateExtension on DateTime {
         return DateFormat('MMMMEEEEd').format(this).substring(0, 2);
       case FormatMode.dd:
         return DateFormat('dd').format(this);
+      case FormatMode.yyyymmddwedd:
+        return "${DateFormat('yyyy MMM. dd').format(weekStart).toLowerCase()}-${DateFormat('dd').format(weekEnd)}";
     }
+  }
+
+  int weekNumber() {
+    int dayOfYear = int.parse(DateFormat("D").format(this));
+    return ((dayOfYear - weekday + 10) / 7).floor();
+  }
+
+  bool isAWeek() {
+    return weekNumber() % 2 == 0;
   }
 
   DateTime getMonday() {

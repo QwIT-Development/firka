@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../model/style.dart';
+
 class DelayedSpinnerWidget extends StatefulWidget {
   const DelayedSpinnerWidget({super.key});
 
@@ -27,7 +29,9 @@ class _DelayedSpinner extends State<DelayedSpinnerWidget> {
   @override
   Widget build(BuildContext context) {
     if (showSpinner) {
-      return CircularProgressIndicator();
+      return CircularProgressIndicator(
+        color: appStyle.colors.accent,
+      );
     } else {
       return SizedBox();
     }
