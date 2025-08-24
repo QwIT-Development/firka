@@ -7,32 +7,31 @@ import 'package:firka/ui/widget/delayed_spinner.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import '../../../../main.dart';
 import '../../../widget/firka_icon.dart';
 import '../../screens/home/home_screen.dart';
-import '../../widgets/bottom_tt_icon.dart';
-import '../../widgets/tt_day.dart';
 
-class HomeTimetableScreen extends StatefulWidget {
+class HomeTimetableMonthlyScreen extends StatefulWidget {
   final AppInitialization data;
   final void Function(ActiveHomePage, bool) cb;
 
-  const HomeTimetableScreen(this.data, this.cb, {super.key});
+  const HomeTimetableMonthlyScreen(this.data, this.cb, {super.key});
 
   @override
-  State<HomeTimetableScreen> createState() => _HomeTimetableScreen();
+  State<HomeTimetableMonthlyScreen> createState() =>
+      _HomeTimetableMonthlyScreen();
 }
 
-class _HomeTimetableScreen extends State<HomeTimetableScreen> {
+class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
   List<Lesson>? lessons;
   List<DateTime>? dates;
   DateTime? now;
   int active = 0;
   bool disposed = false;
-  final CarouselSliderController _controller = CarouselSliderController();
 
-  _HomeTimetableScreen();
+  _HomeTimetableMonthlyScreen();
 
   @override
   void dispose() {
@@ -41,43 +40,32 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
     disposed = true;
   }
 
-  Future<void> initForWeek(DateTime now) async {
-    var monday = now.getMonday().getMidnight();
-    var sunday = monday.add(Duration(days: 6));
+  Future<void> initForMonth(DateTime now) async {
+    final monthStart = DateTime.utc(now.year, now.month, 1);
+    final monthEnd =
+        DateTime.utc(now.year, now.month + 1).subtract(Duration(days: 1));
 
-    var lessonsResp = await widget.data.client.getTimeTable(monday, sunday);
+    final start = monthStart.subtract(Duration(days: 7)).getMonday();
+    var end =
+        monthEnd.add(Duration(days: 7)).getMonday().add(Duration(days: 7));
+
+    var days = end.difference(start).inDays;
+
+    var lessonsResp =
+        await widget.data.client.getTimeTable(monthStart, monthEnd);
     List<DateTime> dates = List.empty(growable: true);
+
+    for (var i = 0; i < days; i++) {
+      dates.add(start.add(Duration(days: i)));
+    }
 
     if (lessonsResp.response != null) {
       lessons = lessonsResp.response;
-
-      for (var i = 0; i < 7; i++) {
-        var t = monday.add(Duration(days: i));
-
-        var hasLessons = i < 5 ||
-            lessons!.firstWhereOrNull((lesson) {
-                  return lesson.start.getMidnight().millisecondsSinceEpoch ==
-                      t.getMidnight().millisecondsSinceEpoch;
-                }) !=
-                null;
-
-        if (hasLessons) {
-          dates.add(t);
-        }
-      }
     }
 
     if (disposed) return;
     setState(() {
       this.dates = dates;
-      if (now.isAfter(dates.last)) {
-        active = dates.length - 1;
-      } else {
-        active = dates.indexWhere((d) =>
-            d.isAfter(now.getMidnight()) &&
-            d.isBefore(
-                now.getMidnight().add(Duration(hours: 23, minutes: 59))));
-      }
     });
   }
 
@@ -86,32 +74,82 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
     super.initState();
 
     now = timeNow();
-    initForWeek(now!);
+    initForMonth(now!);
   }
 
   @override
   Widget build(BuildContext context) {
     if (lessons != null && dates != null) {
-      List<Widget> ttWidgets = [];
       List<Widget> ttDays = [];
 
-      for (var i = 0; i < dates!.length; i++) {
-        final date = dates![i];
+      final meow = dates![20];
+      final currentMonthStart = DateTime.utc(meow.year, meow.month, 1);
+      final currentMonthEnd =
+          DateTime.utc(meow.year, meow.month + 1).subtract(Duration(days: 1));
 
-        ttWidgets.add(BottomTimeTableNavIconWidget(widget.data.l10n, () {
-          setState(() {
-            _controller.jumpToPage(i);
-            active = i;
-          });
-        }, active == i, date));
+      for (var d in dates!) {
+        if (d.isBefore(currentMonthStart) || d.isAfter(currentMonthEnd)) {
+          ttDays.add(Column(
+            children: [
+              Container(
+                  width: 40,
+                  height: 40,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: ShapeDecoration(
+                    color: appStyle.colors.cardTranslucent,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6)),
+                  )),
+              SizedBox(height: 4),
+              Text(d.format(widget.data.l10n, FormatMode.dd),
+                  style: appStyle.fonts.B_14R.apply(
+                      color: (d.weekday == DateTime.saturday ||
+                              d.weekday == DateTime.sunday)
+                          ? appStyle.colors.errorText
+                          : appStyle.colors.textTertiary)),
+              SizedBox(height: 12),
+            ],
+          ));
+        } else {
+          Widget body = SizedBox();
 
-        var lessonsOnDate = lessons!
-            .where((lesson) =>
-                lesson.start.isAfter(date) &&
-                lesson.end.isBefore(date.add(Duration(hours: 24))))
-            .toList();
+          var lessonsToday = lessons!.where((lesson) =>
+              lesson.start.isAfter(d.getMidnight()) &&
+              lesson.end.isBefore(
+                  d.getMidnight().add(Duration(hours: 23, minutes: 59))));
 
-        ttDays.add(TimeTableDayWidget(widget.data.l10n, date, lessonsOnDate));
+          if (lessonsToday.isNotEmpty) {
+            body = Center(
+              child: Text(lessonsToday.length.toString(),
+                  style: appStyle.fonts.H_16px
+                      .apply(color: appStyle.colors.secondary)),
+            );
+          }
+          ttDays.add(Column(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                clipBehavior: Clip.antiAlias,
+                decoration: ShapeDecoration(
+                  color: appStyle.colors.card,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6)),
+                ),
+                child: body,
+              ),
+              SizedBox(height: 4),
+              Text(d.format(widget.data.l10n, FormatMode.dd),
+                  style: appStyle.fonts.B_14R.apply(
+                      color: (d.weekday == DateTime.saturday ||
+                                  d.weekday == DateTime.sunday) &&
+                              lessonsToday.isEmpty
+                          ? appStyle.colors.errorText
+                          : appStyle.colors.textSecondary)),
+              SizedBox(height: 12),
+            ],
+          ));
+        }
       }
 
       return Stack(children: [
@@ -147,7 +185,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                           ),
                           onTap: () {
                             widget.cb(
-                                ActiveHomePage(HomePages.timetableMo), false);
+                                ActiveHomePage(HomePages.timetable), false);
                           },
                         ),
                         Card(
@@ -195,36 +233,23 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                         ),
                       ),
                       onTap: () async {
-                        var newNow = now!.subtract(Duration(days: 7));
+                        var newNow = now!.subtract(Duration(days: 30));
                         setState(() {
                           now = newNow;
                           lessons = null;
                           dates = null;
                         });
-                        await initForWeek(newNow);
+                        await initForMonth(newNow);
                         setState(() {
                           now = newNow;
                         });
                       },
                     ),
-                    Row(
-                      children: [
-                        Text(
-                            now!.format(
-                                widget.data.l10n, FormatMode.yyyymmddwedd),
-                            style: appStyle.fonts.B_14R),
-                        SizedBox(width: 4),
-                        Text("•",
-                            style: appStyle.fonts.B_16R
-                                .apply(color: appStyle.colors.accent)),
-                        SizedBox(width: 4),
-                        Text(
-                            now!.isAWeek()
-                                ? widget.data.l10n.a_week
-                                : widget.data.l10n.b_week,
-                            style: appStyle.fonts.B_14R),
-                      ],
-                    ),
+                    Text(
+                        now!
+                            .format(widget.data.l10n, FormatMode.yyyymmmm)
+                            .toLowerCase(),
+                        style: appStyle.fonts.B_14R),
                     GestureDetector(
                       child: FirkaIconWidget(
                         FirkaIconType.icons,
@@ -233,8 +258,13 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                         color: appStyle.colors.accent,
                       ),
                       onTap: () async {
-                        var newNow = now!.add(Duration(days: 7));
-                        await initForWeek(newNow);
+                        var newNow = now!.add(Duration(days: 30));
+                        setState(() {
+                          now = newNow;
+                          lessons = null;
+                          dates = null;
+                        });
+                        await initForMonth(newNow);
                         setState(() {
                           now = newNow;
                         });
@@ -246,32 +276,20 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
             ),
           ),
         ),
-        Column(
-          children: [
-            TransparentPointer(
-                child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height / 1.4,
-                    child: CarouselSlider(
-                      items: ttDays,
-                      carouselController: _controller,
-                      options: CarouselOptions(
-                          height: MediaQuery.of(context).size.height / 1.36,
-                          viewportFraction: 1,
-                          enableInfiniteScroll: false,
-                          initialPage: active,
-                          onPageChanged: (i, _) {
-                            setState(() {
-                              active = i;
-                            });
-                          }),
-                    ))),
-            TransparentPointer(
-                child: Row(
-              children: ttWidgets,
-            )),
-          ],
-        )
+        TransparentPointer(
+            child: Padding(
+          padding: const EdgeInsets.only(top: 74 + 16 + 12),
+          child: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height / 1.45,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: StaggeredGrid.count(
+                  crossAxisCount: 7,
+                  children: ttDays,
+                ),
+              )),
+        )),
       ]);
     } else {
       return SizedBox(
