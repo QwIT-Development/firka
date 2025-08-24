@@ -1,8 +1,12 @@
+import 'package:firka/helpers/api/consts.dart';
+import 'package:firka/helpers/api/consts.dart';
+import 'package:firka/helpers/api/consts.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/widget/delayed_spinner.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
@@ -23,12 +27,15 @@ class HomeTimetableMonthlyScreen extends StatefulWidget {
       _HomeTimetableMonthlyScreen();
 }
 
+enum ActiveFilter { lessonNo, homework, omissions }
+
 class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
   List<Lesson>? lessons;
   List<DateTime>? dates;
   DateTime? now;
   int active = 0;
   bool disposed = false;
+  ActiveFilter activeFilter = ActiveFilter.lessonNo;
 
   _HomeTimetableMonthlyScreen();
 
@@ -117,16 +124,72 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
               lesson.end.isBefore(
                   d.getMidnight().add(Duration(hours: 23, minutes: 59))));
 
-          if (lessonsToday.isNotEmpty) {
-            body = Center(
-              child: Text(lessonsToday.length.toString(),
-                  style: appStyle.fonts.H_16px.apply(
-                      color:
-                          timeNow().day == d.day && timeNow().month == d.month
-                              ? appStyle.colors.accent
-                              : appStyle.colors.secondary)),
-            );
+          var omissionType = lessonsToday.firstWhereOrNull((lesson) =>
+              lesson.studentPresence != null &&
+              lesson.studentPresence?.name != OmissionConsts.present);
+
+          switch (activeFilter) {
+            case ActiveFilter.lessonNo:
+              if (lessonsToday.isNotEmpty) {
+                body = Center(
+                  child: Text(lessonsToday.length.toString(),
+                      style: appStyle.fonts.H_16px.apply(
+                          color: omissionType != null &&
+                                  (omissionType.studentPresence!.name ==
+                                          OmissionConsts.absence ||
+                                      omissionType.studentPresence!.name ==
+                                          OmissionConsts.na)
+                              ? appStyle.colors.errorText
+                              : timeNow().day == d.day &&
+                                      timeNow().month == d.month
+                                  ? appStyle.colors.accent
+                                  : appStyle.colors.secondary)),
+                );
+              }
+              break;
+            case ActiveFilter.homework:
+              if (lessonsToday.firstWhereOrNull(
+                      (lesson) => lesson.homeworkUid != null) !=
+                  null) {
+                body = Center(
+                  child: FirkaIconWidget(
+                    FirkaIconType.majesticons,
+                    Majesticon.editPen4Solid,
+                    size: 20.0,
+                    color: appStyle.colors.accent,
+                  ),
+                );
+              }
+              break;
+            case ActiveFilter.omissions:
+              if (omissionType != null) {
+                switch (omissionType.studentPresence!.name) {
+                  case OmissionConsts.na:
+                  case OmissionConsts.absence:
+                    body = Center(
+                      child: FirkaIconWidget(
+                        FirkaIconType.majesticons,
+                        Majesticon.multiplySolid,
+                        size: 20.0,
+                        color: appStyle.colors.accent,
+                      ),
+                    );
+                    break;
+                  default:
+                    debugPrint(omissionType.studentPresence!.name);
+                    body = Center(
+                      child: FirkaIconWidget(
+                        FirkaIconType.majesticons,
+                        Majesticon.timerLine,
+                        size: 20.0,
+                        color: appStyle.colors.accent,
+                      ),
+                    );
+                }
+              }
+              break;
           }
+
           ttDays.add(Column(
             children: [
               Container(
@@ -134,9 +197,16 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                 height: 40,
                 clipBehavior: Clip.antiAlias,
                 decoration: ShapeDecoration(
-                  color: timeNow().day == d.day && timeNow().month == d.month
-                      ? appStyle.colors.buttonSecondaryFill
-                      : appStyle.colors.card,
+                  color: activeFilter == ActiveFilter.lessonNo &&
+                          omissionType != null &&
+                          (omissionType.studentPresence!.name ==
+                                  OmissionConsts.absence ||
+                              omissionType.studentPresence!.name ==
+                                  OmissionConsts.na)
+                      ? appStyle.colors.error15p
+                      : timeNow().day == d.day && timeNow().month == d.month
+                          ? appStyle.colors.buttonSecondaryFill
+                          : appStyle.colors.card,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6)),
                 ),
@@ -308,37 +378,52 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                     SizedBox(),
                     Row(
                       children: [
-                        Container(
-                          clipBehavior: Clip.antiAlias,
-                          decoration: ShapeDecoration(
-                            color: appStyle.colors.buttonSecondaryFill,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            child: Row(
-                              children: [
-                                FirkaIconWidget(FirkaIconType.majesticons,
-                                    Majesticon.clockSolid,
-                                    color: appStyle.colors.accent, size: 16),
-                                SizedBox(width: 6),
-                                Text(
-                                    lessons!
-                                        .where((lesson) =>
-                                            lesson.start
-                                                .isAfter(currentMonthStart) &&
-                                            lesson.end
-                                                .isBefore(currentMonthEnd))
-                                        .length
-                                        .toString(),
-                                    style: appStyle.fonts.H_16px.apply(
-                                        color: appStyle.colors.textPrimary))
-                              ],
-                            ),
-                          ),
-                        ),
+                        _StatusToast(
+                            FirkaIconWidget(FirkaIconType.majesticons,
+                                Majesticon.clockSolid,
+                                color: appStyle.colors.accent, size: 16),
+                            lessons!
+                                .where((lesson) =>
+                                    lesson.start.isAfter(currentMonthStart) &&
+                                    lesson.end.isBefore(currentMonthEnd))
+                                .length,
+                            activeFilter == ActiveFilter.lessonNo, () {
+                          setState(() {
+                            activeFilter = ActiveFilter.lessonNo;
+                          });
+                        }),
+                        _StatusToast(
+                            FirkaIconWidget(FirkaIconType.majesticons,
+                                Majesticon.editPen4Solid,
+                                color: appStyle.colors.accent, size: 16),
+                            lessons!
+                                .where((lesson) =>
+                                    lesson.start.isAfter(currentMonthStart) &&
+                                    lesson.end.isBefore(currentMonthEnd) &&
+                                    lesson.homeworkUid != null)
+                                .length,
+                            activeFilter == ActiveFilter.homework, () {
+                          setState(() {
+                            activeFilter = ActiveFilter.homework;
+                          });
+                        }),
+                        _StatusToast(
+                            FirkaIconWidget(
+                                FirkaIconType.majesticons, Majesticon.timerLine,
+                                color: appStyle.colors.accent, size: 16),
+                            lessons!
+                                .where((lesson) =>
+                                    lesson.start.isAfter(currentMonthStart) &&
+                                    lesson.end.isBefore(currentMonthEnd) &&
+                                    lesson.studentPresence != null &&
+                                    lesson.studentPresence?.name !=
+                                        OmissionConsts.present)
+                                .length,
+                            activeFilter == ActiveFilter.omissions, () {
+                          setState(() {
+                            activeFilter = ActiveFilter.omissions;
+                          });
+                        }),
                       ],
                     ),
                     SizedBox()
@@ -362,5 +447,43 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
         ),
       );
     }
+  }
+}
+
+class _StatusToast extends StatelessWidget {
+  final FirkaIconWidget _icon;
+  final int _count;
+  final bool _active;
+  final void Function() _onTap;
+
+  const _StatusToast(this._icon, this._count, this._active, this._onTap);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _onTap,
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: ShapeDecoration(
+          color: _active
+              ? appStyle.colors.buttonSecondaryFill
+              : appStyle.colors.cardTranslucent,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          child: Row(
+            children: [
+              _icon,
+              SizedBox(width: 6),
+              Text(_count.toString(),
+                  style: appStyle.fonts.H_16px
+                      .apply(color: appStyle.colors.textPrimary))
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
