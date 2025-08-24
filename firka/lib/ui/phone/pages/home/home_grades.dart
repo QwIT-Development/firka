@@ -13,7 +13,7 @@ import '../../../model/style.dart';
 
 class HomeGradesScreen extends StatelessAsyncWidget {
   final AppInitialization data;
-  final void Function(ActiveHomePage) cb;
+  final void Function(ActiveHomePage, bool) cb;
 
   const HomeGradesScreen(this.data, this.cb, {super.key});
 
@@ -57,7 +57,7 @@ class HomeGradesScreen extends StatelessAsyncWidget {
         gradeCards.add(GestureDetector(
           child: GradeSmallCard(grades.response!, subject),
           onTap: () {
-            cb(ActiveHomePage(HomePages.grades, subPageUid: subject.uid));
+            cb(ActiveHomePage(HomePages.grades, subPageUid: subject.uid), true);
           },
         ));
       }

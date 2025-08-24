@@ -6,6 +6,7 @@ import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/phone/pages/home/home_main.dart';
+import 'package:firka/ui/phone/pages/home/home_timetable_mo.dart';
 import 'package:firka/ui/phone/widgets/bottom_nav_icon.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-enum HomePages { home, grades, timetable }
+enum HomePages { home, grades, timetable, timetableMo }
 
 enum ActiveToastType { fetching, error, none }
 
@@ -63,9 +64,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   ActiveToastType activeToast = ActiveToastType.none;
 
-  void setPageCB(ActiveHomePage newPage) {
+  void setPageCB(ActiveHomePage newPage, bool setPrev) {
     setState(() {
-      previousPages.add(page);
+      if (setPrev) previousPages.add(page);
       canPop = false;
       page = newPage;
     });
@@ -126,9 +127,8 @@ class _HomeScreenState extends State<HomeScreen> {
               color: appStyle.colors.errorCard,
               shadowColor: Colors.transparent,
               shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-                Radius.circular(200)),
-          ),
+                borderRadius: BorderRadius.all(Radius.circular(200)),
+              ),
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                 child: Row(
@@ -370,7 +370,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class HomeSubPage extends StatelessWidget {
   final ActiveHomePage page;
-  final void Function(ActiveHomePage) cb;
+  final void Function(ActiveHomePage, bool) cb;
   final AppInitialization data;
 
   const HomeSubPage(this.page, this.cb, this.data, {super.key});
@@ -387,7 +387,9 @@ class HomeSubPage extends StatelessWidget {
           return HomeGradesScreen(data, cb);
         }
       case HomePages.timetable:
-        return HomeTimetableScreen(data);
+        return HomeTimetableScreen(data, cb);
+      case HomePages.timetableMo:
+        return HomeTimetableMonthlyScreen(data, cb);
     }
   }
 }

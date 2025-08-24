@@ -33,7 +33,7 @@ extension DurationExtension on Duration {
   }
 }
 
-enum FormatMode { yearly, grades, welcome, hmm, da, dd, yyyymmddwedd }
+enum FormatMode { yearly, grades, welcome, hmm, da, dd, yyyymmddwedd, yyyymmmm }
 
 enum Cycle { morning, day, afternoon, night }
 
@@ -81,6 +81,8 @@ extension DateExtension on DateTime {
         return DateFormat('dd').format(this);
       case FormatMode.yyyymmddwedd:
         return "${DateFormat('yyyy MMM. dd').format(weekStart).toLowerCase()}-${DateFormat('dd').format(weekEnd)}";
+      case FormatMode.yyyymmmm:
+        return DateFormat('yyyy MMMM').format(weekStart);
     }
   }
 
