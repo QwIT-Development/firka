@@ -14,6 +14,12 @@ class Constants {
       "/${initData.devInfo.versionSdkInt}";
 }
 
+class OmissionConsts {
+  static const present = "Jelenlet";
+  static const absence = "Hianyzas";
+  static const na = "Na";
+}
+
 class KretaEndpoints {
   static String kretaBase = "e-kreta.hu";
 
