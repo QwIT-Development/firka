@@ -39,12 +39,11 @@ enum Cycle { morning, day, afternoon, night }
 
 extension DateExtension on DateTime {
   String format(AppLocalizations l10n, FormatMode mode) {
-    var today = timeNow();
-    today = today.subtract(Duration(
-        hours: today.hour,
-        minutes: today.minute,
-        seconds: today.second,
-        milliseconds: today.millisecond));
+    var today = subtract(Duration(
+        hours: hour,
+        minutes: minute,
+        seconds: second,
+        milliseconds: millisecond));
 
     var tomorrowLim = today.add(Duration(days: 2));
     var tomorrow = today.add(Duration(days: 1));
