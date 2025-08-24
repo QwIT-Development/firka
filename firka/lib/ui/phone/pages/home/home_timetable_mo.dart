@@ -1,4 +1,3 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
@@ -121,8 +120,11 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
           if (lessonsToday.isNotEmpty) {
             body = Center(
               child: Text(lessonsToday.length.toString(),
-                  style: appStyle.fonts.H_16px
-                      .apply(color: appStyle.colors.secondary)),
+                  style: appStyle.fonts.H_16px.apply(
+                      color:
+                          timeNow().day == d.day && timeNow().month == d.month
+                              ? appStyle.colors.accent
+                              : appStyle.colors.secondary)),
             );
           }
           ttDays.add(Column(
@@ -132,14 +134,16 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                 height: 40,
                 clipBehavior: Clip.antiAlias,
                 decoration: ShapeDecoration(
-                  color: appStyle.colors.card,
+                  color: timeNow().day == d.day && timeNow().month == d.month
+                      ? appStyle.colors.buttonSecondaryFill
+                      : appStyle.colors.card,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6)),
                 ),
                 child: body,
               ),
               SizedBox(height: 4),
-              Text(d.format(widget.data.l10n, FormatMode.dd),
+              Text(d.format(widget.data.l10n, FormatMode.d),
                   style: appStyle.fonts.B_14R.apply(
                       color: (d.weekday == DateTime.saturday ||
                                   d.weekday == DateTime.sunday) &&
@@ -290,6 +294,60 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                 ),
               )),
         )),
+        TransparentPointer(
+          child: Column(
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).size.height / 1.3,
+              ),
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(),
+                    Row(
+                      children: [
+                        Container(
+                          clipBehavior: Clip.antiAlias,
+                          decoration: ShapeDecoration(
+                            color: appStyle.colors.buttonSecondaryFill,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            child: Row(
+                              children: [
+                                FirkaIconWidget(FirkaIconType.majesticons,
+                                    Majesticon.clockSolid,
+                                    color: appStyle.colors.accent, size: 16),
+                                SizedBox(width: 6),
+                                Text(
+                                    lessons!
+                                        .where((lesson) =>
+                                            lesson.start
+                                                .isAfter(currentMonthStart) &&
+                                            lesson.end
+                                                .isBefore(currentMonthEnd))
+                                        .length
+                                        .toString(),
+                                    style: appStyle.fonts.H_16px.apply(
+                                        color: appStyle.colors.textPrimary))
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox()
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
       ]);
     } else {
       return SizedBox(
