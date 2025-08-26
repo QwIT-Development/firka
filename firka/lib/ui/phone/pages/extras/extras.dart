@@ -6,10 +6,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../helpers/firka_bundle.dart';
 import '../../screens/debug/debug_screen.dart';
-import '../../screens/login/login_screen.dart';
 
-void showExtrasBottomSheet(
-    BuildContext context, bool loggedOut, AppInitialization data) {
+void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -41,24 +39,6 @@ void showExtrasBottomSheet(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    !loggedOut
-                        ? SizedBox()
-                        : GestureDetector(
-                            onTap: () {
-                              Navigator.pop(context);
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => DefaultAssetBundle(
-                                          bundle: FirkaBundle(),
-                                          child: LoginScreen(data))));
-                            },
-                            child: FirkaCard(
-                              left: [Text(data.l10n.reauth_screen)],
-                              right: [],
-                              color: appStyle.colors.accent,
-                            ),
-                          ),
                     GestureDetector(
                       onTap: () => {
                         Navigator.pop(context),

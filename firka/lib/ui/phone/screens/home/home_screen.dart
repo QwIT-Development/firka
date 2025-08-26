@@ -17,11 +17,13 @@ import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../../../helpers/db/widget.dart';
 import '../../../../helpers/debug_helper.dart';
+import '../../../../helpers/firka_bundle.dart';
 import '../../../widget/firka_icon.dart';
 import '../../pages/extras/extras.dart';
 import '../../pages/extras/main_error.dart';
 import '../../pages/home/home_grades_subject.dart';
 import '../../pages/home/home_timetable.dart';
+import '../login/login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final AppInitialization data;
@@ -34,7 +36,7 @@ class HomeScreen extends StatefulWidget {
 
 enum HomePages { home, grades, timetable, timetableMo }
 
-enum ActiveToastType { fetching, error, none }
+enum ActiveToastType { fetching, error, reauth, none }
 
 class ActiveHomePage {
   final HomePages page;
@@ -62,7 +64,6 @@ class _HomeScreenState extends State<HomeScreen> {
   List<ActiveHomePage> previousPages = List.empty(growable: true);
 
   Widget? toast;
-  bool userLoggedOut = false;
 
   ActiveToastType activeToast = ActiveToastType.none;
 
@@ -86,7 +87,47 @@ class _HomeScreenState extends State<HomeScreen> {
       if (res.statusCode >= 400 ||
           res.err == TokenExpiredException().toString()) {
         setState(() {
-          userLoggedOut = true;
+          activeToast = ActiveToastType.reauth;
+          toast = Positioned(
+            top: MediaQuery.of(context).size.height / 1.6,
+            left: 0.0,
+            right: 0.0,
+            bottom: 0,
+            child: Center(
+              child: GestureDetector(
+                child: Card(
+                  color: appStyle.colors.warningCard,
+                  shadowColor: Colors.transparent,
+                  child: Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      // Use min to prevent filling the width
+                      children: [
+                        FirkaIconWidget(FirkaIconType.majesticons,
+                            Majesticon.alertCircleSolid,
+                            color: appStyle.colors.warningAccent, size: 24),
+                        SizedBox(width: 4),
+                        Text(
+                          widget.data.l10n.reauth,
+                          style: appStyle.fonts.B_14SB
+                              .copyWith(color: appStyle.colors.warningText),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => DefaultAssetBundle(
+                              bundle: FirkaBundle(),
+                              child: LoginScreen(widget.data))));
+                },
+              ),
+            ),
+          );
         });
         return;
       }
@@ -191,7 +232,6 @@ class _HomeScreenState extends State<HomeScreen> {
       _updateSystemUI();
     });
 
-    userLoggedOut = false;
     prefetch();
   }
 
@@ -353,15 +393,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             BottomNavIconWidget(
                               () {
                                 HapticFeedback.lightImpact();
-                                showExtrasBottomSheet(
-                                    context, userLoggedOut, widget.data);
+                                showExtrasBottomSheet(context, widget.data);
                               },
                               false,
                               Majesticon.globeEarthLine,
                               widget.data.l10n.other,
                               appStyle.colors.secondary,
                               appStyle.colors.textPrimary,
-                              warn: userLoggedOut,
                             ),
                           ],
                         ),
