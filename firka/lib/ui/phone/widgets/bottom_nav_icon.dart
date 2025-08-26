@@ -12,11 +12,10 @@ class BottomNavIconWidget extends StatelessWidget {
   final String text;
   final Color iconColor;
   final Color textColor;
-  final bool warn;
 
   const BottomNavIconWidget(this.onTap, this.active, this.icon, this.text,
       this.iconColor, this.textColor,
-      {this.warn = false, super.key});
+      {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +31,7 @@ class BottomNavIconWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               FirkaIconWidget(FirkaIconType.majesticons, icon,
-                      color: warn ? appStyle.colors.errorAccent : iconColor,
-                      size: 24)
+                      color: iconColor, size: 24)
                   .build(context),
               const SizedBox(height: 4),
               Text(
