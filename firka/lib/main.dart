@@ -189,6 +189,7 @@ Future<AppInitialization> initializeApp() async {
 void main() async {
   dio.options.connectTimeout = Duration(seconds: 5);
   dio.options.receiveTimeout = Duration(seconds: 3);
+  dio.options.validateStatus = (status) => status != null && status < 500;
 
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();

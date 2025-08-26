@@ -15,6 +15,7 @@ import '../../db/models/token_model.dart';
 import '../../db/util.dart';
 import '../../debug_helper.dart';
 import '../consts.dart';
+import '../exceptions/token.dart';
 import '../model/grade.dart';
 import '../model/notice_board.dart';
 import '../model/omission.dart';
@@ -131,7 +132,9 @@ class KretaClient {
           }
         }
       } catch (ex) {
-        if (ex is! DioException || counter >= backoffCount) {
+        if (_isTokenExpired(ex) ||
+            ex is! DioException ||
+            counter >= backoffCount) {
           rethrow;
         }
 
@@ -296,7 +299,9 @@ class KretaClient {
           }
         }
       } catch (ex) {
-        if (ex is! DioException || counter >= backoffCount) {
+        if (_isTokenExpired(ex) ||
+            ex is! DioException ||
+            counter >= backoffCount) {
           rethrow;
         }
 
@@ -548,3 +553,7 @@ class KretaClient {
     omissionsCache = null;
   }
 }
+
+bool _isTokenExpired(Object ex) =>
+    ex.toString() == TokenExpiredException().toString() ||
+    ex.toString() == InvalidGrantException().toString();

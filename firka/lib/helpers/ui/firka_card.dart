@@ -9,9 +9,15 @@ class FirkaCard extends StatelessWidget {
   final List<Widget>? right;
   final Widget? extra;
   final Attach? attached;
+  final Color? color;
 
   const FirkaCard(
-      {required this.left, this.right, this.extra, this.attached, super.key});
+      {required this.left,
+      this.right,
+      this.extra,
+      this.attached,
+      this.color,
+      super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,30 +29,23 @@ class FirkaCard extends StatelessWidget {
 
     if (extra != null) {
       return SizedBox(
-        width: MediaQuery
-            .of(context)
-            .size
-            .width,
+        width: MediaQuery.of(context).size.width,
         child: Card(
-          color: appStyle.colors.card,
+          color: color ?? appStyle.colors.card,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(
-                    attached == Attach.top
-                        ? attachedRounding
-                        : defaultRounding),
-                topRight: Radius.circular(
-                    attached == Attach.top
-                        ? attachedRounding
-                        : defaultRounding),
-                bottomLeft: Radius.circular(
-                    attached == Attach.bottom
-                        ? attachedRounding
-                        : defaultRounding),
-                bottomRight: Radius.circular(
-                    attached == Attach.bottom
-                        ? attachedRounding
-                        : defaultRounding)),
+                topLeft: Radius.circular(attached == Attach.top
+                    ? attachedRounding
+                    : defaultRounding),
+                topRight: Radius.circular(attached == Attach.top
+                    ? attachedRounding
+                    : defaultRounding),
+                bottomLeft: Radius.circular(attached == Attach.bottom
+                    ? attachedRounding
+                    : defaultRounding),
+                bottomRight: Radius.circular(attached == Attach.bottom
+                    ? attachedRounding
+                    : defaultRounding)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -67,30 +66,23 @@ class FirkaCard extends StatelessWidget {
       );
     } else {
       return SizedBox(
-        width: MediaQuery
-            .of(context)
-            .size
-            .width,
+        width: MediaQuery.of(context).size.width,
         child: Card(
-          color: appStyle.colors.card,
+          color: color ?? appStyle.colors.card,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(
-                    attached == Attach.top
-                        ? attachedRounding
-                        : defaultRounding),
-                topRight: Radius.circular(
-                    attached == Attach.top
-                        ? attachedRounding
-                        : defaultRounding),
-                bottomLeft: Radius.circular(
-                    attached == Attach.bottom
-                        ? attachedRounding
-                        : defaultRounding),
-                bottomRight: Radius.circular(
-                    attached == Attach.bottom
-                        ? attachedRounding
-                        : defaultRounding)),
+                topLeft: Radius.circular(attached == Attach.top
+                    ? attachedRounding
+                    : defaultRounding),
+                topRight: Radius.circular(attached == Attach.top
+                    ? attachedRounding
+                    : defaultRounding),
+                bottomLeft: Radius.circular(attached == Attach.bottom
+                    ? attachedRounding
+                    : defaultRounding),
+                bottomRight: Radius.circular(attached == Attach.bottom
+                    ? attachedRounding
+                    : defaultRounding)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),

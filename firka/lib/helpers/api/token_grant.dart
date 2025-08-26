@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:firka/helpers/api/exceptions/token.dart';
 import 'package:firka/helpers/api/resp/token_grant.dart';
 import 'package:firka/helpers/db/models/token_model.dart';
 
@@ -60,8 +61,10 @@ Future<TokenGrantResponse> extendToken(TokenModel model) async {
     switch (response.statusCode) {
       case 200:
         return TokenGrantResponse.fromJson(response.data);
+      case 400:
+        throw TokenExpiredException();
       case 401:
-        throw Exception("Invalid grant");
+        throw InvalidGrantException();
       default:
         throw Exception(
             "Failed to get access token, response code: ${response.statusCode}");

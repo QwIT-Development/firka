@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:firka/helpers/api/client/kreta_client.dart';
+import 'package:firka/helpers/api/exceptions/token.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/pages/home/home_grades.dart';
@@ -61,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<ActiveHomePage> previousPages = List.empty(growable: true);
 
   Widget? toast;
+  bool userLoggedOut = false;
 
   ActiveToastType activeToast = ActiveToastType.none;
 
@@ -80,7 +82,20 @@ class _HomeScreenState extends State<HomeScreen> {
       var random = Random();
 
       ApiResponse<Object> res =
-          await widget.data.client.getGrades(forceCache: false);
+          await widget.data.client.getStudent(forceCache: false);
+      if (res.statusCode >= 400 ||
+          res.err == TokenExpiredException().toString()) {
+        setState(() {
+          userLoggedOut = true;
+        });
+        return;
+      }
+
+      if (res.err != null) {
+        throw "await widget.data.client.getStudent\n${res.err!}";
+      }
+
+      res = await widget.data.client.getGrades(forceCache: false);
 
       if (res.err != null) {
         throw "await widget.data.client.getGrades\n${res.err!}";
@@ -176,6 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _updateSystemUI();
     });
 
+    userLoggedOut = false;
     prefetch();
   }
 
@@ -334,15 +350,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                     : appStyle.colors.secondary,
                                 appStyle.colors.textPrimary),
                             // More Button
-                            BottomNavIconWidget(() {
-                              HapticFeedback.lightImpact();
-                              showExtrasBottomSheet(context, widget.data);
-                            },
-                                false,
-                                Majesticon.globeEarthLine,
-                                widget.data.l10n.other,
-                                appStyle.colors.secondary,
-                                appStyle.colors.textPrimary),
+                            BottomNavIconWidget(
+                              () {
+                                HapticFeedback.lightImpact();
+                                showExtrasBottomSheet(
+                                    context, userLoggedOut, widget.data);
+                              },
+                              false,
+                              Majesticon.globeEarthLine,
+                              widget.data.l10n.other,
+                              appStyle.colors.secondary,
+                              appStyle.colors.textPrimary,
+                              warn: userLoggedOut,
+                            ),
                           ],
                         ),
                       ),
