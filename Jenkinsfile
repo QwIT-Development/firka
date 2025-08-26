@@ -84,6 +84,34 @@ pipeline {
                 }
             }
         }
+        stage('Calculate Version Code') {
+            steps {
+                script {
+                    sh '''#!/bin/sh
+                    set -e
+                    cd firka
+                    
+                    # Calculate version code based on git commits (same logic as build script)
+                    COMMIT_COUNT=$(git rev-list --count HEAD)
+                    BASE_BUILD_NUMBER=$((1000 + COMMIT_COUNT))
+                    
+                    if [ "$BRANCH_NAME" = "main" ]; then
+                        # For main branch, highest version code is BASE + 3000 (x64 build)
+                        VERSION_CODE=$((BASE_BUILD_NUMBER + 3000))
+                    else
+                        # For debug builds, version code is BASE + 0
+                        VERSION_CODE=$BASE_BUILD_NUMBER
+                    fi
+                    
+                    echo "Calculated version code: $VERSION_CODE"
+                    echo "$VERSION_CODE" > ../version_code.txt
+                    '''
+                    
+                    env.VERSION_CODE = readFile('version_code.txt').trim()
+                    echo "Setting VERSION_CODE environment variable to: ${env.VERSION_CODE}"
+                }
+            }
+        }
         stage('Publish release artifacts') {
             when {
                 branch 'main'
@@ -116,6 +144,12 @@ pipeline {
                             
                             sshpass -e scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
                                 "$SOURCE_FILE" "$SSH_USER@10.0.0.21:$REMOTE_PATH"
+                            
+                            # Update version code in F-Droid metadata
+                            sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+                                "$SSH_USER@10.0.0.21" \
+                                "sed -i 's/^CurrentVersionCode: .*/CurrentVersionCode: $VERSION_CODE/' /home/fdroid/firka-fdroid/metadata/app.firka.naplo.debug.yml"
+                            
                             sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
                                 "$SSH_USER@10.0.0.21" \
                                 "cd /home/fdroid/firka-fdroid && /run/current-system/sw/bin/fdroid update"
@@ -147,6 +181,11 @@ pipeline {
                         fi
                     done
                     
+                    # Update version code in F-Droid metadata for release
+                    sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+                        "$SSH_USER@10.0.0.21" \
+                        "sed -i 's/^CurrentVersionCode: .*/CurrentVersionCode: $VERSION_CODE/' /home/fdroid/firka-fdroid/metadata/app.firka.naplo.yml"
+                    
                     # Update F-Droid repository
                     sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
                         "$SSH_USER@10.0.0.21" \
@@ -162,6 +201,7 @@ pipeline {
                     sh '''
                     rm firka/build/app/outputs/flutter-apk/app.firka.naplo_*.apk || true
                     rm firka/build/app/outputs/flutter-apk/app-debug.apk || true
+                    rm version_code.txt || true
                     git checkout -- firka/pubspec.yaml
                     '''
                 }
