@@ -68,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
             if (!mounted) return NavigationDecision.prevent;
 
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => HomeScreen(widget.data)),
+              MaterialPageRoute(builder: (context) => HomeScreen(widget.data, false)),
               (route) => false, // Remove all previous routes
             );
           } catch (ex) {

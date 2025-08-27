@@ -6,6 +6,7 @@ enum Attach { none, bottom, top }
 
 class FirkaCard extends StatelessWidget {
   final List<Widget> left;
+  final List<Widget>? center;
   final List<Widget>? right;
   final Widget? extra;
   final Attach? attached;
@@ -13,6 +14,7 @@ class FirkaCard extends StatelessWidget {
 
   const FirkaCard(
       {required this.left,
+      this.center,
       this.right,
       this.extra,
       this.attached,
@@ -55,6 +57,7 @@ class FirkaCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(children: left),
+                    Row(children: center ?? []),
                     Row(children: right),
                   ],
                 ),
@@ -90,6 +93,7 @@ class FirkaCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(children: left),
+                Row(children: center ?? []),
                 Row(children: right),
               ],
             ),

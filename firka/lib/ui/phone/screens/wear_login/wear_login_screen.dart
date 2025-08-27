@@ -72,7 +72,7 @@ class _WearLoginScreenState extends State<WearLoginScreen> {
             if (widget.data.tokenCount > 0) {
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
-                    builder: (context) => HomeScreen(widget.data)),
+                    builder: (context) => HomeScreen(widget.data, false)),
                 (route) => false, // Remove all previous routes
               );
             } else {

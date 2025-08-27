@@ -91,6 +91,7 @@ flutter:
     - assets/images/carousel/
     - assets/images/icons/
     - assets/images/background.png
+    - assets/images/wear_pair.svg
     - assets/icons/
     - assets/majesticons/
     - assets/firka.i
