@@ -5,6 +5,7 @@ import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/helpers/api/exceptions/token.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
+import 'package:firka/ui/phone/pages/extras/main_wear_pair.dart';
 import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/phone/pages/home/home_main.dart';
 import 'package:firka/ui/phone/pages/home/home_timetable_mo.dart';
@@ -27,8 +28,10 @@ import '../login/login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final AppInitialization data;
+  final bool watchPair;
+  final String? model;
 
-  const HomeScreen(this.data, {super.key});
+  const HomeScreen(this.data, this.watchPair, {this.model, super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -64,6 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<ActiveHomePage> previousPages = List.empty(growable: true);
 
   Widget? toast;
+  bool pairingDone = false;
 
   ActiveToastType activeToast = ActiveToastType.none;
 
@@ -249,6 +253,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     _updateSystemUI(); // Update system UI on every build, to compensate for the android system being dumb
+
+    if (widget.watchPair && !pairingDone) {
+      Timer.run(() {
+        showWearBottomSheet(context, widget.data, widget.model!);
+
+        // pairingDone = true;
+      });
+    }
 
     if (_fetching) {
       setState(() {

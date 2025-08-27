@@ -120,6 +120,7 @@ class SettingsStore {
                             bundle: FirkaBundle(),
                             child: HomeScreen(
                               initData,
+                              false,
                               key: ValueKey('homeScreen'),
                             ))),
                   );
