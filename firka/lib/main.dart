@@ -18,7 +18,6 @@ import 'package:firka/ui/phone/pages/error/error_page.dart';
 import 'package:firka/ui/phone/screens/debug/debug_screen.dart';
 import 'package:firka/ui/phone/screens/home/home_screen.dart';
 import 'package:firka/ui/phone/screens/login/login_screen.dart';
-import 'package:firka/ui/phone/screens/wear_login/wear_login_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -259,13 +258,16 @@ class InitializationScreen extends StatelessWidget {
 
               switch (msg["id"]) {
                 case "ping":
-                  debugPrint("[Phone -> Watch]: pong");
-                  watch.sendMessage({"id": "pong"});
-                  navigatorKey.currentState?.push(
-                    MaterialPageRoute(
-                      builder: (context) => WearLoginScreen(initData),
-                    ),
-                  );
+                  if (initData.tokenCount > 0) {
+                    debugPrint("[Phone -> Watch]: pong");
+                    watch.sendMessage({"id": "pong"});
+                    navigatorKey.currentState?.push(
+                      MaterialPageRoute(
+                        builder: (context) => HomeScreen(initData, true,
+                            model: msg["model"] as String),
+                      ),
+                    );
+                  }
               }
             });
           }
@@ -278,6 +280,7 @@ class InitializationScreen extends StatelessWidget {
           } else {
             screen = HomeScreen(
               initData,
+              false,
               key: ValueKey('homeScreen'),
             );
           }
