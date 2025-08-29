@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
 
+import '../../../../helpers/api/consts.dart';
 import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../widget/firka_icon.dart';
@@ -32,6 +33,7 @@ class HomeTimetableScreen extends StatefulWidget {
 
 class _HomeTimetableScreen extends State<HomeTimetableScreen> {
   List<Lesson>? lessons;
+  List<Lesson>? events;
   List<DateTime>? dates;
   DateTime? now;
   int active = 0;
@@ -48,7 +50,12 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
     List<DateTime> dates = List.empty(growable: true);
 
     if (lessonsResp.response != null) {
-      lessons = lessonsResp.response;
+      lessons = lessonsResp.response
+          ?.where((lesson) => lesson.type.name != TimetableConsts.event)
+          .toList();
+      events = lessonsResp.response
+          ?.where((lesson) => lesson.type.name == TimetableConsts.event)
+          .toList();
 
       for (var i = 0; i < 7; i++) {
         var t = monday.add(Duration(days: i));
@@ -115,7 +122,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (lessons != null && dates != null) {
+    if (lessons != null && events != null && dates != null) {
       List<Widget> ttWidgets = [];
       List<Widget> ttDays = [];
 
@@ -129,13 +136,19 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
           });
         }, active == i, date));
 
-        var lessonsOnDate = lessons!
+        final lessonsOnDate = lessons!
+            .where((lesson) =>
+                lesson.start.isAfter(date) &&
+                lesson.end.isBefore(date.add(Duration(hours: 24))))
+            .toList();
+        final eventsOnDate = events!
             .where((lesson) =>
                 lesson.start.isAfter(date) &&
                 lesson.end.isBefore(date.add(Duration(hours: 24))))
             .toList();
 
-        ttDays.add(TimeTableDayWidget(widget.data.l10n, date, lessonsOnDate));
+        ttDays.add(TimeTableDayWidget(
+            widget.data.l10n, date, lessonsOnDate, eventsOnDate));
       }
 
       return Stack(children: [
