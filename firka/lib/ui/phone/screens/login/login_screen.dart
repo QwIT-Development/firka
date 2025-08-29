@@ -35,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
 
     _webViewController = WebViewController()
+      ..setUserAgent(Constants.webviewUserAgent)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadRequest(Uri.parse(KretaEndpoints.kretaLoginUrl))
       ..setNavigationDelegate(NavigationDelegate(
