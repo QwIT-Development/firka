@@ -3,12 +3,14 @@ import 'dart:math';
 
 import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/helpers/api/exceptions/token.dart';
+import 'package:firka/helpers/settings/setting.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/pages/extras/main_wear_pair.dart';
 import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/phone/pages/home/home_main.dart';
 import 'package:firka/ui/phone/pages/home/home_timetable_mo.dart';
+import 'package:firka/ui/phone/screens/home/beta_screen.dart';
 import 'package:firka/ui/phone/widgets/bottom_nav_icon.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -68,10 +70,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget? toast;
   bool pairingDone = false;
+  bool _disposed = false;
 
   ActiveToastType activeToast = ActiveToastType.none;
 
   void setPageCB(ActiveHomePage newPage, bool setPrev) {
+    if (_disposed) return;
     setState(() {
       if (setPrev) previousPages.add(page);
       canPop = false;
@@ -90,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
           await widget.data.client.getStudent(forceCache: false);
       if (res.statusCode >= 400 ||
           res.err == TokenExpiredException().toString()) {
+        if (_disposed) return;
         setState(() {
           activeToast = ActiveToastType.reauth;
           toast = Positioned(
@@ -169,12 +174,14 @@ class _HomeScreenState extends State<HomeScreen> {
         dismissDelay = 2;
       }
       Timer(Duration(seconds: dismissDelay), () {
+        if (_disposed) return;
         setState(() {
           activeToast = ActiveToastType.none;
           toast = null;
         });
       });
 
+      if (_disposed) return;
       setState(() {
         // TODO: Make this and the error toast more rounded
         toast = Positioned(
@@ -221,11 +228,13 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       });
     } finally {
-      setState(() {
-        _fetching = false;
+      if (!_disposed) {
+        setState(() {
+          _fetching = false;
 
-        if (activeToast == ActiveToastType.fetching) toast = null;
-      });
+          if (activeToast == ActiveToastType.fetching) toast = null;
+        });
+      }
     }
   }
 
@@ -254,6 +263,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     _updateSystemUI(); // Update system UI on every build, to compensate for the android system being dumb
 
+    if (!widget.data.settings.group("settings").boolean("beta_warning")) {
+      Timer.run(() {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => BetaScreen(widget.data)),
+          (route) => false,
+        );
+      });
+
+      return SizedBox();
+    }
+
     if (widget.watchPair && !pairingDone) {
       Timer.run(() {
         showWearBottomSheet(context, widget.data, widget.model!);
@@ -263,6 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (_fetching) {
+      if (_disposed) return SizedBox();
       setState(() {
         activeToast = ActiveToastType.fetching;
         toast = Positioned(
@@ -435,6 +456,16 @@ class _HomeScreenState extends State<HomeScreen> {
           }
       },
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _disposed = true;
+    _fetching = false;
+    _prefetched = false;
+    activeToast = ActiveToastType.none;
   }
 }
 
