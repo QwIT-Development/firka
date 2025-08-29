@@ -11,8 +11,11 @@ import '../screens/home/home_screen.dart';
 
 class LoginWebviewWidget extends StatefulWidget {
   final AppInitialization data;
+  final String? username;
+  final String? schoolId;
 
-  const LoginWebviewWidget(this.data);
+  const LoginWebviewWidget(this.data,
+      {super.key, this.username, this.schoolId});
 
   @override
   State<LoginWebviewWidget> createState() => _LoginWebviewWidgetState();
@@ -25,10 +28,17 @@ class _LoginWebviewWidgetState extends State<LoginWebviewWidget> {
   void initState() {
     super.initState();
 
+    var loginUrl = KretaEndpoints.kretaLoginUrl;
+
+    if (widget.username != null && widget.schoolId != null) {
+      loginUrl = KretaEndpoints.kretaLoginUrlRefresh(
+          widget.username!, widget.schoolId!);
+    }
+
     _webViewController = WebViewController()
       ..setUserAgent(Constants.webviewUserAgent)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(Uri.parse(KretaEndpoints.kretaLoginUrl))
+      ..loadRequest(Uri.parse(loginUrl))
       ..setNavigationDelegate(NavigationDelegate(
           onNavigationRequest: (NavigationRequest request) async {
         var uri = Uri.parse(request.url);
