@@ -96,14 +96,20 @@ class _HomeGradesSubjectScreen extends State<HomeGradesSubjectScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        grade.topic ?? grade.type.description!,
-                        style: appStyle.fonts.B_14SB,
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width / 1.45,
+                        child: Text(grade.topic ?? grade.type.description!,
+                            style: appStyle.fonts.B_14SB),
                       ),
-                      Text(
-                        grade.mode?.description ?? "",
-                        style: appStyle.fonts.B_14R,
-                      )
+                      grade.mode?.description != null
+                          ? SizedBox(
+                              width: MediaQuery.of(context).size.width / 1.45,
+                              child: Text(
+                                grade.mode!.description!,
+                                style: appStyle.fonts.B_14R,
+                              ),
+                            )
+                          : SizedBox(),
                     ],
                   )
                 ],
@@ -146,9 +152,12 @@ class _HomeGradesSubjectScreen extends State<HomeGradesSubjectScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                aGrade.subject.name,
-                                style: appStyle.fonts.H_H2,
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width / 1.45,
+                                child: Text(
+                                  aGrade.subject.name,
+                                  style: appStyle.fonts.H_H2,
+                                ),
                               ),
                               Text(
                                 aGrade.teacher, // For some reason the teacher's
