@@ -1,16 +1,13 @@
 import 'package:firka/helpers/api/consts.dart';
-import 'package:firka/helpers/api/consts.dart';
-import 'package:firka/helpers/api/consts.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/widget/delayed_spinner.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import '../../../../main.dart';
 import '../../../widget/firka_icon.dart';
@@ -34,17 +31,9 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
   List<DateTime>? dates;
   DateTime? now;
   int active = 0;
-  bool disposed = false;
   ActiveFilter activeFilter = ActiveFilter.lessonNo;
 
   _HomeTimetableMonthlyScreen();
-
-  @override
-  void dispose() {
-    super.dispose();
-
-    disposed = true;
-  }
 
   Future<void> initForMonth(DateTime now) async {
     final monthStart = DateTime.utc(now.year, now.month, 1);
@@ -69,10 +58,11 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
       lessons = lessonsResp.response;
     }
 
-    if (disposed) return;
-    setState(() {
-      this.dates = dates;
-    });
+    if (mounted) {
+      setState(() {
+        this.dates = dates;
+      });
+    }
   }
 
   @override

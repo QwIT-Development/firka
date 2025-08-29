@@ -108,8 +108,9 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
       return Flexible(
         child: Padding(
           padding: const EdgeInsets.only(
-            left: 16.0,
-            right: 16.0,
+            left: 20.0,
+            right: 20.0,
+            top: 12.0,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,7 +120,7 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
                   Text(
                     widget.data.l10n.subjects,
                     style: appStyle.fonts.H_H2
-                        .apply(color: appStyle.colors.textSecondary),
+                        .apply(color: appStyle.colors.textPrimary),
                   )
                 ],
               ),
@@ -128,7 +129,7 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
               SizedBox(
                 height: MediaQuery.of(context).size.height -
                     MediaQuery.of(context).padding.top -
-                    230,
+                    240,
                 child: ListView(
                   children: [
                     Text(

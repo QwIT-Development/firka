@@ -29,17 +29,9 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
   List<DateTime>? dates;
   DateTime? now;
   int active = 0;
-  bool disposed = false;
   final CarouselSliderController _controller = CarouselSliderController();
 
   _HomeTimetableScreen();
-
-  @override
-  void dispose() {
-    super.dispose();
-
-    disposed = true;
-  }
 
   Future<void> initForWeek(DateTime now) async {
     var monday = now.getMonday().getMidnight();
@@ -67,7 +59,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
       }
     }
 
-    if (disposed) return;
+    if (!mounted) return;
     setState(() {
       this.dates = dates;
       if (now.isAfter(dates.last)) {
