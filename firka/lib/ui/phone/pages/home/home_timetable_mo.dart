@@ -60,7 +60,9 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
     }
 
     if (lessonsResp.response != null) {
-      lessons = lessonsResp.response;
+      lessons = lessonsResp.response
+          ?.where((lesson) => lesson.type.name != TimetableConsts.event)
+          .toList();
     }
 
     if (mounted) {
