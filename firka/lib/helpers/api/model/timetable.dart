@@ -74,8 +74,8 @@ class Lesson {
     return Lesson(
       uid: json['Uid'],
       date: json['Datum'],
-      start: DateTime.parse(json['KezdetIdopont']),
-      end: DateTime.parse(json['VegIdopont']),
+      start: DateTime.parse(json['KezdetIdopont']).toLocal(),
+      end: DateTime.parse(json['VegIdopont']).toLocal(),
       name: json['Nev'],
       lessonNumber: json['Oraszam'],
       lessonSeqNumber: json['OraEvesSorszama'],
@@ -107,8 +107,8 @@ class Lesson {
           json['DigitalisTamogatoEszkozTipusList'] != null
               ? List<String>.from(json['DigitalisTamogatoEszkozTipusList'])
               : List<String>.empty(),
-      createdAt: DateTime.parse(json['Letrehozas']),
-      lastModifiedAt: DateTime.parse(json['UtolsoModositas']),
+      createdAt: DateTime.parse(json['Letrehozas']).toLocal(),
+      lastModifiedAt: DateTime.parse(json['UtolsoModositas']).toLocal(),
     );
   }
 

@@ -143,8 +143,8 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
             .toList();
         final eventsOnDate = events!
             .where((lesson) =>
-                lesson.start.isAfter(date) &&
-                lesson.end.isBefore(date.add(Duration(hours: 24))))
+                lesson.start.isAfter(date.subtract(Duration(seconds: 1))) &&
+                lesson.end.isBefore(date.add(Duration(hours: 23, minutes: 59))))
             .toList();
 
         ttDays.add(TimeTableDayWidget(
