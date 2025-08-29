@@ -384,7 +384,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             GestureDetector(
               child: FirkaButton(
-                  text: "Mégse",
+                  text: widget.data.l10n.cancel,
                   bgColor: appStyle.colors.buttonSecondaryFill,
                   fontStyle: appStyle.fonts.B_14R
                       .apply(color: appStyle.colors.textSecondary)),
@@ -394,7 +394,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             GestureDetector(
               child: FirkaButton(
-                  text: "Mentés",
+                  text: widget.data.l10n.save,
                   bgColor: appStyle.colors.accent,
                   fontStyle: appStyle.fonts.B_14R
                       .apply(color: appStyle.colors.textSecondary)),
