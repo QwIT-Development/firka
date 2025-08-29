@@ -10,15 +10,21 @@ import '../../../../helpers/api/model/grade.dart';
 import '../../../../helpers/api/model/subject.dart';
 import '../../../../helpers/api/model/timetable.dart';
 import '../../../../helpers/debug_helper.dart';
+import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../model/style.dart';
 import '../../../widget/delayed_spinner.dart';
 
 class HomeGradesScreen extends StatefulWidget {
   final AppInitialization data;
+  final UpdateNotifier updateNotifier;
+  final UpdateNotifier finishNotifier;
+
   final void Function(ActiveHomePage, bool) cb;
 
-  const HomeGradesScreen(this.data, this.cb, {super.key});
+  const HomeGradesScreen(
+      this.data, this.updateNotifier, this.finishNotifier, this.cb,
+      {super.key});
 
   @override
   State<StatefulWidget> createState() => _HomeGradesScreen();
@@ -29,8 +35,31 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
   ApiResponse<List<Lesson>>? week;
 
   @override
+  void didUpdateWidget(HomeGradesScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    widget.updateNotifier.removeListener(updateListener);
+    widget.updateNotifier.addListener(updateListener);
+  }
+
+  void updateListener() async {
+    var now = timeNow();
+    var start = now.subtract(Duration(days: now.weekday - 1));
+    var end = start.add(Duration(days: 6));
+
+    grades = await widget.data.client.getGrades(forceCache: false);
+    week = await widget.data.client.getTimeTable(start, end, forceCache: false);
+
+    if (mounted) setState(() {});
+
+    widget.finishNotifier.update();
+  }
+
+  @override
   void initState() {
     super.initState();
+
+    widget.updateNotifier.addListener(updateListener);
 
     (() async {
       var now = timeNow();
@@ -42,6 +71,12 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
 
       if (mounted) setState(() {});
     })();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    widget.updateNotifier.removeListener(updateListener);
   }
 
   @override
