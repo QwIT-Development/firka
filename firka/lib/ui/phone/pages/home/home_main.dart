@@ -67,7 +67,6 @@ class _HomeMainScreen extends State<HomeMainScreen> {
   void dispose() {
     super.dispose();
 
-    disposed = true;
     timer?.cancel();
   }
 
