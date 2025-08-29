@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/helpers/api/exceptions/token.dart';
 import 'package:firka/helpers/settings/setting.dart';
+import 'package:firka/helpers/update_notifier.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/pages/extras/main_wear_pair.dart';
@@ -32,8 +33,10 @@ class HomeScreen extends StatefulWidget {
   final AppInitialization data;
   final bool watchPair;
   final String? model;
+  final UpdateNotifier updateNotifier = UpdateNotifier();
+  final UpdateNotifier updateFinishedNotifier = UpdateNotifier();
 
-  const HomeScreen(this.data, this.watchPair, {this.model, super.key});
+  HomeScreen(this.data, this.watchPair, {this.model, super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -266,9 +269,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onRefresh() async {
-    await Future.delayed(Duration(milliseconds: 1000));
+    late void Function() finishListener;
+    finishListener = () {
+      widget.updateFinishedNotifier.removeListener(finishListener);
 
-    _refreshController.refreshCompleted();
+      _refreshController.refreshCompleted();
+    };
+
+    widget.updateFinishedNotifier.addListener(finishListener);
+    widget.updateNotifier.update();
   }
 
   void _onLoading() async {
@@ -364,7 +373,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [HomeSubPage(page, setPageCB, widget.data)],
+                          children: [
+                            HomeSubPage(
+                                page,
+                                setPageCB,
+                                widget.data,
+                                widget.updateNotifier,
+                                widget.updateFinishedNotifier)
+                          ],
                         ),
                         Container(
                           decoration: BoxDecoration(
@@ -501,24 +517,32 @@ class HomeSubPage extends StatelessWidget {
   final ActiveHomePage page;
   final void Function(ActiveHomePage, bool) cb;
   final AppInitialization data;
+  final UpdateNotifier _updateNotifier;
+  final UpdateNotifier _updateFinishNotifier;
 
-  const HomeSubPage(this.page, this.cb, this.data, {super.key});
+  const HomeSubPage(this.page, this.cb, this.data, this._updateNotifier,
+      this._updateFinishNotifier,
+      {super.key});
 
   @override
   Widget build(BuildContext context) {
     switch (page.page) {
       case HomePages.home:
-        return HomeMainScreen(data);
+        return HomeMainScreen(data, _updateNotifier, _updateFinishNotifier);
       case HomePages.grades:
         if (page.subPageUid != null) {
-          return HomeGradesSubjectScreen(data, page.subPageUid!);
+          return HomeGradesSubjectScreen(
+              data, _updateNotifier, _updateFinishNotifier, page.subPageUid!);
         } else {
-          return HomeGradesScreen(data, cb);
+          return HomeGradesScreen(
+              data, _updateNotifier, _updateFinishNotifier, cb);
         }
       case HomePages.timetable:
-        return HomeTimetableScreen(data, cb);
+        return HomeTimetableScreen(
+            data, _updateNotifier, _updateFinishNotifier, cb);
       case HomePages.timetableMo:
-        return HomeTimetableMonthlyScreen(data, cb);
+        return HomeTimetableMonthlyScreen(
+            data, _updateNotifier, _updateFinishNotifier, cb);
     }
   }
 }

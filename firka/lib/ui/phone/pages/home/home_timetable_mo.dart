@@ -9,15 +9,20 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
 
+import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../widget/firka_icon.dart';
 import '../../screens/home/home_screen.dart';
 
 class HomeTimetableMonthlyScreen extends StatefulWidget {
   final AppInitialization data;
+  final UpdateNotifier updateNotifier;
+  final UpdateNotifier finishNotifier;
   final void Function(ActiveHomePage, bool) cb;
 
-  const HomeTimetableMonthlyScreen(this.data, this.cb, {super.key});
+  const HomeTimetableMonthlyScreen(
+      this.data, this.updateNotifier, this.finishNotifier, this.cb,
+      {super.key});
 
   @override
   State<HomeTimetableMonthlyScreen> createState() =>
@@ -35,7 +40,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
 
   _HomeTimetableMonthlyScreen();
 
-  Future<void> initForMonth(DateTime now) async {
+  Future<void> initForMonth(DateTime now, {bool forceCache = true}) async {
     final monthStart = DateTime.utc(now.year, now.month, 1);
     final monthEnd =
         DateTime.utc(now.year, now.month + 1).subtract(Duration(days: 1));
@@ -46,8 +51,8 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
 
     var days = end.difference(start).inDays;
 
-    var lessonsResp =
-        await widget.data.client.getTimeTable(monthStart, monthEnd);
+    var lessonsResp = await widget.data.client
+        .getTimeTable(monthStart, monthEnd, forceCache: forceCache);
     List<DateTime> dates = List.empty(growable: true);
 
     for (var i = 0; i < days; i++) {
@@ -66,11 +71,36 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
   }
 
   @override
+  void didUpdateWidget(HomeTimetableMonthlyScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    widget.updateNotifier.removeListener(updateListener);
+    widget.updateNotifier.addListener(updateListener);
+  }
+
+  void updateListener() async {
+    if (now != null) {
+      await initForMonth(now!, forceCache: false);
+      setState(() {});
+    }
+    widget.finishNotifier.update();
+  }
+
+  @override
   void initState() {
     super.initState();
 
+    widget.updateNotifier.addListener(updateListener);
+
     now = timeNow();
     initForMonth(now!);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    widget.updateNotifier.removeListener(updateListener);
   }
 
   @override

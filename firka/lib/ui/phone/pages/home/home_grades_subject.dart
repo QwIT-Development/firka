@@ -4,6 +4,7 @@ import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/helpers/ui/grade.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../model/style.dart';
 import '../../../widget/delayed_spinner.dart';
@@ -11,8 +12,12 @@ import '../../../widget/delayed_spinner.dart';
 class HomeGradesSubjectScreen extends StatefulWidget {
   final AppInitialization data;
   final String subPageUid;
+  final UpdateNotifier updateNotifier;
+  final UpdateNotifier finishNotifier;
 
-  const HomeGradesSubjectScreen(this.data, this.subPageUid, {super.key});
+  const HomeGradesSubjectScreen(
+      this.data, this.updateNotifier, this.finishNotifier, this.subPageUid,
+      {super.key});
 
   @override
   State<StatefulWidget> createState() => _HomeGradesSubjectScreen();
@@ -22,8 +27,29 @@ class _HomeGradesSubjectScreen extends State<HomeGradesSubjectScreen> {
   Iterable<Grade>? grades;
 
   @override
+  void didUpdateWidget(HomeGradesSubjectScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    widget.updateNotifier.removeListener(updateListener);
+    widget.updateNotifier.addListener(updateListener);
+  }
+
+  void updateListener() async {
+    grades = (await widget.data.client.getGrades(forceCache: false))
+        .response!
+        .where((grade) => grade.subject.uid == widget.subPageUid)
+        .where((grade) => grade.type.name != "felevi_jegy_ertekeles");
+
+    if (mounted) setState(() {});
+
+    widget.finishNotifier.update();
+  }
+
+  @override
   void initState() {
     super.initState();
+
+    widget.updateNotifier.addListener(updateListener);
 
     (() async {
       grades = (await widget.data.client.getGrades())
@@ -33,6 +59,12 @@ class _HomeGradesSubjectScreen extends State<HomeGradesSubjectScreen> {
 
       if (mounted) setState(() {});
     })();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    widget.updateNotifier.removeListener(updateListener);
   }
 
   @override

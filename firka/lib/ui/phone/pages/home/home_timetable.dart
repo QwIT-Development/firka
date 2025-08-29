@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
 
+import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../widget/firka_icon.dart';
 import '../../screens/home/home_screen.dart';
@@ -16,9 +17,14 @@ import '../../widgets/tt_day.dart';
 
 class HomeTimetableScreen extends StatefulWidget {
   final AppInitialization data;
+  final UpdateNotifier updateNotifier;
+  final UpdateNotifier finishNotifier;
+
   final void Function(ActiveHomePage, bool) cb;
 
-  const HomeTimetableScreen(this.data, this.cb, {super.key});
+  const HomeTimetableScreen(
+      this.data, this.updateNotifier, this.finishNotifier, this.cb,
+      {super.key});
 
   @override
   State<HomeTimetableScreen> createState() => _HomeTimetableScreen();
@@ -33,11 +39,12 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
 
   _HomeTimetableScreen();
 
-  Future<void> initForWeek(DateTime now) async {
+  Future<void> initForWeek(DateTime now, {bool forceCache = true}) async {
     var monday = now.getMonday().getMidnight();
     var sunday = monday.add(Duration(days: 6));
 
-    var lessonsResp = await widget.data.client.getTimeTable(monday, sunday);
+    var lessonsResp = await widget.data.client
+        .getTimeTable(monday, sunday, forceCache: forceCache);
     List<DateTime> dates = List.empty(growable: true);
 
     if (lessonsResp.response != null) {
@@ -73,12 +80,37 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
     });
   }
 
+  void updateListener() async {
+    if (now != null) {
+      await initForWeek(now!, forceCache: false);
+      setState(() {});
+    }
+    widget.finishNotifier.update();
+  }
+
+  @override
+  void didUpdateWidget(HomeTimetableScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    widget.updateNotifier.removeListener(updateListener);
+    widget.updateNotifier.addListener(updateListener);
+  }
+
   @override
   void initState() {
     super.initState();
 
+    widget.updateNotifier.addListener(updateListener);
+
     now = timeNow();
     initForWeek(now!);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    widget.updateNotifier.removeListener(updateListener);
   }
 
   @override

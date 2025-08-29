@@ -9,14 +9,18 @@ import 'package:flutter/material.dart';
 import '../../../../helpers/api/model/student.dart';
 import '../../../../helpers/api/model/timetable.dart';
 import '../../../../helpers/debug_helper.dart';
+import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../widgets/home_main_welcome.dart';
 import '../../widgets/lesson_big.dart';
 
 class HomeMainScreen extends StatefulWidget {
   final AppInitialization data;
+  final UpdateNotifier updateNotifier;
+  final UpdateNotifier finishNotifier;
 
-  const HomeMainScreen(this.data, {super.key});
+  const HomeMainScreen(this.data, this.updateNotifier, this.finishNotifier,
+      {super.key});
 
   @override
   State<HomeMainScreen> createState() => _HomeMainScreen();
@@ -29,34 +33,63 @@ class _HomeMainScreen extends State<HomeMainScreen> {
   List<Lesson>? lessons;
   Student? student;
   Timer? timer;
-  bool disposed = false;
+
+  @override
+  void didUpdateWidget(HomeMainScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    widget.updateNotifier.removeListener(updateListener);
+    widget.updateNotifier.addListener(updateListener);
+  }
+
+  void updateListener() async {
+    final newData = await loadData(now, forceCache: false);
+
+    if (mounted) {
+      setState(() {
+        lessons = newData.$1;
+        student = newData.$2;
+      });
+    }
+    widget.finishNotifier.update();
+  }
+
+  Future<(List<Lesson>, Student)> loadData(DateTime now,
+      {bool forceCache = true}) async {
+    var midnight = now.getMidnight();
+
+    var respTT = await widget.data.client.getTimeTable(
+        midnight, midnight.add(Duration(hours: 23, minutes: 59)),
+        forceCache: forceCache);
+
+    var respStudent =
+        await widget.data.client.getStudent(forceCache: forceCache);
+
+    return Future.value((respTT.response!, respStudent.response!));
+  }
 
   @override
   void initState() {
     super.initState();
 
+    widget.updateNotifier.addListener(updateListener);
+
     now = timeNow();
-    var midnight = now.getMidnight();
-    (() async {
-      var resp = await widget.data.client.getTimeTable(
-          midnight, midnight.add(Duration(hours: 23, minutes: 59)));
+    if (!mounted) return;
 
-      if (disposed) return;
-      setState(() {
-        lessons = resp.response!;
-      });
-    })();
     (() async {
-      var resp = await widget.data.client.getStudent();
+      final newData = await loadData(now);
 
-      if (disposed) return;
-      setState(() {
-        student = resp.response!;
-      });
+      if (mounted) {
+        setState(() {
+          lessons = newData.$1;
+          student = newData.$2;
+        });
+      }
     })();
 
     timer = Timer.periodic(Duration(seconds: 1), (timer) async {
-      if (disposed) return;
+      if (!mounted) return;
       setState(() {
         now = timeNow();
       });
@@ -66,6 +99,8 @@ class _HomeMainScreen extends State<HomeMainScreen> {
   @override
   void dispose() {
     super.dispose();
+
+    widget.updateNotifier.removeListener(updateListener);
 
     timer?.cancel();
   }
