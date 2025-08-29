@@ -24,7 +24,8 @@ const classAvgOnGraph = 1006;
 const leftHandedMode = 1007;
 const language = 1008;
 const appIcon = 1009;
-const child_protection = 1010;
+const childProtection = 1010;
+const betaWarning = 1011;
 
 bool always() {
   return true;
@@ -152,7 +153,7 @@ class SettingsStore {
                       "icon_preview": SettingsAppIconPreview(0, always),
                       "settings_padding2": SettingsPadding(0, 24, always),
                       "child_protection": SettingsBoolean(
-                          child_protection,
+                          childProtection,
                           FirkaIconType.majesticons,
                           Majesticon.shieldSolid,
                           l10n.s_ci_child_protection,
@@ -224,6 +225,10 @@ class SettingsStore {
               never),
           "settings_other_padding": SettingsPadding(0, 20, never),
           "settings_other_header": SettingsHeaderSmall(0, "Egyéb", never),
+
+          // misc
+          "beta_warning": SettingsBoolean(
+              betaWarning, null, null, "Beta warning", false, never)
         }),
         always);
 
