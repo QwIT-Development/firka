@@ -52,6 +52,9 @@ class KretaEndpoints {
   static String kretaIdp = "https://idp.e-kreta.hu";
   static String kretaLoginUrl =
       "$kretaIdp/Account/Login?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fredirect_uri%3Dhttps%253A%252F%252Fmobil.e-kreta.hu%252Fellenorzo-student%252Fprod%252Foauthredirect%26client_id%3Dkreta-ellenorzo-student-mobile-android%26response_type%3Dcode%26prompt%3Dlogin%26state%3DaOPUjQU3sXBVRjQQkmYT8g%26nonce%3D3qtS0kDcaHIUGkkEcL1-5g%26scope%3Dopenid%2520email%2520offline_access%2520kreta-ellenorzo-webapi.public%2520kreta-eugyintezes-webapi.public%2520kreta-fileservice-webapi.public%2520kreta-mobile-global-webapi.public%2520kreta-dkt-webapi.public%2520kreta-ier-webapi.public%26code_challenge%3D$_codeChallenge%26code_challenge_method%3DS256%26suppressed_prompt%3Dlogin";
+
+  static String kretaLoginUrlRefresh(String username, String schoolId) =>
+      "$kretaIdp/Account/Login?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fredirect_uri%3Dhttps%253A%252F%252Fmobil.e-kreta.hu%252Fellenorzo-student%252Fprod%252Foauthredirect%26client_id%3Dkreta-ellenorzo-student-mobile-android%26response_type%3Dcode%26login_hint%3D$username%26prompt%3Dlogin%26state%3DaOPUjQU3sXBVRjQQkmYT8g%26nonce%3D3qtS0kDcaHIUGkkEcL1-5g%26scope%3Dopenid%2520email%2520offline_access%2520kreta-ellenorzo-webapi.public%2520kreta-eugyintezes-webapi.public%2520kreta-fileservice-webapi.public%2520kreta-mobile-global-webapi.public%2520kreta-dkt-webapi.public%2520kreta-ier-webapi.public%26code_challenge%3D$_codeChallenge%26code_challenge_method%3DS256%26institute_code%3D$schoolId%26suppressed_prompt%3Dlogin";
   static String tokenGrantUrl = "$kretaIdp/connect/token";
 
   static String getStudentUrl(String iss) =>
