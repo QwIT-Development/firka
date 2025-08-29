@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
+import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
 import '../../../../helpers/db/widget.dart';
 import '../../../../helpers/debug_helper.dart';
@@ -70,6 +71,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget? toast;
   bool pairingDone = false;
   bool _disposed = false;
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
 
   ActiveToastType activeToast = ActiveToastType.none;
 
@@ -262,6 +265,17 @@ class _HomeScreenState extends State<HomeScreen> {
     ));
   }
 
+  void _onRefresh() async {
+    await Future.delayed(Duration(milliseconds: 1000));
+
+    _refreshController.refreshCompleted();
+  }
+
+  void _onLoading() async {
+    if (mounted) setState(() {});
+    _refreshController.loadComplete();
+  }
+
   @override
   Widget build(BuildContext context) {
     _updateSystemUI(); // Update system UI on every build, to compensate for the android system being dumb
@@ -327,138 +341,149 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    return PopScope(
-      canPop: canPop,
-      child: Scaffold(
-        backgroundColor: appStyle.colors.background,
-        body: SafeArea(
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height,
-            child: Stack(
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return SmartRefresher(
+        controller: _refreshController,
+        onLoading: _onLoading,
+        onRefresh: _onRefresh,
+        header: MaterialClassicHeader(
+          color: appStyle.colors.accent,
+          backgroundColor: appStyle.colors.background,
+          offset: 24,
+        ),
+        child: PopScope(
+          canPop: canPop,
+          child: Scaffold(
+            backgroundColor: appStyle.colors.background,
+            body: SafeArea(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height,
+                child: Stack(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [HomeSubPage(page, setPageCB, widget.data)],
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            appStyle.colors.background,
-                            appStyle.colors.background.withValues(alpha: 0.0),
-                          ],
-                          stops: const [0.0, 1.0],
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [HomeSubPage(page, setPageCB, widget.data)],
                         ),
-                      ),
-                      width: MediaQuery.of(context).size.width,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 55, vertical: 15),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Home Button
-                            BottomNavIconWidget(() {
-                              if (page.page != HomePages.home) {
-                                HapticFeedback.lightImpact();
-
-                                setState(() {
-                                  previousPages.add(page);
-                                  canPop = false;
-                                  page = ActiveHomePage(HomePages.home);
-                                });
-                              }
-                            },
-                                page.page == HomePages.home,
-                                page.page == HomePages.home
-                                    ? Majesticon.homeSolid
-                                    : Majesticon.homeLine,
-                                widget.data.l10n.home,
-                                page.page == HomePages.home
-                                    ? appStyle.colors.accent
-                                    : appStyle.colors.secondary,
-                                appStyle.colors.textPrimary),
-                            // Grades Button
-                            BottomNavIconWidget(() {
-                              if (page.page != HomePages.grades) {
-                                HapticFeedback.lightImpact();
-
-                                setState(() {
-                                  previousPages.add(page);
-                                  canPop = false;
-                                  page = ActiveHomePage(HomePages.grades);
-                                });
-                              }
-                            },
-                                page.page == HomePages.grades,
-                                page.page == HomePages.grades
-                                    ? Majesticon.bookmarkSolid
-                                    : Majesticon.bookmarkLine,
-                                widget.data.l10n.grades,
-                                page.page == HomePages.grades
-                                    ? appStyle.colors.accent
-                                    : appStyle.colors.secondary,
-                                appStyle.colors.textPrimary),
-                            // Timetable Button
-                            BottomNavIconWidget(() {
-                              if (page.page != HomePages.timetable) {
-                                HapticFeedback.lightImpact();
-
-                                setState(() {
-                                  previousPages.add(page);
-                                  canPop = false;
-                                  page = ActiveHomePage(HomePages.timetable);
-                                });
-                              }
-                            },
-                                page.page == HomePages.timetable,
-                                page.page == HomePages.timetable
-                                    ? Majesticon.calendarSolid
-                                    : Majesticon.calendarLine,
-                                widget.data.l10n.timetable,
-                                page.page == HomePages.timetable
-                                    ? appStyle.colors.accent
-                                    : appStyle.colors.secondary,
-                                appStyle.colors.textPrimary),
-                            // More Button
-                            BottomNavIconWidget(
-                              () {
-                                HapticFeedback.lightImpact();
-                                showExtrasBottomSheet(context, widget.data);
-                              },
-                              false,
-                              Majesticon.globeEarthLine,
-                              widget.data.l10n.other,
-                              appStyle.colors.secondary,
-                              appStyle.colors.textPrimary,
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [
+                                appStyle.colors.background,
+                                appStyle.colors.background
+                                    .withValues(alpha: 0.0),
+                              ],
+                              stops: const [0.0, 1.0],
                             ),
-                          ],
+                          ),
+                          width: MediaQuery.of(context).size.width,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 55, vertical: 15),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Home Button
+                                BottomNavIconWidget(() {
+                                  if (page.page != HomePages.home) {
+                                    HapticFeedback.lightImpact();
+
+                                    setState(() {
+                                      previousPages.add(page);
+                                      canPop = false;
+                                      page = ActiveHomePage(HomePages.home);
+                                    });
+                                  }
+                                },
+                                    page.page == HomePages.home,
+                                    page.page == HomePages.home
+                                        ? Majesticon.homeSolid
+                                        : Majesticon.homeLine,
+                                    widget.data.l10n.home,
+                                    page.page == HomePages.home
+                                        ? appStyle.colors.accent
+                                        : appStyle.colors.secondary,
+                                    appStyle.colors.textPrimary),
+                                // Grades Button
+                                BottomNavIconWidget(() {
+                                  if (page.page != HomePages.grades) {
+                                    HapticFeedback.lightImpact();
+
+                                    setState(() {
+                                      previousPages.add(page);
+                                      canPop = false;
+                                      page = ActiveHomePage(HomePages.grades);
+                                    });
+                                  }
+                                },
+                                    page.page == HomePages.grades,
+                                    page.page == HomePages.grades
+                                        ? Majesticon.bookmarkSolid
+                                        : Majesticon.bookmarkLine,
+                                    widget.data.l10n.grades,
+                                    page.page == HomePages.grades
+                                        ? appStyle.colors.accent
+                                        : appStyle.colors.secondary,
+                                    appStyle.colors.textPrimary),
+                                // Timetable Button
+                                BottomNavIconWidget(() {
+                                  if (page.page != HomePages.timetable) {
+                                    HapticFeedback.lightImpact();
+
+                                    setState(() {
+                                      previousPages.add(page);
+                                      canPop = false;
+                                      page =
+                                          ActiveHomePage(HomePages.timetable);
+                                    });
+                                  }
+                                },
+                                    page.page == HomePages.timetable,
+                                    page.page == HomePages.timetable
+                                        ? Majesticon.calendarSolid
+                                        : Majesticon.calendarLine,
+                                    widget.data.l10n.timetable,
+                                    page.page == HomePages.timetable
+                                        ? appStyle.colors.accent
+                                        : appStyle.colors.secondary,
+                                    appStyle.colors.textPrimary),
+                                // More Button
+                                BottomNavIconWidget(
+                                  () {
+                                    HapticFeedback.lightImpact();
+                                    showExtrasBottomSheet(context, widget.data);
+                                  },
+                                  false,
+                                  Majesticon.globeEarthLine,
+                                  widget.data.l10n.other,
+                                  appStyle.colors.secondary,
+                                  appStyle.colors.textPrimary,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
+                    toast ?? SizedBox(),
                   ],
                 ),
-                toast ?? SizedBox(),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-      onPopInvokedWithResult: (_, __) => {
-        if (previousPages.isNotEmpty && page != previousPages.last)
-          {
-            setState(() {
-              page = previousPages.removeLast();
-              canPop = previousPages.isEmpty;
-            })
-          }
-      },
-    );
+          onPopInvokedWithResult: (_, __) => {
+            if (previousPages.isNotEmpty && page != previousPages.last)
+              {
+                setState(() {
+                  page = previousPages.removeLast();
+                  canPop = previousPages.isEmpty;
+                })
+              }
+          },
+        ));
   }
 
   @override
