@@ -1,20 +1,27 @@
 import 'dart:ui';
 
+import 'package:firka/helpers/settings/setting.dart';
+import 'package:firka/main.dart';
+
 import '../../ui/model/style.dart';
 import '../api/model/grade.dart';
 import '../api/model/subject.dart';
 
 int roundGrade(double grade) {
-  if (grade < 2) {
+  final rounding = initData.settings
+      .group("settings")
+      .subGroup("application")
+      .subGroup("rounding");
+  if (grade < 1 + rounding.dbl("1")) {
     return 1;
   }
-  if (grade < 2.5) {
+  if (grade < 2 + rounding.dbl("2")) {
     return 2;
   }
-  if (grade < 3.5) {
+  if (grade < 3 + rounding.dbl("3")) {
     return 3;
   }
-  if (grade < 4.5) {
+  if (grade < 4 + rounding.dbl("4")) {
     return 4;
   }
 
