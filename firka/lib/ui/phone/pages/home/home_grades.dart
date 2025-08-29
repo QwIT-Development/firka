@@ -96,6 +96,7 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
       );
     } else {
       var subjectAvg = 0.00;
+      var subjectAvgRounded = 0.00;
       final List<Subject> subjects = List<Subject>.empty(growable: true);
       final List<Widget> gradeCards = [];
 
@@ -134,10 +135,12 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
           ));
         }
 
-        subjectAvg += roundGrade(avg);
+        subjectAvg += avg;
+        subjectAvgRounded += roundGrade(avg);
       }
 
       subjectAvg /= subjects.length;
+      subjectAvgRounded /= subjects.length;
 
       var subjectAvgColor = getGradeColor(subjectAvg);
 
@@ -199,6 +202,30 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
                                 left: 8, right: 8, top: 4, bottom: 4),
                             child: Text(
                               subjectAvg.toStringAsFixed(2),
+                              style: appStyle.fonts.B_16SB
+                                  .apply(color: subjectAvgColor),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    FirkaCard(
+                      left: [
+                        Text(
+                          widget.data.l10n.subject_avg_rounded,
+                          style: appStyle.fonts.B_16SB
+                              .apply(color: appStyle.colors.textPrimary),
+                        ),
+                      ],
+                      right: [
+                        Card(
+                          shadowColor: Colors.transparent,
+                          color: subjectAvgColor.withAlpha(38),
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                                left: 8, right: 8, top: 4, bottom: 4),
+                            child: Text(
+                              subjectAvgRounded.toStringAsFixed(2),
                               style: appStyle.fonts.B_16SB
                                   .apply(color: subjectAvgColor),
                             ),
