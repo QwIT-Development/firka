@@ -23,6 +23,10 @@ class OmissionConsts {
   static const na = "Na";
 }
 
+class TimetableConsts {
+  static const event = "TanevRendjeEsemeny";
+}
+
 class KretaEndpoints {
   static String kretaBase = "e-kreta.hu";
 

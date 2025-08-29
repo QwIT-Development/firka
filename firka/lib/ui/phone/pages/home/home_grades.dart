@@ -6,6 +6,7 @@ import 'package:firka/ui/phone/screens/home/home_screen.dart';
 import 'package:firka/ui/widget/grade_small_card.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../helpers/api/consts.dart';
 import '../../../../helpers/api/model/grade.dart';
 import '../../../../helpers/api/model/subject.dart';
 import '../../../../helpers/api/model/timetable.dart';
@@ -222,7 +223,11 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
                       ],
                       right: [
                         Text(
-                          week!.response!.length.toString(),
+                          week!.response!
+                              .where((lesson) =>
+                                  lesson.type.name != TimetableConsts.event)
+                              .length
+                              .toString(),
                           style: appStyle.fonts.B_14SB
                               .apply(color: appStyle.colors.textPrimary),
                         ),

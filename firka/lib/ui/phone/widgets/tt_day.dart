@@ -1,5 +1,6 @@
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/extensions.dart';
+import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -10,15 +11,17 @@ class TimeTableDayWidget extends StatelessWidget {
   final AppLocalizations l10n;
   final DateTime date;
   final List<Lesson> lessons;
+  final List<Lesson> events;
 
-  const TimeTableDayWidget(this.l10n, this.date, this.lessons, {super.key});
+  const TimeTableDayWidget(this.l10n, this.date, this.lessons, this.events,
+      {super.key});
 
   @override
   Widget build(BuildContext context) {
     Widget noLessonsWidget = SizedBox();
     List<Widget> ttBody = List.empty(growable: true);
 
-    if (lessons.isEmpty) {
+    if (lessons.isEmpty && events.isEmpty) {
       noLessonsWidget = Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -30,6 +33,10 @@ class TimeTableDayWidget extends StatelessWidget {
             Text(l10n.tt_no_classes_l2)
           ]);
     } else {
+      for (var i = 0; i < events.length; i++) {
+        var event = events[i];
+        ttBody.add(FirkaCard(left: [Text(event.name)]));
+      }
       for (var i = 0; i < lessons.length; i++) {
         var lesson = lessons[i];
         Lesson? nextLesson = lessons.length > i + 1 ? lessons[i + 1] : null;
@@ -40,7 +47,7 @@ class TimeTableDayWidget extends StatelessWidget {
 
     return SizedBox(
       width: MediaQuery.of(context).size.width / 1.1,
-      child: lessons.isEmpty
+      child: ttBody.isEmpty
           ? noLessonsWidget
           : Padding(
               padding:
