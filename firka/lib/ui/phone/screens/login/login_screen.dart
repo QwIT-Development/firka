@@ -6,6 +6,7 @@ import 'package:firka/helpers/api/consts.dart';
 import 'package:firka/helpers/db/models/token_model.dart';
 import 'package:firka/helpers/firka_bundle.dart';
 import 'package:firka/main.dart';
+import 'package:firka/ui/phone/widgets/login_webview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,7 +27,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  late WebViewController _webViewController;
+  late LoginWebviewWidget _loginWebView;
 
   bool _preloadDone = false;
 
@@ -34,56 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
 
-    _webViewController = WebViewController()
-      ..setUserAgent(Constants.webviewUserAgent)
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(Uri.parse(KretaEndpoints.kretaLoginUrl))
-      ..setNavigationDelegate(NavigationDelegate(
-          onNavigationRequest: (NavigationRequest request) async {
-        var uri = Uri.parse(request.url);
-
-        if (uri.path == "/ellenorzo-student/prod/oauthredirect") {
-          if (kDebugMode) {
-            print("query params: ${uri.queryParameters}");
-          }
-
-          var code = uri.queryParameters["code"]!;
-
-          try {
-            var isar = widget.data.isar;
-            var resp = await getAccessToken(code);
-
-            if (kDebugMode) {
-              print("getAccessToken(): $resp");
-            }
-
-            var tokenModel = TokenModel.fromResp(resp);
-
-            await isar.writeTxn(() async {
-              await isar.tokenModels.put(tokenModel);
-            });
-
-            widget.data.client = KretaClient(tokenModel, isar);
-            widget.data.tokenCount = await isar.tokenModels.count();
-
-            if (!mounted) return NavigationDecision.prevent;
-
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => HomeScreen(widget.data, false)),
-              (route) => false, // Remove all previous routes
-            );
-          } catch (ex) {
-            if (kDebugMode) {
-              print("oauthredirect failed: $ex");
-            }
-            // TODO: display an error popup
-          }
-
-          return NavigationDecision.prevent;
-        }
-
-        return NavigationDecision.navigate;
-      }));
+    _loginWebView = LoginWebviewWidget(widget.data);
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -386,64 +338,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             context: context,
                             isScrollControlled: true,
                             builder: (BuildContext context) {
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                    bottom: MediaQuery.of(context)
-                                        .viewInsets
-                                        .bottom),
-                                child: FractionallySizedBox(
-                                  heightFactor: 0.90,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: <Widget>[
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 16),
-                                              child: Container(
-                                                decoration: const BoxDecoration(
-                                                  color: Color(0xFFB9C8E5),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(2)),
-                                                ),
-                                                width: 40,
-                                                height: 4,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Container(
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
-                                              0.8,
-                                          // Adjust height for content
-                                          margin: const EdgeInsets.symmetric(
-                                              horizontal: 16),
-                                          // Add ClipRRect for circular edges
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            child: WebViewWidget(
-                                              controller: _webViewController,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
+                              return _loginWebView;
                             },
                           );
                         },
