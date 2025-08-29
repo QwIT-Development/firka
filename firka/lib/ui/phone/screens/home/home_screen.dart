@@ -12,6 +12,7 @@ import 'package:firka/ui/phone/pages/home/home_main.dart';
 import 'package:firka/ui/phone/pages/home/home_timetable_mo.dart';
 import 'package:firka/ui/phone/screens/home/beta_screen.dart';
 import 'package:firka/ui/phone/widgets/bottom_nav_icon.dart';
+import 'package:firka/ui/phone/widgets/login_webview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,13 +21,11 @@ import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../../../helpers/db/widget.dart';
 import '../../../../helpers/debug_helper.dart';
-import '../../../../helpers/firka_bundle.dart';
 import '../../../widget/firka_icon.dart';
 import '../../pages/extras/extras.dart';
 import '../../pages/extras/main_error.dart';
 import '../../pages/home/home_grades_subject.dart';
 import '../../pages/home/home_timetable.dart';
-import '../login/login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final AppInitialization data;
@@ -127,12 +126,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => DefaultAssetBundle(
-                              bundle: FirkaBundle(),
-                              child: LoginScreen(widget.data))));
+                  showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (BuildContext context) {
+                      return LoginWebviewWidget(widget.data,
+                          username:
+                              widget.data.client.model.studentId.toString(),
+                          schoolId: widget.data.client.model.iss!);
+                    },
+                  );
                 },
               ),
             ),
