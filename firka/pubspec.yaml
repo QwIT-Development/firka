@@ -48,7 +48,7 @@ dependencies:
   dart_jsonwebtoken: ^3.2.0
   majesticons_flutter: ^0.0.1
   watch_connectivity: ^0.2.1+1
-  permission_handler: ^11.4.0
+  permission_handler: ^12.0.1
   flutter_localizations:
     sdk: flutter
   intl: any
@@ -68,7 +68,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   isar_generator:
     path: vendor/isar_generator
   android_notification_icons: ^0.0.1
