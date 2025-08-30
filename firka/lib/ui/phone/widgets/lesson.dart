@@ -5,17 +5,22 @@ import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:flutter/material.dart';
+import 'package:majesticons_flutter/majesticons_flutter.dart';
 
+import '../../../helpers/api/model/test.dart';
 import '../../../helpers/api/model/timetable.dart';
 import '../../widget/class_icon.dart';
+import '../../widget/firka_icon.dart';
 
 class LessonWidget extends StatelessWidget {
   final AppInitialization data;
   final int? lessonNo;
   final Lesson lesson;
+  final Test? test;
   final Lesson? nextLesson;
 
-  const LessonWidget(this.data, this.lessonNo, this.lesson, this.nextLesson,
+  const LessonWidget(
+      this.data, this.lessonNo, this.lesson, this.test, this.nextLesson,
       {super.key});
 
   @override
@@ -112,6 +117,32 @@ class LessonWidget extends StatelessWidget {
                   .apply(color: appStyle.colors.textSecondary))
         ],
       ));
+    }
+
+    if (test != null &&
+        data.settings
+            .group("settings")
+            .subGroup("timetable_toast")
+            .boolean("tests_and_homework")) {
+      elements.add(FirkaCard(
+        left: [
+          FirkaIconWidget(
+            FirkaIconType.majesticons,
+            Majesticon.editPen4Solid,
+            color: appStyle.colors.accent,
+          ),
+          SizedBox(width: 6),
+          Text(test!.theme,
+              style: appStyle.fonts.B_14SB
+                  .apply(color: appStyle.colors.textSecondary))
+        ],
+        right: [
+          Text(test!.method.description ?? "N/A",
+              style: appStyle.fonts.B_14R
+                  .apply(color: appStyle.colors.textTertiary))
+        ],
+      ));
+      elements.add(SizedBox(height: 4));
     }
 
     if (nextLesson != null) {

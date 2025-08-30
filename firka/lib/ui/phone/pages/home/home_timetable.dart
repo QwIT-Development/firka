@@ -1,4 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firka/helpers/api/model/test.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
@@ -36,6 +37,7 @@ class HomeTimetableScreen extends StatefulWidget {
 class _HomeTimetableScreen extends State<HomeTimetableScreen> {
   List<Lesson>? lessons;
   List<Lesson>? events;
+  List<Test>? tests;
   List<DateTime>? dates;
   DateTime? now;
   int active = 0;
@@ -49,6 +51,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
 
     var lessonsResp = await widget.data.client
         .getTimeTable(monday, sunday, forceCache: forceCache);
+    var testsResp = await widget.data.client.getTests(forceCache: forceCache);
     List<DateTime> dates = List.empty(growable: true);
 
     if (lessonsResp.response != null) {
@@ -58,6 +61,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
       events = lessonsResp.response
           ?.where((lesson) => lesson.type.name == TimetableConsts.event)
           .toList();
+      tests = testsResp.response;
 
       for (var i = 0; i < 7; i++) {
         var t = monday.add(Duration(days: i));
@@ -133,7 +137,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (lessons != null && events != null && dates != null) {
+    if (lessons != null && tests != null && events != null && dates != null) {
       List<Widget> ttWidgets = [];
       List<Widget> ttDays = [];
 
@@ -157,9 +161,14 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                 lesson.start.isAfter(date.subtract(Duration(seconds: 1))) &&
                 lesson.end.isBefore(date.add(Duration(hours: 23, minutes: 59))))
             .toList();
+        final testsOnDate = tests!
+            .where((test) =>
+                test.date.isAfter(date.subtract(Duration(seconds: 1))) &&
+                test.date.isBefore(date.add(Duration(hours: 23, minutes: 59))))
+            .toList();
 
-        ttDays.add(
-            TimeTableDayWidget(widget.data, date, lessonsOnDate, eventsOnDate));
+        ttDays.add(TimeTableDayWidget(
+            widget.data, date, lessonsOnDate, eventsOnDate, testsOnDate));
       }
 
       return Stack(children: [
