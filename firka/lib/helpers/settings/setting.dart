@@ -31,6 +31,8 @@ const ttToastLessonNo = 1012;
 const ttToastTestsAndHw = 1013;
 const ttToastBreaks = 1014;
 
+const statsForNerds = 1015;
+
 bool always() {
   return true;
 }
@@ -225,6 +227,13 @@ class SettingsStore {
                     }),
                     isAndroid),
               }),
+              always),
+          "stats_for_nerds": SettingsBoolean(
+              statsForNerds,
+              FirkaIconType.majesticonsLocal,
+              "wrenchSolid",
+              l10n.s_stats_for_nerds,
+              false,
               always),
           "notifications": SettingsSubGroup(0, FirkaIconType.majesticons,
               Majesticon.bellSolid, "Értesítések", LinkedHashMap.of({}), never),
