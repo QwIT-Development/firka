@@ -82,6 +82,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         continue;
       }
+      if (item is SettingsMediumHeader) {
+        widgets.add(Text(
+          item.title,
+          style: appStyle.fonts.H_H2.apply(color: appStyle.colors.textPrimary),
+        ));
+
+        continue;
+      }
       if (item is SettingsHeaderSmall) {
         widgets.add(Text(
           item.title,
@@ -551,6 +559,44 @@ void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
                   ),
                 ],
               ));
+    },
+  );
+}
+
+void showSettingsSheet(BuildContext context, double height,
+    AppInitialization data, LinkedHashMap<String, SettingsItem> items) {
+  showModalBottomSheet(
+    context: context,
+    elevation: 100,
+    isScrollControlled: true,
+    enableDrag: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: appStyle.colors.a15p,
+    constraints: BoxConstraints(
+      maxHeight: height,
+    ),
+    builder: (BuildContext context) {
+      return Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              behavior: HitTestBehavior.opaque,
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              decoration: BoxDecoration(
+                color: appStyle.colors.card,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: SettingsScreen(data, items),
+            ),
+          ),
+        ],
+      );
     },
   );
 }

@@ -2,7 +2,9 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
+import 'package:firka/helpers/settings/setting.dart';
 import 'package:firka/ui/model/style.dart';
+import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:firka/ui/widget/delayed_spinner.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
@@ -199,17 +201,28 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                             ),
                           ),
                         ),
-                        Card(
-                          color: appStyle.colors.buttonSecondaryFill,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: FirkaIconWidget(
-                              FirkaIconType.majesticons,
-                              Majesticon.settingsCogSolid,
-                              size: 26.0,
-                              color: appStyle.colors.accent,
+                        GestureDetector(
+                          child: Card(
+                            color: appStyle.colors.buttonSecondaryFill,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.settingsCogSolid,
+                                size: 26.0,
+                                color: appStyle.colors.accent,
+                              ),
                             ),
                           ),
+                          onTap: () {
+                            showSettingsSheet(
+                                context,
+                                MediaQuery.of(context).size.height * 0.4,
+                                widget.data,
+                                widget.data.settings
+                                    .group("settings")
+                                    .subGroup("timetable_toast"));
+                          },
                         )
                       ],
                     ),
