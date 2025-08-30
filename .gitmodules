@@ -16,3 +16,6 @@
 [submodule "firka_wear/vendor/wear_plus"]
 	path = firka_wear/vendor/wear_plus
 	url = https://git.firka.app/firka/wear_plus
+[submodule "firka/android/app/src/main/java/org/brotli"]
+	path = firka/android/app/src/main/java/org/brotli
+	url = https://git.firka.app/firka/org_brotli
