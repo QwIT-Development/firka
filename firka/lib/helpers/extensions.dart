@@ -94,7 +94,7 @@ extension DateExtension on DateTime {
       case FormatMode.yyyymmddwedd:
         return "${DateFormat('yyyy MMM. dd').format(weekStart).toLowerCase()}-${DateFormat('dd').format(weekEnd)}";
       case FormatMode.yyyymmmm:
-        return DateFormat('yyyy MMMM').format(weekStart);
+        return DateFormat('yyyy MMMM').format(this);
     }
   }
 
