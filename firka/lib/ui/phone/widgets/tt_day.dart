@@ -1,19 +1,19 @@
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
-import 'package:firka/l10n/app_localizations.dart';
+import 'package:firka/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import 'lesson.dart';
 
 class TimeTableDayWidget extends StatelessWidget {
-  final AppLocalizations l10n;
+  final AppInitialization data;
   final DateTime date;
   final List<Lesson> lessons;
   final List<Lesson> events;
 
-  const TimeTableDayWidget(this.l10n, this.date, this.lessons, this.events,
+  const TimeTableDayWidget(this.data, this.date, this.lessons, this.events,
       {super.key});
 
   @override
@@ -29,8 +29,8 @@ class TimeTableDayWidget extends StatelessWidget {
             SvgPicture.asset("assets/images/logos/dave.svg",
                 width: 48, height: 48),
             SizedBox(height: 12),
-            Text(l10n.tt_no_classes_l1),
-            Text(l10n.tt_no_classes_l2)
+            Text(data.l10n.tt_no_classes_l1),
+            Text(data.l10n.tt_no_classes_l2)
           ]);
     } else {
       for (var i = 0; i < events.length; i++) {
@@ -41,7 +41,7 @@ class TimeTableDayWidget extends StatelessWidget {
         var lesson = lessons[i];
         Lesson? nextLesson = lessons.length > i + 1 ? lessons[i + 1] : null;
         ttBody.add(LessonWidget(
-            l10n, lessons.getLessonNo(lesson), lesson, nextLesson));
+            data, lessons.getLessonNo(lesson), lesson, nextLesson));
       }
     }
 

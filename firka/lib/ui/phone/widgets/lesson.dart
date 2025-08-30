@@ -1,6 +1,8 @@
 import 'package:firka/helpers/extensions.dart';
+import 'package:firka/helpers/settings/setting.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/l10n/app_localizations.dart';
+import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:flutter/material.dart';
 
@@ -8,12 +10,12 @@ import '../../../helpers/api/model/timetable.dart';
 import '../../widget/class_icon.dart';
 
 class LessonWidget extends StatelessWidget {
-  final AppLocalizations l10n;
+  final AppInitialization data;
   final int? lessonNo;
   final Lesson lesson;
   final Lesson? nextLesson;
 
-  const LessonWidget(this.l10n, this.lessonNo, this.lesson, this.nextLesson,
+  const LessonWidget(this.data, this.lessonNo, this.lesson, this.nextLesson,
       {super.key});
 
   @override
@@ -41,7 +43,7 @@ class LessonWidget extends StatelessWidget {
     elements.add(GestureDetector(
       onTap: () {
         showLessonBottomSheet(
-            context, l10n, lesson, lessonNo, accent, secondary, bgColor);
+            context, data.l10n, lesson, lessonNo, accent, secondary, bgColor);
       },
       child: FirkaCard(
         left: [
@@ -77,8 +79,8 @@ class LessonWidget extends StatelessWidget {
         right: [
           Text(
               isDismissed
-                  ? l10n.class_dismissed
-                  : lesson.start.toLocal().format(l10n, FormatMode.hmm),
+                  ? data.l10n.class_dismissed
+                  : lesson.start.toLocal().format(data.l10n, FormatMode.hmm),
               style: appStyle.fonts.B_14R
                   .apply(color: appStyle.colors.textPrimary)),
           isDismissed
@@ -100,7 +102,7 @@ class LessonWidget extends StatelessWidget {
     if (isSubstituted) {
       elements.add(FirkaCard(
         left: [
-          Text(l10n.class_substitution,
+          Text(data.l10n.class_substitution,
               style: appStyle.fonts.H_14px
                   .apply(color: appStyle.colors.textPrimary))
         ],
@@ -116,20 +118,25 @@ class LessonWidget extends StatelessWidget {
       elements.add(SizedBox(height: 4));
       var breakMins = nextLesson!.start.difference(lesson.end).inMinutes;
 
-      elements.add(FirkaCard(
-        left: [
-          Text(l10n.breakTxt,
-              style: appStyle.fonts.B_14SB
-                  .apply(color: appStyle.colors.textSecondary))
-        ],
-        right: [
-          Text(
-              "$breakMins ${breakMins == 1 ? l10n.starting_min : l10n.starting_min_plural}",
-              style: appStyle.fonts.B_14R
-                  .apply(color: appStyle.colors.textTertiary))
-        ],
-      ));
-      elements.add(SizedBox(height: 4));
+      if (data.settings
+          .group("settings")
+          .subGroup("timetable_toast")
+          .boolean("breaks")) {
+        elements.add(FirkaCard(
+          left: [
+            Text(data.l10n.breakTxt,
+                style: appStyle.fonts.B_14SB
+                    .apply(color: appStyle.colors.textSecondary))
+          ],
+          right: [
+            Text(
+                "$breakMins ${breakMins == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
+                style: appStyle.fonts.B_14R
+                    .apply(color: appStyle.colors.textTertiary))
+          ],
+        ));
+        elements.add(SizedBox(height: 4));
+      }
     }
 
     return Column(
