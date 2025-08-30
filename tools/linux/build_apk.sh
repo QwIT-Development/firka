@@ -24,7 +24,7 @@ if [ "$1" = "main" ]; then
     mkdir -p build/app/tmp
     
     update_version_for_abi 1000
-    flutter build apk --release --tree-shake-icons \
+    TRANSFORM_APK=true flutter build apk --release --tree-shake-icons \
       --local-engine-src-path "$sdk_path/engine/src" \
       --local-engine=android_release --local-engine-host=host_release \
       --split-per-abi \
@@ -32,7 +32,7 @@ if [ "$1" = "main" ]; then
     mv build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk build/app/tmp/
     
     update_version_for_abi 2000
-    flutter build apk --release --tree-shake-icons \
+    TRANSFORM_APK=true flutter build apk --release --tree-shake-icons \
       --local-engine-src-path "$sdk_path/engine/src" \
       --local-engine=android_release_arm64 --local-engine-host=host_release \
       --split-per-abi \
@@ -40,7 +40,7 @@ if [ "$1" = "main" ]; then
     mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/app/tmp/
     
     update_version_for_abi 3000
-    flutter build apk --release --tree-shake-icons \
+    TRANSFORM_APK=true flutter build apk --release --tree-shake-icons \
       --local-engine-src-path "$sdk_path/engine/src" \
       --local-engine=android_release_x64 --local-engine-host=host_release \
       --split-per-abi \
