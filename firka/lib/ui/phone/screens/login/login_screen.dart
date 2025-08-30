@@ -1,21 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:firka/helpers/api/client/kreta_client.dart';
-import 'package:firka/helpers/api/consts.dart';
-import 'package:firka/helpers/db/models/token_model.dart';
 import 'package:firka/helpers/firka_bundle.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/phone/widgets/login_webview.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../../../helpers/api/token_grant.dart';
-import '../../../../helpers/cache_memory_image_provider.dart';
+import '../../../../helpers/image_preloader.dart';
 import '../../../model/style.dart';
-import '../home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final AppInitialization data;
@@ -28,7 +21,6 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   late LoginWebviewWidget _loginWebView;
-
   bool _preloadDone = false;
 
   @override
@@ -45,32 +37,41 @@ class _LoginScreenState extends State<LoginScreen> {
       systemNavigationBarColor: Color(0xFFFAFFF0),
     ));
 
-    () async {
-      final firkaBundle = FirkaBundle();
+    _preloadImages();
+  }
 
-      await precacheAssets(firkaBundle, [
-        "assets/images/carousel/slide1.webp",
-        "assets/images/carousel/slide1_background.webp",
-        "assets/images/carousel/slide2.webp",
-        "assets/images/carousel/slide2_background.webp",
-        "assets/images/carousel/slide3.webp",
-        "assets/images/carousel/slide3_foreground.webp",
-        "assets/images/carousel/slide4.webp",
-        "assets/images/carousel/slide4_background.webp"
-      ]);
+  Future<void> _preloadImages() async {
+    final imagePaths = [
+      "assets/images/carousel/slide1.webp",
+      "assets/images/carousel/slide2.webp",
+      "assets/images/carousel/slide3.webp",
+      "assets/images/carousel/slide4.webp",
+      "assets/images/logos/colored_logo.webp",
+    ];
 
+    try {
+      // Preload with progress tracking
+      await ImagePreloader.preloadMultipleAssets(FirkaBundle(), imagePaths);
+
+      // All images are now decoded and cached
       setState(() {
         _preloadDone = true;
       });
-    }();
+    } catch (e) {
+      print('Error preloading images: $e');
+      // Fallback: continue anyway
+      setState(() {
+        _preloadDone = true;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (!_preloadDone) {
       return MaterialApp(
-      home: SizedBox(),
-    );
+        home: SizedBox(),
+      );
     }
 
     final paddingWidthHorizontal = MediaQuery.of(context).size.width -
@@ -145,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         clipBehavior: Clip.antiAlias,
                         decoration: ShapeDecoration(
                           image: DecorationImage(
-                            image: CacheMemoryImageProvider(
+                            image: PreloadedImageProvider(
                                 DefaultAssetBundle.of(context),
                                 'assets/images/logos/colored_logo.webp'),
                             fit: BoxFit.cover,
@@ -217,12 +218,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                           child: Transform.scale(
                                               scale: slides[index]['scale']
                                                   as double,
-                                              child: Image(
-                                                image: CacheMemoryImageProvider(
-                                                    DefaultAssetBundle.of(
-                                                        context),
-                                                    slides[index]['background']!
-                                                        as String),
+                                              child: Image.asset(
+                                                slides[index]['background']!
+                                                    as String,
+                                                bundle: DefaultAssetBundle.of(
+                                                    context),
                                                 fit: BoxFit.contain,
                                                 width: double.infinity,
                                               )),
@@ -238,7 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child: SizedBox(
                                     width: MediaQuery.of(context).size.width,
                                     child: Image(
-                                      image: CacheMemoryImageProvider(
+                                      image: PreloadedImageProvider(
                                           DefaultAssetBundle.of(context),
                                           slides[index]['picture']! as String),
                                       fit: BoxFit.cover,
@@ -266,12 +266,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                             child: Transform.scale(
                                               scale: slides[index]['scale']
                                                   as double,
-                                              child: Image(
-                                                image: CacheMemoryImageProvider(
-                                                    DefaultAssetBundle.of(
-                                                        context),
-                                                    slides[index]['foreground']!
-                                                        as String),
+                                              child: Image.asset(
+                                                slides[index]['foreground']!
+                                                    as String,
+                                                bundle: DefaultAssetBundle.of(
+                                                    context),
                                                 fit: BoxFit.cover,
                                                 width: MediaQuery.of(context)
                                                     .size
