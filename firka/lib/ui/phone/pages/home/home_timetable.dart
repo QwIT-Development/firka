@@ -149,8 +149,8 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                 lesson.end.isBefore(date.add(Duration(hours: 23, minutes: 59))))
             .toList();
 
-        ttDays.add(TimeTableDayWidget(
-            widget.data.l10n, date, lessonsOnDate, eventsOnDate));
+        ttDays.add(
+            TimeTableDayWidget(widget.data, date, lessonsOnDate, eventsOnDate));
       }
 
       return Stack(children: [
