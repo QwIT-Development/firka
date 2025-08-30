@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../helpers/image_preloader.dart';
 import '../../../model/style.dart';
+import '../../../widget/delayed_spinner.dart';
 
 class LoginScreen extends StatefulWidget {
   final AppInitialization data;
@@ -70,7 +71,20 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     if (!_preloadDone) {
       return MaterialApp(
-        home: SizedBox(),
+        home: Scaffold(
+          backgroundColor: appStyle.colors.background,
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [SizedBox(), DelayedSpinnerWidget(), SizedBox()],
+              ),
+              SizedBox(),
+            ],
+          ),
+        ),
       );
     }
 
