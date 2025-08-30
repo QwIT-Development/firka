@@ -30,27 +30,6 @@ class ImagePreloader {
     }
   }
 
-  static Future<ui.Image> preloadNetworkImage(String url) async {
-    if (_cache.containsKey(url)) {
-      return _cache[url]!;
-    }
-
-    if (_loadingFutures.containsKey(url)) {
-      return _loadingFutures[url]!;
-    }
-
-    final future = _loadNetworkImage(url);
-    _loadingFutures[url] = future;
-
-    try {
-      final image = await future;
-      _cache[url] = image;
-      return image;
-    } finally {
-      _loadingFutures.remove(url);
-    }
-  }
-
   static Future<List<ui.Image>> preloadMultipleAssets(
       AssetBundle bundle, List<String> assetPaths) async {
     final futures =
@@ -112,14 +91,10 @@ class ImagePreloader {
 
   static Future<ui.Image> _loadAssetImage(
       AssetBundle bundle, String assetPath) async {
+    debugPrint("Caching: $assetPath");
     final ByteData data = await bundle.load(assetPath);
     final Uint8List bytes = data.buffer.asUint8List();
     return await _decodeImageFromBytes(bytes);
-  }
-
-  static Future<ui.Image> _loadNetworkImage(String url) async {
-    throw UnimplementedError(
-        'Network image loading not implemented in this example');
   }
 
   static Future<ui.Image> _decodeImageFromBytes(Uint8List bytes) async {
