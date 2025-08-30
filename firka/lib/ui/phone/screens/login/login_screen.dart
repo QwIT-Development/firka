@@ -51,16 +51,13 @@ class _LoginScreenState extends State<LoginScreen> {
     ];
 
     try {
-      // Preload with progress tracking
       await ImagePreloader.preloadMultipleAssets(FirkaBundle(), imagePaths);
 
-      // All images are now decoded and cached
       setState(() {
         _preloadDone = true;
       });
     } catch (e) {
-      print('Error preloading images: $e');
-      // Fallback: continue anyway
+      debugPrint('Error preloading images: $e');
       setState(() {
         _preloadDone = true;
       });
