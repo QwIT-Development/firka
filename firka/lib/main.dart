@@ -28,6 +28,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 
 import 'helpers/db/models/homework_cache_model.dart';
+import 'helpers/update_notifier.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/app_localizations_de.dart';
 import 'l10n/app_localizations_en.dart';
@@ -61,6 +62,7 @@ class AppInitialization {
   bool hasWatchListener = false;
   Uint8List? profilePicture;
   SettingsStore settings;
+  UpdateNotifier settingsUpdateNotifier = UpdateNotifier();
   AppLocalizations l10n;
 
   AppInitialization({
@@ -158,6 +160,10 @@ Future<AppInitialization> initializeApp() async {
     settings: SettingsStore(AppLocalizationsHu()),
     l10n: AppLocalizationsHu(),
   );
+
+  init.settingsUpdateNotifier.addListener(() {
+    debugPrint("Settings updated");
+  });
 
   await init.settings.load(init.isar.appSettingsModels);
   initLang(init);
