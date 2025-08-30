@@ -176,7 +176,7 @@ Future<AppInitialization> initializeApp() async {
   }
 
   final dataDir = await getApplicationDocumentsDirectory();
-  var pfpFile = File(p.join(dataDir.path, "profile.png"));
+  var pfpFile = File(p.join(dataDir.path, "profile.webp"));
 
   if (await pfpFile.exists()) {
     init.profilePicture = await pfpFile.readAsBytes();

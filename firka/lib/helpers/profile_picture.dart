@@ -16,7 +16,7 @@ Future<void> pickProfilePicture(
 
   var dataDir = await getApplicationDocumentsDirectory();
   var bytes = encodePng(resized);
-  await File(p.join(dataDir.path, "profile.png")).writeAsBytes(bytes);
+  await File(p.join(dataDir.path, "profile.webp")).writeAsBytes(bytes);
 
   data.profilePicture = bytes;
 }
