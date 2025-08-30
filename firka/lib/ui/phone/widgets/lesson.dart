@@ -1,7 +1,6 @@
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/settings/setting.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
-import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +47,7 @@ class LessonWidget extends StatelessWidget {
     elements.add(GestureDetector(
       onTap: () {
         showLessonBottomSheet(
-            context, data.l10n, lesson, lessonNo, accent, secondary, bgColor);
+            context, data, lesson, lessonNo, accent, secondary, bgColor);
       },
       child: FirkaCard(
         left: [
@@ -179,12 +178,14 @@ class LessonWidget extends StatelessWidget {
 
 void showLessonBottomSheet(
     BuildContext context,
-    AppLocalizations l10n,
+    AppInitialization data,
     Lesson lesson,
     int? lessonNo,
     Color accent,
     Color secondary,
     Color bgColor) {
+  final statsForNerdsEnabled =
+      data.settings.group("settings").boolean("stats_for_nerds");
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -193,9 +194,22 @@ void showLessonBottomSheet(
     backgroundColor: Colors.transparent,
     barrierColor: appStyle.colors.a15p,
     constraints: BoxConstraints(
-      maxHeight: MediaQuery.of(context).size.height * 0.3,
+      maxHeight: MediaQuery.of(context).size.height *
+          (statsForNerdsEnabled ? 0.35 : 0.3),
     ),
     builder: (BuildContext context) {
+      Widget statsForNerds = SizedBox();
+
+      final y2k = DateTime(2000, 1);
+
+      if (statsForNerdsEnabled) {
+        final stats =
+            "${data.l10n.stats_date}: ${lesson.start.isAfter(y2k) ? lesson.start.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
+            "${data.l10n.stats_created_at}: ${lesson.createdAt.isAfter(y2k) ? lesson.createdAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
+            "${data.l10n.stats_last_mod}: ${lesson.lastModifiedAt.isAfter(y2k) ? lesson.lastModifiedAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}";
+        statsForNerds = Text(stats, style: appStyle.fonts.B_16R);
+      }
+
       return Stack(
         children: [
           Positioned.fill(
@@ -262,7 +276,7 @@ void showLessonBottomSheet(
                                 .apply(color: appStyle.colors.textPrimary),
                           ),
                           Text(
-                            '${lesson.start.format(l10n, FormatMode.hmm)} - ${lesson.end.format(l10n, FormatMode.hmm)}',
+                            '${lesson.start.format(data.l10n, FormatMode.hmm)} - ${lesson.end.format(data.l10n, FormatMode.hmm)}',
                             style: appStyle.fonts.B_14R
                                 .apply(color: appStyle.colors.textPrimary),
                           ),
@@ -275,14 +289,16 @@ void showLessonBottomSheet(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            l10n.lesson_subject,
+                            data.l10n.lesson_subject,
                             style: appStyle.fonts.H_14px,
                           ),
                           SizedBox(height: 4),
                           Text(
                             lesson.theme ?? 'N/A',
                             style: appStyle.fonts.B_16R,
-                          )
+                          ),
+                          SizedBox(height: 4),
+                          statsForNerds
                         ],
                       )
                     ])

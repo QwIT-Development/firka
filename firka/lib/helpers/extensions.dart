@@ -42,7 +42,8 @@ enum FormatMode {
   da,
   dd,
   yyyymmddwedd,
-  yyyymmmm
+  yyyymmmm,
+  yyyymmddhhmmss
 }
 
 enum Cycle { morning, day, afternoon, night }
@@ -56,7 +57,7 @@ extension DateExtension on DateTime {
     var yesterday = today.subtract(Duration(days: 1));
     var yesterdayLim = today.subtract(Duration(days: 2));
 
-    var weekStart = today.subtract(Duration(days: today.weekday - 1));
+    var weekStart = subtract(Duration(days: weekday - 1));
     var weekEnd = weekStart.add(Duration(days: 6));
 
     switch (mode) {
@@ -91,6 +92,8 @@ extension DateExtension on DateTime {
         return "${DateFormat('yyyy MMM. dd').format(weekStart).toLowerCase()}-${DateFormat('dd').format(weekEnd)}";
       case FormatMode.yyyymmmm:
         return DateFormat('yyyy MMMM').format(this);
+      case FormatMode.yyyymmddhhmmss:
+        return DateFormat('yyyy-MM-dd hh:mm:ss').format(this);
     }
   }
 
