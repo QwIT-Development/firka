@@ -135,6 +135,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         widgets.add(GestureDetector(
           child: FirkaCard(left: [
+            item.iconType != null
+                ? Row(
+                    children: [
+                      FirkaIconWidget(item.iconType!, item.iconData!,
+                          color: appStyle.colors.accent),
+                      SizedBox(width: 4),
+                    ],
+                  )
+                : SizedBox(),
             Text(item.title,
                 style: appStyle.fonts.B_16SB
                     .apply(color: appStyle.colors.textPrimary))
@@ -153,6 +162,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (item is SettingsBoolean) {
         widgets.add(FirkaCard(
           left: [
+            item.iconType != null
+                ? Row(
+                    children: [
+                      FirkaIconWidget(item.iconType!, item.iconData!,
+                          color: appStyle.colors.accent),
+                      SizedBox(width: 4),
+                    ],
+                  )
+                : SizedBox(),
             Text(item.title,
                 style: appStyle.fonts.B_16SB
                     .apply(color: appStyle.colors.textPrimary))
