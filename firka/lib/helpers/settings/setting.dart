@@ -325,6 +325,8 @@ class SettingsStore {
     for (var item in items.values) {
       await item.save(model);
     }
+
+    initData.settingsUpdateNotifier.update();
   }
 
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -419,6 +421,8 @@ class SettingsGroup implements SettingsItem {
     }
 
     await postUpdate();
+
+    initData.settingsUpdateNotifier.update();
   }
 }
 
@@ -453,6 +457,8 @@ class SettingsSubGroup implements SettingsItem {
     }
 
     await postUpdate();
+
+    initData.settingsUpdateNotifier.update();
   }
 }
 
@@ -624,6 +630,8 @@ class SettingsAppIconPicker implements SettingsItem {
     v.valueString = icon;
 
     await model.put(v);
+
+    initData.settingsUpdateNotifier.update();
   }
 }
 
@@ -663,6 +671,8 @@ class SettingsBoolean implements SettingsItem {
 
     await model.put(v);
     await postUpdate();
+
+    initData.settingsUpdateNotifier.update();
   }
 }
 
@@ -702,6 +712,8 @@ class SettingsItemsRadio implements SettingsItem {
 
     await model.put(v);
     await postUpdate();
+
+    initData.settingsUpdateNotifier.update();
   }
 }
 
@@ -764,6 +776,8 @@ class SettingsDouble implements SettingsItem {
 
     await model.put(v);
     await postUpdate();
+
+    initData.settingsUpdateNotifier.update();
   }
 }
 
@@ -803,5 +817,7 @@ class SettingsString implements SettingsItem {
 
     await model.put(v);
     await postUpdate();
+
+    initData.settingsUpdateNotifier.update();
   }
 }
