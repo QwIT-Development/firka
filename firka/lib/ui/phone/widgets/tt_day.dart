@@ -1,3 +1,4 @@
+import 'package:firka/helpers/api/model/test.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
@@ -12,8 +13,10 @@ class TimeTableDayWidget extends StatelessWidget {
   final DateTime date;
   final List<Lesson> lessons;
   final List<Lesson> events;
+  final List<Test> tests;
 
-  const TimeTableDayWidget(this.data, this.date, this.lessons, this.events,
+  const TimeTableDayWidget(
+      this.data, this.date, this.lessons, this.events, this.tests,
       {super.key});
 
   @override
@@ -41,7 +44,12 @@ class TimeTableDayWidget extends StatelessWidget {
         var lesson = lessons[i];
         Lesson? nextLesson = lessons.length > i + 1 ? lessons[i + 1] : null;
         ttBody.add(LessonWidget(
-            data, lessons.getLessonNo(lesson), lesson, nextLesson));
+            data,
+            lessons.getLessonNo(lesson),
+            lesson,
+            tests.firstWhereOrNull(
+                (test) => test.lessonNumber == lesson.lessonNumber),
+            nextLesson));
       }
     }
 
