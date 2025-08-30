@@ -133,7 +133,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                         borderRadius: BorderRadius.circular(6)),
                   )),
               SizedBox(height: 4),
-              Text(d.format(widget.data.l10n, FormatMode.dd),
+              Text(d.format(widget.data.l10n, FormatMode.d),
                   style: appStyle.fonts.B_14R.apply(
                       color: (d.weekday == DateTime.saturday ||
                               d.weekday == DateTime.sunday)
@@ -337,7 +337,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                         ),
                       ),
                       onTap: () async {
-                        var newNow = now!.subtract(Duration(days: 30));
+                        var newNow = DateTime(now!.year, now!.month - 1);
                         setState(() {
                           now = newNow;
                           lessons = null;
@@ -362,7 +362,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                         color: appStyle.colors.accent,
                       ),
                       onTap: () async {
-                        var newNow = now!.add(Duration(days: 30));
+                        var newNow = DateTime(now!.year, now!.month + 1);
                         setState(() {
                           now = newNow;
                           lessons = null;
