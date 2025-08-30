@@ -9,6 +9,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
 
+import '../../../../helpers/api/model/test.dart';
 import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../widget/firka_icon.dart';
@@ -29,10 +30,11 @@ class HomeTimetableMonthlyScreen extends StatefulWidget {
       _HomeTimetableMonthlyScreen();
 }
 
-enum ActiveFilter { lessonNo, homework, omissions }
+enum ActiveFilter { lessonNo, tests, omissions }
 
 class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
   List<Lesson>? lessons;
+  List<Test>? tests;
   List<DateTime>? dates;
   DateTime? now;
   int active = 0;
@@ -53,6 +55,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
 
     var lessonsResp = await widget.data.client
         .getTimeTable(monthStart, monthEnd, forceCache: forceCache);
+    var testsResp = await widget.data.client.getTests(forceCache: forceCache);
     List<DateTime> dates = List.empty(growable: true);
 
     for (var i = 0; i < days; i++) {
@@ -64,6 +67,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
           ?.where((lesson) => lesson.type.name != TimetableConsts.event)
           .toList();
     }
+    tests = testsResp.response;
 
     if (mounted) {
       setState(() {
@@ -107,7 +111,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (lessons != null && dates != null) {
+    if (lessons != null && tests != null && dates != null) {
       List<Widget> ttDays = [];
 
       final meow = dates![20];
@@ -169,9 +173,13 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                 );
               }
               break;
-            case ActiveFilter.homework:
-              if (lessonsToday.firstWhereOrNull(
-                      (lesson) => lesson.homeworkUid != null) !=
+            case ActiveFilter.tests:
+              if (lessonsToday.firstWhereOrNull((lesson) => tests!.any((test) =>
+                      test.lessonNumber == lesson.lessonNumber &&
+                      lesson.start.isAfter(test.date.getMidnight()) &&
+                      lesson.end.isBefore(test.date
+                          .getMidnight()
+                          .add(Duration(hours: 23, minutes: 59))))) !=
                   null) {
                 body = Center(
                   child: FirkaIconWidget(
@@ -419,14 +427,18 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                                 Majesticon.editPen4Solid,
                                 color: appStyle.colors.accent, size: 16),
                             lessons!
-                                .where((lesson) =>
-                                    lesson.start.isAfter(currentMonthStart) &&
-                                    lesson.end.isBefore(currentMonthEnd) &&
-                                    lesson.homeworkUid != null)
+                                .where((lesson) => tests!.any((test) =>
+                                    test.lessonNumber == lesson.lessonNumber &&
+                                    lesson.start
+                                        .isAfter(test.date.getMidnight()) &&
+                                    lesson.end.isBefore(test.date
+                                        .getMidnight()
+                                        .add(
+                                            Duration(hours: 23, minutes: 59)))))
                                 .length,
-                            activeFilter == ActiveFilter.homework, () {
+                            activeFilter == ActiveFilter.tests, () {
                           setState(() {
-                            activeFilter = ActiveFilter.homework;
+                            activeFilter = ActiveFilter.tests;
                           });
                         }),
                         _StatusToast(
