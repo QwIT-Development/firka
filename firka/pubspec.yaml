@@ -89,11 +89,11 @@ flutter:
   generate: true
   uses-material-design: true
   assets:
-    - assets/images/logos/colored_logo.png
+    - assets/images/logos/colored_logo.webp
     - assets/images/logos/dave.svg
     - assets/images/carousel/
     - assets/images/icons/
-    - assets/images/background.png
+    - assets/images/background.webp
     - assets/images/wear_pair.svg
     - assets/icons/
     - assets/majesticons/

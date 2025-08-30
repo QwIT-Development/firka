@@ -130,7 +130,7 @@ class _WearLoginScreenState extends State<WearLoginScreen> {
                         decoration: ShapeDecoration(
                           image: const DecorationImage(
                             image: AssetImage(
-                                'assets/images/logos/colored_logo.png'),
+                                'assets/images/logos/colored_logo.webp'),
                             fit: BoxFit.cover,
                           ),
                           shape: RoundedRectangleBorder(
