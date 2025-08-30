@@ -30,8 +30,8 @@ class Test {
   factory Test.fromJson(Map<String, dynamic> json) {
     return Test(
       uid: json['Uid'],
-      date: DateTime.parse(json['Datum']),
-      reportDate: DateTime.parse(json['BejelentesDatuma']),
+      date: DateTime.parse(json['Datum']).toLocal(),
+      reportDate: DateTime.parse(json['BejelentesDatuma']).toLocal(),
       teacherName: json['RogzitoTanarNeve'],
       lessonNumber: json['OrarendiOraOraszama'],
       subject: Subject.fromJson(json['Tantargy']),
