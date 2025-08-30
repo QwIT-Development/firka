@@ -68,12 +68,20 @@ class SettingsStore {
                 "settings_header": SettingsHeader(0, l10n.s_ag, always),
                 "settings_padding": SettingsPadding(0, 23, always),
 
-                "bell_delay": SettingsDouble(bellRing, null, null,
-                    l10n.s_ag_bell_delay, 0, 0, 120, 0, always),
+                "bell_delay": SettingsDouble(
+                    bellRing,
+                    FirkaIconType.majesticons,
+                    Majesticon.bellSolid,
+                    l10n.s_ag_bell_delay,
+                    0,
+                    0,
+                    120,
+                    0,
+                    always),
                 "rounding": SettingsSubGroup(
                     0,
-                    null,
-                    null,
+                    FirkaIconType.majesticons,
+                    Majesticon.ruler2Solid,
                     l10n.s_ag_rounding,
                     LinkedHashMap.of({
                       "1": SettingsDouble(rounding1, null, null, l10n.s_ag_r1,
