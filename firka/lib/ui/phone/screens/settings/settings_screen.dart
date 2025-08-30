@@ -234,7 +234,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         widgets.add(Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-                image: AssetImage('assets/images/background.png'),
+                image: AssetImage('assets/images/background.webp'),
                 fit: BoxFit.cover),
             borderRadius: BorderRadius.all(Radius.circular(16)),
           ),
@@ -249,7 +249,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       borderRadius:
                           const BorderRadius.all(Radius.circular(16.0)),
                       child: Image.asset(
-                        "assets/images/icons/$activeIcon.png",
+                        "assets/images/icons/$activeIcon.webp",
                         width: 74,
                         height: 74,
                       ),
@@ -304,7 +304,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               borderRadius:
                                   const BorderRadius.all(Radius.circular(12.0)),
                               child: Image.asset(
-                                "assets/images/icons/$icon.png",
+                                "assets/images/icons/$icon.webp",
                                 width: 48,
                                 height: 48,
                               ),
@@ -315,7 +315,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           borderRadius:
                               const BorderRadius.all(Radius.circular(16.0)),
                           child: Image.asset(
-                            "assets/images/icons/$icon.png",
+                            "assets/images/icons/$icon.webp",
                             width: 54,
                             height: 54,
                           ),

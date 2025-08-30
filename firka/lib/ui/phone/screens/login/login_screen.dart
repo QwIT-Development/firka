@@ -49,14 +49,14 @@ class _LoginScreenState extends State<LoginScreen> {
       final firkaBundle = FirkaBundle();
 
       await precacheAssets(firkaBundle, [
-        "assets/images/carousel/slide1.png",
-        "assets/images/carousel/slide1_background.gif",
-        "assets/images/carousel/slide2.png",
-        "assets/images/carousel/slide2_background.gif",
-        "assets/images/carousel/slide3.png",
-        "assets/images/carousel/slide3_foreground.gif",
-        "assets/images/carousel/slide4.png",
-        "assets/images/carousel/slide4_background.gif"
+        "assets/images/carousel/slide1.webp",
+        "assets/images/carousel/slide1_background.webp",
+        "assets/images/carousel/slide2.webp",
+        "assets/images/carousel/slide2_background.webp",
+        "assets/images/carousel/slide3.webp",
+        "assets/images/carousel/slide3_foreground.webp",
+        "assets/images/carousel/slide4.webp",
+        "assets/images/carousel/slide4_background.webp"
       ]);
 
       setState(() {
@@ -79,8 +79,8 @@ class _LoginScreenState extends State<LoginScreen> {
       {
         'title': widget.data.l10n.title1,
         'subtitle': widget.data.l10n.subtitle1,
-        'picture': 'assets/images/carousel/slide1.png',
-        'background': 'assets/images/carousel/slide1_background.gif',
+        'picture': 'assets/images/carousel/slide1.webp',
+        'background': 'assets/images/carousel/slide1_background.webp',
         'foreground': '',
         'rotation': 180.00,
         // „Mi nekünk két szám típusunk van, int (egy 32 bites szám) meg a double (egy 64 bites tört szám), KURVA ANYÁDAT”
@@ -91,8 +91,8 @@ class _LoginScreenState extends State<LoginScreen> {
       {
         'title': widget.data.l10n.title2,
         'subtitle': widget.data.l10n.subtitle2,
-        'picture': 'assets/images/carousel/slide2.png',
-        'background': 'assets/images/carousel/slide2_background.gif',
+        'picture': 'assets/images/carousel/slide2.webp',
+        'background': 'assets/images/carousel/slide2_background.webp',
         'foreground': '',
         'rotation': 180.00,
         //Mivel radiáns, és nullával nem lehet osztani (remélem tudtad), ezért ha eggyel osztunk akkor egy marad
@@ -103,9 +103,9 @@ class _LoginScreenState extends State<LoginScreen> {
       {
         'title': widget.data.l10n.title3,
         'subtitle': widget.data.l10n.subtitle3,
-        'picture': 'assets/images/carousel/slide3.png',
+        'picture': 'assets/images/carousel/slide3.webp',
         'background': '',
-        'foreground': 'assets/images/carousel/slide3_foreground.gif',
+        'foreground': 'assets/images/carousel/slide3_foreground.webp',
         'rotation': 180.0,
         'scale': 0.8,
         'x': 0.00,
@@ -114,8 +114,8 @@ class _LoginScreenState extends State<LoginScreen> {
       {
         'title': widget.data.l10n.title4,
         'subtitle': widget.data.l10n.subtitle4,
-        'picture': 'assets/images/carousel/slide4.png',
-        'background': 'assets/images/carousel/slide4_background.gif',
+        'picture': 'assets/images/carousel/slide4.webp',
+        'background': 'assets/images/carousel/slide4_background.webp',
         'foreground': '',
         'rotation': 180.00,
         'scale': 1.35,
@@ -147,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           image: DecorationImage(
                             image: CacheMemoryImageProvider(
                                 DefaultAssetBundle.of(context),
-                                'assets/images/logos/colored_logo.png'),
+                                'assets/images/logos/colored_logo.webp'),
                             fit: BoxFit.cover,
                           ),
                           shape: RoundedRectangleBorder(
