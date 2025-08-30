@@ -27,6 +27,10 @@ const appIcon = 1009;
 const childProtection = 1010;
 const betaWarning = 1011;
 
+const ttToastLessonNo = 1012;
+const ttToastTestsAndHw = 1013;
+const ttToastBreaks = 1014;
+
 bool always() {
   return true;
 }
@@ -228,7 +232,39 @@ class SettingsStore {
 
           // misc
           "beta_warning": SettingsBoolean(
-              betaWarning, null, null, "Beta warning", false, never)
+              betaWarning, null, null, "Beta warning", false, never),
+          "timetable_toast": SettingsSubGroup(
+              0,
+              null,
+              null,
+              l10n.tt_settings_toast,
+              LinkedHashMap.of({
+                "header":
+                    SettingsMediumHeader(0, l10n.tt_settings_toast, always),
+                "padding": SettingsPadding(0, 16, always),
+                "lesson_no": SettingsBoolean(
+                    ttToastLessonNo,
+                    FirkaIconType.majesticons,
+                    Majesticon.clockSolid,
+                    l10n.tt_settings_toast_lesson_nos,
+                    true,
+                    always),
+                "tests_and_homework": SettingsBoolean(
+                    ttToastTestsAndHw,
+                    FirkaIconType.majesticons,
+                    Majesticon.editPen4Solid,
+                    l10n.tt_settings_toast_lesson_tests,
+                    true,
+                    always),
+                "breaks": SettingsBoolean(
+                    ttToastBreaks,
+                    FirkaIconType.majesticons,
+                    Majesticon.viewRowsLine,
+                    l10n.tt_settings_toast_lesson_breaks,
+                    true,
+                    always),
+              }),
+              never)
         }),
         always);
 
@@ -448,6 +484,28 @@ class SettingsHeader implements SettingsItem {
   String title;
 
   SettingsHeader(this.key, this.title, this.visibilityProvider);
+
+  @override
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
+
+  @override
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
+}
+
+class SettingsMediumHeader implements SettingsItem {
+  @override
+  Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
+  @override
+  bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
+  String title;
+
+  SettingsMediumHeader(this.key, this.title, this.visibilityProvider);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {}
