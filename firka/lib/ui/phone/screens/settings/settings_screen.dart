@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:firka/helpers/db/models/app_settings_model.dart';
+import 'package:firka/helpers/image_preloader.dart';
 import 'package:firka/helpers/ui/firka_button.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/main.dart';
@@ -234,7 +235,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         widgets.add(Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-                image: AssetImage('assets/images/background.webp'),
+                image: PreloadedImageProvider(
+                    FirkaBundle(), ('assets/images/background.webp')),
                 fit: BoxFit.cover),
             borderRadius: BorderRadius.all(Radius.circular(16)),
           ),
@@ -248,8 +250,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ClipRRect(
                       borderRadius:
                           const BorderRadius.all(Radius.circular(16.0)),
-                      child: Image.asset(
-                        "assets/images/icons/$activeIcon.webp",
+                      child: Image(
+                        image: PreloadedImageProvider(FirkaBundle(),
+                            "assets/images/icons/$activeIcon.webp"),
                         width: 74,
                         height: 74,
                       ),
@@ -303,8 +306,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             child: ClipRRect(
                               borderRadius:
                                   const BorderRadius.all(Radius.circular(12.0)),
-                              child: Image.asset(
-                                "assets/images/icons/$icon.webp",
+                              child: Image(
+                                image: PreloadedImageProvider(FirkaBundle(),
+                                    "assets/images/icons/$icon.webp"),
                                 width: 48,
                                 height: 48,
                               ),
@@ -314,8 +318,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       : ClipRRect(
                           borderRadius:
                               const BorderRadius.all(Radius.circular(16.0)),
-                          child: Image.asset(
-                            "assets/images/icons/$icon.webp",
+                          child: Image(
+                            image: PreloadedImageProvider(FirkaBundle(),
+                                "assets/images/icons/$icon.webp"),
                             width: 54,
                             height: 54,
                           ),
