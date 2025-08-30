@@ -20,29 +20,26 @@ class BetaScreen extends StatelessWidget {
       backgroundColor: appStyle.colors.background,
       body: SafeArea(
           child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            children: [
-              Center(
-                child: Text(data.l10n.beta_title,
-                    style: appStyle.fonts.H_H1
-                        .apply(color: appStyle.colors.textPrimary)),
-              ),
-              SizedBox(height: 8),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    data.l10n.beta_body,
-                    style: appStyle.fonts.B_16R
-                        .apply(color: appStyle.colors.textPrimary),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ],
+          Spacer(),
+          Center(
+            child: Text(data.l10n.beta_title,
+                style: appStyle.fonts.H_H1
+                    .apply(color: appStyle.colors.textPrimary)),
           ),
+          SizedBox(height: 32),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                data.l10n.beta_body,
+                style: appStyle.fonts.B_16R
+                    .apply(color: appStyle.colors.textPrimary),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          Spacer(),
           Padding(
               padding: const EdgeInsets.only(left: 32, right: 32, bottom: 16),
               child: Row(
@@ -54,6 +51,7 @@ class BetaScreen extends StatelessWidget {
                       bgColor: appStyle.colors.buttonSecondaryFill,
                       fontStyle: appStyle.fonts.B_14R
                           .apply(color: appStyle.colors.textPrimary),
+                      icon: Icon(Icons.close, color: appStyle.colors.textPrimary),
                     ),
                     onTap: () {
                       exit(0);
@@ -65,6 +63,7 @@ class BetaScreen extends StatelessWidget {
                       bgColor: appStyle.colors.accent,
                       fontStyle: appStyle.fonts.B_14R
                           .apply(color: appStyle.colors.textPrimary),
+                      icon: Icon(Icons.check, color: appStyle.colors.textPrimary),
                     ),
                     onTap: () async {
                       await data.isar.writeTxn(() async {
