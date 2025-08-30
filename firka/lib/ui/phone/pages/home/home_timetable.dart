@@ -97,12 +97,19 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
     widget.finishNotifier.update();
   }
 
+  void settingsUpdateListener() {
+    setState(() {});
+  }
+
   @override
   void didUpdateWidget(HomeTimetableScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     widget.updateNotifier.removeListener(updateListener);
     widget.updateNotifier.addListener(updateListener);
+
+    widget.data.settingsUpdateNotifier.removeListener(settingsUpdateListener);
+    widget.data.settingsUpdateNotifier.addListener(settingsUpdateListener);
   }
 
   @override
@@ -110,6 +117,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
     super.initState();
 
     widget.updateNotifier.addListener(updateListener);
+    widget.data.settingsUpdateNotifier.addListener(settingsUpdateListener);
 
     now = timeNow();
     initForWeek(now!);
@@ -120,6 +128,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
     super.dispose();
 
     widget.updateNotifier.removeListener(updateListener);
+    widget.data.settingsUpdateNotifier.removeListener(settingsUpdateListener);
   }
 
   @override
