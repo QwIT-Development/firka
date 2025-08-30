@@ -23,6 +23,9 @@ import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
 import '../../../../helpers/db/widget.dart';
 import '../../../../helpers/debug_helper.dart';
+import '../../../../helpers/firka_bundle.dart';
+import '../../../../helpers/image_preloader.dart';
+import '../../../widget/delayed_spinner.dart';
 import '../../../widget/firka_icon.dart';
 import '../../pages/extras/extras.dart';
 import '../../pages/extras/main_error.dart';
@@ -74,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget? toast;
   bool pairingDone = false;
   bool _disposed = false;
+  bool _preloadDone = false;
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
 
@@ -255,6 +259,28 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     prefetch();
+    _preloadImages();
+  }
+
+  Future<void> _preloadImages() async {
+    final imagePaths = widget.data.settings.appIcons.keys
+        .map((icon) => "assets/images/icons/$icon.webp")
+        .toList();
+
+    imagePaths.add("assets/images/background.webp");
+
+    try {
+      await ImagePreloader.preloadMultipleAssets(FirkaBundle(), imagePaths);
+
+      setState(() {
+        _preloadDone = true;
+      });
+    } catch (e) {
+      debugPrint('Error preloading images: $e');
+      setState(() {
+        _preloadDone = true;
+      });
+    }
   }
 
   void _updateSystemUI() {
@@ -298,6 +324,23 @@ class _HomeScreenState extends State<HomeScreen> {
       });
 
       return SizedBox();
+    }
+
+    if (!_preloadDone) {
+      return Scaffold(
+        backgroundColor: appStyle.colors.background,
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SizedBox(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [SizedBox(), DelayedSpinnerWidget(), SizedBox()],
+            ),
+            SizedBox(),
+          ],
+        ),
+      );
     }
 
     if (widget.watchPair && !pairingDone) {
