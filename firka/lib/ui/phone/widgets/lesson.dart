@@ -184,8 +184,10 @@ void showLessonBottomSheet(
     Color accent,
     Color secondary,
     Color bgColor) {
-  final statsForNerdsEnabled =
-      data.settings.group("settings").boolean("stats_for_nerds");
+  final statsForNerdsEnabled = data.settings
+      .group("settings")
+      .subGroup("developer")
+      .boolean("stats_for_nerds");
   showModalBottomSheet(
     context: context,
     elevation: 100,

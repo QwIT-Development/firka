@@ -261,8 +261,14 @@ class _HomeScreenState extends State<HomeScreen> {
       _updateSystemUI();
     });
 
+    widget.data.settingsUpdateNotifier.addListener(settingsUpdateListener);
+
     prefetch();
     _preloadImages();
+  }
+
+  void settingsUpdateListener() {
+    setState(() {});
   }
 
   Future<void> _preloadImages() async {
@@ -552,6 +558,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     super.dispose();
+
+    widget.data.settingsUpdateNotifier.removeListener(settingsUpdateListener);
 
     _disposed = true;
     _fetching = false;

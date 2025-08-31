@@ -32,6 +32,7 @@ const ttToastTestsAndHw = 1013;
 const ttToastBreaks = 1014;
 
 const statsForNerds = 1015;
+const developerOptsEnabled = 1016;
 
 bool always() {
   return true;
@@ -39,6 +40,11 @@ bool always() {
 
 bool never() {
   return false;
+}
+
+bool isDeveloper() {
+  return isDebug() ||
+      initData.settings.group("settings").boolean("developer_enabled");
 }
 
 bool isAndroid() {
@@ -228,13 +234,6 @@ class SettingsStore {
                     isAndroid),
               }),
               always),
-          "stats_for_nerds": SettingsBoolean(
-              statsForNerds,
-              FirkaIconType.majesticonsLocal,
-              "wrenchSolid",
-              l10n.s_stats_for_nerds,
-              false,
-              always),
           "notifications": SettingsSubGroup(0, FirkaIconType.majesticons,
               Majesticon.bellSolid, "Értesítések", LinkedHashMap.of({}), never),
           "extras": SettingsSubGroup(
@@ -246,6 +245,22 @@ class SettingsStore {
               never),
           "settings_other_padding": SettingsPadding(0, 20, never),
           "settings_other_header": SettingsHeaderSmall(0, "Egyéb", never),
+
+          "developer": SettingsSubGroup(
+              0,
+              FirkaIconType.majesticonsLocal,
+              "wrenchSolid",
+              l10n.s_developer,
+              LinkedHashMap.of({
+                "stats_for_nerds": SettingsBoolean(
+                    statsForNerds,
+                    FirkaIconType.majesticonsLocal,
+                    "wrenchSolid",
+                    l10n.s_stats_for_nerds,
+                    false,
+                    always),
+              }),
+              isDeveloper),
 
           // misc
           "beta_warning": SettingsBoolean(
@@ -281,7 +296,9 @@ class SettingsStore {
                     true,
                     always),
               }),
-              never)
+              never),
+          "developer_enabled": SettingsBoolean(
+              developerOptsEnabled, null, null, "Developer", false, never),
         }),
         always);
 

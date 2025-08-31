@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:isar/isar.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
@@ -38,6 +39,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 late AppInitialization initData;
 
 final dio = Dio();
+final isBeta = true;
 
 class DeviceInfo {
   String model;
@@ -56,6 +58,7 @@ class DeviceInfo {
 
 class AppInitialization {
   final Isar isar;
+  final PackageInfo packageInfo;
   final DeviceInfo devInfo;
   late KretaClient client;
   int tokenCount;
@@ -68,6 +71,7 @@ class AppInitialization {
   AppInitialization({
     required this.isar,
     required this.devInfo,
+    required this.packageInfo,
     required this.tokenCount,
     required this.settings,
     required this.l10n,
@@ -156,6 +160,7 @@ Future<AppInitialization> initializeApp() async {
   var init = AppInitialization(
     isar: isar,
     devInfo: devInfo,
+    packageInfo: await PackageInfo.fromPlatform(),
     tokenCount: tokenCount,
     settings: SettingsStore(AppLocalizationsHu()),
     l10n: AppLocalizationsHu(),
