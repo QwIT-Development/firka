@@ -142,8 +142,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
     }
 
     if (student != null && lessons != null) {
-      return Flexible(
-        child: Padding(
+      return Padding(
           padding: const EdgeInsets.only(
             left: 20.0,
             top: 24.0,
@@ -159,8 +158,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
               nextClass
             ],
           ),
-        ),
-      );
+        );
     } else {
       return DelayedSpinnerWidget();
     }
