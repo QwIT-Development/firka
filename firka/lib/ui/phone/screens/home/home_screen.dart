@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:firka/helpers/api/client/kreta_client.dart';
@@ -176,9 +177,11 @@ class _HomeScreenState extends State<HomeScreen> {
         throw "await widget.data.client.getTimeTable\n${res.err!}";
       }
 
-      await WidgetCacheHelper.updateWidgetCache(appStyle, widget.data.client);
-      await HomeWidget.updateWidget(
-          qualifiedAndroidName: "app.firka.naplo.glance.TimetableWidget");
+      if (Platform.isAndroid) {
+        await WidgetCacheHelper.updateWidgetCache(appStyle, widget.data.client);
+        await HomeWidget.updateWidget(
+            qualifiedAndroidName: "app.firka.naplo.glance.TimetableWidget");
+      }
     } catch (e) {
       activeToast = ActiveToastType.error;
 
