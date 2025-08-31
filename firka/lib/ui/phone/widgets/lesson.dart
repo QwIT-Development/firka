@@ -268,7 +268,7 @@ void showLessonBottomSheet(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            lesson.name,
+                            "${lesson.name} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
                             style: appStyle.fonts.H_18px
                                 .apply(color: appStyle.colors.textPrimary),
                           ),
