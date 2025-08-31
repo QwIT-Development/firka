@@ -23,11 +23,10 @@ class HomeTimetableScreen extends StatefulWidget {
   final AppInitialization data;
   final UpdateNotifier updateNotifier;
   final UpdateNotifier finishNotifier;
-
-  final void Function(ActiveHomePage, bool) cb;
+  final void Function(int) pageController;
 
   const HomeTimetableScreen(
-      this.data, this.updateNotifier, this.finishNotifier, this.cb,
+      this.data, this.updateNotifier, this.finishNotifier, this.pageController,
       {super.key});
 
   @override
@@ -171,7 +170,9 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
             widget.data, date, lessonsOnDate, eventsOnDate, testsOnDate));
       }
 
-      return Stack(children: [
+      return Scaffold(
+            backgroundColor: appStyle.colors.background, body:
+            Stack(children: [
         SizedBox(
           width: MediaQuery.of(context).size.width,
           height: 74 + 16,
@@ -189,6 +190,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                     ),
                     Row(
                       children: [
+                      /* TODO: 1.1.0
                         GestureDetector(
                           child: Card(
                             color: appStyle.colors.buttonSecondaryFill,
@@ -203,11 +205,9 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                             ),
                           ),
                           onTap: () {
-                            widget.cb(
-                                ActiveHomePage(HomePages.timetableMo), false);
+                            widget.pageController(1);
                           },
                         ),
-                        /* TODO: 1.1.0
                         Card(
                           color: appStyle.colors.buttonSecondaryFill,
                           child: Padding( TO
@@ -338,11 +338,12 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                     ))),
             TransparentPointer(
                 child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: ttWidgets,
             )),
           ],
         )
-      ]);
+      ]));
     } else {
       return SizedBox(
         height: MediaQuery.of(context).size.height / 1.35,

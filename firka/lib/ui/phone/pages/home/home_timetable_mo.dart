@@ -21,10 +21,10 @@ class HomeTimetableMonthlyScreen extends StatefulWidget {
   final AppInitialization data;
   final UpdateNotifier updateNotifier;
   final UpdateNotifier finishNotifier;
-  final void Function(ActiveHomePage, bool) cb;
+  final void Function(int) pageController;
 
   const HomeTimetableMonthlyScreen(
-      this.data, this.updateNotifier, this.finishNotifier, this.cb,
+      this.data, this.updateNotifier, this.finishNotifier, this.pageController,
       {super.key});
 
   @override
@@ -141,7 +141,6 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                               d.weekday == DateTime.sunday)
                           ? appStyle.colors.errorText
                           : appStyle.colors.textTertiary)),
-              SizedBox(height: 12),
             ],
           ));
         } else {
@@ -258,229 +257,239 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
         }
       }
 
-      return Stack(children: [
-        SizedBox(
-          width: MediaQuery.of(context).size.width,
-          height: 74 + 16,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      return Scaffold(
+          backgroundColor: appStyle.colors.background,
+          body: Stack(children: [
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: 74 + 16,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
                   children: [
-                    Text(
-                      widget.data.l10n.timetable,
-                      style: appStyle.fonts.H_H2
-                          .apply(color: appStyle.colors.textPrimary),
-                    ),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        GestureDetector(
-                          child: Card(
-                            color: appStyle.colors.buttonSecondaryFill,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: FirkaIconWidget(
-                                FirkaIconType.majesticons,
-                                Majesticon.tableSolid,
-                                size: 26.0,
-                                color: appStyle.colors.accent,
+                        Text(
+                          widget.data.l10n.timetable,
+                          style: appStyle.fonts.H_H2
+                              .apply(color: appStyle.colors.textPrimary),
+                        ),
+                        Row(
+                          children: [
+                            GestureDetector(
+                              child: Card(
+                                color: appStyle.colors.buttonSecondaryFill,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: FirkaIconWidget(
+                                    FirkaIconType.majesticons,
+                                    Majesticon.tableSolid,
+                                    size: 26.0,
+                                    color: appStyle.colors.accent,
+                                  ),
+                                ),
+                              ),
+                              onTap: () {
+                                widget.pageController(0);
+                              },
+                            ),
+                            Card(
+                              color: appStyle.colors.buttonSecondaryFill,
+                              child: Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: FirkaIconWidget(
+                                  FirkaIconType.majesticons,
+                                  Majesticon.plusLine,
+                                  size: 32.0,
+                                  color: appStyle.colors.accent,
+                                ),
                               ),
                             ),
-                          ),
-                          onTap: () {
-                            widget.cb(
-                                ActiveHomePage(HomePages.timetable), false);
-                          },
+                            GestureDetector(
+                              child: Card(
+                                color: appStyle.colors.buttonSecondaryFill,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: FirkaIconWidget(
+                                    FirkaIconType.majesticons,
+                                    Majesticon.settingsCogSolid,
+                                    size: 26.0,
+                                    color: appStyle.colors.accent,
+                                  ),
+                                ),
+                              ),
+                              onTap: () {
+                                showSettingsSheet(
+                                    context,
+                                    MediaQuery.of(context).size.height * 0.4,
+                                    widget.data,
+                                    widget.data.settings
+                                        .group("settings")
+                                        .subGroup("timetable_toast"));
+                              },
+                            ),
+                          ],
                         ),
-                        Card(
-                          color: appStyle.colors.buttonSecondaryFill,
-                          child: Padding(
-                            padding: const EdgeInsets.all(4),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
                             child: FirkaIconWidget(
-                              FirkaIconType.majesticons,
-                              Majesticon.plusLine,
-                              size: 32.0,
+                              FirkaIconType.icons,
+                              "dropdownLeft",
+                              size: 24,
                               color: appStyle.colors.accent,
                             ),
                           ),
+                          onTap: () async {
+                            var newNow = DateTime(now!.year, now!.month - 1);
+                            setState(() {
+                              now = newNow;
+                              lessons = null;
+                              dates = null;
+                            });
+                            await initForMonth(newNow);
+                            setState(() {
+                              now = newNow;
+                            });
+                          },
                         ),
+                        Text(
+                            now!
+                                .format(widget.data.l10n, FormatMode.yyyymmmm)
+                                .toLowerCase(),
+                            style: appStyle.fonts.B_14R),
                         GestureDetector(
-                          child: Card(
-                            color: appStyle.colors.buttonSecondaryFill,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: FirkaIconWidget(
-                                FirkaIconType.majesticons,
-                                Majesticon.settingsCogSolid,
-                                size: 26.0,
-                                color: appStyle.colors.accent,
-                              ),
-                            ),
+                          child: FirkaIconWidget(
+                            FirkaIconType.icons,
+                            "dropdownRight",
+                            size: 24,
+                            color: appStyle.colors.accent,
                           ),
-                          onTap: () {
-                            showSettingsSheet(
-                                context,
-                                MediaQuery.of(context).size.height * 0.4,
-                                widget.data,
-                                widget.data.settings
-                                    .group("settings")
-                                    .subGroup("timetable_toast"));
+                          onTap: () async {
+                            var newNow = DateTime(now!.year, now!.month + 1);
+                            setState(() {
+                              now = newNow;
+                              lessons = null;
+                              dates = null;
+                            });
+                            await initForMonth(newNow);
+                            setState(() {
+                              now = newNow;
+                            });
                           },
                         ),
                       ],
-                    ),
+                    )
                   ],
                 ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: FirkaIconWidget(
-                          FirkaIconType.icons,
-                          "dropdownLeft",
-                          size: 24,
-                          color: appStyle.colors.accent,
-                        ),
-                      ),
-                      onTap: () async {
-                        var newNow = DateTime(now!.year, now!.month - 1);
-                        setState(() {
-                          now = newNow;
-                          lessons = null;
-                          dates = null;
-                        });
-                        await initForMonth(newNow);
-                        setState(() {
-                          now = newNow;
-                        });
-                      },
-                    ),
-                    Text(
-                        now!
-                            .format(widget.data.l10n, FormatMode.yyyymmmm)
-                            .toLowerCase(),
-                        style: appStyle.fonts.B_14R),
-                    GestureDetector(
-                      child: FirkaIconWidget(
-                        FirkaIconType.icons,
-                        "dropdownRight",
-                        size: 24,
-                        color: appStyle.colors.accent,
-                      ),
-                      onTap: () async {
-                        var newNow = DateTime(now!.year, now!.month + 1);
-                        setState(() {
-                          now = newNow;
-                          lessons = null;
-                          dates = null;
-                        });
-                        await initForMonth(newNow);
-                        setState(() {
-                          now = newNow;
-                        });
-                      },
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ),
-        ),
-        TransparentPointer(
-            child: Padding(
-          padding: const EdgeInsets.only(top: 74 + 16 + 12),
-          child: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height / 1.45,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: StaggeredGrid.count(
-                  crossAxisCount: 7,
-                  children: ttDays,
-                ),
-              )),
-        )),
-        TransparentPointer(
-          child: Column(
-            children: [
-              SizedBox(
-                height: MediaQuery.of(context).size.height / 1.3,
               ),
-              SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(),
-                    Row(
+            ),
+            TransparentPointer(
+                child: Padding(
+              padding: const EdgeInsets.only(top: 74 + 16 + 12),
+              child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height / 1.45,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _StatusToast(
-                            FirkaIconWidget(FirkaIconType.majesticons,
-                                Majesticon.clockSolid,
-                                color: appStyle.colors.accent, size: 16),
-                            lessons!
-                                .where((lesson) =>
-                                    lesson.start.isAfter(currentMonthStart) &&
-                                    lesson.end.isBefore(currentMonthEnd))
-                                .length,
-                            activeFilter == ActiveFilter.lessonNo, () {
-                          setState(() {
-                            activeFilter = ActiveFilter.lessonNo;
-                          });
-                        }),
-                        _StatusToast(
-                            FirkaIconWidget(FirkaIconType.majesticons,
-                                Majesticon.editPen4Solid,
-                                color: appStyle.colors.accent, size: 16),
-                            lessons!
-                                .where((lesson) => tests!.any((test) =>
-                                    test.lessonNumber == lesson.lessonNumber &&
-                                    lesson.start
-                                        .isAfter(test.date.getMidnight()) &&
-                                    lesson.end.isBefore(test.date
-                                        .getMidnight()
-                                        .add(
-                                            Duration(hours: 23, minutes: 59)))))
-                                .length,
-                            activeFilter == ActiveFilter.tests, () {
-                          setState(() {
-                            activeFilter = ActiveFilter.tests;
-                          });
-                        }),
-                        _StatusToast(
-                            FirkaIconWidget(
-                                FirkaIconType.majesticons, Majesticon.timerLine,
-                                color: appStyle.colors.accent, size: 16),
-                            lessons!
-                                .where((lesson) =>
-                                    lesson.start.isAfter(currentMonthStart) &&
-                                    lesson.end.isBefore(currentMonthEnd) &&
-                                    lesson.studentPresence != null &&
-                                    lesson.studentPresence?.name !=
-                                        OmissionConsts.present)
-                                .length,
-                            activeFilter == ActiveFilter.omissions, () {
-                          setState(() {
-                            activeFilter = ActiveFilter.omissions;
-                          });
-                        }),
+                        StaggeredGrid.count(
+                          crossAxisCount: 7,
+                          mainAxisSpacing: 8,
+                          children: ttDays,
+                        )
                       ],
                     ),
-                    SizedBox()
-                  ],
-                ),
-              )
-            ],
-          ),
-        ),
-      ]);
+                  )),
+            )),
+            TransparentPointer(
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height / 1.3,
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SizedBox(),
+                        Row(
+                          children: [
+                            _StatusToast(
+                                FirkaIconWidget(FirkaIconType.majesticons,
+                                    Majesticon.clockSolid,
+                                    color: appStyle.colors.accent, size: 16),
+                                lessons!
+                                    .where((lesson) =>
+                                        lesson.start
+                                            .isAfter(currentMonthStart) &&
+                                        lesson.end.isBefore(currentMonthEnd))
+                                    .length,
+                                activeFilter == ActiveFilter.lessonNo, () {
+                              setState(() {
+                                activeFilter = ActiveFilter.lessonNo;
+                              });
+                            }),
+                            _StatusToast(
+                                FirkaIconWidget(FirkaIconType.majesticons,
+                                    Majesticon.editPen4Solid,
+                                    color: appStyle.colors.accent, size: 16),
+                                lessons!
+                                    .where((lesson) => tests!.any((test) =>
+                                        test.lessonNumber ==
+                                            lesson.lessonNumber &&
+                                        lesson.start
+                                            .isAfter(test.date.getMidnight()) &&
+                                        lesson.end.isBefore(test.date
+                                            .getMidnight()
+                                            .add(Duration(
+                                                hours: 23, minutes: 59)))))
+                                    .length,
+                                activeFilter == ActiveFilter.tests, () {
+                              setState(() {
+                                activeFilter = ActiveFilter.tests;
+                              });
+                            }),
+                            _StatusToast(
+                                FirkaIconWidget(FirkaIconType.majesticons,
+                                    Majesticon.timerLine,
+                                    color: appStyle.colors.accent, size: 16),
+                                lessons!
+                                    .where((lesson) =>
+                                        lesson.start
+                                            .isAfter(currentMonthStart) &&
+                                        lesson.end.isBefore(currentMonthEnd) &&
+                                        lesson.studentPresence != null &&
+                                        lesson.studentPresence?.name !=
+                                            OmissionConsts.present)
+                                    .length,
+                                activeFilter == ActiveFilter.omissions, () {
+                              setState(() {
+                                activeFilter = ActiveFilter.omissions;
+                              });
+                            }),
+                          ],
+                        ),
+                        SizedBox()
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ]));
     } else {
       return SizedBox(
         height: MediaQuery.of(context).size.height / 1.35,
