@@ -14,7 +14,6 @@ import '../../../../helpers/api/model/test.dart';
 import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../widget/firka_icon.dart';
-import '../../screens/home/home_screen.dart';
 import '../../screens/settings/settings_screen.dart';
 
 class HomeTimetableMonthlyScreen extends StatefulWidget {

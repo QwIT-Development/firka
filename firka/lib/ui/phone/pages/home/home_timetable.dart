@@ -15,7 +15,6 @@ import '../../../../helpers/api/consts.dart';
 import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../widget/firka_icon.dart';
-import '../../screens/home/home_screen.dart';
 import '../../widgets/bottom_tt_icon.dart';
 import '../../widgets/tt_day.dart';
 
