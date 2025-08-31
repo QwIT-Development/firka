@@ -405,6 +405,7 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: appStyle.colors.background,
           offset: 24,
         ),
+        physics: ClampingScrollPhysics(),
         child: PopScope(
           canPop: canPop,
           child: Scaffold(
