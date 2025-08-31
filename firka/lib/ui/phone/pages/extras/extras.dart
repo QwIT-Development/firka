@@ -1,3 +1,5 @@
+import 'package:firka/helpers/db/models/app_settings_model.dart';
+import 'package:firka/helpers/settings/setting.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
@@ -6,8 +8,32 @@ import 'package:flutter/material.dart';
 
 import '../../../../helpers/firka_bundle.dart';
 import '../../screens/debug/debug_screen.dart';
+import '../../screens/home/home_screen.dart';
 
 void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
+  Widget debugBtn = SizedBox();
+
+  debugPrint("Developer mode: ${isDeveloper()}");
+
+  if (isDeveloper()) {
+    debugBtn = GestureDetector(
+      onTap: () => {
+        Navigator.pop(context),
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => DefaultAssetBundle(
+                    bundle: FirkaBundle(), child: DebugScreen(data))))
+      },
+      child: FirkaCard(
+        left: [Text(data.l10n.debug_screen)],
+        right: [],
+      ),
+    );
+  }
+
+  var debugCounter = 0;
+
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -37,39 +63,74 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Column(
+                child: Stack(
                   children: [
-                    GestureDetector(
-                      onTap: () => {
-                        Navigator.pop(context),
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => DefaultAssetBundle(
-                                    bundle: FirkaBundle(),
-                                    child: DebugScreen(data))))
-                      },
-                      child: FirkaCard(
-                        left: [Text(data.l10n.debug_screen)],
-                        right: [],
+                    Column(
+                      children: [
+                        debugBtn,
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => DefaultAssetBundle(
+                                        bundle: FirkaBundle(),
+                                        child: SettingsScreen(
+                                            data, data.settings.items))));
+                          },
+                          child: FirkaCard(
+                            left: [Text(data.l10n.settings_screen)],
+                            right: [],
+                          ),
+                        )
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 32),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(),
+                          GestureDetector(
+                            child: Text(
+                                "v${data.packageInfo.version} ${isBeta ? "beta" : ""}"),
+                            onTap: () async {
+                              if (isDebug()) return;
+                              if (debugCounter == 10) {
+                                data.settings.group("settings").setBoolean(
+                                    "developer_enabled",
+                                    !data.settings
+                                        .group("settings")
+                                        .boolean("developer_enabled"));
+
+                                await data.isar.writeTxn(() async {
+                                  await data.settings
+                                      .group("settings")["developer_enabled"]!
+                                      .save(data.isar.appSettingsModels);
+                                });
+
+                                Navigator.of(navigatorKey.currentContext!)
+                                    .popUntil((route) => false);
+                                Navigator.push(
+                                  navigatorKey.currentContext!,
+                                  MaterialPageRoute(
+                                      builder: (context) => DefaultAssetBundle(
+                                          bundle: FirkaBundle(),
+                                          child: HomeScreen(
+                                            data,
+                                            false,
+                                            key: ValueKey('homeScreen'),
+                                          ))),
+                                );
+                              } else if (debugCounter < 10) {
+                                debugCounter++;
+                              }
+                            },
+                          ),
+                        ],
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => DefaultAssetBundle(
-                                    bundle: FirkaBundle(),
-                                    child: SettingsScreen(
-                                        data, data.settings.items))));
-                      },
-                      child: FirkaCard(
-                        left: [Text(data.l10n.settings_screen)],
-                        right: [],
-                      ),
-                    )
                   ],
                 ),
               ),
