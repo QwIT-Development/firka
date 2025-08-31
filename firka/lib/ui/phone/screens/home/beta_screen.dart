@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:firka/helpers/db/models/app_settings_model.dart';
@@ -9,10 +10,34 @@ import 'package:flutter/material.dart';
 
 import '../../../../main.dart';
 
-class BetaScreen extends StatelessWidget {
+class BetaScreen extends StatefulWidget {
   final AppInitialization data;
 
   const BetaScreen(this.data, {super.key});
+
+  @override
+  State<BetaScreen> createState() => _BetaScreenState();
+}
+
+class _BetaScreenState extends State<BetaScreen> {
+  late Timer timer;
+  int counter = 5;
+
+  @override
+  void initState() {
+    super.initState();
+
+    counter = 5;
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (counter == 0) {
+        timer.cancel();
+      } else {
+        counter--;
+
+        if (mounted) setState(() {});
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +48,7 @@ class BetaScreen extends StatelessWidget {
         children: [
           Spacer(),
           Center(
-            child: Text(data.l10n.beta_title,
+            child: Text(widget.data.l10n.beta_title,
                 style: appStyle.fonts.H_H1
                     .apply(color: appStyle.colors.textPrimary)),
           ),
@@ -32,7 +57,7 @@ class BetaScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
-                data.l10n.beta_body,
+                widget.data.l10n.beta_body,
                 style: appStyle.fonts.B_16R
                     .apply(color: appStyle.colors.textPrimary),
                 textAlign: TextAlign.center,
@@ -47,11 +72,12 @@ class BetaScreen extends StatelessWidget {
                 children: [
                   GestureDetector(
                     child: FirkaButton(
-                      text: data.l10n.cancel,
+                      text: widget.data.l10n.cancel,
                       bgColor: appStyle.colors.buttonSecondaryFill,
                       fontStyle: appStyle.fonts.B_14R
                           .apply(color: appStyle.colors.textPrimary),
-                      icon: Icon(Icons.close, color: appStyle.colors.textPrimary),
+                      icon:
+                          Icon(Icons.close, color: appStyle.colors.textPrimary),
                     ),
                     onTap: () {
                       exit(0);
@@ -59,25 +85,30 @@ class BetaScreen extends StatelessWidget {
                   ),
                   GestureDetector(
                     child: FirkaButton(
-                      text: data.l10n.okay,
-                      bgColor: appStyle.colors.accent,
+                      text: counter == 0 ? widget.data.l10n.okay : "${widget.data.l10n.okay} ($counter)",
+                      bgColor: counter == 0
+                          ? appStyle.colors.accent
+                          : appStyle.colors.secondary,
                       fontStyle: appStyle.fonts.B_14R
                           .apply(color: appStyle.colors.textPrimary),
-                      icon: Icon(Icons.check, color: appStyle.colors.textPrimary),
+                      icon:
+                          Icon(Icons.check, color: appStyle.colors.textPrimary),
                     ),
                     onTap: () async {
-                      await data.isar.writeTxn(() async {
-                        data.settings
+                      if (counter != 0) return;
+                      await widget.data.isar.writeTxn(() async {
+                        widget.data.settings
                             .group("settings")
                             .setBoolean("beta_warning", true);
 
-                        await data.settings
+                        await widget.data.settings
                             .group("settings")["beta_warning"]!
-                            .save(data.isar.appSettingsModels);
+                            .save(widget.data.isar.appSettingsModels);
 
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
-                              builder: (context) => HomeScreen(data, false)),
+                              builder: (context) =>
+                                  HomeScreen(widget.data, false)),
                           (route) => false,
                         );
                       });
@@ -88,5 +119,11 @@ class BetaScreen extends StatelessWidget {
         ],
       )),
     );
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
   }
 }
