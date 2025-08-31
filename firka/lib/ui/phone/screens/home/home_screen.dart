@@ -429,19 +429,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                   widget.data,
                                   widget.updateNotifier,
                                   widget.updateFinishedNotifier,
-                                  _pageController),
+                                  ),
                               HomeSubPage(
                                   HomePage.grades,
                                   widget.data,
                                   widget.updateNotifier,
                                   widget.updateFinishedNotifier,
-                                  _pageController),
+                                  ),
                               HomeSubPage(
                                   HomePage.timetable,
                                   widget.data,
                                   widget.updateNotifier,
                                   widget.updateFinishedNotifier,
-                                  _pageController),
+                                  ),
                             ],
                           ),
                         ),
@@ -577,11 +577,9 @@ class HomeSubPage extends StatelessWidget {
   final AppInitialization data;
   final UpdateNotifier _updateNotifier;
   final UpdateNotifier _updateFinishNotifier;
-  final PageController _pageController;
 
   const HomeSubPage(this.page, this.data, this._updateNotifier,
-      this._updateFinishNotifier, this._pageController,
-      {super.key});
+      this._updateFinishNotifier, {super.key});
 
   @override
   Widget build(BuildContext context) {
