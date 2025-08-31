@@ -97,6 +97,7 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
       );
     } else {
       var subjectAvg = 0.00;
+      var subjectCount = 0;
       var subjectAvgRounded = 0.00;
       final List<Subject> subjects = List<Subject>.empty(growable: true);
       final List<Widget> gradeCards = [];
@@ -136,12 +137,20 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
           ));
         }
 
-        subjectAvg += avg;
-        subjectAvgRounded += roundGrade(avg);
+        if (!avg.isNaN) {
+          subjectCount++;
+          subjectAvg += avg;
+          subjectAvgRounded += roundGrade(avg);
+        }
       }
 
-      subjectAvg /= subjects.length;
-      subjectAvgRounded /= subjects.length;
+      subjectAvg /= subjectCount;
+      subjectAvgRounded /= subjectCount;
+
+      if (subjectCount == 0) {
+        subjectAvg = 0.00;
+        subjectAvgRounded = 0.00;
+      }
 
       var subjectAvgColor = getGradeColor(subjectAvg);
 
