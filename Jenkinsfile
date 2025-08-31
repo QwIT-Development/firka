@@ -137,24 +137,6 @@ pipeline {
                 }
             }
         }
-        stage('Publish release artifacts') {
-            when {
-                branch 'main'
-            }
-            steps {
-                archiveArtifacts artifacts: 'firka/build/app/outputs/flutter-apk/app.firka.naplo_*.apk', fingerprint: true
-            }
-        }
-        stage('Publish debug artifacts') {
-            when {
-                not {
-                    branch 'main'
-                }
-            }
-            steps {
-                archiveArtifacts artifacts: 'firka/build/app/outputs/flutter-apk/app-debug.apk', fingerprint: true
-            }
-        }
         stage('Upload to F-Droid Debug') {
             when {
                 branch 'dev'
