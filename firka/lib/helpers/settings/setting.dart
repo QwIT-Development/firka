@@ -246,11 +246,11 @@ class SettingsStore {
           "settings_other_padding": SettingsPadding(0, 20, never),
           "settings_other_header": SettingsHeaderSmall(0, "Egyéb", never),
 
-          "developer": SettingsSubGroup(
-              0,
-              FirkaIconType.majesticonsLocal,
-              "wrenchSolid",
-              l10n.s_developer,
+      "developer": SettingsSubGroup(
+        0,
+        FirkaIconType.majesticonsLocal,
+        "wrenchSolid",
+        'Developer',
               LinkedHashMap.of({
                 "stats_for_nerds": SettingsBoolean(
                     statsForNerds,
