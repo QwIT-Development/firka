@@ -207,9 +207,10 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                                 ActiveHomePage(HomePages.timetableMo), false);
                           },
                         ),
+                        /* TODO: 1.1.0
                         Card(
                           color: appStyle.colors.buttonSecondaryFill,
-                          child: Padding(
+                          child: Padding( TO
                             padding: const EdgeInsets.all(4),
                             child: FirkaIconWidget(
                               FirkaIconType.majesticons,
@@ -219,6 +220,7 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                             ),
                           ),
                         ),
+                        */
                         GestureDetector(
                           child: Card(
                             color: appStyle.colors.buttonSecondaryFill,
