@@ -20,16 +20,17 @@ class HomeGradesScreen extends StatefulWidget {
   final AppInitialization data;
   final UpdateNotifier updateNotifier;
   final UpdateNotifier finishNotifier;
-
-  final void Function(ActiveHomePage, bool) cb;
+  final void Function(int) pageController;
 
   const HomeGradesScreen(
-      this.data, this.updateNotifier, this.finishNotifier, this.cb,
+      this.data, this.updateNotifier, this.finishNotifier, this.pageController,
       {super.key});
 
   @override
   State<StatefulWidget> createState() => _HomeGradesScreen();
 }
+
+String activeSubjectUid = "";
 
 class _HomeGradesScreen extends State<HomeGradesScreen> {
   ApiResponse<List<Grade>>? grades;
@@ -83,7 +84,7 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
   @override
   Widget build(BuildContext context) {
     if (grades == null || week == null) {
-      return SizedBox(
+     return SizedBox(
         height: MediaQuery.of(context).size.height / 1.35,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -128,9 +129,9 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
           gradeCards.add(GestureDetector(
             child: GradeSmallCard(grades!.response!, subject),
             onTap: () {
-              widget.cb(
-                  ActiveHomePage(HomePages.grades, subPageUid: subject.uid),
-                  true);
+              activeSubjectUid = subject.uid;
+
+              widget.pageController(1);
             },
           ));
         }
@@ -144,129 +145,128 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
 
       var subjectAvgColor = getGradeColor(subjectAvg);
 
-      return Flexible(
-        child: Padding(
-          padding: const EdgeInsets.only(
-            left: 20.0,
-            right: 20.0,
-            top: 12.0,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+      return Scaffold(
+            backgroundColor: appStyle.colors.background, body: Padding(
+        padding: const EdgeInsets.only(
+          left: 20.0,
+          right: 20.0,
+          top: 12.0,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  widget.data.l10n.subjects,
+                  style: appStyle.fonts.H_H2
+                      .apply(color: appStyle.colors.textPrimary),
+                )
+              ],
+            ),
+            SizedBox(height: 16), // TODO: Add graphs here
+            // ...gradeCards,
+            SizedBox(
+              height: MediaQuery.of(context).size.height -
+                  MediaQuery.of(context).padding.top -
+                  240,
+              child: ListView(
                 children: [
                   Text(
-                    widget.data.l10n.subjects,
-                    style: appStyle.fonts.H_H2
-                        .apply(color: appStyle.colors.textPrimary),
-                  )
-                ],
-              ),
-              SizedBox(height: 16), // TODO: Add graphs here
-              // ...gradeCards,
-              SizedBox(
-                height: MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).padding.top -
-                    240,
-                child: ListView(
-                  children: [
-                    Text(
-                      widget.data.l10n.your_subjects,
-                      style: appStyle.fonts.H_14px
-                          .apply(color: appStyle.colors.textSecondary),
-                    ),
-                    SizedBox(height: 16),
-                    ...gradeCards,
-                    SizedBox(height: 16),
-                    Text(
-                      widget.data.l10n.data,
-                      style: appStyle.fonts.B_16SB
-                          .apply(color: appStyle.colors.textSecondary),
-                    ),
-                    SizedBox(height: 16),
-                    FirkaCard(
-                      left: [
-                        Text(
-                          widget.data.l10n.subject_avg,
-                          style: appStyle.fonts.B_16SB
-                              .apply(color: appStyle.colors.textPrimary),
-                        ),
-                      ],
-                      right: [
-                        Card(
-                          shadowColor: Colors.transparent,
-                          color: subjectAvgColor.withAlpha(38),
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                                left: 8, right: 8, top: 4, bottom: 4),
-                            child: Text(
-                              subjectAvg.toStringAsFixed(2),
-                              style: appStyle.fonts.B_16SB
-                                  .apply(color: subjectAvgColor),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    FirkaCard(
-                      left: [
-                        Text(
-                          widget.data.l10n.subject_avg_rounded,
-                          style: appStyle.fonts.B_16SB
-                              .apply(color: appStyle.colors.textPrimary),
-                        ),
-                      ],
-                      right: [
-                        Card(
-                          shadowColor: Colors.transparent,
-                          color: subjectAvgColor.withAlpha(38),
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                                left: 8, right: 8, top: 4, bottom: 4),
-                            child: Text(
-                              subjectAvgRounded.toStringAsFixed(2),
-                              style: appStyle.fonts.B_16SB
-                                  .apply(color: subjectAvgColor),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    FirkaCard(left: [
+                    widget.data.l10n.your_subjects,
+                    style: appStyle.fonts.H_14px
+                        .apply(color: appStyle.colors.textSecondary),
+                  ),
+                  SizedBox(height: 16),
+                  ...gradeCards,
+                  SizedBox(height: 16),
+                  Text(
+                    widget.data.l10n.data,
+                    style: appStyle.fonts.B_16SB
+                        .apply(color: appStyle.colors.textSecondary),
+                  ),
+                  SizedBox(height: 16),
+                  FirkaCard(
+                    left: [
                       Text(
-                        widget.data.l10n.class_avg,
+                        widget.data.l10n.subject_avg,
                         style: appStyle.fonts.B_16SB
                             .apply(color: appStyle.colors.textPrimary),
                       ),
-                    ]),
-                    FirkaCard(
-                      left: [
-                        Text(
-                          widget.data.l10n.class_n,
-                          style: appStyle.fonts.B_16SB
-                              .apply(color: appStyle.colors.textPrimary),
+                    ],
+                    right: [
+                      Card(
+                        shadowColor: Colors.transparent,
+                        color: subjectAvgColor.withAlpha(38),
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                              left: 8, right: 8, top: 4, bottom: 4),
+                          child: Text(
+                            subjectAvg.toStringAsFixed(2),
+                            style: appStyle.fonts.B_16SB
+                                .apply(color: subjectAvgColor),
+                          ),
                         ),
-                      ],
-                      right: [
-                        Text(
-                          week!.response!
-                              .where((lesson) =>
-                                  lesson.type.name != TimetableConsts.event)
-                              .length
-                              .toString(),
-                          style: appStyle.fonts.B_14SB
-                              .apply(color: appStyle.colors.textPrimary),
+                      ),
+                    ],
+                  ),
+                  FirkaCard(
+                    left: [
+                      Text(
+                        widget.data.l10n.subject_avg_rounded,
+                        style: appStyle.fonts.B_16SB
+                            .apply(color: appStyle.colors.textPrimary),
+                      ),
+                    ],
+                    right: [
+                      Card(
+                        shadowColor: Colors.transparent,
+                        color: subjectAvgColor.withAlpha(38),
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                              left: 8, right: 8, top: 4, bottom: 4),
+                          child: Text(
+                            subjectAvgRounded.toStringAsFixed(2),
+                            style: appStyle.fonts.B_16SB
+                                .apply(color: subjectAvgColor),
+                          ),
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                  FirkaCard(left: [
+                    Text(
+                      widget.data.l10n.class_avg,
+                      style: appStyle.fonts.B_16SB
+                          .apply(color: appStyle.colors.textPrimary),
                     ),
-                  ],
-                ),
+                  ]),
+                  FirkaCard(
+                    left: [
+                      Text(
+                        widget.data.l10n.class_n,
+                        style: appStyle.fonts.B_16SB
+                            .apply(color: appStyle.colors.textPrimary),
+                      ),
+                    ],
+                    right: [
+                      Text(
+                        week!.response!
+                            .where((lesson) =>
+                                lesson.type.name != TimetableConsts.event)
+                            .length
+                            .toString(),
+                        style: appStyle.fonts.B_14SB
+                            .apply(color: appStyle.colors.textPrimary),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
+      ));
     }
   }
 }

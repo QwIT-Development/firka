@@ -11,6 +11,7 @@ import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/pages/extras/main_wear_pair.dart';
 import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/phone/pages/home/home_main.dart';
+import 'package:firka/ui/phone/pages/home/home_subpage.dart';
 import 'package:firka/ui/phone/pages/home/home_timetable_mo.dart';
 import 'package:firka/ui/phone/screens/home/beta_screen.dart';
 import 'package:firka/ui/phone/widgets/bottom_nav_icon.dart';
@@ -46,24 +47,9 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-enum HomePages { home, grades, timetable, timetableMo }
+enum HomePage { home, grades, timetable }
 
 enum ActiveToastType { fetching, error, reauth, none }
-
-class ActiveHomePage {
-  final HomePages page;
-  final String? subPageUid;
-
-  ActiveHomePage(this.page, {this.subPageUid});
-
-  @override
-  int get hashCode => (page.hashCode ^ subPageUid.hashCode);
-
-  @override
-  bool operator ==(Object other) {
-    return (other is ActiveHomePage) && hashCode == other.hashCode;
-  }
-}
 
 bool _fetching = true;
 bool _prefetched = false;
@@ -72,8 +58,9 @@ bool canPop = true;
 class _HomeScreenState extends State<HomeScreen> {
   _HomeScreenState();
 
-  ActiveHomePage page = ActiveHomePage(HomePages.home);
-  List<ActiveHomePage> previousPages = List.empty(growable: true);
+  HomePage page = HomePage.home;
+  List<HomePage> previousPages = List.empty(growable: true);
+  final PageController _pageController = PageController();
 
   Widget? toast;
   bool pairingDone = false;
@@ -84,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   ActiveToastType activeToast = ActiveToastType.none;
 
-  void setPageCB(ActiveHomePage newPage, bool setPrev) {
+  void setPageCB(HomePage newPage, bool setPrev) {
     if (_disposed) return;
     setState(() {
       if (setPrev) previousPages.add(page);
@@ -413,7 +400,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         physics: ClampingScrollPhysics(),
         child: PopScope(
-          canPop: canPop,
+          canPop: false,
           child: Scaffold(
             backgroundColor: appStyle.colors.background,
             body: SafeArea(
@@ -424,16 +411,39 @@ class _HomeScreenState extends State<HomeScreen> {
                     Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            HomeSubPage(
-                                page,
-                                setPageCB,
-                                widget.data,
-                                widget.updateNotifier,
-                                widget.updateFinishedNotifier)
-                          ],
+                        Expanded(
+                          child: PageView(
+                            controller: _pageController,
+                            onPageChanged: (index) {
+                              HapticFeedback.heavyImpact();
+
+                              setState(() {
+                                previousPages.add(page);
+                                canPop = false;
+                                page = HomePage.values[index];
+                              });
+                            },
+                            children: [
+                              HomeSubPage(
+                                  HomePage.home,
+                                  widget.data,
+                                  widget.updateNotifier,
+                                  widget.updateFinishedNotifier,
+                                  _pageController),
+                              HomeSubPage(
+                                  HomePage.grades,
+                                  widget.data,
+                                  widget.updateNotifier,
+                                  widget.updateFinishedNotifier,
+                                  _pageController),
+                              HomeSubPage(
+                                  HomePage.timetable,
+                                  widget.data,
+                                  widget.updateNotifier,
+                                  widget.updateFinishedNotifier,
+                                  _pageController),
+                            ],
+                          ),
                         ),
                         Container(
                           decoration: BoxDecoration(
@@ -457,65 +467,58 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 // Home Button
                                 BottomNavIconWidget(() {
-                                  if (page.page != HomePages.home) {
-                                    HapticFeedback.lightImpact();
-
-                                    setState(() {
-                                      previousPages.add(page);
-                                      canPop = false;
-                                      page = ActiveHomePage(HomePages.home);
-                                    });
+                                  if (page != HomePage.home) {
+                                    _pageController.animateToPage(
+                                      HomePage.home.index,
+                                      duration: Duration(milliseconds: 175),
+                                      curve: Curves.easeInOut,
+                                    );
                                   }
                                 },
-                                    page.page == HomePages.home,
-                                    page.page == HomePages.home
+                                    page == HomePage.home,
+                                    page == HomePage.home
                                         ? Majesticon.homeSolid
                                         : Majesticon.homeLine,
                                     widget.data.l10n.home,
-                                    page.page == HomePages.home
+                                    page == HomePage.home
                                         ? appStyle.colors.accent
                                         : appStyle.colors.secondary,
                                     appStyle.colors.textPrimary),
                                 // Grades Button
                                 BottomNavIconWidget(() {
-                                  if (page.page != HomePages.grades) {
-                                    HapticFeedback.lightImpact();
-
-                                    setState(() {
-                                      previousPages.add(page);
-                                      canPop = false;
-                                      page = ActiveHomePage(HomePages.grades);
-                                    });
+                                  if (page != HomePage.grades) {
+                                    _pageController.animateToPage(
+                                      HomePage.grades.index,
+                                      duration: Duration(milliseconds: 175),
+                                      curve: Curves.easeInOut,
+                                    );
                                   }
                                 },
-                                    page.page == HomePages.grades,
-                                    page.page == HomePages.grades
+                                    page == HomePage.grades,
+                                    page == HomePage.grades
                                         ? Majesticon.bookmarkSolid
                                         : Majesticon.bookmarkLine,
                                     widget.data.l10n.grades,
-                                    page.page == HomePages.grades
+                                    page == HomePage.grades
                                         ? appStyle.colors.accent
                                         : appStyle.colors.secondary,
                                     appStyle.colors.textPrimary),
                                 // Timetable Button
                                 BottomNavIconWidget(() {
-                                  if (page.page != HomePages.timetable) {
-                                    HapticFeedback.lightImpact();
-
-                                    setState(() {
-                                      previousPages.add(page);
-                                      canPop = false;
-                                      page =
-                                          ActiveHomePage(HomePages.timetable);
-                                    });
+                                  if (page != HomePage.timetable) {
+                                    _pageController.animateToPage(
+                                      HomePage.timetable.index,
+                                      duration: Duration(milliseconds: 175),
+                                      curve: Curves.easeInOut,
+                                    );
                                   }
                                 },
-                                    page.page == HomePages.timetable,
-                                    page.page == HomePages.timetable
+                                    page == HomePage.timetable,
+                                    page == HomePage.timetable
                                         ? Majesticon.calendarSolid
                                         : Majesticon.calendarLine,
                                     widget.data.l10n.timetable,
-                                    page.page == HomePages.timetable
+                                    page == HomePage.timetable
                                         ? appStyle.colors.accent
                                         : appStyle.colors.secondary,
                                     appStyle.colors.textPrimary),
@@ -557,6 +560,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _pageController.dispose();
     super.dispose();
 
     widget.data.settingsUpdateNotifier.removeListener(settingsUpdateListener);
@@ -569,35 +573,31 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class HomeSubPage extends StatelessWidget {
-  final ActiveHomePage page;
-  final void Function(ActiveHomePage, bool) cb;
+  final HomePage page;
   final AppInitialization data;
   final UpdateNotifier _updateNotifier;
   final UpdateNotifier _updateFinishNotifier;
+  final PageController _pageController;
 
-  const HomeSubPage(this.page, this.cb, this.data, this._updateNotifier,
-      this._updateFinishNotifier,
+  const HomeSubPage(this.page, this.data, this._updateNotifier,
+      this._updateFinishNotifier, this._pageController,
       {super.key});
 
   @override
   Widget build(BuildContext context) {
-    switch (page.page) {
-      case HomePages.home:
+    switch (page) {
+      case HomePage.home:
         return HomeMainScreen(data, _updateNotifier, _updateFinishNotifier);
-      case HomePages.grades:
-        if (page.subPageUid != null) {
-          return HomeGradesSubjectScreen(
-              data, _updateNotifier, _updateFinishNotifier, page.subPageUid!);
-        } else {
-          return HomeGradesScreen(
-              data, _updateNotifier, _updateFinishNotifier, cb);
-        }
-      case HomePages.timetable:
-        return HomeTimetableScreen(
-            data, _updateNotifier, _updateFinishNotifier, cb);
-      case HomePages.timetableMo:
-        return HomeTimetableMonthlyScreen(
-            data, _updateNotifier, _updateFinishNotifier, cb);
+      case HomePage.grades:
+      return PageWithSubPages([
+        (cb) => HomeGradesScreen(data, _updateNotifier, _updateFinishNotifier, cb),
+        (cb) => HomeGradesSubjectScreen(data, _updateNotifier, _updateFinishNotifier)
+      ], pageIndex: 0);
+      case HomePage.timetable:
+        return PageWithSubPages([
+        (cb) => HomeTimetableScreen(data, _updateNotifier, _updateFinishNotifier, cb),
+        (cb) => HomeTimetableMonthlyScreen(data, _updateNotifier, _updateFinishNotifier, cb)
+      ], pageIndex: 0);
     }
   }
 }
