@@ -214,6 +214,34 @@ class KretaClient {
     return ApiResponse(items, status, err, cached);
   }
 
+  ApiResponse<List<InfoBoardItem>>? infoBoardCache;
+
+  Future<ApiResponse<List<InfoBoardItem>>> getInfoBoard(
+      {bool forceCache = true}) async {
+    if (forceCache && infoBoardCache != null) return infoBoardCache!;
+    var (resp, status, ex, cached) = await _cachingGet(CacheId.getInfoBoard,
+        KretaEndpoints.getInfoBoard(model.iss!), forceCache, 0);
+
+    var items = List<InfoBoardItem>.empty(growable: true);
+    String? err;
+    try {
+      List<dynamic> rawItems = resp;
+      for (var item in rawItems) {
+        items.add(InfoBoardItem.fromJson(item));
+      }
+    } catch (ex) {
+      err = ex.toString();
+    }
+
+    if (ex != null) {
+      err = ex.toString();
+    }
+
+    if (err == null) infoBoardCache = ApiResponse(items, 200, null, true);
+
+    return ApiResponse(items, status, err, cached);
+  }
+
   ApiResponse<List<Grade>>? gradeCache;
 
   Future<ApiResponse<List<Grade>>> getGrades({bool forceCache = true}) async {

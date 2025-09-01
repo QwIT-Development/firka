@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/ui/phone/widgets/home_main_starting_soon.dart';
+import 'package:firka/ui/phone/widgets/info_board_item.dart';
 import 'package:firka/ui/phone/widgets/lesson_small.dart';
 import 'package:firka/ui/widget/delayed_spinner.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../helpers/api/model/notice_board.dart';
 import '../../../../helpers/api/model/student.dart';
 import '../../../../helpers/api/model/timetable.dart';
 import '../../../../helpers/debug_helper.dart';
@@ -31,6 +33,8 @@ class _HomeMainScreen extends State<HomeMainScreen> {
 
   DateTime now = timeNow();
   List<Lesson>? lessons;
+  List<NoticeBoardItem>? noticeBoard;
+  List<InfoBoardItem>? infoBoard;
   Student? student;
   Timer? timer;
 
@@ -48,24 +52,36 @@ class _HomeMainScreen extends State<HomeMainScreen> {
     if (mounted) {
       setState(() {
         lessons = newData.$1;
-        student = newData.$2;
+        noticeBoard = newData.$2;
+        infoBoard = newData.$3;
+        student = newData.$4;
       });
     }
     widget.finishNotifier.update();
   }
 
-  Future<(List<Lesson>, Student)> loadData(DateTime now,
-      {bool forceCache = true}) async {
+  Future<(List<Lesson>, List<NoticeBoardItem>, List<InfoBoardItem>, Student)>
+      loadData(DateTime now, {bool forceCache = true}) async {
     var midnight = now.getMidnight();
 
     var respTT = await widget.data.client.getTimeTable(
         midnight, midnight.add(Duration(hours: 23, minutes: 59)),
         forceCache: forceCache);
 
+    var respNB =
+        await widget.data.client.getNoticeBoard(forceCache: forceCache);
+
+    var respIB = await widget.data.client.getInfoBoard(forceCache: forceCache);
+
     var respStudent =
         await widget.data.client.getStudent(forceCache: forceCache);
 
-    return Future.value((respTT.response!, respStudent.response!));
+    return Future.value((
+      respTT.response!,
+      respNB.response!,
+      respIB.response!,
+      respStudent.response!
+    ));
   }
 
   @override
@@ -83,7 +99,9 @@ class _HomeMainScreen extends State<HomeMainScreen> {
       if (mounted) {
         setState(() {
           lessons = newData.$1;
-          student = newData.$2;
+          noticeBoard = newData.$2;
+          infoBoard = newData.$3;
+          student = newData.$4;
         });
       }
     })();
@@ -111,7 +129,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
     Widget nextClass = SizedBox();
     bool lessonActive = false;
 
-    if (lessons != null && lessons!.isNotEmpty) {
+    if (lessons != null && noticeBoard != null && lessons!.isNotEmpty) {
       if (now.isBefore(lessons!.first.start)) {
         welcomeWidget = StartingSoonWidget(widget.data.l10n, now, lessons!);
       } else {
@@ -141,24 +159,37 @@ class _HomeMainScreen extends State<HomeMainScreen> {
       }
     }
 
-    if (student != null && lessons != null) {
+    if (student != null && noticeBoard != null && lessons != null) {
+      List<Widget> noticeBoardWidgets = List.empty(growable: true);
+      // TODO: Add notice board items once we actually have those
+
+      for (var item in infoBoard!) {
+        noticeBoardWidgets.add(InfoBoardItemWidget(item));
+      }
+
       return Padding(
-          padding: const EdgeInsets.only(
-            left: 20.0,
-            top: 24.0,
-            right: 20.0,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              WelcomeWidget(widget.data.l10n, now, student!, lessons!),
-              SizedBox(height: 48),
-              welcomeWidget,
-              lessonActive ? SizedBox(height: 5) : SizedBox(height: 0),
-              nextClass
-            ],
-          ),
-        );
+        padding: const EdgeInsets.only(
+          left: 20.0,
+          top: 24.0,
+          right: 20.0,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            WelcomeWidget(widget.data.l10n, now, student!, lessons!),
+            SizedBox(height: 48),
+            welcomeWidget,
+            lessonActive ? SizedBox(height: 5) : SizedBox(height: 0),
+            nextClass,
+            SizedBox(
+              height: MediaQuery.of(context).size.height / 1.6,
+              child: ListView(
+                children: noticeBoardWidgets,
+              ),
+            )
+          ],
+        ),
+      );
     } else {
       return DelayedSpinnerWidget();
     }
