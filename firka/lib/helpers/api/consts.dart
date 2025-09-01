@@ -67,6 +67,12 @@ class KretaEndpoints {
   static String getNoticeBoard(String iss) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/FaliujsagElemek";
 
+  // for some reason the [redacted] devs decided to make
+  // two different apis to get items for the notice board
+  // that appears on the home screen, like wtf
+  static String getInfoBoard(String iss) =>
+      "${kreta(iss)}/ellenorzo/v3/sajat/Feljegyzesek";
+
   static String getGrades(String iss) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/Ertekelesek";
 
