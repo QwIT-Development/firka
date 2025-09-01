@@ -27,9 +27,185 @@ class LessonBigWidget extends StatelessWidget {
     var hasNextLesson = nextLesson != null;
 
     if (!hasLesson && (!hasPrevLesson || !hasNextLesson)) {
-      throw Exception(
-          '!hasLesson($hasLesson) && (!hasPrevLesson($hasPrevLesson) || '
-          '!hasNextLesson($hasNextLesson))');
+      if (!hasPrevLesson && !hasNextLesson) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            FirkaCard(
+              left: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Card(
+                          shadowColor: Colors.transparent,
+                          color: appStyle.colors.a15p,
+                          child: Padding(
+                            padding: EdgeInsets.all(4),
+                            child: FirkaIconWidget(
+                                FirkaIconType.majesticonsLocal, 'cupFilled',
+                                color: wearStyle.colors.accent, size: 24),
+                          ),
+                        ),
+                        Text(l10n.breakTxt,
+                            style: appStyle.fonts.B_16SB
+                                .apply(color: appStyle.colors.textPrimary)),
+                      ],
+                    ),
+                  ],
+                )
+              ],
+              right: [
+                Column(
+                  children: [
+                    Row(children: [
+                      Text('-',
+                          style: appStyle.fonts.B_14R
+                              .apply(color: appStyle.colors.textPrimary))
+                    ]),
+                    Row(children: [
+                      Text('-',
+                          style: appStyle.fonts.B_14R
+                              .apply(color: appStyle.colors.textPrimary))
+                    ])
+                  ],
+                )
+              ],
+              extra: SizedBox.shrink(),
+            )
+          ],
+        );
+      }
+
+      // Before the first lesson: prev missing but next present. Show countdown
+      // to the next lesson using nextLesson data.
+      if (!hasPrevLesson && hasNextLesson) {
+        var timeLeft = nextLesson!.start.difference(now);
+        var timeLeftStr = l10n.timeLeft(timeLeft.inMinutes + 1);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            FirkaCard(
+              left: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Card(
+                          shadowColor: Colors.transparent,
+                          color: appStyle.colors.a15p,
+                          child: Padding(
+                            padding: EdgeInsets.all(4),
+                            child: FirkaIconWidget(
+                                FirkaIconType.majesticonsLocal, 'cupFilled',
+                                color: wearStyle.colors.accent, size: 24),
+                          ),
+                        ),
+                        Text(l10n.breakTxt,
+                            style: appStyle.fonts.B_16SB
+                                .apply(color: appStyle.colors.textPrimary)),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(timeLeftStr,
+                            style: appStyle.fonts.B_12R
+                                .apply(color: appStyle.colors.textSecondary)),
+                      ],
+                    ),
+                  ],
+                )
+              ],
+              right: [
+                Column(
+                  children: [
+                    Row(children: [
+                      Text('-',
+                          style: appStyle.fonts.B_14R
+                              .apply(color: appStyle.colors.textPrimary))
+                    ]),
+                    Row(children: [
+                      Text(
+                          nextLesson!.start
+                              .toLocal()
+                              .format(l10n, FormatMode.hmm),
+                          style: appStyle.fonts.B_14R
+                              .apply(color: appStyle.colors.textPrimary))
+                    ])
+                  ],
+                )
+              ],
+              extra: SizedBox.shrink(),
+            )
+          ],
+        );
+      }
+
+      // After the last lesson: next missing but prev present. Show a simple
+      // "no more lessons" style card with the previous lesson end time.
+      if (hasPrevLesson && !hasNextLesson) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            FirkaCard(
+              left: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Card(
+                          shadowColor: Colors.transparent,
+                          color: appStyle.colors.a15p,
+                          child: Padding(
+                            padding: EdgeInsets.all(4),
+                            child: FirkaIconWidget(
+                                FirkaIconType.majesticonsLocal, 'cupFilled',
+                                color: wearStyle.colors.accent, size: 24),
+                          ),
+                        ),
+                        Text(l10n.breakTxt,
+                            style: appStyle.fonts.B_16SB
+                                .apply(color: appStyle.colors.textPrimary)),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(l10n.timeLeft(0),
+                            style: appStyle.fonts.B_12R
+                                .apply(color: appStyle.colors.textSecondary)),
+                      ],
+                    ),
+                  ],
+                )
+              ],
+              right: [
+                Column(
+                  children: [
+                    Row(children: [
+                      Text(
+                          prevLesson!.end
+                              .toLocal()
+                              .format(l10n, FormatMode.hmm),
+                          style: appStyle.fonts.B_14R
+                              .apply(color: appStyle.colors.textPrimary))
+                    ]),
+                    Row(children: [
+                      Text('-',
+                          style: appStyle.fonts.B_14R
+                              .apply(color: appStyle.colors.textPrimary))
+                    ])
+                  ],
+                )
+              ],
+              extra: SizedBox.shrink(),
+            )
+          ],
+        );
+      }
     }
 
     if (hasLesson) {
