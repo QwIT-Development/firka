@@ -44,7 +44,7 @@ class LessonBigWidget extends StatelessWidget {
                           child: Padding(
                             padding: EdgeInsets.all(4),
                             child: FirkaIconWidget(
-                                FirkaIconType.majesticonsLocal, 'cupFilled',
+                                FirkaIconType.majesticons, 'cupFilled',
                                 color: wearStyle.colors.accent, size: 24),
                           ),
                         ),
@@ -150,59 +150,7 @@ class LessonBigWidget extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            FirkaCard(
-              left: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Card(
-                          shadowColor: Colors.transparent,
-                          color: appStyle.colors.a15p,
-                          child: Padding(
-                            padding: EdgeInsets.all(4),
-                            child: FirkaIconWidget(
-                                FirkaIconType.majesticonsLocal, 'cupFilled',
-                                color: wearStyle.colors.accent, size: 24),
-                          ),
-                        ),
-                        Text(l10n.breakTxt,
-                            style: appStyle.fonts.B_16SB
-                                .apply(color: appStyle.colors.textPrimary)),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Text(l10n.timeLeft(0),
-                            style: appStyle.fonts.B_12R
-                                .apply(color: appStyle.colors.textSecondary)),
-                      ],
-                    ),
-                  ],
-                )
-              ],
-              right: [
-                Column(
-                  children: [
-                    Row(children: [
-                      Text(
-                          prevLesson!.end
-                              .toLocal()
-                              .format(l10n, FormatMode.hmm),
-                          style: appStyle.fonts.B_14R
-                              .apply(color: appStyle.colors.textPrimary))
-                    ]),
-                    Row(children: [
-                      Text('-',
-                          style: appStyle.fonts.B_14R
-                              .apply(color: appStyle.colors.textPrimary))
-                    ])
-                  ],
-                )
-              ],
-              extra: SizedBox.shrink(),
-            )
+            // TODO: implement home/today afternoon
           ],
         );
       }
