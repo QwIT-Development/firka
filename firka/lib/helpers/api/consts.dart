@@ -64,6 +64,9 @@ class KretaEndpoints {
   static String getStudentUrl(String iss) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/TanuloAdatlap";
 
+  static String getClassGroups(String iss) =>
+      "${kreta(iss)}/ellenorzo/v3/sajat/OsztalyCsoportok";
+
   static String getNoticeBoard(String iss) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/FaliujsagElemek";
 

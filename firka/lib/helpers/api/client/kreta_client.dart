@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
+import 'package:firka/helpers/api/model/class_group.dart';
 import 'package:firka/helpers/api/model/homework.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/db/models/generic_cache_model.dart';
@@ -184,6 +185,34 @@ class KretaClient {
     if (ex == null) studentCache = ApiResponse(student, 200, null, true);
 
     return ApiResponse(student, status, err, cached);
+  }
+
+  ApiResponse<List<ClassGroup>>? classGroupCache;
+
+  Future<ApiResponse<List<ClassGroup>>> getClassGroups(
+      {bool forceCache = true}) async {
+    if (forceCache && classGroupCache != null) return classGroupCache!;
+    var (resp, status, ex, cached) = await _cachingGet(CacheId.getClassGroup,
+        KretaEndpoints.getClassGroups(model.iss!), forceCache, 0);
+
+    final classGroups = List<ClassGroup>.empty(growable: true);
+    String? err;
+    try {
+      List<dynamic> rawItems = resp;
+      for (var item in rawItems) {
+        classGroups.add(ClassGroup.fromJson(item));
+      }
+    } catch (ex) {
+      err = ex.toString();
+    }
+
+    if (ex != null) {
+      err = ex.toString();
+    }
+
+    if (ex == null) classGroupCache = ApiResponse(classGroups, 200, null, true);
+
+    return ApiResponse(classGroups, status, err, cached);
   }
 
   ApiResponse<List<NoticeBoardItem>>? noticeBoardCache;
