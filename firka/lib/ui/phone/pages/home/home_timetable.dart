@@ -80,13 +80,19 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
     if (!mounted) return;
     setState(() {
       this.dates = dates;
-      if (now.isAfter(dates.last)) {
+      final todayMid = now.getMidnight();
+      int idx = dates.indexWhere((d) =>
+          d.year == todayMid.year &&
+          d.month == todayMid.month &&
+          d.day == todayMid.day);
+
+      if (idx >= 0) {
+        active = idx;
+      } else if (now.isAfter(dates.last)) {
         active = dates.length - 1;
       } else {
-        active = dates.indexWhere((d) =>
-            d.isAfter(now.getMidnight()) &&
-            d.isBefore(
-                now.getMidnight().add(Duration(hours: 23, minutes: 59))));
+        idx = dates.indexWhere((d) => d.isAfter(todayMid));
+        active = idx >= 0 ? idx : 0;
       }
     });
   }
