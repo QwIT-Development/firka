@@ -156,6 +156,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
             ));
           } else {
             Widget body = SizedBox();
+            Color bodyBgColor = appStyle.colors.a15p;
 
             var lessonsToday = lessons!.where((lesson) =>
                 lesson.start.isAfter(d.getMidnight()) &&
@@ -184,6 +185,14 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                                     ? appStyle.colors.accent
                                     : appStyle.colors.secondary)),
                   );
+
+                  if (omissionType != null &&
+                      (omissionType.studentPresence!.name ==
+                              OmissionConsts.absence ||
+                          omissionType.studentPresence!.name ==
+                              OmissionConsts.na)) {
+                    bodyBgColor = appStyle.colors.error15p;
+                  }
                 }
                 break;
               case ActiveFilter.tests:
@@ -210,8 +219,6 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                   switch (omissionType.studentPresence!.name) {
                     case OmissionConsts.absence:
                       final omission = omissions!.firstWhereOrNull((omission) {
-                        // debugPrint(omission.toString());
-                        // debugPrint(omissionType.toString());
                         return omission.date
                                     .getMidnight()
                                     .millisecondsSinceEpoch ==
@@ -228,9 +235,10 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                                 FirkaIconType.majesticons,
                                 Majesticon.restrictedSolid,
                                 size: 20.0,
-                                color: appStyle.colors.errorAccent,
+                                color: appStyle.colors.warningAccent,
                               ),
                             );
+                            bodyBgColor = appStyle.colors.warning15p;
                             break;
                           default:
                             body = Center(
@@ -275,16 +283,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                   height: 40,
                   clipBehavior: Clip.antiAlias,
                   decoration: ShapeDecoration(
-                    color: activeFilter == ActiveFilter.lessonNo &&
-                            omissionType != null &&
-                            (omissionType.studentPresence!.name ==
-                                    OmissionConsts.absence ||
-                                omissionType.studentPresence!.name ==
-                                    OmissionConsts.na)
-                        ? appStyle.colors.error15p
-                        : timeNow().day == d.day && timeNow().month == d.month
-                            ? appStyle.colors.buttonSecondaryFill
-                            : appStyle.colors.card,
+                    color: bodyBgColor,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6)),
                   ),
@@ -301,6 +300,11 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                 SizedBox(height: 12),
               ],
             ));
+
+            if (timeNow().getMidnight().millisecondsSinceEpoch ==
+                d.toLocal().getMidnight().millisecondsSinceEpoch) {
+              bodyBgColor = appStyle.colors.buttonSecondaryFill;
+            }
           }
         }
       }
