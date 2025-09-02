@@ -181,8 +181,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
             welcomeWidget,
             lessonActive ? SizedBox(height: 5) : SizedBox(height: 0),
             nextClass,
-            SizedBox(
-              height: MediaQuery.of(context).size.height / 1.6,
+            Expanded(
               child: ListView(
                 children: noticeBoardWidgets,
               ),
