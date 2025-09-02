@@ -128,174 +128,180 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
       final currentMonthEnd =
           DateTime.utc(meow.year, meow.month + 1).subtract(Duration(days: 1));
 
-      for (var d in dates!) {
-        if (d.isBefore(currentMonthStart) || d.isAfter(currentMonthEnd)) {
-          ttDays.add(Column(
-            children: [
-              Container(
-                  width: 40,
-                  height: 40,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: ShapeDecoration(
-                    color: appStyle.colors.cardTranslucent,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6)),
-                  )),
-              SizedBox(height: 4),
-              Text(d.format(widget.data.l10n, FormatMode.d),
-                  style: appStyle.fonts.B_14R.apply(
-                      color: (d.weekday == DateTime.saturday ||
-                              d.weekday == DateTime.sunday)
-                          ? appStyle.colors.errorText
-                          : appStyle.colors.textTertiary)),
-            ],
-          ));
-        } else {
-          Widget body = SizedBox();
+      // column-major -> row-major
+      for (var day = 0; day < 7; day++) {
+        for (var week = 0; week < 7; week++) {
+          final d = dates![week * 7 + day];
 
-          var lessonsToday = lessons!.where((lesson) =>
-              lesson.start.isAfter(d.getMidnight()) &&
-              lesson.end.isBefore(
-                  d.getMidnight().add(Duration(hours: 23, minutes: 59))));
+          if (d.isBefore(currentMonthStart) || d.isAfter(currentMonthEnd)) {
+            ttDays.add(Column(
+              children: [
+                Container(
+                    width: 40,
+                    height: 40,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: ShapeDecoration(
+                      color: appStyle.colors.cardTranslucent,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6)),
+                    )),
+                SizedBox(height: 4),
+                Text(d.format(widget.data.l10n, FormatMode.d),
+                    style: appStyle.fonts.B_14R.apply(
+                        color: (d.weekday == DateTime.saturday ||
+                                d.weekday == DateTime.sunday)
+                            ? appStyle.colors.errorText
+                            : appStyle.colors.textTertiary)),
+              ],
+            ));
+          } else {
+            Widget body = SizedBox();
 
-          var omissionType = lessonsToday.firstWhereOrNull((lesson) =>
-              lesson.studentPresence != null &&
-              lesson.studentPresence?.name != OmissionConsts.na &&
-              lesson.studentPresence?.name != OmissionConsts.present);
+            var lessonsToday = lessons!.where((lesson) =>
+                lesson.start.isAfter(d.getMidnight()) &&
+                lesson.end.isBefore(
+                    d.getMidnight().add(Duration(hours: 23, minutes: 59))));
 
-          switch (activeFilter) {
-            case ActiveFilter.lessonNo:
-              if (lessonsToday.isNotEmpty) {
-                body = Center(
-                  child: Text(lessonsToday.length.toString(),
-                      style: appStyle.fonts.H_16px.apply(
-                          color: omissionType != null &&
-                                  (omissionType.studentPresence!.name ==
-                                          OmissionConsts.absence ||
-                                      omissionType.studentPresence!.name ==
-                                          OmissionConsts.na)
-                              ? appStyle.colors.errorText
-                              : timeNow().day == d.day &&
-                                      timeNow().month == d.month
-                                  ? appStyle.colors.accent
-                                  : appStyle.colors.secondary)),
-                );
-              }
-              break;
-            case ActiveFilter.tests:
-              if (lessonsToday.firstWhereOrNull((lesson) => tests!.any((test) =>
-                      test.lessonNumber == lesson.lessonNumber &&
-                      lesson.start.isAfter(test.date.getMidnight()) &&
-                      lesson.end.isBefore(test.date
-                          .getMidnight()
-                          .add(Duration(hours: 23, minutes: 59))))) !=
-                  null) {
-                body = Center(
-                  child: FirkaIconWidget(
-                    FirkaIconType.majesticons,
-                    Majesticon.editPen4Solid,
-                    size: 20.0,
-                    color: appStyle.colors.accent,
-                  ),
-                );
-              }
-              break;
-            case ActiveFilter.omissions:
-              if (omissionType != null) {
-                switch (omissionType.studentPresence!.name) {
-                  case OmissionConsts.absence:
-                    final omission = omissions!.firstWhereOrNull((omission) {
-                      // debugPrint(omission.toString());
-                      // debugPrint(omissionType.toString());
-                      return omission.date
-                                  .getMidnight()
-                                  .millisecondsSinceEpoch ==
-                              omissionType.start
-                                  .getMidnight()
-                                  .millisecondsSinceEpoch &&
-                          omission.subject.uid == omissionType.subject?.uid;
-                    });
-                    if (omission != null) {
-                      switch (omission.state) {
-                        case "Igazolando":
-                          body = Center(
-                            child: FirkaIconWidget(
-                              FirkaIconType.majesticons,
-                              Majesticon.restrictedSolid,
-                              size: 20.0,
-                              color: appStyle.colors.errorAccent,
-                            ),
-                          );
-                          break;
-                        default:
-                          body = Center(
-                            child: FirkaIconWidget(
-                              FirkaIconType.majesticons,
-                              Majesticon.multiplySolid,
-                              size: 20.0,
-                              color: appStyle.colors.accent,
-                            ),
-                          );
+            var omissionType = lessonsToday.firstWhereOrNull((lesson) =>
+                lesson.studentPresence != null &&
+                lesson.studentPresence?.name != OmissionConsts.na &&
+                lesson.studentPresence?.name != OmissionConsts.present);
+
+            switch (activeFilter) {
+              case ActiveFilter.lessonNo:
+                if (lessonsToday.isNotEmpty) {
+                  body = Center(
+                    child: Text(lessonsToday.length.toString(),
+                        style: appStyle.fonts.H_16px.apply(
+                            color: omissionType != null &&
+                                    (omissionType.studentPresence!.name ==
+                                            OmissionConsts.absence ||
+                                        omissionType.studentPresence!.name ==
+                                            OmissionConsts.na)
+                                ? appStyle.colors.errorText
+                                : timeNow().day == d.day &&
+                                        timeNow().month == d.month
+                                    ? appStyle.colors.accent
+                                    : appStyle.colors.secondary)),
+                  );
+                }
+                break;
+              case ActiveFilter.tests:
+                if (lessonsToday.firstWhereOrNull((lesson) => tests!.any(
+                        (test) =>
+                            test.lessonNumber == lesson.lessonNumber &&
+                            lesson.start.isAfter(test.date.getMidnight()) &&
+                            lesson.end.isBefore(test.date
+                                .getMidnight()
+                                .add(Duration(hours: 23, minutes: 59))))) !=
+                    null) {
+                  body = Center(
+                    child: FirkaIconWidget(
+                      FirkaIconType.majesticons,
+                      Majesticon.editPen4Solid,
+                      size: 20.0,
+                      color: appStyle.colors.accent,
+                    ),
+                  );
+                }
+                break;
+              case ActiveFilter.omissions:
+                if (omissionType != null) {
+                  switch (omissionType.studentPresence!.name) {
+                    case OmissionConsts.absence:
+                      final omission = omissions!.firstWhereOrNull((omission) {
+                        // debugPrint(omission.toString());
+                        // debugPrint(omissionType.toString());
+                        return omission.date
+                                    .getMidnight()
+                                    .millisecondsSinceEpoch ==
+                                omissionType.start
+                                    .getMidnight()
+                                    .millisecondsSinceEpoch &&
+                            omission.subject.uid == omissionType.subject?.uid;
+                      });
+                      if (omission != null) {
+                        switch (omission.state) {
+                          case "Igazolando":
+                            body = Center(
+                              child: FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.restrictedSolid,
+                                size: 20.0,
+                                color: appStyle.colors.errorAccent,
+                              ),
+                            );
+                            break;
+                          default:
+                            body = Center(
+                              child: FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.multiplySolid,
+                                size: 20.0,
+                                color: appStyle.colors.accent,
+                              ),
+                            );
+                        }
+                      } else {
+                        body = Center(
+                          child: FirkaIconWidget(
+                            FirkaIconType.majesticons,
+                            Majesticon.multiplySolid,
+                            size: 20.0,
+                            color: appStyle.colors.accent,
+                          ),
+                        );
                       }
-                    } else {
+                      break;
+                    default:
+                      debugPrint(omissionType.studentPresence!.name);
                       body = Center(
                         child: FirkaIconWidget(
                           FirkaIconType.majesticons,
-                          Majesticon.multiplySolid,
+                          Majesticon.timerLine,
                           size: 20.0,
                           color: appStyle.colors.accent,
                         ),
                       );
-                    }
-                    break;
-                  default:
-                    debugPrint(omissionType.studentPresence!.name);
-                    body = Center(
-                      child: FirkaIconWidget(
-                        FirkaIconType.majesticons,
-                        Majesticon.timerLine,
-                        size: 20.0,
-                        color: appStyle.colors.accent,
-                      ),
-                    );
+                  }
                 }
-              }
-              break;
-          }
+                break;
+            }
 
-          ttDays.add(Column(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                clipBehavior: Clip.antiAlias,
-                decoration: ShapeDecoration(
-                  color: activeFilter == ActiveFilter.lessonNo &&
-                          omissionType != null &&
-                          (omissionType.studentPresence!.name ==
-                                  OmissionConsts.absence ||
-                              omissionType.studentPresence!.name ==
-                                  OmissionConsts.na)
-                      ? appStyle.colors.error15p
-                      : timeNow().day == d.day && timeNow().month == d.month
-                          ? appStyle.colors.buttonSecondaryFill
-                          : appStyle.colors.card,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6)),
+            ttDays.add(Column(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: ShapeDecoration(
+                    color: activeFilter == ActiveFilter.lessonNo &&
+                            omissionType != null &&
+                            (omissionType.studentPresence!.name ==
+                                    OmissionConsts.absence ||
+                                omissionType.studentPresence!.name ==
+                                    OmissionConsts.na)
+                        ? appStyle.colors.error15p
+                        : timeNow().day == d.day && timeNow().month == d.month
+                            ? appStyle.colors.buttonSecondaryFill
+                            : appStyle.colors.card,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6)),
+                  ),
+                  child: body,
                 ),
-                child: body,
-              ),
-              SizedBox(height: 4),
-              Text(d.format(widget.data.l10n, FormatMode.d),
-                  style: appStyle.fonts.B_14R.apply(
-                      color: (d.weekday == DateTime.saturday ||
-                                  d.weekday == DateTime.sunday) &&
-                              lessonsToday.isEmpty
-                          ? appStyle.colors.errorText
-                          : appStyle.colors.textSecondary)),
-              SizedBox(height: 12),
-            ],
-          ));
+                SizedBox(height: 4),
+                Text(d.format(widget.data.l10n, FormatMode.d),
+                    style: appStyle.fonts.B_14R.apply(
+                        color: (d.weekday == DateTime.saturday ||
+                                    d.weekday == DateTime.sunday) &&
+                                lessonsToday.isEmpty
+                            ? appStyle.colors.errorText
+                            : appStyle.colors.textSecondary)),
+                SizedBox(height: 12),
+              ],
+            ));
+          }
         }
       }
 
@@ -438,22 +444,16 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
             TransparentPointer(
                 child: Padding(
               padding: const EdgeInsets.only(top: 74 + 16 + 12),
-              child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height / 1.45,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        StaggeredGrid.count(
-                          crossAxisCount: 7,
-                          mainAxisSpacing: 8,
-                          children: ttDays,
-                        )
-                      ],
-                    ),
-                  )),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  StaggeredGrid.count(
+                    crossAxisCount: 7,
+                    mainAxisSpacing: 8,
+                    children: ttDays,
+                  )
+                ],
+              ),
             )),
             TransparentPointer(
               child: Column(
