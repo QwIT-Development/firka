@@ -188,14 +188,15 @@ class _HomeGradesSubjectScreen extends State<HomeGradesSubjectScreen> {
             ),
           ));
     } else {
-      return SizedBox(
-        height: MediaQuery.of(context).size.height / 1.35,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      return Scaffold(
+        backgroundColor: appStyle.colors.background,
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(),
-            DelayedSpinnerWidget(),
-            SizedBox(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [DelayedSpinnerWidget()],
+            )
           ],
         ),
       );

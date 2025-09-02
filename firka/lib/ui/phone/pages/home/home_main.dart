@@ -13,6 +13,7 @@ import '../../../../helpers/api/model/timetable.dart';
 import '../../../../helpers/debug_helper.dart';
 import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
+import '../../../model/style.dart';
 import '../../widgets/home_main_welcome.dart';
 import '../../widgets/lesson_big.dart';
 
@@ -190,7 +191,18 @@ class _HomeMainScreen extends State<HomeMainScreen> {
         ),
       );
     } else {
-      return DelayedSpinnerWidget();
+      return Scaffold(
+        backgroundColor: appStyle.colors.background,
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [DelayedSpinnerWidget()],
+            )
+          ],
+        ),
+      );
     }
   }
 }
