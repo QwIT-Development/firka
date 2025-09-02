@@ -35,12 +35,12 @@ class Omission {
       uid: json['Uid'],
       subject: Subject.fromJson(json['Tantargy']),
       c: json['Osztaly'] != null ? Class.fromJson(json['Osztaly']) : null,
-      date: DateTime.parse(json['Datum']),
+      date: DateTime.parse(json['Datum']).toLocal(),
       teacher: json['RogzitoTanarNeve'],
       type: json['Tipus'] != null ? NameUidDesc.fromJson(json['Tipus']) : null,
       mode: json['Mod'] != null ? NameUidDesc.fromJson(json['Mod']) : null,
       lateForMin: json['KesesPercben'],
-      createdAt: DateTime.parse(json['KeszitesDatuma']),
+      createdAt: DateTime.parse(json['KeszitesDatuma']).toLocal(),
       state: json['IgazolasAllapota'],
       proofType: json['IgazolasTipusa'] != null
           ? NameUidDesc.fromJson(json['IgazolasTipusa'])
@@ -83,8 +83,8 @@ class Class {
 
   factory Class.fromJson(Map<String, dynamic> json) {
     return Class(
-      start: DateTime.parse(json['KezdoDatum']),
-      end: DateTime.parse(json['VegDatum']),
+      start: DateTime.parse(json['KezdoDatum']).toLocal(),
+      end: DateTime.parse(json['VegDatum']).toLocal(),
       classNo: json['Oraszam'],
     );
   }

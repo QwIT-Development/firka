@@ -1,4 +1,5 @@
 import 'package:firka/helpers/api/consts.dart';
+import 'package:firka/helpers/api/model/omission.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
@@ -37,6 +38,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
   List<Lesson>? lessons;
   List<Test>? tests;
   List<DateTime>? dates;
+  List<Omission>? omissions;
   DateTime? now;
   int active = 0;
   ActiveFilter activeFilter = ActiveFilter.lessonNo;
@@ -44,6 +46,9 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
   _HomeTimetableMonthlyScreen();
 
   Future<void> initForMonth(DateTime now, {bool forceCache = true}) async {
+    if (!forceCache) {
+      widget.data.client.evictMemCache();
+    }
     final monthStart = DateTime.utc(now.year, now.month, 1);
     final monthEnd =
         DateTime.utc(now.year, now.month + 1).subtract(Duration(days: 1));
@@ -57,6 +62,8 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
     var lessonsResp = await widget.data.client
         .getTimeTable(monthStart, monthEnd, forceCache: forceCache);
     var testsResp = await widget.data.client.getTests(forceCache: forceCache);
+    var omissionsResp =
+        await widget.data.client.getOmissions(forceCache: forceCache);
     List<DateTime> dates = List.empty(growable: true);
 
     for (var i = 0; i < days; i++) {
@@ -69,6 +76,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
           .toList();
     }
     tests = testsResp.response;
+    omissions = omissionsResp.response;
 
     if (mounted) {
       setState(() {
@@ -112,7 +120,10 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (lessons != null && tests != null && dates != null) {
+    if (lessons != null &&
+        omissions != null &&
+        tests != null &&
+        dates != null) {
       List<Widget> ttDays = [];
 
       final meow = dates![20];
@@ -195,16 +206,50 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
             case ActiveFilter.omissions:
               if (omissionType != null) {
                 switch (omissionType.studentPresence!.name) {
-                  case OmissionConsts.na:
                   case OmissionConsts.absence:
-                    body = Center(
-                      child: FirkaIconWidget(
-                        FirkaIconType.majesticons,
-                        Majesticon.multiplySolid,
-                        size: 20.0,
-                        color: appStyle.colors.accent,
-                      ),
-                    );
+                    final omission = omissions!.firstWhereOrNull((omission) {
+                      // debugPrint(omission.toString());
+                      // debugPrint(omissionType.toString());
+                      return omission.date
+                                  .getMidnight()
+                                  .millisecondsSinceEpoch ==
+                              omissionType.start
+                                  .getMidnight()
+                                  .millisecondsSinceEpoch &&
+                          omission.subject.uid == omissionType.subject?.uid;
+                    });
+                    if (omission != null) {
+                      switch (omission.state) {
+                        case "Igazolando":
+                          body = Center(
+                            child: FirkaIconWidget(
+                              FirkaIconType.majesticons,
+                              Majesticon.restrictedSolid,
+                              size: 20.0,
+                              color: appStyle.colors.errorAccent,
+                            ),
+                          );
+                          break;
+                        default:
+                          body = Center(
+                            child: FirkaIconWidget(
+                              FirkaIconType.majesticons,
+                              Majesticon.multiplySolid,
+                              size: 20.0,
+                              color: appStyle.colors.accent,
+                            ),
+                          );
+                      }
+                    } else {
+                      body = Center(
+                        child: FirkaIconWidget(
+                          FirkaIconType.majesticons,
+                          Majesticon.multiplySolid,
+                          size: 20.0,
+                          color: appStyle.colors.accent,
+                        ),
+                      );
+                    }
                     break;
                   default:
                     debugPrint(omissionType.studentPresence!.name);
