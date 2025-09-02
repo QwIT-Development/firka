@@ -8,7 +8,8 @@ enum CacheId {
   getInfoBoard,
   getGrades,
   getOmissions,
-  getTests
+  getTests,
+  getClassGroup
 }
 
 @collection
