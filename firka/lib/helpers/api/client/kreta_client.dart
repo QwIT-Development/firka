@@ -316,6 +316,33 @@ class KretaClient {
     return ApiResponse(items, status, err, cached);
   }
 
+  Future<ApiResponse<List<SubjectAverage>>> getSubjectAverage(
+      ClassGroup classGroup,
+      {bool forceCache = false}) async {
+    var (resp, status, ex, cached) = await _cachingGet(
+        CacheId.getSubjectAvg,
+        KretaEndpoints.getSubjectAvg(model.iss!, classGroup.studyGroup.uid),
+        forceCache,
+        0);
+
+    var items = List<SubjectAverage>.empty(growable: true);
+    String? err;
+    try {
+      List<dynamic> rawItems = resp;
+      for (var item in rawItems) {
+        items.add(SubjectAverage.fromJson(item));
+      }
+    } catch (ex) {
+      err = ex.toString();
+    }
+
+    if (ex != null) {
+      err = ex.toString();
+    }
+
+    return ApiResponse(items, status, err, cached);
+  }
+
   Future<(List<dynamic>, int, Object?, bool)>
       _timedCachingGet<T extends DatedCacheEntry>(
           IsarCollection<T> cacheModel,

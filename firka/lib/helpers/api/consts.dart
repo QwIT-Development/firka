@@ -79,6 +79,9 @@ class KretaEndpoints {
   static String getGrades(String iss) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/Ertekelesek";
 
+  static String getSubjectAvg(String iss, String studyGroupId) =>
+      "${kreta(iss)}/ellenorzo/v3/sajat/Ertekelesek/Atlagok/TantargyiAtlagok?oktatasiNevelesiFeladatUid=$studyGroupId";
+
   static String getTimeTable(String iss) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/OrarendElemek";
 

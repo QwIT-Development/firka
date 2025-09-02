@@ -6,6 +6,7 @@ import 'package:firka/ui/widget/grade_small_card.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../helpers/api/consts.dart';
+import '../../../../helpers/api/model/class_group.dart';
 import '../../../../helpers/api/model/grade.dart';
 import '../../../../helpers/api/model/subject.dart';
 import '../../../../helpers/api/model/timetable.dart';
@@ -34,6 +35,8 @@ String activeSubjectUid = "";
 class _HomeGradesScreen extends State<HomeGradesScreen> {
   ApiResponse<List<Grade>>? grades;
   ApiResponse<List<Lesson>>? week;
+  ApiResponse<List<ClassGroup>>? classGroups;
+  List<ApiResponse<List<SubjectAverage>>>? subjectAvgs;
 
   @override
   void didUpdateWidget(HomeGradesScreen oldWidget) {
@@ -50,6 +53,15 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
 
     grades = await widget.data.client.getGrades(forceCache: false);
     week = await widget.data.client.getTimeTable(start, end, forceCache: false);
+    classGroups = await widget.data.client.getClassGroups(forceCache: false);
+
+    final l = List<ApiResponse<List<SubjectAverage>>>.empty(growable: true);
+    for (var group in classGroups!.response!) {
+      l.add(
+          await widget.data.client.getSubjectAverage(group, forceCache: false));
+      await Future.delayed(Duration(milliseconds: 100));
+    }
+    subjectAvgs = l;
 
     if (mounted) setState(() {});
 
@@ -83,15 +95,14 @@ class _HomeGradesScreen extends State<HomeGradesScreen> {
   @override
   Widget build(BuildContext context) {
     if (grades == null || week == null) {
-      return Scaffold(
-        backgroundColor: appStyle.colors.background,
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      return SizedBox(
+        height: MediaQuery.of(context).size.height / 1.35,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [DelayedSpinnerWidget()],
-            )
+            SizedBox(),
+            DelayedSpinnerWidget(),
+            SizedBox(),
           ],
         ),
       );
