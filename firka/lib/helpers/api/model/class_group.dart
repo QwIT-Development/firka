@@ -50,3 +50,22 @@ class ClassGroup {
         ')';
   }
 }
+
+class SubjectAverage {
+  final String uid;
+
+  SubjectAverage({required this.uid});
+
+  factory SubjectAverage.fromJson(Map<String, dynamic> json) {
+    return SubjectAverage(
+      uid: json['Uid'],
+    );
+  }
+
+  @override
+  String toString() {
+    return 'SubjectAverage('
+        'uid: "$uid"'
+        ')';
+  }
+}
