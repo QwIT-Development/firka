@@ -152,6 +152,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
 
           var omissionType = lessonsToday.firstWhereOrNull((lesson) =>
               lesson.studentPresence != null &&
+              lesson.studentPresence?.name != OmissionConsts.na &&
               lesson.studentPresence?.name != OmissionConsts.present);
 
           switch (activeFilter) {
@@ -471,6 +472,8 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                                             .isAfter(currentMonthStart) &&
                                         lesson.end.isBefore(currentMonthEnd) &&
                                         lesson.studentPresence != null &&
+                                        lesson.studentPresence?.name !=
+                                            OmissionConsts.na &&
                                         lesson.studentPresence?.name !=
                                             OmissionConsts.present)
                                     .length,
