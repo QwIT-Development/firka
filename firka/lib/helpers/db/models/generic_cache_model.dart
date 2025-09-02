@@ -9,7 +9,8 @@ enum CacheId {
   getGrades,
   getOmissions,
   getTests,
-  getClassGroup
+  getClassGroup,
+  getSubjectAvg
 }
 
 @collection
