@@ -166,7 +166,11 @@ class KretaClient {
   ApiResponse<Student>? studentCache;
 
   Future<ApiResponse<Student>> getStudent({bool forceCache = true}) async {
-    if (forceCache && studentCache != null) return studentCache!;
+    if (!forceCache) {
+      studentCache = null;
+    } else if (studentCache != null) {
+      return studentCache!;
+    }
     var (resp, status, ex, cached) = await _cachingGet(CacheId.getStudent,
         KretaEndpoints.getStudentUrl(model.iss!), forceCache, 0);
 
@@ -191,7 +195,11 @@ class KretaClient {
 
   Future<ApiResponse<List<ClassGroup>>> getClassGroups(
       {bool forceCache = true}) async {
-    if (forceCache && classGroupCache != null) return classGroupCache!;
+    if (!forceCache) {
+      classGroupCache = null;
+    } else {
+      if (classGroupCache != null) return classGroupCache!;
+    }
     var (resp, status, ex, cached) = await _cachingGet(CacheId.getClassGroup,
         KretaEndpoints.getClassGroups(model.iss!), forceCache, 0);
 
@@ -219,7 +227,11 @@ class KretaClient {
 
   Future<ApiResponse<List<NoticeBoardItem>>> getNoticeBoard(
       {bool forceCache = true}) async {
-    if (forceCache && noticeBoardCache != null) return noticeBoardCache!;
+    if (!forceCache) {
+      noticeBoardCache = null;
+    } else if (noticeBoardCache != null) {
+      return noticeBoardCache!;
+    }
     var (resp, status, ex, cached) = await _cachingGet(CacheId.getNoticeBoard,
         KretaEndpoints.getNoticeBoard(model.iss!), forceCache, 0);
 
@@ -274,7 +286,9 @@ class KretaClient {
   ApiResponse<List<Grade>>? gradeCache;
 
   Future<ApiResponse<List<Grade>>> getGrades({bool forceCache = true}) async {
-    if (forceCache && gradeCache != null) {
+    if (!forceCache) {
+      gradeCache = null;
+    } else if (gradeCache != null) {
       return gradeCache!;
     }
     var (resp, status, ex, cached) = await _cachingGet(
@@ -577,7 +591,11 @@ class KretaClient {
 
   Future<ApiResponse<List<Omission>>> getOmissions(
       {bool forceCache = true}) async {
-    if (omissionsCache != null) return omissionsCache!;
+    if (!forceCache) {
+      omissionsCache = null;
+    } else {
+      if (omissionsCache != null) return omissionsCache!;
+    }
     var (resp, status, ex, cached) = await _cachingGet(CacheId.getOmissions,
         KretaEndpoints.getOmissions(model.iss!), forceCache, 0);
 
