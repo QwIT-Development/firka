@@ -608,6 +608,7 @@ class KretaClient {
     noticeBoardCache = null;
     gradeCache = null;
     omissionsCache = null;
+    classGroupCache = null;
   }
 }
 
