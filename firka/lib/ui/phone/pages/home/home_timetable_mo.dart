@@ -46,9 +46,6 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
   _HomeTimetableMonthlyScreen();
 
   Future<void> initForMonth(DateTime now, {bool forceCache = true}) async {
-    if (!forceCache) {
-      widget.data.client.evictMemCache();
-    }
     final monthStart = DateTime.utc(now.year, now.month, 1);
     final monthEnd =
         DateTime.utc(now.year, now.month + 1).subtract(Duration(days: 1));
