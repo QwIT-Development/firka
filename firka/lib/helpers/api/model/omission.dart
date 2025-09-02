@@ -12,7 +12,7 @@ class Omission {
   final int? lateForMin;
   final DateTime createdAt;
   final String state;
-  final NameUidDesc proofType;
+  final NameUidDesc? proofType;
   final UidObj? classGroup;
 
   Omission({
@@ -42,7 +42,9 @@ class Omission {
       lateForMin: json['KesesPercben'],
       createdAt: DateTime.parse(json['KeszitesDatuma']),
       state: json['IgazolasAllapota'],
-      proofType: NameUidDesc.fromJson(json['IgazolasTipusa']),
+      proofType: json['IgazolasTipusa'] != null
+          ? NameUidDesc.fromJson(json['IgazolasTipusa'])
+          : null,
       classGroup: json['OsztalyCsoport'] != null
           ? UidObj.fromJson(json['OsztalyCsoport'])
           : null,
