@@ -9,6 +9,7 @@ import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../../../helpers/firka_bundle.dart';
 import '../../../../helpers/settings/setting.dart';
@@ -70,6 +71,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
         widgets.add(SizedBox(
           width: item.padding,
           height: item.padding,
+        ));
+
+        continue;
+      }
+      if (item is SettingsBackHeader) {
+        widgets.add(Column(
+          children: [
+            Row(
+              children: [
+                Transform.translate(
+                  offset: const Offset(-4, 0),
+                  child: GestureDetector(
+                    child: FirkaIconWidget(
+                        FirkaIconType.majesticons, Majesticon.chevronLeftLine,
+                        color: appStyle.colors.textSecondary),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+                Transform.translate(
+                  offset: const Offset(-4, 1),
+                  child: Text(
+                    item.title,
+                    style: appStyle.fonts.B_16R
+                        .apply(color: appStyle.colors.textPrimary),
+                  ),
+                )
+              ],
+            ),
+            SizedBox(height: 13),
+          ],
         ));
 
         continue;

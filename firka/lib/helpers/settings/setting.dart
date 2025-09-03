@@ -64,6 +64,7 @@ class SettingsStore {
     items["settings"] = SettingsGroup(
         0,
         LinkedHashMap.of({
+          "back": SettingsBackHeader(0, l10n.s_a, always),
           "settings_header": SettingsHeader(0, l10n.s_settings, always),
           "settings_padding": SettingsPadding(0, 20, always),
           "application": SettingsSubGroup(
@@ -72,10 +73,9 @@ class SettingsStore {
               Majesticon.settingsCogSolid,
               l10n.s_a,
               LinkedHashMap.of({
-                // TODO: Make a back arrow widget
+                "back": SettingsBackHeader(0, l10n.s_settings, always),
                 "settings_header": SettingsHeader(0, l10n.s_ag, always),
                 "settings_padding": SettingsPadding(0, 23, always),
-
                 "bell_delay": SettingsDouble(
                     bellRing,
                     FirkaIconType.majesticons,
@@ -154,6 +154,9 @@ class SettingsStore {
               Majesticon.flower2Solid,
               l10n.s_c,
               LinkedHashMap.of({
+                "back": SettingsBackHeader(0, l10n.s_settings, always),
+                "settings_header":
+                    SettingsHeader(0, l10n.s_customization, always),
                 "icon_header":
                     SettingsHeaderSmall(0, l10n.s_c_icon_header, always),
                 "icon_preview": SettingsAppIconPreview(0, always),
@@ -234,23 +237,32 @@ class SettingsStore {
                     isAndroid),
               }),
               always),
-          "notifications": SettingsSubGroup(0, FirkaIconType.majesticons,
-              Majesticon.bellSolid, "Értesítések", LinkedHashMap.of({}), never),
+          "notifications": SettingsSubGroup(
+              0,
+              FirkaIconType.majesticons,
+              Majesticon.bellSolid,
+              "Értesítések",
+              LinkedHashMap.of({
+                "back": SettingsBackHeader(0, l10n.s_settings, always),
+              }),
+              never),
           "extras": SettingsSubGroup(
               0,
               FirkaIconType.majesticons,
               Majesticon.lightningBoltSolid,
               "Extrák",
-              LinkedHashMap.of({}),
+              LinkedHashMap.of({
+                "back": SettingsBackHeader(0, l10n.s_settings, always),
+              }),
               never),
           "settings_other_padding": SettingsPadding(0, 20, never),
           "settings_other_header": SettingsHeaderSmall(0, "Egyéb", never),
 
-      "developer": SettingsSubGroup(
-        0,
-        FirkaIconType.majesticonsLocal,
-        "wrenchSolid",
-        'Developer',
+          "developer": SettingsSubGroup(
+              0,
+              FirkaIconType.majesticonsLocal,
+              "wrenchSolid",
+              'Developer',
               LinkedHashMap.of({
                 "stats_for_nerds": SettingsBoolean(
                     statsForNerds,
@@ -502,6 +514,28 @@ class SettingsPadding implements SettingsItem {
   double padding;
 
   SettingsPadding(this.key, this.padding, this.visibilityProvider);
+
+  @override
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
+
+  @override
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
+}
+
+class SettingsBackHeader implements SettingsItem {
+  @override
+  Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
+  @override
+  bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
+  String title;
+
+  SettingsBackHeader(this.key, this.title, this.visibilityProvider);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {}
