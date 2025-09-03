@@ -87,7 +87,26 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
           d.day == todayMid.day);
 
       if (idx >= 0) {
-        active = idx;
+        final todaysLessons = lessons?.where((lesson) =>
+            lesson.start.isAfter(todayMid) &&
+            lesson.end.isBefore(todayMid.add(Duration(hours: 23, minutes: 59))));
+        
+        if (todaysLessons != null && todaysLessons.isNotEmpty) {
+          final lastLessonToday = todaysLessons.reduce((a, b) => a.end.isAfter(b.end) ? a : b);
+          
+          if (now.isAfter(lastLessonToday.end)) {
+            int nextIdx = idx + 1;
+            if (nextIdx < dates.length) {
+              active = nextIdx;
+            } else {
+              active = idx;
+            }
+          } else {
+            active = idx;
+          }
+        } else {
+          active = idx;
+        }
       } else if (now.isAfter(dates.last)) {
         active = dates.length - 1;
       } else {
