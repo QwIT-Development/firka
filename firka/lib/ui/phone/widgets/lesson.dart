@@ -13,13 +13,14 @@ import '../../widget/firka_icon.dart';
 
 class LessonWidget extends StatelessWidget {
   final AppInitialization data;
+  final List<Lesson> week;
   final int? lessonNo;
   final Lesson lesson;
   final Test? test;
   final Lesson? nextLesson;
 
-  const LessonWidget(
-      this.data, this.lessonNo, this.lesson, this.test, this.nextLesson,
+  const LessonWidget(this.data, this.week, this.lessonNo, this.lesson,
+      this.test, this.nextLesson,
       {super.key});
 
   @override
@@ -147,24 +148,112 @@ class LessonWidget extends StatelessWidget {
     if (nextLesson != null) {
       elements.add(SizedBox(height: 4));
       var breakMins = nextLesson!.start.difference(lesson.end).inMinutes;
+      var seqSchedule = week.getAllSeqs(lesson);
 
       if (data.settings
           .group("settings")
           .subGroup("timetable_toast")
           .boolean("breaks")) {
-        elements.add(FirkaCard(
-          left: [
-            Text(data.l10n.breakTxt,
-                style: appStyle.fonts.B_14SB
-                    .apply(color: appStyle.colors.textSecondary))
-          ],
-          right: [
-            Text(
-                "$breakMins ${breakMins == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                style: appStyle.fonts.B_14R
-                    .apply(color: appStyle.colors.textTertiary))
-          ],
-        ));
+        if (breakMins > 45) {
+          final breakEnd = lesson.end.add(Duration(minutes: breakMins));
+          final emptyClass = seqSchedule.firstWhereOrNull((lesson2) =>
+              lesson2.start.isAfter(lesson.end) &&
+              lesson2.end.isBefore(breakEnd));
+
+          if (emptyClass != null) {
+            final preBreak = emptyClass.start.difference(lesson.end).inMinutes;
+            final postBreak = breakEnd.difference(emptyClass.end).inMinutes;
+            elements.add(FirkaCard(
+              left: [
+                Text(data.l10n.breakTxt,
+                    style: appStyle.fonts.B_14SB
+                        .apply(color: appStyle.colors.textSecondary))
+              ],
+              right: [
+                Text(
+                    "$preBreak ${preBreak == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
+                    style: appStyle.fonts.B_14R
+                        .apply(color: appStyle.colors.textTertiary))
+              ],
+            ));
+            elements.add(FirkaCard(
+              left: [
+                Card(
+                  shadowColor: Colors.transparent,
+                  color: bgColor,
+                  child: Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Text(emptyClass.lessonNumber.toString(),
+                        style: appStyle.fonts.B_12R.apply(color: secondary)),
+                  ),
+                ),
+                Card(
+                  shadowColor: Colors.transparent,
+                  color: bgColor,
+                  child: Padding(
+                    padding: EdgeInsetsGeometry.all(4),
+                    child: FirkaIconWidget(
+                        FirkaIconType.majesticonsLocal, 'cupFilled',
+                        color: wearStyle.colors.accent, size: 24),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text(data.l10n.empty_class,
+                    style: appStyle.fonts.B_16SB
+                        .apply(color: appStyle.colors.textPrimary)),
+              ],
+              right: [
+                Text(
+                    isDismissed
+                        ? data.l10n.class_dismissed
+                        : "${emptyClass.start.toLocal().format(data.l10n, FormatMode.hmm)} - ${emptyClass.end.toLocal().format(data.l10n, FormatMode.hmm)}",
+                    style: appStyle.fonts.B_14R
+                        .apply(color: appStyle.colors.textPrimary))
+              ],
+            ));
+            elements.add(FirkaCard(
+              left: [
+                Text(data.l10n.breakTxt,
+                    style: appStyle.fonts.B_14SB
+                        .apply(color: appStyle.colors.textSecondary))
+              ],
+              right: [
+                Text(
+                    "$postBreak ${postBreak == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
+                    style: appStyle.fonts.B_14R
+                        .apply(color: appStyle.colors.textTertiary))
+              ],
+            ));
+          } else {
+            elements.add(FirkaCard(
+              left: [
+                Text(data.l10n.breakTxt,
+                    style: appStyle.fonts.B_14SB
+                        .apply(color: appStyle.colors.textSecondary))
+              ],
+              right: [
+                Text(
+                    "$breakMins ${breakMins == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
+                    style: appStyle.fonts.B_14R
+                        .apply(color: appStyle.colors.textTertiary))
+              ],
+            ));
+          }
+        } else {
+          elements.add(FirkaCard(
+            left: [
+              Text(data.l10n.breakTxt,
+                  style: appStyle.fonts.B_14SB
+                      .apply(color: appStyle.colors.textSecondary))
+            ],
+            right: [
+              Text(
+                  "$breakMins ${breakMins == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
+                  style: appStyle.fonts.B_14R
+                      .apply(color: appStyle.colors.textTertiary))
+            ],
+          ));
+        }
         elements.add(SizedBox(height: 4));
       }
     }
