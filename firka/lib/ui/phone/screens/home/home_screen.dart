@@ -66,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool pairingDone = false;
   bool _disposed = false;
   bool _preloadDone = false;
+  int forcedNav = 0;
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
 
@@ -400,7 +401,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         physics: ClampingScrollPhysics(),
         child: PopScope(
-          canPop: false,
+          canPop: canPop,
           child: Scaffold(
             backgroundColor: appStyle.colors.background,
             body: SafeArea(
@@ -417,6 +418,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             onPageChanged: (index) {
                               HapticFeedback.heavyImpact();
 
+                              if (forcedNav > 0) {
+                                forcedNav--;
+
+                                if (previousPages.isEmpty) {
+                                  canPop = true;
+                                }
+                                return;
+                              }
+
                               setState(() {
                                 previousPages.add(page);
                                 canPop = false;
@@ -425,23 +435,23 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                             children: [
                               HomeSubPage(
-                                  HomePage.home,
-                                  widget.data,
-                                  widget.updateNotifier,
-                                  widget.updateFinishedNotifier,
-                                  ),
+                                HomePage.home,
+                                widget.data,
+                                widget.updateNotifier,
+                                widget.updateFinishedNotifier,
+                              ),
                               HomeSubPage(
-                                  HomePage.grades,
-                                  widget.data,
-                                  widget.updateNotifier,
-                                  widget.updateFinishedNotifier,
-                                  ),
+                                HomePage.grades,
+                                widget.data,
+                                widget.updateNotifier,
+                                widget.updateFinishedNotifier,
+                              ),
                               HomeSubPage(
-                                  HomePage.timetable,
-                                  widget.data,
-                                  widget.updateNotifier,
-                                  widget.updateFinishedNotifier,
-                                  ),
+                                HomePage.timetable,
+                                widget.data,
+                                widget.updateNotifier,
+                                widget.updateFinishedNotifier,
+                              ),
                             ],
                           ),
                         ),
@@ -551,6 +561,13 @@ class _HomeScreenState extends State<HomeScreen> {
               {
                 setState(() {
                   page = previousPages.removeLast();
+
+                  forcedNav++;
+                  _pageController.animateToPage(
+                    page.index,
+                    duration: Duration(milliseconds: 175),
+                    curve: Curves.easeInOut,
+                  );
                   canPop = previousPages.isEmpty;
                 })
               }
@@ -578,8 +595,9 @@ class HomeSubPage extends StatelessWidget {
   final UpdateNotifier _updateNotifier;
   final UpdateNotifier _updateFinishNotifier;
 
-  const HomeSubPage(this.page, this.data, this._updateNotifier,
-      this._updateFinishNotifier, {super.key});
+  const HomeSubPage(
+      this.page, this.data, this._updateNotifier, this._updateFinishNotifier,
+      {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -587,15 +605,19 @@ class HomeSubPage extends StatelessWidget {
       case HomePage.home:
         return HomeMainScreen(data, _updateNotifier, _updateFinishNotifier);
       case HomePage.grades:
-      return PageWithSubPages([
-        (cb) => HomeGradesScreen(data, _updateNotifier, _updateFinishNotifier, cb),
-        (cb) => HomeGradesSubjectScreen(data, _updateNotifier, _updateFinishNotifier)
-      ], pageIndex: 0);
+        return PageWithSubPages([
+          (cb) => HomeGradesScreen(
+              data, _updateNotifier, _updateFinishNotifier, cb),
+          (cb) => HomeGradesSubjectScreen(
+              data, _updateNotifier, _updateFinishNotifier)
+        ], pageIndex: 0);
       case HomePage.timetable:
         return PageWithSubPages([
-        (cb) => HomeTimetableScreen(data, _updateNotifier, _updateFinishNotifier, cb),
-        (cb) => HomeTimetableMonthlyScreen(data, _updateNotifier, _updateFinishNotifier, cb)
-      ], pageIndex: 0);
+          (cb) => HomeTimetableScreen(
+              data, _updateNotifier, _updateFinishNotifier, cb),
+          (cb) => HomeTimetableMonthlyScreen(
+              data, _updateNotifier, _updateFinishNotifier, cb)
+        ], pageIndex: 0);
     }
   }
 }
