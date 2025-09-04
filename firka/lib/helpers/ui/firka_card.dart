@@ -8,12 +8,14 @@ class FirkaCard extends StatelessWidget {
   final List<Widget> left;
   final List<Widget>? center;
   final List<Widget>? right;
+  final bool shadow;
   final Widget? extra;
   final Attach? attached;
   final Color? color;
 
   const FirkaCard(
       {required this.left,
+      this.shadow = true,
       this.center,
       this.right,
       this.extra,
@@ -34,6 +36,7 @@ class FirkaCard extends StatelessWidget {
         width: MediaQuery.of(context).size.width,
         child: Card(
           color: color ?? appStyle.colors.card,
+          shadowColor: shadow ? null : Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(attached == Attach.top
@@ -72,6 +75,7 @@ class FirkaCard extends StatelessWidget {
         width: MediaQuery.of(context).size.width,
         child: Card(
           color: color ?? appStyle.colors.card,
+          shadowColor: shadow ? null : Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(attached == Attach.top
