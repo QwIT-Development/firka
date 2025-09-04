@@ -6,14 +6,18 @@ import 'package:firka/ui/phone/widgets/info_board_item.dart';
 import 'package:firka/ui/phone/widgets/lesson_small.dart';
 import 'package:firka/ui/widget/delayed_spinner.dart';
 import 'package:flutter/material.dart';
+import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../../../helpers/api/model/notice_board.dart';
 import '../../../../helpers/api/model/student.dart';
+import '../../../../helpers/api/model/test.dart';
 import '../../../../helpers/api/model/timetable.dart';
 import '../../../../helpers/debug_helper.dart';
+import '../../../../helpers/ui/firka_card.dart';
 import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../model/style.dart';
+import '../../../widget/firka_icon.dart';
 import '../../widgets/home_main_welcome.dart';
 import '../../widgets/lesson_big.dart';
 
@@ -36,6 +40,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
   List<Lesson>? lessons;
   List<NoticeBoardItem>? noticeBoard;
   List<InfoBoardItem>? infoBoard;
+  List<Test>? tests;
   Student? student;
   Timer? timer;
 
@@ -76,6 +81,9 @@ class _HomeMainScreen extends State<HomeMainScreen> {
 
     var respStudent =
         await widget.data.client.getStudent(forceCache: forceCache);
+
+    var testsResp = await widget.data.client.getTests(forceCache: forceCache);
+    tests = testsResp.response;
 
     return Future.value((
       respTT.response!,
@@ -128,6 +136,7 @@ class _HomeMainScreen extends State<HomeMainScreen> {
   Widget build(BuildContext context) {
     Widget welcomeWidget = SizedBox();
     Widget nextClass = SizedBox();
+    Widget? nextTest;
     bool lessonActive = false;
 
     if (lessons != null && noticeBoard != null && lessons!.isNotEmpty) {
@@ -157,6 +166,42 @@ class _HomeMainScreen extends State<HomeMainScreen> {
       if (nextLesson != null) {
         nextClass =
             LessonSmallWidget(widget.data.l10n, nextLesson, lessonActive);
+
+        if (tests != null) {
+          final testsOnDate = tests!
+              .where((test) =>
+                  test.date.isAfter(nextLesson.start
+                      .getMidnight()
+                      .subtract(Duration(seconds: 1))) &&
+                  test.date.isBefore(nextLesson.end
+                      .getMidnight()
+                      .add(Duration(hours: 23, minutes: 59))) &&
+                  test.subject.uid == nextLesson.subject?.uid)
+              .toList();
+
+          if (testsOnDate.isNotEmpty) {
+            final test = testsOnDate.first;
+
+            nextTest = FirkaCard(
+              left: [
+                FirkaIconWidget(
+                  FirkaIconType.majesticons,
+                  Majesticon.editPen4Solid,
+                  color: appStyle.colors.accent,
+                ),
+                SizedBox(width: 6),
+                Text(test.theme,
+                    style: appStyle.fonts.B_14SB
+                        .apply(color: appStyle.colors.textSecondary))
+              ],
+              right: [
+                Text(test.method.description ?? "N/A",
+                    style: appStyle.fonts.B_14R
+                        .apply(color: appStyle.colors.textTertiary))
+              ],
+            );
+          }
+        }
       }
     }
 
@@ -182,6 +227,9 @@ class _HomeMainScreen extends State<HomeMainScreen> {
             welcomeWidget,
             lessonActive ? SizedBox(height: 5) : SizedBox(height: 0),
             nextClass,
+            nextTest != null ? SizedBox(height: 12) : SizedBox(height: 0),
+            nextTest ?? SizedBox(),
+            nextTest != null ? SizedBox(height: 12) : SizedBox(height: 0),
             Expanded(
               child: ListView(
                 children: noticeBoardWidgets,
