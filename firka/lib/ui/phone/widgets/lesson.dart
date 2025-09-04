@@ -51,6 +51,10 @@ class LessonWidget extends StatelessWidget {
             context, data, lesson, lessonNo, accent, secondary, bgColor);
       },
       child: FirkaCard(
+        color: isDismissed
+            ? appStyle.colors.cardTranslucent
+            : appStyle.colors.card,
+        shadow: !isDismissed,
         left: [
           Card(
             // TODO: improve this to match design
@@ -164,6 +168,7 @@ class LessonWidget extends StatelessWidget {
             final preBreak = emptyClass.start.difference(lesson.end).inMinutes;
             final postBreak = breakEnd.difference(emptyClass.end).inMinutes;
             elements.add(FirkaCard(
+              color: appStyle.colors.cardTranslucent,
               shadow: false,
               left: [
                 Text(data.l10n.breakTxt,
@@ -181,21 +186,22 @@ class LessonWidget extends StatelessWidget {
               left: [
                 Card(
                   shadowColor: Colors.transparent,
-                  color: bgColor,
+                  color: appStyle.colors.a15p,
                   child: Padding(
                     padding: EdgeInsets.all(4),
                     child: Text(emptyClass.lessonNumber.toString(),
-                        style: appStyle.fonts.B_12R.apply(color: secondary)),
+                        style: appStyle.fonts.B_12R
+                            .apply(color: appStyle.colors.secondary)),
                   ),
                 ),
                 Card(
                   shadowColor: Colors.transparent,
-                  color: bgColor,
+                  color: appStyle.colors.a15p,
                   child: Padding(
                     padding: EdgeInsetsGeometry.all(4),
                     child: FirkaIconWidget(
                         FirkaIconType.majesticonsLocal, 'cupFilled',
-                        color: wearStyle.colors.accent, size: 24),
+                        color: appStyle.colors.accent, size: 24),
                   ),
                 ),
                 SizedBox(width: 8),
@@ -213,6 +219,7 @@ class LessonWidget extends StatelessWidget {
               ],
             ));
             elements.add(FirkaCard(
+              color: appStyle.colors.cardTranslucent,
               shadow: false,
               left: [
                 Text(data.l10n.breakTxt,
@@ -228,6 +235,7 @@ class LessonWidget extends StatelessWidget {
             ));
           } else {
             elements.add(FirkaCard(
+              color: appStyle.colors.cardTranslucent,
               shadow: false,
               left: [
                 Text(data.l10n.breakTxt,
@@ -244,6 +252,7 @@ class LessonWidget extends StatelessWidget {
           }
         } else {
           elements.add(FirkaCard(
+            color: appStyle.colors.cardTranslucent,
             shadow: false,
             left: [
               Text(data.l10n.breakTxt,
