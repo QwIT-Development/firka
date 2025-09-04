@@ -164,6 +164,7 @@ class LessonWidget extends StatelessWidget {
             final preBreak = emptyClass.start.difference(lesson.end).inMinutes;
             final postBreak = breakEnd.difference(emptyClass.end).inMinutes;
             elements.add(FirkaCard(
+              shadow: false,
               left: [
                 Text(data.l10n.breakTxt,
                     style: appStyle.fonts.B_14SB
@@ -212,6 +213,7 @@ class LessonWidget extends StatelessWidget {
               ],
             ));
             elements.add(FirkaCard(
+              shadow: false,
               left: [
                 Text(data.l10n.breakTxt,
                     style: appStyle.fonts.B_14SB
@@ -226,6 +228,7 @@ class LessonWidget extends StatelessWidget {
             ));
           } else {
             elements.add(FirkaCard(
+              shadow: false,
               left: [
                 Text(data.l10n.breakTxt,
                     style: appStyle.fonts.B_14SB
@@ -241,6 +244,7 @@ class LessonWidget extends StatelessWidget {
           }
         } else {
           elements.add(FirkaCard(
+            shadow: false,
             left: [
               Text(data.l10n.breakTxt,
                   style: appStyle.fonts.B_14SB
