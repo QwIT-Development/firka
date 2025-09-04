@@ -143,7 +143,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                     decoration: ShapeDecoration(
                       color: appStyle.colors.cardTranslucent,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6)),
+                          borderRadius: BorderRadius.circular(12)),
                     )),
                 SizedBox(height: 4),
                 Text(d.format(widget.data.l10n, FormatMode.d),
@@ -285,7 +285,7 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                   decoration: ShapeDecoration(
                     color: bodyBgColor,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6)),
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   child: body,
                 ),
@@ -574,7 +574,7 @@ class _StatusToast extends StatelessWidget {
               ? appStyle.colors.buttonSecondaryFill
               : appStyle.colors.cardTranslucent,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
