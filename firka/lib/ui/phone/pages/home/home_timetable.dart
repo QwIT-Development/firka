@@ -89,11 +89,13 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
       if (idx >= 0) {
         final todaysLessons = lessons?.where((lesson) =>
             lesson.start.isAfter(todayMid) &&
-            lesson.end.isBefore(todayMid.add(Duration(hours: 23, minutes: 59))));
-        
+            lesson.end
+                .isBefore(todayMid.add(Duration(hours: 23, minutes: 59))));
+
         if (todaysLessons != null && todaysLessons.isNotEmpty) {
-          final lastLessonToday = todaysLessons.reduce((a, b) => a.end.isAfter(b.end) ? a : b);
-          
+          final lastLessonToday =
+              todaysLessons.reduce((a, b) => a.end.isAfter(b.end) ? a : b);
+
           if (now.isAfter(lastLessonToday.end)) {
             int nextIdx = idx + 1;
             if (nextIdx < dates.length) {
@@ -190,8 +192,8 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                 test.date.isBefore(date.add(Duration(hours: 23, minutes: 59))))
             .toList();
 
-        ttDays.add(TimeTableDayWidget(
-            widget.data, date, lessonsOnDate, eventsOnDate, testsOnDate));
+        ttDays.add(TimeTableDayWidget(widget.data, date, lessons!,
+            lessonsOnDate, eventsOnDate, testsOnDate));
       }
 
       return Scaffold(

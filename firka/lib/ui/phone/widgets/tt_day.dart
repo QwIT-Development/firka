@@ -11,12 +11,13 @@ import 'lesson.dart';
 class TimeTableDayWidget extends StatelessWidget {
   final AppInitialization data;
   final DateTime date;
+  final List<Lesson> week;
   final List<Lesson> lessons;
   final List<Lesson> events;
   final List<Test> tests;
 
   const TimeTableDayWidget(
-      this.data, this.date, this.lessons, this.events, this.tests,
+      this.data, this.date, this.week, this.lessons, this.events, this.tests,
       {super.key});
 
   @override
@@ -45,6 +46,7 @@ class TimeTableDayWidget extends StatelessWidget {
         Lesson? nextLesson = lessons.length > i + 1 ? lessons[i + 1] : null;
         ttBody.add(LessonWidget(
             data,
+            week,
             lessons.getLessonNo(lesson),
             lesson,
             tests.firstWhereOrNull(
