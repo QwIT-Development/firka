@@ -4,6 +4,47 @@ import '../l10n/app_localizations.dart';
 import 'api/model/timetable.dart';
 import 'debug_helper.dart';
 
+extension TimetableExtension on Iterable<Lesson> {
+  List<Lesson> getAllSeqs(Lesson reference) {
+    List<Lesson> lessons = List.empty(growable: true);
+
+    for (var lesson in this) {
+      if (lesson.lessonNumber == null) continue;
+
+      if (lessons.firstWhereOrNull(
+              (lesson2) => lesson.lessonNumber == lesson2.lessonNumber) ==
+          null) {
+        final ref = reference.start;
+        final newStart = DateTime(ref.year, ref.month, ref.day,
+            lesson.start.hour, lesson.start.minute, lesson.start.second);
+        final newEnd = DateTime(ref.year, ref.month, ref.day, lesson.end.hour,
+            lesson.end.minute, lesson.end.second);
+        final lessonCopy = Lesson(
+            uid: lesson.uid,
+            date: lesson.date,
+            start: newStart,
+            end: newEnd,
+            name: lesson.name,
+            type: lesson.type,
+            state: lesson.state,
+            canStudentEditHomework: lesson.canStudentEditHomework,
+            isHomeworkComplete: lesson.isHomeworkComplete,
+            attachments: lesson.attachments,
+            lessonNumber: lesson.lessonNumber,
+            isDigitalLesson: lesson.isDigitalLesson,
+            digitalSupportDeviceTypeList: lesson.digitalSupportDeviceTypeList,
+            createdAt: lesson.createdAt,
+            lastModifiedAt: lesson.lastModifiedAt);
+        lessons.add(lessonCopy);
+      }
+    }
+
+    lessons.sort((l1, l2) => l1.lessonNumber! - l2.lessonNumber!);
+
+    return lessons;
+  }
+}
+
 extension IterableExtensionMap on Iterable<MapEntry<String, dynamic>> {
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{};
