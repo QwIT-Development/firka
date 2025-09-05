@@ -20,6 +20,7 @@ import 'package:firka/ui/phone/screens/home/home_screen.dart';
 import 'package:firka/ui/phone/screens/login/login_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:isar/isar.dart';
@@ -126,6 +127,28 @@ void initLang(AppInitialization data) {
   }
 }
 
+void initTheme(AppInitialization data) {
+  final brightness =
+      SchedulerBinding.instance.platformDispatcher.platformBrightness;
+
+  switch ((data.settings.group("settings").subGroup("customization")["theme"]
+          as SettingsItemsRadio)
+      .activeIndex) {
+    case 1:
+      appStyle = lightStyle;
+      break;
+    case 2:
+      appStyle = darkStyle;
+      break;
+    default:
+      if (brightness == Brightness.dark) {
+        appStyle = darkStyle;
+      } else {
+        appStyle = lightStyle;
+      }
+  }
+}
+
 Future<AppInitialization> initializeApp() async {
   final isar = await initDB();
   final tokenCount = await isar.tokenModels.count();
@@ -172,6 +195,7 @@ Future<AppInitialization> initializeApp() async {
 
   await init.settings.load(init.isar.appSettingsModels);
   initLang(init);
+  initTheme(init);
   init.settings = SettingsStore(init.l10n);
   await init.settings.load(init.isar.appSettingsModels);
 
