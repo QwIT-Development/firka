@@ -186,32 +186,42 @@ class SettingsStore {
                           0,
                           "original",
                           {
-                            l10n.s_ci_icon_g1: [
-                              "original",
-                              "refilc",
-                              "filc",
+                            l10n.s_ci_icon_g1: ["original", "proto", "pride"],
+                            l10n.s_ci_icon_g2: [
+                              "pixel",
                               "galaxy",
                               "cactus",
-                              "refulc",
-                              "pixel"
-                            ],
-                            l10n.s_ci_icon_g2: [
-                              "modern",
-                              "paper",
-                              "filco",
-                              "o1g"
                             ],
                             l10n.s_ci_icon_g3: [
+                              "old",
+                              "refilc",
+                              "filc",
+                              "szivacs"
+                            ],
+                            l10n.s_ci_icon_g4: [
+                              "modern",
+                              "cc",
+                              "paper",
+                              "filco",
+                              "o1g",
+                              "pear",
+                              "half_firka_2",
+                              "nuke",
+                              "refulc"
+                            ],
+                            l10n.s_ci_icon_g5: [
                               "kreta",
                               "cc",
                               "repont",
                               "void_icon",
                               "pixelized",
+                              "mkkp",
                               "fidesz",
-                              "mkkp"
+                              "tisza",
+                              "lidl",
                             ],
-                            l10n.s_ci_icon_g4: ["xmas1", "xmas2", "xmas3"],
-                            l10n.s_ci_icon_g5: [
+                            l10n.s_ci_icon_g6: ["xmas1", "xmas2", "xmas3"],
+                            l10n.s_ci_icon_g7: [
                               "lgbtq",
                               "lgbtqp",
                               "trans",
@@ -221,7 +231,7 @@ class SettingsStore {
                               "lesb",
                               "bi"
                             ],
-                            l10n.s_ci_icon_g6: [
+                            l10n.s_ci_icon_g8: [
                               "lgbtq_f",
                               "lgbtqp_f",
                               "trans_f",
@@ -329,6 +339,7 @@ class SettingsStore {
       "galaxy": l10n.ic_galaxy,
       "gay": l10n.ic_gay,
       "gay_f": l10n.ic_gay_f,
+      "half_firka_2": l10n.ic_half_firka_2,
       "kreta": l10n.ic_kreta,
       "lesb": l10n.ic_lesb,
       "lesb_f": l10n.ic_lesb_f,
@@ -336,16 +347,24 @@ class SettingsStore {
       "lgbtq_f": l10n.ic_lgbtq_f,
       "lgbtqp": l10n.ic_lgbtqp,
       "lgbtqp_f": l10n.ic_lgbtqp_f,
+      "lidl": l10n.ic_lidl,
       "mkkp": l10n.ic_mkkp,
+      "nuke": l10n.ic_nuke,
       "modern": l10n.ic_modern,
       "o1g": l10n.ic_o1g,
+      "old": l10n.ic_old,
       "original": l10n.ic_original,
       "paper": l10n.ic_paper,
+      "pear": l10n.ic_pear,
       "pixel": l10n.ic_pixel,
       "pixelized": l10n.ic_pixelized,
+      "pride": l10n.ic_pride,
+      "proto": l10n.ic_proto,
       "refilc": l10n.ic_refilc,
       "refulc": l10n.ic_refulc,
       "repont": l10n.ic_repont,
+      "szivacs": l10n.ic_szivacs,
+      "tisza": l10n.ic_tisza,
       "trans": l10n.ic_trans,
       "trans_f": l10n.ic_trans_f,
       "void_icon": l10n.ic_void_icon,
