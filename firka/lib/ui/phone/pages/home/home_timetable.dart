@@ -309,7 +309,8 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                             Text(
                                 now!.format(
                                     widget.data.l10n, FormatMode.yyyymmddwedd),
-                                style: appStyle.fonts.B_14R),
+                                style: appStyle.fonts.B_14R
+                                    .apply(color: appStyle.colors.textPrimary)),
                             SizedBox(width: 4),
                             Text("•",
                                 style: appStyle.fonts.B_16R
@@ -319,7 +320,8 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                                 now!.isAWeek()
                                     ? widget.data.l10n.a_week
                                     : widget.data.l10n.b_week,
-                                style: appStyle.fonts.B_14R),
+                                style: appStyle.fonts.B_14R
+                                    .apply(color: appStyle.colors.textPrimary)),
                           ],
                         ),
                         GestureDetector(
