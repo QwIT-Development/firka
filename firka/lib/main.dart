@@ -136,15 +136,19 @@ void initTheme(AppInitialization data) {
       .activeIndex) {
     case 1:
       appStyle = lightStyle;
+      isLightMode.value = true;
       break;
     case 2:
       appStyle = darkStyle;
+      isLightMode.value = false;
       break;
     default:
       if (brightness == Brightness.dark) {
         appStyle = darkStyle;
+        isLightMode.value = true;
       } else {
         appStyle = lightStyle;
+        isLightMode.value = false;
       }
   }
 }
@@ -243,6 +247,8 @@ void main() async {
   });
 }
 
+final ValueNotifier<bool> isLightMode = ValueNotifier<bool>(true);
+
 class InitializationScreen extends StatelessWidget {
   InitializationScreen({super.key});
 
@@ -335,7 +341,30 @@ class InitializationScreen extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
-            home: DefaultAssetBundle(bundle: FirkaBundle(), child: screen),
+            home: DefaultAssetBundle(
+              bundle: FirkaBundle(),
+              child: ValueListenableBuilder<bool>(
+                valueListenable: isLightMode,
+                builder: (context, isLight, _) {
+                  final overlay = SystemUiOverlayStyle(
+                    statusBarColor: Colors.transparent,
+                    statusBarIconBrightness:
+                        isLight ? Brightness.dark : Brightness.light,
+                    statusBarBrightness:
+                        isLight ? Brightness.light : Brightness.dark,
+                    systemStatusBarContrastEnforced: false,
+                  );
+
+                  // Ensure system is updated immediately
+                  SystemChrome.setSystemUIOverlayStyle(overlay);
+
+                  return AnnotatedRegion<SystemUiOverlayStyle>(
+                    value: overlay,
+                    child: screen,
+                  );
+                },
+              ),
+            ),
             routes: {
               '/login': (context) => DefaultAssetBundle(
                     bundle: FirkaBundle(),

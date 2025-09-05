@@ -96,12 +96,6 @@ class _WearLoginScreenState extends State<WearLoginScreen> {
       }));
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarBrightness: Brightness.light,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarColor: Colors.transparent,
-      systemNavigationBarColor: Color(0xFFDAE4F7),
-    ));
   }
 
   @override

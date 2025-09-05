@@ -245,9 +245,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateSystemUI();
-    });
 
     widget.data.settingsUpdateNotifier.addListener(settingsUpdateListener);
 
@@ -280,17 +277,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _updateSystemUI() {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarBrightness: Brightness.light,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarColor: Colors.transparent,
-      systemNavigationBarColor: appStyle.colors.background,
-      systemNavigationBarIconBrightness: Brightness.dark,
-      systemNavigationBarDividerColor: Colors.transparent,
-    ));
-  }
-
   void _onRefresh() async {
     late void Function() finishListener;
     finishListener = () {
@@ -310,8 +296,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _updateSystemUI(); // Update system UI on every build, to compensate for the android system being dumb
-
     if (!widget.data.settings.group("settings").boolean("beta_warning")) {
       Timer.run(() {
         Navigator.of(context).pushAndRemoveUntil(
@@ -579,8 +563,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
-
-    widget.data.settingsUpdateNotifier.removeListener(settingsUpdateListener);
 
     _disposed = true;
     _fetching = false;

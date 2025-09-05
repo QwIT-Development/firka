@@ -116,8 +116,10 @@ class FirkaColors {
 class FirkaStyle {
   FirkaColors colors;
   FirkaFonts fonts;
+  bool isLight;
 
-  FirkaStyle({required this.colors, required this.fonts});
+  FirkaStyle(
+      {required this.isLight, required this.colors, required this.fonts});
 }
 
 final _defaultFonts = FirkaFonts(
@@ -196,6 +198,7 @@ final _defaultFonts = FirkaFonts(
 );
 
 final FirkaStyle lightStyle = FirkaStyle(
+    isLight: true,
     colors: FirkaColors(
       background: Color(0xFFFAFFF0),
       backgroundAmoled: Colors.black,
@@ -230,6 +233,7 @@ final FirkaStyle lightStyle = FirkaStyle(
     fonts: _defaultFonts);
 
 final FirkaStyle darkStyle = FirkaStyle(
+    isLight: false,
     colors: FirkaColors(
       background: Color(0xFF0D1202),
       backgroundAmoled: Colors.black,

@@ -31,12 +31,6 @@ class _LoginScreenState extends State<LoginScreen> {
     _loginWebView = LoginWebviewWidget(widget.data);
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarBrightness: Brightness.light,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarColor: Colors.transparent,
-      systemNavigationBarColor: Color(0xFFFAFFF0),
-    ));
 
     _preloadImages();
   }
