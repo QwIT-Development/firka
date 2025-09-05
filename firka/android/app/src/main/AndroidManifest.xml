@@ -227,6 +227,20 @@
         </activity-alias>
 
         <activity-alias
+            android:name=".half_firka_2"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_half_firka_2"
+            android:roundIcon="@mipmap/ic_half_firka_2_round" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
             android:name=".kreta"
             android:targetActivity=".MainActivity"
             android:exported="true"
@@ -325,12 +339,40 @@
         </activity-alias>
 
         <activity-alias
+            android:name=".lidl"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_lidl"
+            android:roundIcon="@mipmap/ic_lidl_round" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
             android:name=".mkkp"
             android:targetActivity=".MainActivity"
             android:exported="true"
             android:enabled="false"
             android:icon="@mipmap/ic_mkkp"
             android:roundIcon="@mipmap/ic_mkkp_round" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".nuke"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_nuke"
+            android:roundIcon="@mipmap/ic_nuke_round" >
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -367,12 +409,40 @@
         </activity-alias>
 
         <activity-alias
+            android:name=".old"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_old"
+            android:roundIcon="@mipmap/ic_old_round" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
             android:name=".paper"
             android:targetActivity=".MainActivity"
             android:exported="true"
             android:enabled="false"
             android:icon="@mipmap/ic_paper"
             android:roundIcon="@mipmap/ic_paper_round" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".pear"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_pear"
+            android:roundIcon="@mipmap/ic_pear_round" >
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -401,6 +471,34 @@
             android:enabled="false"
             android:icon="@mipmap/ic_pixelized"
             android:roundIcon="@mipmap/ic_pixelized_round" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".pride"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_pride"
+            android:roundIcon="@mipmap/ic_pride_round" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".proto"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_proto"
+            android:roundIcon="@mipmap/ic_proto_round" >
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -443,6 +541,34 @@
             android:enabled="false"
             android:icon="@mipmap/ic_repont"
             android:roundIcon="@mipmap/ic_repont_round" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".szivacs"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_szivacs"
+            android:roundIcon="@mipmap/ic_szivacs_round" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".tisza"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_tisza"
+            android:roundIcon="@mipmap/ic_tisza_round" >
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

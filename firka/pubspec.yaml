@@ -80,7 +80,7 @@ dev_dependencies:
     sdk: flutter
 
 android_notification_icons:
-  image_path: 'assets/images/logos/monochrome_logo.png'
+  image_path: 'assets/images/logos/dave_monochrome.png'
   icon_name: 'ic_notification'
 
 # For information on the generic Dart part of this file, see the
