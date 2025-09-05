@@ -339,11 +339,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               .subGroup("customization")
               .subGroup("icon_picker")
               .boolean("child_protection")) {
-            if (group == widget.data.l10n.s_ci_icon_g5) {
+            if (group == widget.data.l10n.s_ci_icon_g7) {
               continue;
             }
           } else {
-            if (group == widget.data.l10n.s_ci_icon_g6) {
+            if (group == widget.data.l10n.s_ci_icon_g8) {
               continue;
             }
           }
@@ -407,8 +407,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 appStyle.fonts.H_14px.apply(color: appStyle.colors.textPrimary),
           ));
 
-          if (group == widget.data.l10n.s_ci_icon_g5 ||
-              group == widget.data.l10n.s_ci_icon_g6) {
+          if (group == widget.data.l10n.s_ci_icon_g6) {
+            pWidgets.add(Text(widget.data.l10n.s_ci_icon_g6_desc,
+                style: appStyle.fonts.B_14R
+                    .apply(color: appStyle.colors.textSecondary)));
+          }
+
+          if (group == widget.data.l10n.s_ci_icon_g7 ||
+              group == widget.data.l10n.s_ci_icon_g8) {
             var settingsWidgets = createWidgetTree([
               widget.data.settings
                       .group("settings")
