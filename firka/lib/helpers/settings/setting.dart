@@ -26,13 +26,12 @@ const language = 1008;
 const appIcon = 1009;
 const childProtection = 1010;
 const betaWarning = 1011;
-
 const ttToastLessonNo = 1012;
 const ttToastTestsAndHw = 1013;
 const ttToastBreaks = 1014;
-
 const statsForNerds = 1015;
 const developerOptsEnabled = 1016;
+const themeBrightness = 1017;
 
 bool always() {
   return true;
@@ -245,6 +244,36 @@ class SettingsStore {
                           always),
                     }),
                     isAndroid),
+                "theme_header":
+                    SettingsHeaderSmall(0, l10n.s_c_theme_header, always),
+                "theme": SettingsItemsRadio(
+                    themeBrightness,
+                    null,
+                    null,
+                    [
+                      l10n.s_c_theme_auto,
+                      l10n.s_c_theme_light,
+                      l10n.s_c_theme_dark
+                    ],
+                    0,
+                    always, () async {
+                  Navigator.of(navigatorKey.currentContext!)
+                      .popUntil((route) => false);
+
+                  initTheme(initData);
+
+                  Navigator.push(
+                    navigatorKey.currentContext!,
+                    MaterialPageRoute(
+                        builder: (context) => DefaultAssetBundle(
+                            bundle: FirkaBundle(),
+                            child: HomeScreen(
+                              initData,
+                              false,
+                              key: ValueKey('homeScreen'),
+                            ))),
+                  );
+                })
               }),
               always),
           "notifications": SettingsSubGroup(
