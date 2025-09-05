@@ -418,7 +418,8 @@ class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
                             now!
                                 .format(widget.data.l10n, FormatMode.yyyymmmm)
                                 .toLowerCase(),
-                            style: appStyle.fonts.B_14R),
+                            style: appStyle.fonts.B_14R
+                                .apply(color: appStyle.colors.textPrimary)),
                         GestureDetector(
                           child: FirkaIconWidget(
                             FirkaIconType.icons,
