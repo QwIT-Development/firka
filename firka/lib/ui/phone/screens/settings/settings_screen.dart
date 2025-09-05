@@ -33,26 +33,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateSystemUI();
-    });
 
     activeIcon = widget.data.settings
         .group("settings")
         .subGroup("customization")
         .subGroup("icon_picker")
         .iconString("icon_picker");
-  }
-
-  void _updateSystemUI() {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarBrightness: Brightness.light,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarColor: Colors.transparent,
-      systemNavigationBarColor: appStyle.colors.background,
-      systemNavigationBarIconBrightness: Brightness.dark,
-      systemNavigationBarDividerColor: Colors.transparent,
-    ));
   }
 
   List<Widget> createWidgetTree(
@@ -506,8 +492,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _updateSystemUI(); // Update system UI on every build, to compensate for the android system being dumb
-
     var body = createWidgetTree(widget.items.values, widget.data.settings);
 
     return Scaffold(
