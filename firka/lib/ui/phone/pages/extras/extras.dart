@@ -26,7 +26,11 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                     bundle: FirkaBundle(), child: DebugScreen(data))))
       },
       child: FirkaCard(
-        left: [Text(data.l10n.debug_screen)],
+        left: [
+          Text(data.l10n.debug_screen,
+              style: appStyle.fonts.B_16R
+                  .apply(color: appStyle.colors.textPrimary))
+        ],
         right: [],
       ),
     );
@@ -80,7 +84,11 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                             data, data.settings.items))));
                           },
                           child: FirkaCard(
-                            left: [Text(data.l10n.settings_screen)],
+                            left: [
+                              Text(data.l10n.settings_screen,
+                                  style: appStyle.fonts.B_16R.apply(
+                                      color: appStyle.colors.textPrimary))
+                            ],
                             right: [],
                           ),
                         )
@@ -94,7 +102,9 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                           SizedBox(),
                           GestureDetector(
                             child: Text(
-                                "v${data.packageInfo.version} ${isBeta ? "beta" : ""}"),
+                                "v${data.packageInfo.version} ${isBeta ? "beta" : ""}",
+                                style: appStyle.fonts.B_14R.apply(
+                                    color: appStyle.colors.textTertiary)),
                             onTap: () async {
                               if (isDebug()) return;
                               if (debugCounter == 10) {
