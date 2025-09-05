@@ -313,11 +313,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   width: double.infinity,
                   height: 200,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Color(0x00FAFFF0),
-                        Color(0xFFFAFFF0)
+                        appStyle.colors.background.withAlpha(0),
+                        appStyle.colors.background,
                       ], // customize colors
                       stops: [0.0, 0.5], // percentages (0% → 50% → 100%)
                       begin: Alignment.topCenter,
@@ -353,13 +353,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: 48,
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           decoration: ShapeDecoration(
-                            color: const Color(0xFFA7DB21), // Accent-Accent
+                            color: appStyle.colors.accent,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            shadows: const [
+                            shadows: [
                               BoxShadow(
-                                color: Color(0x33647E22),
+                                color:
+                                    appStyle.colors.textPrimary.withAlpha(13),
                                 blurRadius: 2,
                                 offset: Offset(0, 1),
                                 spreadRadius: 0,
