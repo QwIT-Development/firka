@@ -3,6 +3,7 @@ import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/main.dart';
+import 'package:firka/ui/model/style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -33,8 +34,12 @@ class TimeTableDayWidget extends StatelessWidget {
             SvgPicture.asset("assets/images/logos/dave.svg",
                 width: 48, height: 48),
             SizedBox(height: 12),
-            Text(data.l10n.tt_no_classes_l1),
-            Text(data.l10n.tt_no_classes_l2)
+            Text(data.l10n.tt_no_classes_l1,
+                style: appStyle.fonts.B_16R
+                    .apply(color: appStyle.colors.textSecondary)),
+            Text(data.l10n.tt_no_classes_l2,
+                style: appStyle.fonts.B_16R
+                    .apply(color: appStyle.colors.textSecondary))
           ]);
     } else {
       for (var i = 0; i < events.length; i++) {
