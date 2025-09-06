@@ -145,10 +145,10 @@ void initTheme(AppInitialization data) {
     default:
       if (brightness == Brightness.dark) {
         appStyle = darkStyle;
-        isLightMode.value = true;
+        isLightMode.value = false;
       } else {
         appStyle = lightStyle;
-        isLightMode.value = false;
+        isLightMode.value = true;
       }
   }
 }
