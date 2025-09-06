@@ -16,6 +16,7 @@ pipeline {
                 }
             }
         }
+
         stage('Decrypt main keys') {
             when {
                 branch 'main'
@@ -40,6 +41,7 @@ pipeline {
                 '''
             }
         }
+
         stage('Clone submodules') {
             steps {
                 script {
@@ -47,6 +49,7 @@ pipeline {
                 }
             }
         }
+
         stage('Modify firka_bundle.dart') {
             when {
                 branch 'main'
@@ -72,11 +75,13 @@ pipeline {
                 }
             }
         }
+
         stage('Build firka') {
             steps {
                 sh 'bash -c "./tools/linux/build_apk.sh ' + env.BRANCH_NAME + '"'
             }
         }
+
         stage('Rename Release APKs') {
             when {
                 branch 'main'
@@ -109,6 +114,7 @@ pipeline {
                 }
             }
         }
+
         stage('Calculate Version Code') {
             steps {
                 script {
@@ -137,6 +143,7 @@ pipeline {
                 }
             }
         }
+
         stage('Upload to F-Droid Debug') {
             when {
                 branch 'dev'
@@ -165,6 +172,17 @@ pipeline {
                 }
             }
         }
+        
+        stage('Publish release artifacts') {
+            when {
+                branch 'main'
+            }
+            steps {
+                archiveArtifacts artifacts: 'firka/build/app/outputs/bundle/release/*.aab', fingerprint: true
+                sh 'rm firka/build/app/outputs/bundle/release/*.aab'
+            }
+        }
+
         stage('Upload to F-Droid Release') {
             when {
                 branch 'main'
