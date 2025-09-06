@@ -102,6 +102,9 @@ if [ "$1" = "main" ]; then
     echo "All builds completed successfully!"
     ls -la build/app/outputs/flutter-apk/
     
+    echo "Building aab for playstore"
+    flutter build appbundle
+    
   else
     echo "$HOME/.flutter_path not found!"
     exit 1
