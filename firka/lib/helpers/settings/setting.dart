@@ -257,22 +257,8 @@ class SettingsStore {
                     ],
                     0,
                     always, () async {
-                  Navigator.of(navigatorKey.currentContext!)
-                      .popUntil((route) => false);
-
                   initTheme(initData);
-
-                  Navigator.push(
-                    navigatorKey.currentContext!,
-                    MaterialPageRoute(
-                        builder: (context) => DefaultAssetBundle(
-                            bundle: FirkaBundle(),
-                            child: HomeScreen(
-                              initData,
-                              false,
-                              key: ValueKey('homeScreen'),
-                            ))),
-                  );
+                  runApp(InitializationScreen());
                 })
               }),
               always),

@@ -38,6 +38,7 @@ import 'l10n/app_localizations_en.dart';
 Isar? isarInit;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 late AppInitialization initData;
+bool initDone = false;
 
 final dio = Dio();
 final isBeta = true;
@@ -154,6 +155,7 @@ void initTheme(AppInitialization data) {
 }
 
 Future<AppInitialization> initializeApp() async {
+  if (initDone) return initData;
   final isar = await initDB();
   final tokenCount = await isar.tokenModels.count();
 
@@ -293,6 +295,7 @@ class InitializationScreen extends StatelessWidget {
 
           assert(snapshot.data != null);
           initData = snapshot.data!;
+          initDone = true;
           var watch = WatchConnectivity();
 
           if (!initData.hasWatchListener) {
