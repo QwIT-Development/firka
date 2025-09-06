@@ -311,7 +311,9 @@ void showLessonBottomSheet(
             "${data.l10n.stats_date}: ${lesson.start.isAfter(y2k) ? lesson.start.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
             "${data.l10n.stats_created_at}: ${lesson.createdAt.isAfter(y2k) ? lesson.createdAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
             "${data.l10n.stats_last_mod}: ${lesson.lastModifiedAt.isAfter(y2k) ? lesson.lastModifiedAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}";
-        statsForNerds = Text(stats, style: appStyle.fonts.B_16R);
+        statsForNerds = Text(stats,
+            style:
+                appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary));
       }
 
       return Stack(
@@ -394,12 +396,14 @@ void showLessonBottomSheet(
                         children: [
                           Text(
                             data.l10n.lesson_subject,
-                            style: appStyle.fonts.H_14px,
+                            style: appStyle.fonts.H_14px
+                                .apply(color: appStyle.colors.textPrimary),
                           ),
                           SizedBox(height: 4),
                           Text(
                             lesson.theme ?? 'N/A',
-                            style: appStyle.fonts.B_16R,
+                            style: appStyle.fonts.B_16R
+                                .apply(color: appStyle.colors.textPrimary),
                           ),
                           SizedBox(height: 4),
                           statsForNerds
