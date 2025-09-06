@@ -203,6 +203,12 @@ Future<AppInitialization> initializeApp() async {
   init.settings = SettingsStore(init.l10n);
   await init.settings.load(init.isar.appSettingsModels);
 
+  var dispatcher = SchedulerBinding.instance.platformDispatcher;
+
+  dispatcher.onPlatformBrightnessChanged = () {
+    initTheme(init);
+  };
+
   resetOldTimeTableCache(isar);
   resetOldHomeworkCache(isar);
 
