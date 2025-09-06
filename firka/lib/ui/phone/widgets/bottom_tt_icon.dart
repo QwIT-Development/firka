@@ -24,7 +24,7 @@ class BottomTimeTableNavIconWidget extends StatelessWidget {
       child: Card(
         color:
             active ? appStyle.colors.buttonSecondaryFill : Colors.transparent,
-        shadowColor: Colors.transparent,
+        shadowColor: active ? appStyle.colors.shadowColor : Colors.transparent,
         child: SizedBox(
             width: 40,
             height: 54,
