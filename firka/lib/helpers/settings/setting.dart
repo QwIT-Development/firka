@@ -201,8 +201,7 @@ class SettingsStore {
                               "pixelized",
                               "mkkp",
                               "fidesz",
-                              "tisza",
-                              "lidl",
+                              "tisza"
                             ],
                             l10n.s_ci_icon_g6: ["xmas1", "xmas2", "xmas3"],
                             l10n.s_ci_icon_g7: [
@@ -347,7 +346,6 @@ class SettingsStore {
       "lgbtq_f": l10n.ic_lgbtq_f,
       "lgbtqp": l10n.ic_lgbtqp,
       "lgbtqp_f": l10n.ic_lgbtqp_f,
-      "lidl": l10n.ic_lidl,
       "mkkp": l10n.ic_mkkp,
       "nuke": l10n.ic_nuke,
       "modern": l10n.ic_modern,
