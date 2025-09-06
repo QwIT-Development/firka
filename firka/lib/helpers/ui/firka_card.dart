@@ -7,6 +7,7 @@ enum Attach { none, bottom, top }
 class FirkaCard extends StatelessWidget {
   final List<Widget> left;
   final List<Widget>? center;
+  final double? height;
   final List<Widget>? right;
   final bool shadow;
   final Widget? extra;
@@ -21,6 +22,7 @@ class FirkaCard extends StatelessWidget {
       this.extra,
       this.attached,
       this.color,
+      this.height,
       super.key});
 
   @override
@@ -34,6 +36,7 @@ class FirkaCard extends StatelessWidget {
     if (extra != null) {
       return SizedBox(
         width: MediaQuery.of(context).size.width,
+        height: height,
         child: Card(
           color: color ?? appStyle.colors.card,
           shadowColor: shadow ? null : Colors.transparent,
@@ -53,7 +56,7 @@ class FirkaCard extends StatelessWidget {
                     : defaultRounding)),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(12.0),
             child: Column(
               children: [
                 Row(
@@ -73,6 +76,7 @@ class FirkaCard extends StatelessWidget {
     } else {
       return SizedBox(
         width: MediaQuery.of(context).size.width,
+        height: height,
         child: Card(
           color: color ?? appStyle.colors.card,
           shadowColor: shadow ? null : Colors.transparent,
@@ -92,7 +96,7 @@ class FirkaCard extends StatelessWidget {
                     : defaultRounding)),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(12.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

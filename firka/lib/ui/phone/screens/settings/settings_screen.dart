@@ -229,36 +229,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
           var k = item.values[i];
 
           if (item.values[item.activeIndex] == k) {
-            widgets.add(FirkaCard(left: [
+            widgets.add(FirkaCard(height: 52 + 12, left: [
               Text(k,
                   style: appStyle.fonts.B_16R
                       .apply(color: appStyle.colors.textPrimary))
             ], right: [
-              Checkbox(
-                  value: true,
-                  fillColor: WidgetStateProperty.resolveWith<Color>(
-                      (Set<WidgetState> states) {
-                    return appStyle.colors.secondary;
-                  }),
-                  onChanged: (_) async {
-                    setState(() {
-                      item.activeIndex = i;
-                    });
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: Checkbox(
+                    value: true,
+                    fillColor: WidgetStateProperty.resolveWith<Color>(
+                        (Set<WidgetState> states) {
+                      return appStyle.colors.secondary;
+                    }),
+                    onChanged: (_) async {
+                      setState(() {
+                        item.activeIndex = i;
+                      });
 
-                    await widget.data.isar.writeTxn(() async {
-                      await item.save(widget.data.isar.appSettingsModels);
-                    });
-                    debugPrint('Settings saved');
-                  })
+                      await widget.data.isar.writeTxn(() async {
+                        await item.save(widget.data.isar.appSettingsModels);
+                      });
+                      debugPrint('Settings saved');
+                    }),
+              ),
+              SizedBox(width: 8),
             ]));
           } else {
             widgets.add(GestureDetector(
-              child: FirkaCard(left: [
+              child: FirkaCard(height: 52 + 12, left: [
                 Text(k,
                     style: appStyle.fonts.B_16R
                         .apply(color: appStyle.colors.textPrimary))
               ], right: [
-                SizedBox(height: 48),
+                SizedBox(height: 16 + 8),
               ]),
               onTap: () async {
                 setState(() {
@@ -380,7 +385,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 Text(
                   settings.appIcons[icon]!,
-                  style: appStyle.fonts.B_12R,
+                  style: appStyle.fonts.B_12R.apply(
+                      color: active
+                          ? appStyle.colors.textPrimary
+                          : appStyle.colors.textSecondary),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -555,7 +563,8 @@ void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
                             Center(
                                 child: Text(
                               setting.title,
-                              style: appStyle.fonts.B_14R,
+                              style: appStyle.fonts.B_14R
+                                  .apply(color: appStyle.colors.textPrimary),
                             )),
                             Padding(
                               padding: const EdgeInsets.symmetric(
