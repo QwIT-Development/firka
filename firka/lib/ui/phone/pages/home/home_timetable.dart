@@ -349,6 +349,11 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                           ),
                           onTap: () async {
                             var newNow = now!.add(Duration(days: 7));
+                            now = newNow;
+                            if (now!.getMonday().getMidnight() ==
+                                timeNow().getMonday().getMidnight()) {
+                              now = timeNow();
+                            }
                             await initForWeek(newNow);
                             setState(() {
                               now = newNow;
