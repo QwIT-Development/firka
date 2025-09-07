@@ -118,7 +118,12 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
     setState(() {
       this.dates = dates;
 
-      setActiveToToday();
+      if (now.getMonday().getMidnight().millisecondsSinceEpoch ==
+          timeNow().getMonday().getMidnight().millisecondsSinceEpoch) {
+        setActiveToToday();
+      } else {
+        active = 0;
+      }
     });
   }
 
