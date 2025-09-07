@@ -43,6 +43,43 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
 
   _HomeTimetableScreen();
 
+  void setActiveToToday() {
+    final todayMid = now!.getMidnight();
+    int idx = dates!.indexWhere((d) =>
+        d.year == todayMid.year &&
+        d.month == todayMid.month &&
+        d.day == todayMid.day);
+
+    if (idx >= 0) {
+      final todaysLessons = lessons?.where((lesson) =>
+          lesson.start.isAfter(todayMid) &&
+          lesson.end.isBefore(todayMid.add(Duration(hours: 23, minutes: 59))));
+
+      if (todaysLessons != null && todaysLessons.isNotEmpty) {
+        final lastLessonToday =
+            todaysLessons.reduce((a, b) => a.end.isAfter(b.end) ? a : b);
+
+        if (now!.isAfter(lastLessonToday.end)) {
+          int nextIdx = idx + 1;
+          if (nextIdx < dates!.length) {
+            active = nextIdx;
+          } else {
+            active = idx;
+          }
+        } else {
+          active = idx;
+        }
+      } else {
+        active = idx;
+      }
+    } else if (now!.isAfter(dates!.last)) {
+      active = dates!.length - 1;
+    } else {
+      idx = dates!.indexWhere((d) => d.isAfter(todayMid));
+      active = idx >= 0 ? idx : 0;
+    }
+  }
+
   Future<void> initForWeek(DateTime now, {bool forceCache = true}) async {
     var monday = now.getMonday().getMidnight();
     var sunday = monday.add(Duration(days: 6));
@@ -80,41 +117,8 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
     if (!mounted) return;
     setState(() {
       this.dates = dates;
-      final todayMid = now.getMidnight();
-      int idx = dates.indexWhere((d) =>
-          d.year == todayMid.year &&
-          d.month == todayMid.month &&
-          d.day == todayMid.day);
 
-      if (idx >= 0) {
-        final todaysLessons = lessons?.where((lesson) =>
-            lesson.start.isAfter(todayMid) &&
-            lesson.end
-                .isBefore(todayMid.add(Duration(hours: 23, minutes: 59))));
-
-        if (todaysLessons != null && todaysLessons.isNotEmpty) {
-          final lastLessonToday =
-              todaysLessons.reduce((a, b) => a.end.isAfter(b.end) ? a : b);
-
-          if (now.isAfter(lastLessonToday.end)) {
-            int nextIdx = idx + 1;
-            if (nextIdx < dates.length) {
-              active = nextIdx;
-            } else {
-              active = idx;
-            }
-          } else {
-            active = idx;
-          }
-        } else {
-          active = idx;
-        }
-      } else if (now.isAfter(dates.last)) {
-        active = dates.length - 1;
-      } else {
-        idx = dates.indexWhere((d) => d.isAfter(todayMid));
-        active = idx >= 0 ? idx : 0;
-      }
+      setActiveToToday();
     });
   }
 
@@ -304,25 +308,32 @@ class _HomeTimetableScreen extends State<HomeTimetableScreen> {
                             });
                           },
                         ),
-                        Row(
-                          children: [
-                            Text(
-                                now!.format(
-                                    widget.data.l10n, FormatMode.yyyymmddwedd),
-                                style: appStyle.fonts.B_14R
-                                    .apply(color: appStyle.colors.textPrimary)),
-                            SizedBox(width: 4),
-                            Text("•",
-                                style: appStyle.fonts.B_16R
-                                    .apply(color: appStyle.colors.accent)),
-                            SizedBox(width: 4),
-                            Text(
-                                now!.isAWeek()
-                                    ? widget.data.l10n.a_week
-                                    : widget.data.l10n.b_week,
-                                style: appStyle.fonts.B_14R
-                                    .apply(color: appStyle.colors.textPrimary)),
-                          ],
+                        GestureDetector(
+                          child: Row(
+                            children: [
+                              Text(
+                                  now!.format(widget.data.l10n,
+                                      FormatMode.yyyymmddwedd),
+                                  style: appStyle.fonts.B_14R.apply(
+                                      color: appStyle.colors.textPrimary)),
+                              SizedBox(width: 4),
+                              Text("•",
+                                  style: appStyle.fonts.B_16R
+                                      .apply(color: appStyle.colors.accent)),
+                              SizedBox(width: 4),
+                              Text(
+                                  now!.isAWeek()
+                                      ? widget.data.l10n.a_week
+                                      : widget.data.l10n.b_week,
+                                  style: appStyle.fonts.B_14R.apply(
+                                      color: appStyle.colors.textPrimary)),
+                            ],
+                          ),
+                          onTap: () {
+                            now = timeNow();
+                            setActiveToToday();
+                            _controller.jumpToPage(active);
+                          },
                         ),
                         GestureDetector(
                           child: FirkaIconWidget(
