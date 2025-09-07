@@ -144,32 +144,14 @@ pipeline {
             }
         }
 
-        stage('Upload to F-Droid Debug') {
+        stage('Publish debug artifacts') {
             when {
-                branch 'dev'
+                not {
+                    branch 'main'
+                }
             }
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'fdroid-ssh', usernameVariable: 'SSH_USER', passwordVariable: 'SSHPASS')]) {
-                        sh '''
-                            SOURCE_FILE="firka/build/app/outputs/flutter-apk/app-debug.apk"
-                            REMOTE_PATH="/home/fdroid/firka-fdroid/repo/app.firka.naplo.debug.apk"                            
-                            export SSHPASS
-                            
-                            sshpass -e scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-                                "$SOURCE_FILE" "$SSH_USER@10.0.0.21:$REMOTE_PATH"
-                            
-                            # Update version code in F-Droid metadata
-                            sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-                                "$SSH_USER@10.0.0.21" \
-                                "sed -i 's/^CurrentVersionCode: .*/CurrentVersionCode: $VERSION_CODE/' /home/fdroid/firka-fdroid/metadata/app.firka.naplo.debug.yml"
-                            
-                            sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-                                "$SSH_USER@10.0.0.21" \
-                                "cd /home/fdroid/firka-fdroid && /run/current-system/sw/bin/fdroid update"
-                        '''
-                    }
-                }
+                archiveArtifacts artifacts: 'firka/build/app/outputs/flutter-apk/app-debug.apk', fingerprint: true
             }
         }
         
