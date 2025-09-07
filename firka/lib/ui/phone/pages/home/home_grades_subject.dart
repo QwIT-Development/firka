@@ -81,7 +81,8 @@ class _HomeGradesSubjectScreen extends State<HomeGradesSubjectScreen> {
         ));
         gradeWidgets.add(Text(
           group.key.format(widget.data.l10n, FormatMode.grades),
-          style: appStyle.fonts.H_14px,
+          style:
+              appStyle.fonts.H_14px.apply(color: appStyle.colors.textPrimary),
         ));
         gradeWidgets.add(SizedBox(
           height: 8,
@@ -106,7 +107,8 @@ class _HomeGradesSubjectScreen extends State<HomeGradesSubjectScreen> {
                               width: MediaQuery.of(context).size.width / 1.45,
                               child: Text(
                                 grade.mode!.description!,
-                                style: appStyle.fonts.B_14R,
+                                style: appStyle.fonts.B_14R
+                                    .apply(color: appStyle.colors.textPrimary),
                               ),
                             )
                           : SizedBox(),
@@ -158,7 +160,8 @@ class _HomeGradesSubjectScreen extends State<HomeGradesSubjectScreen> {
                                       MediaQuery.of(context).size.width / 1.45,
                                   child: Text(
                                     aGrade.subject.name,
-                                    style: appStyle.fonts.H_H2,
+                                    style: appStyle.fonts.H_H2.apply(
+                                        color: appStyle.colors.textPrimary),
                                   ),
                                 ),
                                 Text(
@@ -167,7 +170,8 @@ class _HomeGradesSubjectScreen extends State<HomeGradesSubjectScreen> {
                                   // name isn't stored in the subject, so we need
                                   // to get *a* grade, and then get the teacher's
                                   // name from there :3
-                                  style: appStyle.fonts.B_14R,
+                                  style: appStyle.fonts.B_14R.apply(
+                                      color: appStyle.colors.textPrimary),
                                 )
                               ],
                             ),
