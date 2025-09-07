@@ -154,19 +154,20 @@ class LessonWidget extends StatelessWidget {
       var breakMins = nextLesson!.start.difference(lesson.end).inMinutes;
       var seqSchedule = week.getAllSeqs(lesson);
 
-      if (data.settings
-          .group("settings")
-          .subGroup("timetable_toast")
-          .boolean("breaks")) {
-        if (breakMins > 45) {
-          final breakEnd = lesson.end.add(Duration(minutes: breakMins));
-          final emptyClass = seqSchedule.firstWhereOrNull((lesson2) =>
-              lesson2.start.isAfter(lesson.end) &&
-              lesson2.end.isBefore(breakEnd));
+      if (breakMins > 45) {
+        final breakEnd = lesson.end.add(Duration(minutes: breakMins));
+        final emptyClass = seqSchedule.firstWhereOrNull((lesson2) =>
+            lesson2.start.isAfter(lesson.end) &&
+            lesson2.end.isBefore(breakEnd));
 
-          if (emptyClass != null) {
-            final preBreak = emptyClass.start.difference(lesson.end).inMinutes;
-            final postBreak = breakEnd.difference(emptyClass.end).inMinutes;
+        if (emptyClass != null) {
+          final preBreak = emptyClass.start.difference(lesson.end).inMinutes;
+          final postBreak = breakEnd.difference(emptyClass.end).inMinutes;
+
+          if (data.settings
+              .group("settings")
+              .subGroup("timetable_toast")
+              .boolean("breaks")) {
             elements.add(FirkaCard(
               color: appStyle.colors.cardTranslucent,
               shadow: false,
@@ -182,42 +183,49 @@ class LessonWidget extends StatelessWidget {
                         .apply(color: appStyle.colors.textTertiary))
               ],
             ));
-            elements.add(FirkaCard(
-              left: [
-                Card(
-                  shadowColor: Colors.transparent,
-                  color: appStyle.colors.a15p,
-                  child: Padding(
-                    padding: EdgeInsets.all(4),
-                    child: Text(emptyClass.lessonNumber.toString(),
-                        style: appStyle.fonts.B_12R
-                            .apply(color: appStyle.colors.secondary)),
-                  ),
+          }
+
+          elements.add(FirkaCard(
+            left: [
+              Card(
+                shadowColor: Colors.transparent,
+                color: appStyle.colors.a15p,
+                child: Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Text(emptyClass.lessonNumber.toString(),
+                      style: appStyle.fonts.B_12R
+                          .apply(color: appStyle.colors.secondary)),
                 ),
-                Card(
-                  shadowColor: Colors.transparent,
-                  color: appStyle.colors.a15p,
-                  child: Padding(
-                    padding: EdgeInsetsGeometry.all(4),
-                    child: FirkaIconWidget(
-                        FirkaIconType.majesticonsLocal, 'cupFilled',
-                        color: appStyle.colors.accent, size: 24),
-                  ),
+              ),
+              Card(
+                shadowColor: Colors.transparent,
+                color: appStyle.colors.a15p,
+                child: Padding(
+                  padding: EdgeInsetsGeometry.all(4),
+                  child: FirkaIconWidget(
+                      FirkaIconType.majesticonsLocal, 'cupFilled',
+                      color: appStyle.colors.accent, size: 24),
                 ),
-                SizedBox(width: 8),
-                Text(data.l10n.empty_class,
-                    style: appStyle.fonts.B_16SB
-                        .apply(color: appStyle.colors.textPrimary)),
-              ],
-              right: [
-                Text(
-                    isDismissed
-                        ? data.l10n.class_dismissed
-                        : "${emptyClass.start.toLocal().format(data.l10n, FormatMode.hmm)} - ${emptyClass.end.toLocal().format(data.l10n, FormatMode.hmm)}",
-                    style: appStyle.fonts.B_14R
-                        .apply(color: appStyle.colors.textPrimary))
-              ],
-            ));
+              ),
+              SizedBox(width: 8),
+              Text(data.l10n.empty_class,
+                  style: appStyle.fonts.B_16SB
+                      .apply(color: appStyle.colors.textPrimary)),
+            ],
+            right: [
+              Text(
+                  isDismissed
+                      ? data.l10n.class_dismissed
+                      : "${emptyClass.start.toLocal().format(data.l10n, FormatMode.hmm)} - ${emptyClass.end.toLocal().format(data.l10n, FormatMode.hmm)}",
+                  style: appStyle.fonts.B_14R
+                      .apply(color: appStyle.colors.textPrimary))
+            ],
+          ));
+
+          if (data.settings
+              .group("settings")
+              .subGroup("timetable_toast")
+              .boolean("breaks")) {
             elements.add(FirkaCard(
               color: appStyle.colors.cardTranslucent,
               shadow: false,
@@ -233,24 +241,11 @@ class LessonWidget extends StatelessWidget {
                         .apply(color: appStyle.colors.textTertiary))
               ],
             ));
-          } else {
-            elements.add(FirkaCard(
-              color: appStyle.colors.cardTranslucent,
-              shadow: false,
-              left: [
-                Text(data.l10n.breakTxt,
-                    style: appStyle.fonts.B_14SB
-                        .apply(color: appStyle.colors.textSecondary))
-              ],
-              right: [
-                Text(
-                    "$breakMins ${breakMins == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                    style: appStyle.fonts.B_14R
-                        .apply(color: appStyle.colors.textTertiary))
-              ],
-            ));
           }
-        } else {
+        } else if (data.settings
+            .group("settings")
+            .subGroup("timetable_toast")
+            .boolean("breaks")) {
           elements.add(FirkaCard(
             color: appStyle.colors.cardTranslucent,
             shadow: false,
@@ -267,8 +262,27 @@ class LessonWidget extends StatelessWidget {
             ],
           ));
         }
-        elements.add(SizedBox(height: 4));
+      } else if (data.settings
+          .group("settings")
+          .subGroup("timetable_toast")
+          .boolean("breaks")) {
+        elements.add(FirkaCard(
+          color: appStyle.colors.cardTranslucent,
+          shadow: false,
+          left: [
+            Text(data.l10n.breakTxt,
+                style: appStyle.fonts.B_14SB
+                    .apply(color: appStyle.colors.textSecondary))
+          ],
+          right: [
+            Text(
+                "$breakMins ${breakMins == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
+                style: appStyle.fonts.B_14R
+                    .apply(color: appStyle.colors.textTertiary))
+          ],
+        ));
       }
+      elements.add(SizedBox(height: 4));
     }
 
     return Column(
