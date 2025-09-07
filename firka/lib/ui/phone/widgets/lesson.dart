@@ -146,11 +146,9 @@ class LessonWidget extends StatelessWidget {
                   .apply(color: appStyle.colors.textTertiary))
         ],
       ));
-      elements.add(SizedBox(height: 4));
     }
 
     if (nextLesson != null) {
-      elements.add(SizedBox(height: 4));
       var breakMins = nextLesson!.start.difference(lesson.end).inMinutes;
       var seqSchedule = week.getAllSeqs(lesson);
 
@@ -282,7 +280,6 @@ class LessonWidget extends StatelessWidget {
           ],
         ));
       }
-      elements.add(SizedBox(height: 4));
     }
 
     return Column(
