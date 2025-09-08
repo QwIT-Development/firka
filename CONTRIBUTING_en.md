@@ -5,7 +5,7 @@ and to make a release build you will have to use our custom
 flutter engine.
 The documentation for installing flutter can be found [here](https://docs.flutter.dev/get-started/install).
 
-Instead of downloading the regular flutter zip, download it from [here](https://git.firka.app/firka/flutter/archive/main.zip).
+Instead of downloading the regular flutter zip, clone it from ([https://git.firka.app/firka/flutter/](https://git.firka.app/firka/flutter/)).
 
 # Brotli
 
