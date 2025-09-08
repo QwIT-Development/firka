@@ -4,6 +4,7 @@ import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../../helpers/api/model/test.dart';
@@ -56,27 +57,41 @@ class LessonWidget extends StatelessWidget {
             : appStyle.colors.card,
         shadow: !isDismissed,
         left: [
-          Card(
-            // TODO: improve this to match design
-            shadowColor: Colors.transparent,
-            color: bgColor,
-            child: Padding(
-              padding: EdgeInsets.all(4),
-              child: Text(lessonNo.toString(),
-                  style: appStyle.fonts.B_12R.apply(color: secondary)),
+          SizedBox(
+            width: 18,
+            height: 18,
+            child: Stack(
+              children: [
+                SvgPicture.asset(
+                  "assets/icons/subtract.svg",
+                  color: bgColor,
+                  width: 18,
+                  height: 18,
+                ),
+                Padding(
+                  padding: EdgeInsets.only(left: 5),
+                  child: Text(lessonNo.toString(),
+                      style: appStyle.fonts.B_12R.apply(color: secondary)),
+                )
+              ],
             ),
           ),
-          Card(
-            shadowColor: Colors.transparent,
-            color: bgColor,
-            child: Padding(
-              padding: EdgeInsetsGeometry.all(4),
-              child: ClassIconWidget(
-                color: accent,
-                size: 20,
-                uid: lesson.uid,
-                className: lesson.name,
-                category: lesson.subject?.name ?? '',
+          Transform.translate(
+            offset: Offset(-4, 0),
+            child: Card(
+              shadowColor: Colors.transparent,
+              color: bgColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: EdgeInsetsGeometry.all(4),
+                child: ClassIconWidget(
+                  color: accent,
+                  size: 20,
+                  uid: lesson.uid,
+                  className: lesson.name,
+                  category: lesson.subject?.name ?? '',
+                ),
               ),
             ),
           ),
@@ -185,24 +200,38 @@ class LessonWidget extends StatelessWidget {
 
           elements.add(FirkaCard(
             left: [
-              Card(
-                shadowColor: Colors.transparent,
-                color: appStyle.colors.a15p,
-                child: Padding(
-                  padding: EdgeInsets.all(4),
-                  child: Text(emptyClass.lessonNumber.toString(),
-                      style: appStyle.fonts.B_12R
-                          .apply(color: appStyle.colors.secondary)),
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: Stack(
+                  children: [
+                    SvgPicture.asset(
+                      "assets/icons/subtract.svg",
+                      color: bgColor,
+                      width: 18,
+                      height: 18,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(left: 5),
+                      child: Text(lessonNo.toString(),
+                          style: appStyle.fonts.B_12R.apply(color: secondary)),
+                    )
+                  ],
                 ),
               ),
-              Card(
-                shadowColor: Colors.transparent,
-                color: appStyle.colors.a15p,
-                child: Padding(
-                  padding: EdgeInsetsGeometry.all(4),
-                  child: FirkaIconWidget(
-                      FirkaIconType.majesticonsLocal, 'cupFilled',
-                      color: appStyle.colors.accent, size: 24),
+              Transform.translate(
+                offset: Offset(-4, 0),
+                child: Card(
+                  shadowColor: Colors.transparent,
+                  color: bgColor,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: EdgeInsetsGeometry.all(4),
+                    child: FirkaIconWidget(
+                        FirkaIconType.majesticonsLocal, 'cupFilled',
+                        color: appStyle.colors.accent, size: 24),
+                  ),
                 ),
               ),
               SizedBox(width: 8),
@@ -350,28 +379,42 @@ void showLessonBottomSheet(
                   children: [
                     Row(
                       children: [
-                        Card(
-                          // TODO: improve this to match design
-                          shadowColor: Colors.transparent,
-                          color: bgColor,
-                          child: Padding(
-                            padding: EdgeInsets.all(4),
-                            child: Text(lessonNo.toString(),
-                                style: appStyle.fonts.B_12R
-                                    .apply(color: secondary)),
+                        SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: Stack(
+                            children: [
+                              SvgPicture.asset(
+                                "assets/icons/subtract.svg",
+                                color: bgColor,
+                                width: 18,
+                                height: 18,
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 5),
+                                child: Text(lessonNo.toString(),
+                                    style: appStyle.fonts.B_12R
+                                        .apply(color: secondary)),
+                              )
+                            ],
                           ),
                         ),
-                        Card(
-                          shadowColor: Colors.transparent,
-                          color: bgColor,
-                          child: Padding(
-                            padding: EdgeInsetsGeometry.all(6),
-                            child: ClassIconWidget(
-                              color: accent,
-                              size: 20,
-                              uid: lesson.uid,
-                              className: lesson.name,
-                              category: lesson.subject?.name ?? '',
+                        Transform.translate(
+                          offset: Offset(-4, 0),
+                          child: Card(
+                            shadowColor: Colors.transparent,
+                            color: bgColor,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                            child: Padding(
+                              padding: EdgeInsetsGeometry.all(4),
+                              child: ClassIconWidget(
+                                color: accent,
+                                size: 20,
+                                uid: lesson.uid,
+                                className: lesson.name,
+                                category: lesson.subject?.name ?? '',
+                              ),
                             ),
                           ),
                         ),
