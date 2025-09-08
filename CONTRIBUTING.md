@@ -4,7 +4,7 @@ A firka androidra való lebuildeléséhez kötelező a saját Flutter fork haszn
 
 A Flutter telepítéséhez a dokumentáció [itt](https://docs.flutter.dev/get-started/install) található.
 
-A Flutter zip letöltése helyett [a custom engine zip-et töltsd le](https://git.firka.app/firka/flutter/archive/main.zip)
+A Flutter zip letöltése helyett a custom engine-t cloneold le ([https://git.firka.app/firka/flutter/](https://git.firka.app/firka/flutter/))
 
 # Brotli
 
