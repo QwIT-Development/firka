@@ -144,6 +144,7 @@ class SettingsStore {
                     SettingsHeader(0, l10n.s_customization, always),
                 "icon_header":
                     SettingsHeaderSmall(0, l10n.s_c_icon_header, always),
+                "icon_header_preview_padding": SettingsPadding(0, 16, always),
                 "icon_preview": SettingsAppIconPreview(0, always),
                 "icon_picker": SettingsSubGroup(
                     0,
@@ -229,6 +230,7 @@ class SettingsStore {
                           always),
                     }),
                     isAndroid),
+                "icon_theme_padding": SettingsPadding(0, 16, always),
                 "theme_header":
                     SettingsHeaderSmall(0, l10n.s_c_theme_header, always),
                 "theme": SettingsItemsRadio(
