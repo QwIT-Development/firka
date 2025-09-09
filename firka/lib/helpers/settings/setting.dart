@@ -274,6 +274,7 @@ class SettingsStore {
               "wrenchSolid",
               'Developer',
               LinkedHashMap.of({
+                "back": SettingsBackHeader(0, l10n.s_settings, always),
                 "stats_for_nerds": SettingsBoolean(
                     statsForNerds,
                     FirkaIconType.majesticonsLocal,
