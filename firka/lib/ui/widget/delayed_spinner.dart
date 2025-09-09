@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../helpers/firka_state.dart';
 import '../model/style.dart';
 
 class DelayedSpinnerWidget extends StatefulWidget {
@@ -11,7 +12,7 @@ class DelayedSpinnerWidget extends StatefulWidget {
   State<DelayedSpinnerWidget> createState() => _DelayedSpinner();
 }
 
-class _DelayedSpinner extends State<DelayedSpinnerWidget> {
+class _DelayedSpinner extends FirkaState<DelayedSpinnerWidget> {
   Timer? timer;
   bool showSpinner = false;
 

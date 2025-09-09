@@ -11,6 +11,7 @@ import '../../../../helpers/api/model/grade.dart';
 import '../../../../helpers/api/model/subject.dart';
 import '../../../../helpers/api/model/timetable.dart';
 import '../../../../helpers/debug_helper.dart';
+import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../model/style.dart';
@@ -32,7 +33,7 @@ class HomeGradesScreen extends StatefulWidget {
 
 String activeSubjectUid = "";
 
-class _HomeGradesScreen extends State<HomeGradesScreen> {
+class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
   ApiResponse<List<Grade>>? grades;
   ApiResponse<List<Lesson>>? week;
   ApiResponse<List<ClassGroup>>? classGroups;

@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../../../helpers/firka_bundle.dart';
+import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/settings/setting.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -24,7 +25,7 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends FirkaState<SettingsScreen> {
   _SettingsScreenState();
 
   bool settingAppIcon = false;

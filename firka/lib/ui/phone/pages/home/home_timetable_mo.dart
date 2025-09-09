@@ -12,6 +12,7 @@ import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
 
 import '../../../../helpers/api/model/test.dart';
+import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../widget/firka_icon.dart';
@@ -34,7 +35,8 @@ class HomeTimetableMonthlyScreen extends StatefulWidget {
 
 enum ActiveFilter { lessonNo, tests, omissions }
 
-class _HomeTimetableMonthlyScreen extends State<HomeTimetableMonthlyScreen> {
+class _HomeTimetableMonthlyScreen
+    extends FirkaState<HomeTimetableMonthlyScreen> {
   List<Lesson>? lessons;
   List<Test>? tests;
   List<DateTime>? dates;
