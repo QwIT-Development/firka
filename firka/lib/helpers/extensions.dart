@@ -118,23 +118,25 @@ extension DateExtension on DateTime {
 
         return format(l10n, FormatMode.yearly);
       case FormatMode.yearly:
-        return DateFormat('MMMM dd').format(this);
+        return DateFormat('MMMM dd', l10n.localeName).format(this);
       case FormatMode.hmm:
-        return DateFormat('H:mm').format(this);
+        return DateFormat('H:mm', l10n.localeName).format(this);
       case FormatMode.welcome:
-        return DateFormat('EEE, MMM d').format(this);
+        return DateFormat('EEE, MMM d', l10n.localeName).format(this);
       case FormatMode.d:
-        return DateFormat('d').format(this);
+        return DateFormat('d', l10n.localeName).format(this);
       case FormatMode.da:
-        return DateFormat('MMMMEEEEd').format(this).substring(0, 2);
+        final s =
+            DateFormat('EEEE', l10n.localeName).format(this).substring(0, 2);
+        return s[0].toUpperCase() + s[1];
       case FormatMode.dd:
-        return DateFormat('dd').format(this);
+        return DateFormat('dd', l10n.localeName).format(this);
       case FormatMode.yyyymmddwedd:
-        return "${DateFormat('yyyy MMM. dd').format(weekStart).toLowerCase()}-${DateFormat('dd').format(weekEnd)}";
+        return "${DateFormat('yyyy MMM. dd', l10n.localeName).format(weekStart).toLowerCase()}-${DateFormat('dd', l10n.localeName).format(weekEnd)}";
       case FormatMode.yyyymmmm:
-        return DateFormat('yyyy MMMM').format(this);
+        return DateFormat('yyyy MMMM', l10n.localeName).format(this);
       case FormatMode.yyyymmddhhmmss:
-        return DateFormat('yyyy-MM-dd hh:mm:ss').format(this);
+        return DateFormat('yyyy-MM-dd hh:mm:ss', l10n.localeName).format(this);
     }
   }
 
