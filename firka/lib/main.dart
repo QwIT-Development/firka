@@ -208,6 +208,7 @@ Future<AppInitialization> initializeApp() async {
   var dispatcher = SchedulerBinding.instance.platformDispatcher;
 
   dispatcher.onPlatformBrightnessChanged = () {
+    globalUpdate.update();
     initTheme(init);
   };
 
