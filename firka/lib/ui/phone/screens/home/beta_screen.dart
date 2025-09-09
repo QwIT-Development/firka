@@ -8,6 +8,7 @@ import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../helpers/firka_state.dart';
 import '../../../../main.dart';
 
 class BetaScreen extends StatefulWidget {
@@ -19,7 +20,7 @@ class BetaScreen extends StatefulWidget {
   State<BetaScreen> createState() => _BetaScreenState();
 }
 
-class _BetaScreenState extends State<BetaScreen> {
+class _BetaScreenState extends FirkaState<BetaScreen> {
   late Timer timer;
   int counter = 5;
 
@@ -85,7 +86,9 @@ class _BetaScreenState extends State<BetaScreen> {
                   ),
                   GestureDetector(
                     child: FirkaButton(
-                      text: counter == 0 ? widget.data.l10n.okay : "${widget.data.l10n.okay} ($counter)",
+                      text: counter == 0
+                          ? widget.data.l10n.okay
+                          : "${widget.data.l10n.okay} ($counter)",
                       bgColor: counter == 0
                           ? appStyle.colors.accent
                           : appStyle.colors.secondary,

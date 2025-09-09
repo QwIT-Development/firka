@@ -26,6 +26,7 @@ import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 import '../../../../helpers/db/widget.dart';
 import '../../../../helpers/debug_helper.dart';
 import '../../../../helpers/firka_bundle.dart';
+import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/image_preloader.dart';
 import '../../../widget/delayed_spinner.dart';
 import '../../../widget/firka_icon.dart';
@@ -55,7 +56,7 @@ bool _fetching = true;
 bool _prefetched = false;
 bool canPop = true;
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends FirkaState<HomeScreen> {
   _HomeScreenState();
 
   HomePage page = HomePage.home;

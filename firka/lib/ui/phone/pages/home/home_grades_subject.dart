@@ -5,6 +5,7 @@ import 'package:firka/helpers/ui/grade.dart';
 import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../model/style.dart';
@@ -23,7 +24,7 @@ class HomeGradesSubjectScreen extends StatefulWidget {
   State<StatefulWidget> createState() => _HomeGradesSubjectScreen();
 }
 
-class _HomeGradesSubjectScreen extends State<HomeGradesSubjectScreen> {
+class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
   Iterable<Grade>? grades;
 
   @override

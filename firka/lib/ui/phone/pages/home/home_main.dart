@@ -13,6 +13,7 @@ import '../../../../helpers/api/model/student.dart';
 import '../../../../helpers/api/model/test.dart';
 import '../../../../helpers/api/model/timetable.dart';
 import '../../../../helpers/debug_helper.dart';
+import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/ui/firka_card.dart';
 import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
@@ -33,7 +34,7 @@ class HomeMainScreen extends StatefulWidget {
   State<HomeMainScreen> createState() => _HomeMainScreen();
 }
 
-class _HomeMainScreen extends State<HomeMainScreen> {
+class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   _HomeMainScreen();
 
   DateTime now = timeNow();

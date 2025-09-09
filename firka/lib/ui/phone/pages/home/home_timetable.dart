@@ -12,6 +12,7 @@ import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
 
 import '../../../../helpers/api/consts.dart';
+import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../widget/firka_icon.dart';
@@ -32,7 +33,7 @@ class HomeTimetableScreen extends StatefulWidget {
   State<HomeTimetableScreen> createState() => _HomeTimetableScreen();
 }
 
-class _HomeTimetableScreen extends State<HomeTimetableScreen> {
+class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen> {
   List<Lesson>? lessons;
   List<Lesson>? events;
   List<Test>? tests;

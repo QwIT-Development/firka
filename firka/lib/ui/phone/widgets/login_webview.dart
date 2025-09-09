@@ -7,6 +7,7 @@ import '../../../helpers/api/client/kreta_client.dart';
 import '../../../helpers/api/consts.dart';
 import '../../../helpers/api/token_grant.dart';
 import '../../../helpers/db/models/token_model.dart';
+import '../../../helpers/firka_state.dart';
 import '../screens/home/home_screen.dart';
 
 class LoginWebviewWidget extends StatefulWidget {
@@ -21,7 +22,7 @@ class LoginWebviewWidget extends StatefulWidget {
   State<LoginWebviewWidget> createState() => _LoginWebviewWidgetState();
 }
 
-class _LoginWebviewWidgetState extends State<LoginWebviewWidget> {
+class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
   late WebViewController _webViewController;
 
   @override

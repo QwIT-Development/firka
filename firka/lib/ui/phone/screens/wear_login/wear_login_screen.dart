@@ -8,6 +8,7 @@ import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../helpers/api/token_grant.dart';
+import '../../../../helpers/firka_state.dart';
 import '../home/home_screen.dart';
 import '../login/login_screen.dart';
 
@@ -20,7 +21,7 @@ class WearLoginScreen extends StatefulWidget {
   State<WearLoginScreen> createState() => _WearLoginScreenState();
 }
 
-class _WearLoginScreenState extends State<WearLoginScreen> {
+class _WearLoginScreenState extends FirkaState<WearLoginScreen> {
   late WebViewController _webViewController;
 
   _WearLoginScreenState();

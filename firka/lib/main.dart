@@ -256,6 +256,7 @@ void main() async {
 }
 
 final ValueNotifier<bool> isLightMode = ValueNotifier<bool>(true);
+final UpdateNotifier globalUpdate = UpdateNotifier();
 
 class InitializationScreen extends StatelessWidget {
   InitializationScreen({super.key});
