@@ -213,7 +213,7 @@ class LessonWidget extends StatelessWidget {
                     ),
                     Padding(
                       padding: EdgeInsets.only(left: 5),
-                      child: Text(lessonNo.toString(),
+                      child: Text(emptyClass.lessonNumber.toString(),
                           style: appStyle.fonts.B_12R.apply(color: secondary)),
                     )
                   ],
