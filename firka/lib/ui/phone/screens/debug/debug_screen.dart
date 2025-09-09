@@ -13,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../helpers/debug_helper.dart';
 import '../../../../helpers/firka_bundle.dart';
+import '../../../../helpers/firka_state.dart';
 import '../../../widget/firka_icon.dart';
 
 class DebugScreen extends StatefulWidget {
@@ -24,7 +25,7 @@ class DebugScreen extends StatefulWidget {
   State<DebugScreen> createState() => _DebugScreen();
 }
 
-class _DebugScreen extends State<DebugScreen> {
+class _DebugScreen extends FirkaState<DebugScreen> {
   _DebugScreen();
 
   late ImagePicker _picker;

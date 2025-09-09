@@ -7,6 +7,7 @@ import 'package:firka/ui/phone/widgets/login_webview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/image_preloader.dart';
 import '../../../model/style.dart';
 import '../../../widget/delayed_spinner.dart';
@@ -20,7 +21,7 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends FirkaState<LoginScreen> {
   late LoginWebviewWidget _loginWebView;
   bool _preloadDone = false;
 
