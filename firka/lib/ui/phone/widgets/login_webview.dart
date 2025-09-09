@@ -36,7 +36,6 @@ class _LoginWebviewWidgetState extends State<LoginWebviewWidget> {
     }
 
     _webViewController = WebViewController()
-      ..setUserAgent(Constants.webviewUserAgent)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadRequest(Uri.parse(loginUrl))
       ..setNavigationDelegate(NavigationDelegate(

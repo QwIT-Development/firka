@@ -1,9 +1,10 @@
 import 'dart:convert';
-import 'dart:math';
 import 'dart:io';
+import 'dart:math';
+import 'dart:typed_data';
+
 import 'package:crypto/crypto.dart';
 import 'package:firka/main.dart';
-import 'dart:typed_data';
 
 class Constants {
   static String get clientId {
@@ -13,15 +14,13 @@ class Constants {
       return "kreta-ellenorzo-student-mobile-ios";
     }
   }
+
   static const applicationId = "hu.ekreta.student";
   static const applicationVersion = "5.7.0";
   static String userAgent = "$applicationId/$applicationVersion"
       "/${initData.devInfo.model}"
       "/${initData.devInfo.versionRelease}"
       "/${initData.devInfo.versionSdkInt}";
-  static const webviewUserAgent = "Mozilla/5.0 (Linux; Android 10; K) "
-      "AppleWebKit/537.36 (KHTML, like Gecko) "
-      "Chrome/139.0.0.0 Mobile Safari/537.36";
 }
 
 class OmissionConsts {
@@ -53,11 +52,11 @@ class KretaEndpoints {
     final random = Random.secure();
     final bytes = Uint8List(length);
     for (int i = 0; i < length; i++) {
-        bytes[i] = random.nextInt(256);
+      bytes[i] = random.nextInt(256);
     }
     return base64Url.encode(bytes).replaceAll('=', '');
-
   }
+
   static String kreta(String iss) {
     if (iss == "firka-test") {
       return kretaBase;
@@ -70,7 +69,7 @@ class KretaEndpoints {
   static final String _codeChallenge = _generateCodeChallenge(codeVerifier);
   static final String stateOrNonce = generateStateOrNonce();
   static final String clientId = Constants.clientId;
-  
+
   static String kretaIdp = "https://idp.e-kreta.hu";
   static String kretaLoginUrl =
       "$kretaIdp/Account/Login?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fredirect_uri%3Dhttps%253A%252F%252Fmobil.e-kreta.hu%252Fellenorzo-student%252Fprod%252Foauthredirect%26client_id%3D$clientId%26response_type%3Dcode%26prompt%3Dlogin%26state%3D$stateOrNonce%26nonce%3D$stateOrNonce%26scope%3Dopenid%2520email%2520offline_access%2520kreta-ellenorzo-webapi.public%2520kreta-eugyintezes-webapi.public%2520kreta-fileservice-webapi.public%2520kreta-mobile-global-webapi.public%2520kreta-dkt-webapi.public%2520kreta-ier-webapi.public%26code_challenge%3D$_codeChallenge%26code_challenge_method%3DS256%26suppressed_prompt%3Dlogin";
