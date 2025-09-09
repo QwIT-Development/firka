@@ -17,10 +17,17 @@ class Constants {
 
   static const applicationId = "hu.ekreta.student";
   static const applicationVersion = "5.7.0";
-  static String userAgent = "$applicationId/$applicationVersion"
-      "/${initData.devInfo.model}"
-      "/${initData.devInfo.versionRelease}"
-      "/${initData.devInfo.versionSdkInt}";
+
+  static String get userAgent {
+    if (Platform.isAndroid) {
+      return "$applicationId/$applicationVersion"
+          "/${initData.devInfo.model}"
+          "/${initData.devInfo.versionRelease}"
+          "/${initData.devInfo.versionSdkInt}";
+    } else {
+      return "eKretaStudent/264745 CFNetwork/1494.0.7 Darwin/23.4.0";
+    }
+  }
 }
 
 class OmissionConsts {
