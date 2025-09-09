@@ -94,6 +94,7 @@ flutter:
     - assets/images/logos/colored_logo.webp
     - assets/images/logos/dave.svg
     - assets/images/carousel/
+    - assets/images/carousel_dark/
     - assets/images/icons/
     - assets/images/background.webp
     - assets/images/wear_pair.svg
