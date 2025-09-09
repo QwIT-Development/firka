@@ -41,6 +41,10 @@ class _LoginScreenState extends State<LoginScreen> {
       "assets/images/carousel/slide2.webp",
       "assets/images/carousel/slide3.webp",
       "assets/images/carousel/slide4.webp",
+      "assets/images/carousel_dark/slide1.webp",
+      "assets/images/carousel_dark/slide2.webp",
+      "assets/images/carousel_dark/slide3.webp",
+      "assets/images/carousel_dark/slide4.webp",
       "assets/images/logos/colored_logo.webp",
     ];
 
@@ -79,13 +83,15 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
 
+    final carousel = isLightMode.value ? "carousel" : "carousel_dark";
+
     final paddingWidthHorizontal = MediaQuery.of(context).size.width -
         MediaQuery.of(context).size.width * 0.95;
     List<Map<String, Object>> slides = [
       {
         'title': widget.data.l10n.title1,
         'subtitle': widget.data.l10n.subtitle1,
-        'picture': 'assets/images/carousel/slide1.webp',
+        'picture': 'assets/images/$carousel/slide1.webp',
         'background': 'assets/images/carousel/slide1_background.webp',
         'foreground': '',
         'rotation': 180.00,
@@ -97,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
       {
         'title': widget.data.l10n.title2,
         'subtitle': widget.data.l10n.subtitle2,
-        'picture': 'assets/images/carousel/slide2.webp',
+        'picture': 'assets/images/$carousel/slide2.webp',
         'background': 'assets/images/carousel/slide2_background.webp',
         'foreground': '',
         'rotation': 180.00,
@@ -109,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
       {
         'title': widget.data.l10n.title3,
         'subtitle': widget.data.l10n.subtitle3,
-        'picture': 'assets/images/carousel/slide3.webp',
+        'picture': 'assets/images/$carousel/slide3.webp',
         'background': '',
         'foreground': 'assets/images/carousel/slide3_foreground.webp',
         'rotation': 180.0,
@@ -120,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
       {
         'title': widget.data.l10n.title4,
         'subtitle': widget.data.l10n.subtitle4,
-        'picture': 'assets/images/carousel/slide4.webp',
+        'picture': 'assets/images/$carousel/slide4.webp',
         'background': 'assets/images/carousel/slide4_background.webp',
         'foreground': '',
         'rotation': 180.00,
