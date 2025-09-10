@@ -6,6 +6,7 @@ import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/settings/setting.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
+import 'package:firka/ui/phone/widgets/bubble_test.dart';
 import 'package:firka/ui/widget/delayed_spinner.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
@@ -179,13 +180,6 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen> {
       for (var i = 0; i < dates!.length; i++) {
         final date = dates![i];
 
-        ttWidgets.add(BottomTimeTableNavIconWidget(widget.data.l10n, () {
-          setState(() {
-            _controller.jumpToPage(i);
-            active = i;
-          });
-        }, active == i, date));
-
         final lessonsOnDate = lessons!
             .where((lesson) =>
                 lesson.start.isAfter(date) &&
@@ -201,6 +195,31 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen> {
                 test.date.isAfter(date.subtract(Duration(seconds: 1))) &&
                 test.date.isBefore(date.add(Duration(hours: 23, minutes: 59))))
             .toList();
+
+        if (testsOnDate.isNotEmpty) {
+          debugPrint(testsOnDate.toString());
+          ttWidgets.add(Stack(
+            children: [
+              BottomTimeTableNavIconWidget(widget.data.l10n, () {
+                setState(() {
+                  _controller.jumpToPage(i);
+                  active = i;
+                });
+              }, active == i, date),
+              Transform.translate(
+                offset: Offset(38, -10),
+                child: BubbleTest(),
+              ),
+            ],
+          ));
+        } else {
+          ttWidgets.add(BottomTimeTableNavIconWidget(widget.data.l10n, () {
+            setState(() {
+              _controller.jumpToPage(i);
+              active = i;
+            });
+          }, active == i, date));
+        }
 
         ttDays.add(TimeTableDayWidget(widget.data, date, lessons!,
             lessonsOnDate, eventsOnDate, testsOnDate));
