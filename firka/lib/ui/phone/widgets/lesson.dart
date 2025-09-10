@@ -109,7 +109,7 @@ class LessonWidget extends StatelessWidget {
               ]),
             ),
           ),
-          SizedBox(width: 8),
+          SizedBox(width: !showTests && test != null ? 16 : 8),
           Text(lesson.subject?.name ?? "N/A",
               style: appStyle.fonts.B_16SB
                   .apply(color: appStyle.colors.textPrimary)),
