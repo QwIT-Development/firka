@@ -158,7 +158,8 @@ extension DateExtension on DateTime {
         hours: hour,
         minutes: minute,
         seconds: second,
-        milliseconds: millisecond));
+        milliseconds: millisecond,
+        microseconds: microsecond));
   }
 
   Cycle getDayCycle() {
