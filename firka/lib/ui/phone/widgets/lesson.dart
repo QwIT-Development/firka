@@ -9,6 +9,7 @@ import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../../helpers/api/model/test.dart';
 import '../../../helpers/api/model/timetable.dart';
+import '../../../helpers/debug_helper.dart';
 import '../../widget/class_icon.dart';
 import '../../widget/firka_icon.dart';
 import 'bubble_test.dart';
@@ -32,8 +33,12 @@ class LessonWidget extends StatelessWidget {
         .subGroup("timetable_toast")
         .boolean("tests_and_homework");
 
-    var isSubstituted = lesson.substituteTeacher != null;
-    var isDismissed = lesson.type.name == "UresOra";
+    final isSubstituted = lesson.substituteTeacher != null;
+    final isDismissed = lesson.type.name == "UresOra";
+
+    final showBreak =
+        timeNow().isAfter(lesson.start) && timeNow().isBefore(lesson.end) ||
+            lesson.start.getMidnight() != timeNow().getMidnight();
 
     var accent = appStyle.colors.accent;
     var secondary = appStyle.colors.secondary;
@@ -188,9 +193,10 @@ class LessonWidget extends StatelessWidget {
           final postBreak = breakEnd.difference(emptyClass.end).inMinutes;
 
           if (data.settings
-              .group("settings")
-              .subGroup("timetable_toast")
-              .boolean("breaks")) {
+                  .group("settings")
+                  .subGroup("timetable_toast")
+                  .boolean("breaks") &&
+              showBreak) {
             elements.add(FirkaCard(
               color: appStyle.colors.cardTranslucent,
               shadow: false,
@@ -260,9 +266,10 @@ class LessonWidget extends StatelessWidget {
           ));
 
           if (data.settings
-              .group("settings")
-              .subGroup("timetable_toast")
-              .boolean("breaks")) {
+                  .group("settings")
+                  .subGroup("timetable_toast")
+                  .boolean("breaks") &&
+              showBreak) {
             elements.add(FirkaCard(
               color: appStyle.colors.cardTranslucent,
               shadow: false,
@@ -280,9 +287,10 @@ class LessonWidget extends StatelessWidget {
             ));
           }
         } else if (data.settings
-            .group("settings")
-            .subGroup("timetable_toast")
-            .boolean("breaks")) {
+                .group("settings")
+                .subGroup("timetable_toast")
+                .boolean("breaks") &&
+            showBreak) {
           elements.add(FirkaCard(
             color: appStyle.colors.cardTranslucent,
             shadow: false,
@@ -300,9 +308,10 @@ class LessonWidget extends StatelessWidget {
           ));
         }
       } else if (data.settings
-          .group("settings")
-          .subGroup("timetable_toast")
-          .boolean("breaks")) {
+              .group("settings")
+              .subGroup("timetable_toast")
+              .boolean("breaks") &&
+          showBreak) {
         elements.add(FirkaCard(
           color: appStyle.colors.cardTranslucent,
           shadow: false,
