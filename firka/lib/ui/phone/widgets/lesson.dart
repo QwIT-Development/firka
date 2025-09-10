@@ -11,6 +11,7 @@ import '../../../helpers/api/model/test.dart';
 import '../../../helpers/api/model/timetable.dart';
 import '../../widget/class_icon.dart';
 import '../../widget/firka_icon.dart';
+import 'bubble_test.dart';
 
 class LessonWidget extends StatelessWidget {
   final AppInitialization data;
@@ -26,6 +27,11 @@ class LessonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showTests = data.settings
+        .group("settings")
+        .subGroup("timetable_toast")
+        .boolean("tests_and_homework");
+
     var isSubstituted = lesson.substituteTeacher != null;
     var isDismissed = lesson.type.name == "UresOra";
 
@@ -83,16 +89,24 @@ class LessonWidget extends StatelessWidget {
               color: bgColor,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: EdgeInsetsGeometry.all(4),
-                child: ClassIconWidget(
-                  color: accent,
-                  size: 20,
-                  uid: lesson.uid,
-                  className: lesson.name,
-                  category: lesson.subject?.name ?? '',
+              child: Stack(children: [
+                Padding(
+                  padding: EdgeInsetsGeometry.all(4),
+                  child: ClassIconWidget(
+                    color: accent,
+                    size: 20,
+                    uid: lesson.uid,
+                    className: lesson.name,
+                    category: lesson.subject?.name ?? '',
+                  ),
                 ),
-              ),
+                !showTests && test != null
+                    ? Transform.translate(
+                        offset: Offset(26, -18),
+                        child: BubbleTest(),
+                      )
+                    : SizedBox(),
+              ]),
             ),
           ),
           SizedBox(width: 8),
@@ -138,11 +152,7 @@ class LessonWidget extends StatelessWidget {
       ));
     }
 
-    if (test != null &&
-        data.settings
-            .group("settings")
-            .subGroup("timetable_toast")
-            .boolean("tests_and_homework")) {
+    if (test != null && showTests) {
       elements.add(FirkaCard(
         left: [
           FirkaIconWidget(
