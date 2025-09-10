@@ -21,7 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
-import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
+import 'package:smart_scroll/smart_scroll.dart';
 
 import '../../../../helpers/db/widget.dart';
 import '../../../../helpers/debug_helper.dart';
@@ -375,189 +375,192 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     }
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    return SmartRefresher(
-        controller: _refreshController,
-        onLoading: _onLoading,
-        onRefresh: _onRefresh,
-        header: MaterialClassicHeader(
-          color: appStyle.colors.accent,
-          backgroundColor: appStyle.colors.background,
-          offset: 24,
-        ),
-        physics: ClampingScrollPhysics(),
-        child: PopScope(
-          canPop: canPop,
-          child: Scaffold(
-            backgroundColor: appStyle.colors.background,
-            body: SafeArea(
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height,
-                child: Stack(
+    return PopScope(
+      canPop: canPop,
+      child: Scaffold(
+        backgroundColor: appStyle.colors.background,
+        body: SafeArea(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height,
+            child: Stack(
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: PageView(
-                            controller: _pageController,
-                            onPageChanged: (index) {
-                              HapticFeedback.heavyImpact();
-
-                              if (forcedNav > 0) {
-                                forcedNav--;
-
-                                if (previousPages.isEmpty) {
-                                  canPop = true;
-                                }
-                                return;
-                              }
-
-                              setState(() {
-                                previousPages.add(page);
-                                canPop = false;
-                                page = HomePage.values[index];
-                              });
-                            },
-                            children: [
-                              HomeSubPage(
-                                HomePage.home,
-                                widget.data,
-                                widget.updateNotifier,
-                                widget.updateFinishedNotifier,
+                    Expanded(
+                      child: RefreshConfiguration(
+                          springDescription: SpringDescription(
+                              mass: 1.9, stiffness: 85, damping: 16),
+                          child: SmartScroll(
+                              controller: _refreshController,
+                              onLoading: _onLoading,
+                              onRefresh: _onRefresh,
+                              header: MaterialClassicHeader(
+                                color: appStyle.colors.accent,
+                                backgroundColor: appStyle.colors.background,
+                                offset: 24,
                               ),
-                              HomeSubPage(
-                                HomePage.grades,
-                                widget.data,
-                                widget.updateNotifier,
-                                widget.updateFinishedNotifier,
-                              ),
-                              HomeSubPage(
-                                HomePage.timetable,
-                                widget.data,
-                                widget.updateNotifier,
-                                widget.updateFinishedNotifier,
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                appStyle.colors.background,
-                                appStyle.colors.background
-                                    .withValues(alpha: 0.0),
-                              ],
-                              stops: const [0.0, 1.0],
-                            ),
-                          ),
-                          width: MediaQuery.of(context).size.width,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 55, vertical: 15),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                // Home Button
-                                BottomNavIconWidget(() {
-                                  if (page != HomePage.home) {
-                                    _pageController.animateToPage(
-                                      HomePage.home.index,
-                                      duration: Duration(milliseconds: 175),
-                                      curve: Curves.easeInOut,
-                                    );
+                              physics: ClampingScrollPhysics(),
+                              child: PageView(
+                                controller: _pageController,
+                                physics: ClampingScrollPhysics(),
+                                onPageChanged: (index) {
+                                  HapticFeedback.heavyImpact();
+
+                                  if (forcedNav > 0) {
+                                    forcedNav--;
+
+                                    if (previousPages.isEmpty) {
+                                      canPop = true;
+                                    }
+                                    return;
                                   }
+
+                                  setState(() {
+                                    previousPages.add(page);
+                                    canPop = false;
+                                    page = HomePage.values[index];
+                                  });
                                 },
-                                    page == HomePage.home,
-                                    page == HomePage.home
-                                        ? Majesticon.homeSolid
-                                        : Majesticon.homeLine,
-                                    widget.data.l10n.home,
-                                    page == HomePage.home
-                                        ? appStyle.colors.accent
-                                        : appStyle.colors.secondary,
-                                    appStyle.colors.textPrimary),
-                                // Grades Button
-                                BottomNavIconWidget(() {
-                                  if (page != HomePage.grades) {
-                                    _pageController.animateToPage(
-                                      HomePage.grades.index,
-                                      duration: Duration(milliseconds: 175),
-                                      curve: Curves.easeInOut,
-                                    );
-                                  }
-                                },
-                                    page == HomePage.grades,
-                                    page == HomePage.grades
-                                        ? Majesticon.bookmarkSolid
-                                        : Majesticon.bookmarkLine,
-                                    widget.data.l10n.grades,
-                                    page == HomePage.grades
-                                        ? appStyle.colors.accent
-                                        : appStyle.colors.secondary,
-                                    appStyle.colors.textPrimary),
-                                // Timetable Button
-                                BottomNavIconWidget(() {
-                                  if (page != HomePage.timetable) {
-                                    _pageController.animateToPage(
-                                      HomePage.timetable.index,
-                                      duration: Duration(milliseconds: 175),
-                                      curve: Curves.easeInOut,
-                                    );
-                                  }
-                                },
-                                    page == HomePage.timetable,
-                                    page == HomePage.timetable
-                                        ? Majesticon.calendarSolid
-                                        : Majesticon.calendarLine,
-                                    widget.data.l10n.timetable,
-                                    page == HomePage.timetable
-                                        ? appStyle.colors.accent
-                                        : appStyle.colors.secondary,
-                                    appStyle.colors.textPrimary),
-                                // More Button
-                                BottomNavIconWidget(
-                                  () {
-                                    HapticFeedback.lightImpact();
-                                    showExtrasBottomSheet(context, widget.data);
-                                  },
-                                  false,
-                                  Majesticon.globeEarthLine,
-                                  widget.data.l10n.other,
-                                  appStyle.colors.secondary,
-                                  appStyle.colors.textPrimary,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                                children: [
+                                  HomeSubPage(
+                                    HomePage.home,
+                                    widget.data,
+                                    widget.updateNotifier,
+                                    widget.updateFinishedNotifier,
+                                  ),
+                                  HomeSubPage(
+                                    HomePage.grades,
+                                    widget.data,
+                                    widget.updateNotifier,
+                                    widget.updateFinishedNotifier,
+                                  ),
+                                  HomeSubPage(
+                                    HomePage.timetable,
+                                    widget.data,
+                                    widget.updateNotifier,
+                                    widget.updateFinishedNotifier,
+                                  ),
+                                ],
+                              ))),
                     ),
-                    toast ?? SizedBox(),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            appStyle.colors.background,
+                            appStyle.colors.background.withValues(alpha: 0.0),
+                          ],
+                          stops: const [0.0, 1.0],
+                        ),
+                      ),
+                      width: MediaQuery.of(context).size.width,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 55, vertical: 15),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Home Button
+                            BottomNavIconWidget(() {
+                              if (page != HomePage.home) {
+                                _pageController.animateToPage(
+                                  HomePage.home.index,
+                                  duration: Duration(milliseconds: 175),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            },
+                                page == HomePage.home,
+                                page == HomePage.home
+                                    ? Majesticon.homeSolid
+                                    : Majesticon.homeLine,
+                                widget.data.l10n.home,
+                                page == HomePage.home
+                                    ? appStyle.colors.accent
+                                    : appStyle.colors.secondary,
+                                appStyle.colors.textPrimary),
+                            // Grades Button
+                            BottomNavIconWidget(() {
+                              if (page != HomePage.grades) {
+                                _pageController.animateToPage(
+                                  HomePage.grades.index,
+                                  duration: Duration(milliseconds: 175),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            },
+                                page == HomePage.grades,
+                                page == HomePage.grades
+                                    ? Majesticon.bookmarkSolid
+                                    : Majesticon.bookmarkLine,
+                                widget.data.l10n.grades,
+                                page == HomePage.grades
+                                    ? appStyle.colors.accent
+                                    : appStyle.colors.secondary,
+                                appStyle.colors.textPrimary),
+                            // Timetable Button
+                            BottomNavIconWidget(() {
+                              if (page != HomePage.timetable) {
+                                _pageController.animateToPage(
+                                  HomePage.timetable.index,
+                                  duration: Duration(milliseconds: 175),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            },
+                                page == HomePage.timetable,
+                                page == HomePage.timetable
+                                    ? Majesticon.calendarSolid
+                                    : Majesticon.calendarLine,
+                                widget.data.l10n.timetable,
+                                page == HomePage.timetable
+                                    ? appStyle.colors.accent
+                                    : appStyle.colors.secondary,
+                                appStyle.colors.textPrimary),
+                            // More Button
+                            BottomNavIconWidget(
+                              () {
+                                HapticFeedback.lightImpact();
+                                showExtrasBottomSheet(context, widget.data);
+                              },
+                              false,
+                              Majesticon.globeEarthLine,
+                              widget.data.l10n.other,
+                              appStyle.colors.secondary,
+                              appStyle.colors.textPrimary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-              ),
+                toast ?? SizedBox(),
+              ],
             ),
           ),
-          onPopInvokedWithResult: (_, __) => {
-            if (previousPages.isNotEmpty && page != previousPages.last)
-              {
-                setState(() {
-                  page = previousPages.removeLast();
+        ),
+      ),
+      onPopInvokedWithResult: (_, __) => {
+        if (previousPages.isNotEmpty && page != previousPages.last)
+          {
+            setState(() {
+              page = previousPages.removeLast();
 
-                  forcedNav++;
-                  _pageController.animateToPage(
-                    page.index,
-                    duration: Duration(milliseconds: 175),
-                    curve: Curves.easeInOut,
-                  );
-                  canPop = previousPages.isEmpty;
-                })
-              }
-          },
-        ));
+              forcedNav++;
+              _pageController.animateToPage(
+                page.index,
+                duration: Duration(milliseconds: 175),
+                curve: Curves.easeInOut,
+              );
+              canPop = previousPages.isEmpty;
+            })
+          }
+      },
+    );
   }
 
   @override
