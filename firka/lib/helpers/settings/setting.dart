@@ -89,6 +89,7 @@ class SettingsStore {
                     Majesticon.ruler2Solid,
                     l10n.s_ag_rounding,
                     LinkedHashMap.of({
+                      "back": SettingsBackHeader(0, l10n.s_ag_rounding, always),
                       "1": SettingsDouble(rounding1, null, null, l10n.s_ag_r1,
                           0.1, 0.5, 0.99, 2, always),
                       "2": SettingsDouble(rounding2, null, null, l10n.s_ag_r2,
