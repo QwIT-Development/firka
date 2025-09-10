@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firka/helpers/api/model/test.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
@@ -34,7 +36,8 @@ class HomeTimetableScreen extends StatefulWidget {
   State<HomeTimetableScreen> createState() => _HomeTimetableScreen();
 }
 
-class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen> {
+class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
+    with TickerProviderStateMixin {
   List<Lesson>? lessons;
   List<Lesson>? events;
   List<Test>? tests;
@@ -43,7 +46,27 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen> {
   int active = 0;
   final CarouselSliderController _controller = CarouselSliderController();
 
+  AnimationController? _cardAnimationController;
+  Animation<Offset>? _cardOffsetAnimation;
+  bool _showAnimatedCard = false;
+
   _HomeTimetableScreen();
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.updateNotifier.addListener(updateListener);
+    widget.data.settingsUpdateNotifier.addListener(settingsUpdateListener);
+
+    now = timeNow();
+    initForWeek(now!);
+
+    _cardAnimationController = AnimationController(
+      duration: Duration(milliseconds: 300),
+      vsync: this,
+    );
+  }
 
   void setActiveToToday() {
     final todayMid = now!.getMidnight();
@@ -132,13 +155,13 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen> {
   void updateListener() async {
     if (now != null) {
       await initForWeek(now!, forceCache: false);
-      setState(() {});
+      if (mounted) setState(() {});
     }
     widget.finishNotifier.update();
   }
 
   void settingsUpdateListener() {
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   @override
@@ -152,23 +175,51 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen> {
     widget.data.settingsUpdateNotifier.addListener(settingsUpdateListener);
   }
 
-  @override
-  void initState() {
-    super.initState();
+  bool animating = false;
 
-    widget.updateNotifier.addListener(updateListener);
-    widget.data.settingsUpdateNotifier.addListener(settingsUpdateListener);
+  void _handleNavTap(int oldIndex, int targetIndex) async {
+    if (animating) return;
 
-    now = timeNow();
-    initForWeek(now!);
-  }
+    active = -1;
 
-  @override
-  void dispose() {
-    super.dispose();
+    const double cardWidth = 40.0;
+    const double spacing = 8.0;
+    final double totalCardWidth = cardWidth + spacing;
 
-    widget.updateNotifier.removeListener(updateListener);
-    widget.data.settingsUpdateNotifier.removeListener(settingsUpdateListener);
+    final double start = oldIndex * totalCardWidth;
+    final double end = targetIndex * totalCardWidth;
+
+    _cardAnimationController!.reset();
+    _cardOffsetAnimation = Tween<Offset>(
+      begin: Offset(start, 0),
+      end: Offset(end, 0),
+    ).animate(CurvedAnimation(
+      parent: _cardAnimationController!,
+      curve: Curves.easeInOut,
+    ));
+
+    setState(() {
+      _showAnimatedCard = true;
+    });
+
+    _cardAnimationController!.forward();
+
+    animating = true;
+    await _controller.animateToPage(
+      targetIndex,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+    animating = false;
+
+    if (!mounted) return;
+
+    setState(() {
+      active = targetIndex;
+      _showAnimatedCard = false;
+    });
+
+    _cardAnimationController!.reset();
   }
 
   @override
@@ -197,14 +248,10 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen> {
             .toList();
 
         if (testsOnDate.isNotEmpty) {
-          debugPrint(testsOnDate.toString());
           ttWidgets.add(Stack(
             children: [
               BottomTimeTableNavIconWidget(widget.data.l10n, () {
-                setState(() {
-                  _controller.jumpToPage(i);
-                  active = i;
-                });
+                _handleNavTap(active, i);
               }, active == i, date),
               Transform.translate(
                 offset: Offset(38, -10),
@@ -214,15 +261,51 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen> {
           ));
         } else {
           ttWidgets.add(BottomTimeTableNavIconWidget(widget.data.l10n, () {
-            setState(() {
-              _controller.jumpToPage(i);
-              active = i;
-            });
+            _handleNavTap(active, i);
           }, active == i, date));
         }
 
         ttDays.add(TimeTableDayWidget(widget.data, date, lessons!,
             lessonsOnDate, eventsOnDate, testsOnDate));
+      }
+
+      List<Widget> ttEmptyCards = List.empty(growable: true);
+
+      if (animating || _showAnimatedCard) {
+        for (var i = 0; i < ttDays.length; i++) {
+          if (i == 0) {
+            Widget cardWidget = Card(
+              color: appStyle.colors.buttonSecondaryFill,
+              shadowColor: Colors.transparent,
+              child: SizedBox(width: 40, height: 54),
+            );
+
+            if (_showAnimatedCard && _cardOffsetAnimation != null) {
+              ttEmptyCards.add(AnimatedBuilder(
+                animation: _cardOffsetAnimation!,
+                builder: (context, child) {
+                  return Transform.translate(
+                    offset: _cardOffsetAnimation!.value,
+                    child: cardWidget,
+                  );
+                },
+              ));
+            } else {
+              ttEmptyCards.add(Transform.translate(
+                offset: Offset(0, 0),
+                child: cardWidget,
+              ));
+            }
+          } else {
+            ttEmptyCards.add(Card(
+              color: Colors.transparent,
+              shadowColor: Colors.transparent,
+              child: SizedBox(width: 40, height: 54),
+            ));
+          }
+        }
+      } else {
+        ttEmptyCards.clear();
       }
 
       return Scaffold(
@@ -322,6 +405,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen> {
                           ),
                           onTap: () async {
                             var newNow = now!.subtract(Duration(days: 7));
+                            if (!mounted) return;
                             setState(() {
                               now = newNow;
                               lessons = null;
@@ -375,6 +459,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen> {
                               now = timeNow();
                             }
                             await initForWeek(newNow);
+                            if (!mounted) return;
                             setState(() {
                               now = newNow;
                             });
@@ -401,16 +486,25 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen> {
                               enableInfiniteScroll: false,
                               initialPage: active,
                               onPageChanged: (i, _) {
+                                if (animating || !mounted) return;
                                 setState(() {
                                   active = i;
                                 });
                               }),
                         ))),
-                TransparentPointer(
-                    child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: ttWidgets,
-                )),
+                Stack(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: ttEmptyCards,
+                    ),
+                    TransparentPointer(
+                        child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: ttWidgets,
+                    )),
+                  ],
+                ),
               ],
             )
           ]));
@@ -428,5 +522,13 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen> {
         ),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    widget.updateNotifier.removeListener(updateListener);
+    widget.data.settingsUpdateNotifier.removeListener(settingsUpdateListener);
   }
 }
