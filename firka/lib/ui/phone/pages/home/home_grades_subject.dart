@@ -1,5 +1,6 @@
 import 'package:firka/helpers/api/model/grade.dart';
 import 'package:firka/helpers/extensions.dart';
+import 'package:firka/helpers/ui/common_bottom_sheets.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/helpers/ui/grade.dart';
 import 'package:firka/ui/phone/pages/home/home_grades.dart';
@@ -89,36 +90,41 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
           height: 8,
         ));
         for (var grade in group.value) {
-          gradeWidgets.add(FirkaCard(
-            left: [
-              Row(
-                children: [
-                  GradeWidget(grade),
-                  SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width / 1.45,
-                        child: Text(grade.topic ?? grade.type.description!,
-                            style: appStyle.fonts.B_14SB
-                                .apply(color: appStyle.colors.textPrimary)),
-                      ),
-                      grade.mode?.description != null
-                          ? SizedBox(
-                              width: MediaQuery.of(context).size.width / 1.45,
-                              child: Text(
-                                grade.mode!.description!,
-                                style: appStyle.fonts.B_14R.apply(
-                                    color: appStyle.colors.textSecondary),
-                              ),
-                            )
-                          : SizedBox(),
-                    ],
-                  )
-                ],
-              )
-            ],
+          gradeWidgets.add(GestureDetector(
+            child: FirkaCard(
+              left: [
+                Row(
+                  children: [
+                    GradeWidget(grade),
+                    SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width / 1.45,
+                          child: Text(grade.topic ?? grade.type.description!,
+                              style: appStyle.fonts.B_14SB
+                                  .apply(color: appStyle.colors.textPrimary)),
+                        ),
+                        grade.mode?.description != null
+                            ? SizedBox(
+                                width: MediaQuery.of(context).size.width / 1.45,
+                                child: Text(
+                                  grade.mode!.description!,
+                                  style: appStyle.fonts.B_14R.apply(
+                                      color: appStyle.colors.textSecondary),
+                                ),
+                              )
+                            : SizedBox(),
+                      ],
+                    )
+                  ],
+                )
+              ],
+            ),
+            onTap: () {
+              showGradeBottomSheet(context, widget.data, grade);
+            },
           ));
         }
       }
