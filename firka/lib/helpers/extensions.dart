@@ -84,6 +84,7 @@ enum FormatMode {
   dd,
   yyyymmddwedd,
   yyyymmmm,
+  yyyymmdd,
   yyyymmddhhmmss
 }
 
@@ -135,6 +136,8 @@ extension DateExtension on DateTime {
         return "${DateFormat('yyyy MMM. dd', l10n.localeName).format(weekStart).toLowerCase()}-${DateFormat('dd', l10n.localeName).format(weekEnd)}";
       case FormatMode.yyyymmmm:
         return DateFormat('yyyy MMMM', l10n.localeName).format(this);
+      case FormatMode.yyyymmdd:
+        return DateFormat('yyyy. MM. dd.', l10n.localeName).format(this);
       case FormatMode.yyyymmddhhmmss:
         return DateFormat('yyyy-MM-dd hh:mm:ss', l10n.localeName).format(this);
     }
