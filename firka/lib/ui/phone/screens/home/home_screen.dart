@@ -267,11 +267,13 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     try {
       await ImagePreloader.preloadMultipleAssets(FirkaBundle(), imagePaths);
 
+      if (!mounted) return;
       setState(() {
         _preloadDone = true;
       });
     } catch (e) {
       debugPrint('Error preloading images: $e');
+      if (!mounted) return;
       setState(() {
         _preloadDone = true;
       });
