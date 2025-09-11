@@ -101,15 +101,16 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                       SizedBox(
                         width: MediaQuery.of(context).size.width / 1.45,
                         child: Text(grade.topic ?? grade.type.description!,
-                            style: appStyle.fonts.B_14SB),
+                            style: appStyle.fonts.B_14SB
+                                .apply(color: appStyle.colors.textPrimary)),
                       ),
                       grade.mode?.description != null
                           ? SizedBox(
                               width: MediaQuery.of(context).size.width / 1.45,
                               child: Text(
                                 grade.mode!.description!,
-                                style: appStyle.fonts.B_14R
-                                    .apply(color: appStyle.colors.textPrimary),
+                                style: appStyle.fonts.B_14R.apply(
+                                    color: appStyle.colors.textSecondary),
                               ),
                             )
                           : SizedBox(),
