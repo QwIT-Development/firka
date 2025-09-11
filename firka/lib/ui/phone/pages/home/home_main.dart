@@ -218,10 +218,17 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         noticeBoard != null &&
         lessons != null) {
       List<(Widget, DateTime)> noticeBoardWidgets = List.empty(growable: true);
-      // TODO: Add notice board items once we actually have those
 
       for (final item in infoBoard!) {
-        noticeBoardWidgets.add((InfoBoardItemWidget(item), item.date));
+        noticeBoardWidgets.add((
+          GestureDetector(
+            child: InfoBoardItemWidget(item),
+            onTap: () {
+              showAnnouncementBottomSheet(context, widget.data, item);
+            },
+          ),
+          item.date
+        ));
       }
 
       for (final grade in grades!) {
