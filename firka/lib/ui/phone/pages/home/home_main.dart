@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firka/helpers/api/model/grade.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/ui/phone/widgets/home_main_starting_soon.dart';
 import 'package:firka/ui/phone/widgets/info_board_item.dart';
@@ -15,6 +16,7 @@ import '../../../../helpers/api/model/timetable.dart';
 import '../../../../helpers/debug_helper.dart';
 import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/ui/firka_card.dart';
+import '../../../../helpers/ui/grade.dart';
 import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../model/style.dart';
@@ -42,6 +44,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   List<NoticeBoardItem>? noticeBoard;
   List<InfoBoardItem>? infoBoard;
   List<Test>? tests;
+  List<Grade>? grades;
   Student? student;
   Timer? timer;
 
@@ -86,11 +89,14 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     var testsResp = await widget.data.client.getTests(forceCache: forceCache);
     tests = testsResp.response;
 
+    var gradesResp = await widget.data.client.getGrades(forceCache: forceCache);
+    grades = gradesResp.response;
+
     return Future.value((
       respTT.response!,
       respNB.response!,
       respIB.response!,
-      respStudent.response!
+      respStudent.response!,
     ));
   }
 
@@ -206,13 +212,56 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
       }
     }
 
-    if (student != null && noticeBoard != null && lessons != null) {
-      List<Widget> noticeBoardWidgets = List.empty(growable: true);
+    if (student != null &&
+        grades != null &&
+        noticeBoard != null &&
+        lessons != null) {
+      List<(Widget, DateTime)> noticeBoardWidgets = List.empty(growable: true);
       // TODO: Add notice board items once we actually have those
 
-      for (var item in infoBoard!) {
-        noticeBoardWidgets.add(InfoBoardItemWidget(item));
+      for (final item in infoBoard!) {
+        noticeBoardWidgets.add((InfoBoardItemWidget(item), item.date));
       }
+
+      for (final grade in grades!) {
+        noticeBoardWidgets.add((
+          FirkaCard(
+            left: [
+              Row(
+                children: [
+                  GradeWidget(grade),
+                  SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width / 1.45,
+                        child: Text(grade.topic ?? grade.type.description!,
+                            style: appStyle.fonts.B_14SB
+                                .apply(color: appStyle.colors.textPrimary)),
+                      ),
+                      grade.mode?.description != null
+                          ? SizedBox(
+                              width: MediaQuery.of(context).size.width / 1.45,
+                              child: Text(
+                                grade.mode!.description!,
+                                style: appStyle.fonts.B_14R.apply(
+                                    color: appStyle.colors.textSecondary),
+                              ),
+                            )
+                          : SizedBox(),
+                    ],
+                  )
+                ],
+              )
+            ],
+          ),
+          grade.recordDate
+        ));
+      }
+
+      noticeBoardWidgets
+          .sort((item1, item2) => item2.$2.difference(item1.$2).inMilliseconds);
 
       return Padding(
         padding: const EdgeInsets.only(
@@ -233,7 +282,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
             nextTest != null ? SizedBox(height: 12) : SizedBox(height: 0),
             Expanded(
               child: ListView(
-                children: noticeBoardWidgets,
+                children: noticeBoardWidgets.map((e) => e.$1).toList(),
               ),
             )
           ],
