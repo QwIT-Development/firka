@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/helpers/image_preloader.dart';
 import 'package:firka/helpers/ui/firka_button.dart';
@@ -14,6 +15,7 @@ import 'package:majesticons_flutter/majesticons_flutter.dart';
 import '../../../../helpers/firka_bundle.dart';
 import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/settings/setting.dart';
+import '../../widgets/login_webview.dart';
 
 class SettingsScreen extends StatefulWidget {
   final AppInitialization data;
@@ -492,6 +494,88 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           ],
         ));
 
+        continue;
+      }
+      if (item is SettingsKretenAccountPicker) {
+        for (var i = 0; i < widget.data.tokens.length; i++) {
+          final token = widget.data.tokens[i];
+          final jwt = JWT.decode(token.idToken!);
+
+          widgets.add(GestureDetector(
+            child: SizedBox(
+              height: 52,
+              child: FirkaCard(
+                left: [
+                  Text(
+                    jwt.payload["name"],
+                    style: appStyle.fonts.B_16R
+                        .apply(color: appStyle.colors.textPrimary),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    jwt.payload["role"],
+                    style: appStyle.fonts.B_16R
+                        .apply(color: appStyle.colors.textTertiary),
+                  )
+                ],
+                right: [
+                  i != item.accountIndex
+                      ? SizedBox()
+                      : Checkbox(
+                          value: true,
+                          fillColor: WidgetStateProperty.resolveWith<Color>(
+                              (Set<WidgetState> states) {
+                            return appStyle.colors.secondary;
+                          }),
+                          onChanged: (_) async {
+                            setState(() {
+                              // item.activeIndex = i;
+                            });
+
+                            await widget.data.isar.writeTxn(() async {
+                              await item
+                                  .save(widget.data.isar.appSettingsModels);
+                            });
+                            debugPrint('Settings saved');
+                          })
+                ],
+              ),
+            ),
+            onTap: () async {
+              if (i != item.accountIndex) {
+                await widget.data.isar.writeTxn(() async {
+                  item.accountIndex = i;
+
+                  await item.save(widget.data.isar.appSettingsModels);
+                });
+
+                runApp(InitializationScreen());
+              }
+            },
+          ));
+          widgets.add(SizedBox(height: 8));
+        }
+
+        widgets.add(GestureDetector(
+          child: FirkaCard(left: [
+            Text(
+              widget.data.l10n.s_acc_add,
+              style: appStyle.fonts.B_16R
+                  .apply(color: appStyle.colors.textPrimary),
+            )
+          ]),
+          onTap: () {
+            showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              builder: (BuildContext context) {
+                return LoginWebviewWidget(widget.data,
+                    username: widget.data.client.model.studentId.toString(),
+                    schoolId: widget.data.client.model.iss!);
+              },
+            );
+          },
+        ));
         continue;
       }
     }

@@ -91,6 +91,28 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                             ],
                             right: [],
                           ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => DefaultAssetBundle(
+                                        bundle: FirkaBundle(),
+                                        child: SettingsScreen(
+                                            data,
+                                            data.settings.items
+                                                .group("profile_settings")))));
+                          },
+                          child: FirkaCard(
+                            left: [
+                              Text(data.l10n.s_your_account,
+                                  style: appStyle.fonts.B_16R.apply(
+                                      color: appStyle.colors.textPrimary))
+                            ],
+                            right: [],
+                          ),
                         )
                       ],
                     ),
