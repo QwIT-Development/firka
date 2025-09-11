@@ -42,10 +42,10 @@ class Grade {
   factory Grade.fromJson(Map<String, dynamic> json) {
     return Grade(
       uid: json['Uid'],
-      recordDate: DateTime.parse(json['RogzitesDatuma']),
-      creationDate: DateTime.parse(json['KeszitesDatuma']),
+      recordDate: DateTime.parse(json['RogzitesDatuma']).toLocal(),
+      creationDate: DateTime.parse(json['KeszitesDatuma']).toLocal(),
       ackDate: json['LattamozasDatuma'] != null
-          ? DateTime.parse(json['LattamozasDatuma'])
+          ? DateTime.parse(json['LattamozasDatuma']).toLocal()
           : null,
       subject: Subject.fromJson(json['Tantargy']),
       topic: json['Tema'],
