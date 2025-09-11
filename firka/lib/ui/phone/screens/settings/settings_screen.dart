@@ -569,9 +569,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
               context: context,
               isScrollControlled: true,
               builder: (BuildContext context) {
-                return LoginWebviewWidget(widget.data,
-                    username: widget.data.client.model.studentId.toString(),
-                    schoolId: widget.data.client.model.iss!);
+                return LoginWebviewWidget(widget.data);
               },
             );
           },
