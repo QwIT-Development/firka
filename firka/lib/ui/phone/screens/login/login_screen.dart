@@ -373,7 +373,7 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
                               widget.data.l10n.loginBtn,
                               textAlign: TextAlign.center,
                               style: appStyle.fonts.H_16px.copyWith(
-                                  color: appStyle.colors.textPrimary,
+                                  color: appStyle.colors.textPrimaryLight,
                                   fontVariations: [FontVariation("wght", 800)]),
                             ),
                           ),

@@ -464,7 +464,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                   text: widget.data.l10n.save,
                   bgColor: appStyle.colors.accent,
                   fontStyle: appStyle.fonts.B_14R
-                      .apply(color: appStyle.colors.textSecondary)),
+                      .apply(color: appStyle.colors.textSecondaryLight)),
               onTap: () async {
                 if (settingAppIcon) return;
                 settingAppIcon = true;
