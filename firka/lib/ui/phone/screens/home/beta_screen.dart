@@ -76,9 +76,9 @@ class _BetaScreenState extends FirkaState<BetaScreen> {
                       text: widget.data.l10n.cancel,
                       bgColor: appStyle.colors.buttonSecondaryFill,
                       fontStyle: appStyle.fonts.B_14R
-                          .apply(color: appStyle.colors.textPrimary),
-                      icon:
-                          Icon(Icons.close, color: appStyle.colors.textPrimary),
+                          .apply(color: appStyle.colors.textPrimaryLight),
+                      icon: Icon(Icons.close,
+                          color: appStyle.colors.textPrimaryLight),
                     ),
                     onTap: () {
                       exit(0);
@@ -93,9 +93,9 @@ class _BetaScreenState extends FirkaState<BetaScreen> {
                           ? appStyle.colors.accent
                           : appStyle.colors.secondary,
                       fontStyle: appStyle.fonts.B_14R
-                          .apply(color: appStyle.colors.textPrimary),
-                      icon:
-                          Icon(Icons.check, color: appStyle.colors.textPrimary),
+                          .apply(color: appStyle.colors.textPrimaryLight),
+                      icon: Icon(Icons.check,
+                          color: appStyle.colors.textPrimaryLight),
                     ),
                     onTap: () async {
                       if (counter != 0) return;
