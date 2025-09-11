@@ -214,7 +214,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                     await isar.tokenModels.clear();
                   });
 
-                  widget.data.tokenCount = 0;
+                  widget.data.tokens = List.empty(growable: true);
 
                   Navigator.push(
                       context,

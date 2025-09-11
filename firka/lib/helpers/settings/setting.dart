@@ -327,7 +327,15 @@ class SettingsStore {
               developerOptsEnabled, null, null, "Developer", false, never),
         }),
         always);
-
+    items["profile_settings"] = SettingsGroup(
+        0,
+        LinkedHashMap.of({
+          "back": SettingsBackHeader(0, l10n.s_your_account, always),
+          "e_kreta_accounts": SettingsHeaderSmall(0, l10n.s_acc_kreta, always),
+          "e_padding": SettingsPadding(0, 8, always),
+          "e_kreta_account_picker": SettingsKretenAccountPicker(0, always),
+        }),
+        never);
     appIcons = {
       "ace": l10n.ic_ace,
       "ace_f": l10n.ic_ace_f,
@@ -674,6 +682,45 @@ class SettingsAppIconPreview implements SettingsItem {
 
   @override
   Future<void> save(IsarCollection<AppSettingsModel> model) async {}
+}
+
+class SettingsKretenAccountPicker implements SettingsItem {
+  @override
+  Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
+  @override
+  bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
+  String title = "";
+  String icon = "";
+  int accountIndex = 0;
+
+  SettingsKretenAccountPicker(this.key, this.visibilityProvider);
+
+  @override
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {
+    var v = await model.get(key);
+    if (v == null || v.valueIndex == null) {
+      accountIndex = 0;
+    } else {
+      accountIndex = v.valueIndex!;
+    }
+  }
+
+  @override
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {
+    var v = AppSettingsModel();
+    v.id = key;
+    v.valueIndex = accountIndex;
+
+    await model.put(v);
+
+    initData.settingsUpdateNotifier.update();
+  }
 }
 
 class SettingsAppIconPicker implements SettingsItem {

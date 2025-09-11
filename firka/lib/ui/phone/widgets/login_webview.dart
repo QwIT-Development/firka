@@ -1,6 +1,7 @@
 import 'package:firka/main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:isar/isar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../helpers/api/client/kreta_client.dart';
@@ -65,7 +66,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
             });
 
             widget.data.client = KretaClient(tokenModel, isar);
-            widget.data.tokenCount = await isar.tokenModels.count();
+            widget.data.tokens = await isar.tokenModels.where().findAll();
 
             if (!mounted) return NavigationDecision.prevent;
 
