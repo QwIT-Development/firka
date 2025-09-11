@@ -1,3 +1,6 @@
+import 'package:firka/helpers/api/model/generic.dart';
+import 'package:firka/helpers/api/model/grade.dart';
+import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/settings/setting.dart';
 import 'package:flutter/material.dart';
@@ -5,9 +8,11 @@ import 'package:flutter_svg/svg.dart';
 
 import '../../main.dart';
 import '../../ui/model/style.dart';
+import '../../ui/phone/widgets/lesson.dart';
 import '../../ui/widget/class_icon.dart';
 import '../api/model/timetable.dart';
 import 'firka_card.dart';
+import 'grade.dart';
 
 Future<void> showLessonBottomSheet(
     BuildContext context,
@@ -155,6 +160,114 @@ Future<void> showLessonBottomSheet(
                         ],
                       )
                     ])
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Future<void> showGradeBottomSheet(
+    BuildContext context, AppInitialization data, Grade grade) async {
+  // grade.recordDate
+  showModalBottomSheet(
+    context: context,
+    elevation: 100,
+    isScrollControlled: true,
+    enableDrag: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: appStyle.colors.a15p,
+    constraints: BoxConstraints(
+      maxHeight: MediaQuery.of(context).size.height * 0.32,
+    ),
+    builder: (BuildContext context) {
+      return Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              behavior: HitTestBehavior.opaque,
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              decoration: BoxDecoration(
+                color: appStyle.colors.background,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [GradeWidget(grade)],
+                    ),
+                    SizedBox(height: 4),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(grade.topic ?? grade.type.description!,
+                              style: appStyle.fonts.H_18px
+                                  .apply(color: appStyle.colors.textPrimary)),
+                          grade.mode?.description != null
+                              ? SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width / 1.45,
+                                  child: Text(
+                                    grade.mode!.description!,
+                                    style: appStyle.fonts.B_14R.apply(
+                                        color: appStyle.colors.textSecondary),
+                                  ),
+                                )
+                              : SizedBox(),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          LessonWidget(
+                            data,
+                            [],
+                            -1,
+                            Lesson(
+                                uid: "-1",
+                                date: "",
+                                start: grade.creationDate,
+                                end: grade.creationDate,
+                                name: grade.subject.name,
+                                type: NameUidDesc(
+                                    uid: "", name: "", description: ""),
+                                state: NameUidDesc(
+                                    uid: "", name: "", description: ""),
+                                canStudentEditHomework: false,
+                                isHomeworkComplete: false,
+                                attachments: [],
+                                isDigitalLesson: false,
+                                digitalSupportDeviceTypeList: [],
+                                createdAt: timeNow(),
+                                subject: grade.subject,
+                                lastModifiedAt: timeNow()),
+                            null,
+                            null,
+                            placeholderMode: true,
+                          ),
+                          FirkaCard(left: [
+                            Text(
+                              "${data.l10n.tt_added}${grade.creationDate}",
+                              style: appStyle.fonts.B_14R
+                                  .apply(color: appStyle.colors.textPrimary),
+                            )
+                          ])
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
