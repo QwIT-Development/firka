@@ -63,7 +63,7 @@ class AppInitialization {
   final PackageInfo packageInfo;
   final DeviceInfo devInfo;
   late KretaClient client;
-  int tokenCount;
+  List<TokenModel> tokens;
   bool hasWatchListener = false;
   Uint8List? profilePicture;
   SettingsStore settings;
@@ -74,7 +74,7 @@ class AppInitialization {
     required this.isar,
     required this.devInfo,
     required this.packageInfo,
-    required this.tokenCount,
+    required this.tokens,
     required this.settings,
     required this.l10n,
   });
@@ -154,13 +154,51 @@ void initTheme(AppInitialization data) {
   }
 }
 
+Future<void> _initData(AppInitialization init) async {
+  await init.settings.load(init.isar.appSettingsModels);
+  initLang(init);
+  initTheme(init);
+  init.settings = SettingsStore(init.l10n);
+  await init.settings.load(init.isar.appSettingsModels);
+
+  var dispatcher = SchedulerBinding.instance.platformDispatcher;
+
+  dispatcher.onPlatformBrightnessChanged = () {
+    globalUpdate.update();
+    initTheme(init);
+  };
+
+  resetOldTimeTableCache(init.isar);
+  resetOldHomeworkCache(init.isar);
+
+  if (init.tokens.isNotEmpty) {
+    final i = (init.settings.group("profile_settings")["e_kreta_account_picker"]
+            as SettingsKretenAccountPicker)
+        .accountIndex;
+    init.client = KretaClient(
+        (await init.isar.tokenModels.where().findAll())[i], init.isar);
+
+    await WidgetCacheHelper.updateWidgetCache(appStyle, init.client);
+  }
+
+  final dataDir = await getApplicationDocumentsDirectory();
+  var pfpFile = File(p.join(dataDir.path, "profile.webp"));
+
+  if (await pfpFile.exists()) {
+    init.profilePicture = await pfpFile.readAsBytes();
+  }
+}
+
 Future<AppInitialization> initializeApp() async {
-  if (initDone) return initData;
+  if (initDone) {
+    await _initData(initData);
+    return initData;
+  }
   final isar = await initDB();
-  final tokenCount = await isar.tokenModels.count();
+  final tokens = await isar.tokenModels.where().findAll();
 
   if (kDebugMode) {
-    print('Token count: $tokenCount');
+    print('Token count: ${tokens.length}');
   }
 
   var devInfoFetched = false;
@@ -190,45 +228,16 @@ Future<AppInitialization> initializeApp() async {
     isar: isar,
     devInfo: devInfo,
     packageInfo: await PackageInfo.fromPlatform(),
-    tokenCount: tokenCount,
+    tokens: tokens,
     settings: SettingsStore(AppLocalizationsHu()),
     l10n: AppLocalizationsHu(),
   );
 
+  await _initData(init);
+
   init.settingsUpdateNotifier.addListener(() {
     debugPrint("Settings updated");
   });
-
-  await init.settings.load(init.isar.appSettingsModels);
-  initLang(init);
-  initTheme(init);
-  init.settings = SettingsStore(init.l10n);
-  await init.settings.load(init.isar.appSettingsModels);
-
-  var dispatcher = SchedulerBinding.instance.platformDispatcher;
-
-  dispatcher.onPlatformBrightnessChanged = () {
-    globalUpdate.update();
-    initTheme(init);
-  };
-
-  resetOldTimeTableCache(isar);
-  resetOldHomeworkCache(isar);
-
-  // TODO: Account selection
-  if (tokenCount > 0) {
-    init.client =
-        KretaClient((await isar.tokenModels.where().findFirst())!, isar);
-
-    await WidgetCacheHelper.updateWidgetCache(appStyle, init.client);
-  }
-
-  final dataDir = await getApplicationDocumentsDirectory();
-  var pfpFile = File(p.join(dataDir.path, "profile.webp"));
-
-  if (await pfpFile.exists()) {
-    init.profilePicture = await pfpFile.readAsBytes();
-  }
 
   return init;
 }
@@ -310,7 +319,7 @@ class InitializationScreen extends StatelessWidget {
 
               switch (msg["id"]) {
                 case "ping":
-                  if (initData.tokenCount > 0) {
+                  if (initData.tokens.isNotEmpty) {
                     debugPrint("[Phone -> Watch]: pong");
                     watch.sendMessage({"id": "pong"});
                     navigatorKey.currentState?.push(
@@ -324,7 +333,7 @@ class InitializationScreen extends StatelessWidget {
             });
           }
 
-          if (snapshot.data!.tokenCount == 0) {
+          if (snapshot.data!.tokens.isEmpty) {
             screen = LoginScreen(
               initData,
               key: ValueKey('loginScreen'),
