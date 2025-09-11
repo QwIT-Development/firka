@@ -22,10 +22,11 @@ class LessonWidget extends StatelessWidget {
   final Lesson lesson;
   final Test? test;
   final Lesson? nextLesson;
+  final bool? placeholderMode;
 
   const LessonWidget(this.data, this.week, this.lessonNo, this.lesson,
       this.test, this.nextLesson,
-      {super.key});
+      {super.key, this.placeholderMode});
 
   @override
   Widget build(BuildContext context) {
@@ -69,25 +70,28 @@ class LessonWidget extends StatelessWidget {
             : appStyle.colors.card,
         shadow: !isDismissed,
         left: [
-          SizedBox(
-            width: 18,
-            height: 18,
-            child: Stack(
-              children: [
-                SvgPicture.asset(
-                  "assets/icons/subtract.svg",
-                  color: bgColor,
+          placeholderMode == true
+              ? SizedBox()
+              : SizedBox(
                   width: 18,
                   height: 18,
+                  child: Stack(
+                    children: [
+                      SvgPicture.asset(
+                        "assets/icons/subtract.svg",
+                        color: bgColor,
+                        width: 18,
+                        height: 18,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(left: 5),
+                        child: Text(lessonNo.toString(),
+                            style:
+                                appStyle.fonts.B_12R.apply(color: secondary)),
+                      )
+                    ],
+                  ),
                 ),
-                Padding(
-                  padding: EdgeInsets.only(left: 5),
-                  child: Text(lessonNo.toString(),
-                      style: appStyle.fonts.B_12R.apply(color: secondary)),
-                )
-              ],
-            ),
-          ),
           Transform.translate(
             offset: Offset(-4, 0),
             child: Card(
@@ -121,24 +125,30 @@ class LessonWidget extends StatelessWidget {
                   .apply(color: appStyle.colors.textPrimary)),
         ],
         right: [
-          Text(
-              isDismissed
-                  ? data.l10n.class_dismissed
-                  : lesson.start.toLocal().format(data.l10n, FormatMode.hmm),
-              style: appStyle.fonts.B_14R
-                  .apply(color: appStyle.colors.textPrimary)),
-          isDismissed
+          placeholderMode == true
               ? SizedBox()
-              : Card(
-                  shadowColor: Colors.transparent,
-                  color: appStyle.colors.a15p,
-                  child: Padding(
-                    padding: EdgeInsets.all(4),
-                    child: Text(lesson.roomName ?? '?',
-                        style: appStyle.fonts.B_12R
-                            .apply(color: appStyle.colors.secondary)),
-                  ),
-                ),
+              : Text(
+                  isDismissed
+                      ? data.l10n.class_dismissed
+                      : lesson.start
+                          .toLocal()
+                          .format(data.l10n, FormatMode.hmm),
+                  style: appStyle.fonts.B_14R
+                      .apply(color: appStyle.colors.textPrimary)),
+          placeholderMode == true
+              ? SizedBox()
+              : isDismissed
+                  ? SizedBox()
+                  : Card(
+                      shadowColor: Colors.transparent,
+                      color: appStyle.colors.a15p,
+                      child: Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Text(lesson.roomName ?? '?',
+                            style: appStyle.fonts.B_12R
+                                .apply(color: appStyle.colors.secondary)),
+                      ),
+                    ),
         ],
       ),
     ));

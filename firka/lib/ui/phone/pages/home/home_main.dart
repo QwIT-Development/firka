@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firka/helpers/api/model/grade.dart';
 import 'package:firka/helpers/extensions.dart';
+import 'package:firka/helpers/ui/common_bottom_sheets.dart';
 import 'package:firka/ui/phone/widgets/home_main_starting_soon.dart';
 import 'package:firka/ui/phone/widgets/info_board_item.dart';
 import 'package:firka/ui/phone/widgets/lesson_small.dart';
@@ -225,36 +226,41 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
 
       for (final grade in grades!) {
         noticeBoardWidgets.add((
-          FirkaCard(
-            left: [
-              Row(
-                children: [
-                  GradeWidget(grade),
-                  SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width / 1.45,
-                        child: Text(grade.topic ?? grade.type.description!,
-                            style: appStyle.fonts.B_14SB
-                                .apply(color: appStyle.colors.textPrimary)),
-                      ),
-                      grade.mode?.description != null
-                          ? SizedBox(
-                              width: MediaQuery.of(context).size.width / 1.45,
-                              child: Text(
-                                grade.mode!.description!,
-                                style: appStyle.fonts.B_14R.apply(
-                                    color: appStyle.colors.textSecondary),
-                              ),
-                            )
-                          : SizedBox(),
-                    ],
-                  )
-                ],
-              )
-            ],
+          GestureDetector(
+            child: FirkaCard(
+              left: [
+                Row(
+                  children: [
+                    GradeWidget(grade),
+                    SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width / 1.45,
+                          child: Text(grade.topic ?? grade.type.description!,
+                              style: appStyle.fonts.B_14SB
+                                  .apply(color: appStyle.colors.textPrimary)),
+                        ),
+                        grade.mode?.description != null
+                            ? SizedBox(
+                                width: MediaQuery.of(context).size.width / 1.45,
+                                child: Text(
+                                  grade.mode!.description!,
+                                  style: appStyle.fonts.B_14R.apply(
+                                      color: appStyle.colors.textSecondary),
+                                ),
+                              )
+                            : SizedBox(),
+                      ],
+                    )
+                  ],
+                )
+              ],
+            ),
+            onTap: () {
+              showGradeBottomSheet(context, widget.data, grade);
+            },
           ),
           grade.recordDate
         ));
