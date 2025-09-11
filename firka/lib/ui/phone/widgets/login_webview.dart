@@ -1,15 +1,15 @@
+import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../../helpers/api/client/kreta_client.dart';
 import '../../../helpers/api/consts.dart';
 import '../../../helpers/api/token_grant.dart';
 import '../../../helpers/db/models/token_model.dart';
 import '../../../helpers/firka_state.dart';
-import '../screens/home/home_screen.dart';
+import '../../../helpers/settings/setting.dart';
 
 class LoginWebviewWidget extends StatefulWidget {
   final AppInitialization data;
@@ -61,20 +61,32 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
 
             var tokenModel = TokenModel.fromResp(resp);
 
+            final accountPicker = (widget.data.settings
+                    .group("profile_settings")["e_kreta_account_picker"]
+                as SettingsKretenAccountPicker);
+
+            var tokenId = 0;
+            var om = 0;
             await isar.writeTxn(() async {
-              await isar.tokenModels.put(tokenModel);
+              om = await isar.tokenModels.put(tokenModel);
             });
 
-            widget.data.client = KretaClient(tokenModel, isar);
             widget.data.tokens = await isar.tokenModels.where().findAll();
+            for (var i = 0; i < widget.data.tokens.length; i++) {
+              if (widget.data.tokens[i].studentId == om) {
+                tokenId = i;
+                break;
+              }
+            }
+
+            await isar.writeTxn(() async {
+              accountPicker.accountIndex = tokenId;
+              await accountPicker.save(widget.data.isar.appSettingsModels);
+            });
 
             if (!mounted) return NavigationDecision.prevent;
 
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                  builder: (context) => HomeScreen(widget.data, false)),
-              (route) => false, // Remove all previous routes
-            );
+            runApp(InitializationScreen());
           } catch (ex) {
             if (kDebugMode) {
               print("oauthredirect failed: $ex");
