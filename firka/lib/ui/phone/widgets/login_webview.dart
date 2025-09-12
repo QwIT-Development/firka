@@ -75,7 +75,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
 
             widget.data.tokens = await isar.tokenModels.where().findAll();
             for (var i = 0; i < widget.data.tokens.length; i++) {
-              if (widget.data.tokens[i].studentId == om) {
+              if (widget.data.tokens[i].studentIdNorm == om) {
                 tokenId = i;
                 break;
               }
