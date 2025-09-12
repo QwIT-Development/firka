@@ -41,13 +41,18 @@ const TokenModelSchema = CollectionSchema(
       id: 4,
       name: r'refreshToken',
       type: IsarType.string,
+    ),
+    r'studentId': PropertySchema(
+      id: 5,
+      name: r'studentId',
+      type: IsarType.string,
     )
   },
   estimateSize: _tokenModelEstimateSize,
   serialize: _tokenModelSerialize,
   deserialize: _tokenModelDeserialize,
   deserializeProp: _tokenModelDeserializeProp,
-  idName: r'studentId',
+  idName: r'studentIdNorm',
   indexes: {},
   links: {},
   embeddedSchemas: {},
@@ -87,6 +92,12 @@ int _tokenModelEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.studentId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -101,6 +112,7 @@ void _tokenModelSerialize(
   writer.writeString(offsets[2], object.idToken);
   writer.writeString(offsets[3], object.iss);
   writer.writeString(offsets[4], object.refreshToken);
+  writer.writeString(offsets[5], object.studentId);
 }
 
 TokenModel _tokenModelDeserialize(
@@ -115,7 +127,8 @@ TokenModel _tokenModelDeserialize(
   object.idToken = reader.readStringOrNull(offsets[2]);
   object.iss = reader.readStringOrNull(offsets[3]);
   object.refreshToken = reader.readStringOrNull(offsets[4]);
-  object.studentId = id;
+  object.studentId = reader.readStringOrNull(offsets[5]);
+  object.studentIdNorm = id;
   return object;
 }
 
@@ -136,13 +149,15 @@ P _tokenModelDeserializeProp<P>(
       return (reader.readStringOrNull(offset)) as P;
     case 4:
       return (reader.readStringOrNull(offset)) as P;
+    case 5:
+      return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
 Id _tokenModelGetId(TokenModel object) {
-  return object.studentId ?? Isar.autoIncrement;
+  return object.studentIdNorm ?? Isar.autoIncrement;
 }
 
 List<IsarLinkBase<dynamic>> _tokenModelGetLinks(TokenModel object) {
@@ -150,12 +165,12 @@ List<IsarLinkBase<dynamic>> _tokenModelGetLinks(TokenModel object) {
 }
 
 void _tokenModelAttach(IsarCollection<dynamic> col, Id id, TokenModel object) {
-  object.studentId = id;
+  object.studentIdNorm = id;
 }
 
 extension TokenModelQueryWhereSort
     on QueryBuilder<TokenModel, TokenModel, QWhere> {
-  QueryBuilder<TokenModel, TokenModel, QAfterWhere> anyStudentId() {
+  QueryBuilder<TokenModel, TokenModel, QAfterWhere> anyStudentIdNorm() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
@@ -164,70 +179,71 @@ extension TokenModelQueryWhereSort
 
 extension TokenModelQueryWhere
     on QueryBuilder<TokenModel, TokenModel, QWhereClause> {
-  QueryBuilder<TokenModel, TokenModel, QAfterWhereClause> studentIdEqualTo(
-      Id studentId) {
+  QueryBuilder<TokenModel, TokenModel, QAfterWhereClause> studentIdNormEqualTo(
+      Id studentIdNorm) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
-        lower: studentId,
-        upper: studentId,
+        lower: studentIdNorm,
+        upper: studentIdNorm,
       ));
     });
   }
 
-  QueryBuilder<TokenModel, TokenModel, QAfterWhereClause> studentIdNotEqualTo(
-      Id studentId) {
+  QueryBuilder<TokenModel, TokenModel, QAfterWhereClause>
+      studentIdNormNotEqualTo(Id studentIdNorm) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
-              IdWhereClause.lessThan(upper: studentId, includeUpper: false),
+              IdWhereClause.lessThan(upper: studentIdNorm, includeUpper: false),
             )
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: studentId, includeLower: false),
+              IdWhereClause.greaterThan(
+                  lower: studentIdNorm, includeLower: false),
             );
       } else {
         return query
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: studentId, includeLower: false),
+              IdWhereClause.greaterThan(
+                  lower: studentIdNorm, includeLower: false),
             )
             .addWhereClause(
-              IdWhereClause.lessThan(upper: studentId, includeUpper: false),
+              IdWhereClause.lessThan(upper: studentIdNorm, includeUpper: false),
             );
       }
     });
   }
 
-  QueryBuilder<TokenModel, TokenModel, QAfterWhereClause> studentIdGreaterThan(
-      Id studentId,
-      {bool include = false}) {
+  QueryBuilder<TokenModel, TokenModel, QAfterWhereClause>
+      studentIdNormGreaterThan(Id studentIdNorm, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: studentId, includeLower: include),
+        IdWhereClause.greaterThan(lower: studentIdNorm, includeLower: include),
       );
     });
   }
 
-  QueryBuilder<TokenModel, TokenModel, QAfterWhereClause> studentIdLessThan(
-      Id studentId,
+  QueryBuilder<TokenModel, TokenModel, QAfterWhereClause> studentIdNormLessThan(
+      Id studentIdNorm,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.lessThan(upper: studentId, includeUpper: include),
+        IdWhereClause.lessThan(upper: studentIdNorm, includeUpper: include),
       );
     });
   }
 
-  QueryBuilder<TokenModel, TokenModel, QAfterWhereClause> studentIdBetween(
-    Id lowerStudentId,
-    Id upperStudentId, {
+  QueryBuilder<TokenModel, TokenModel, QAfterWhereClause> studentIdNormBetween(
+    Id lowerStudentIdNorm,
+    Id upperStudentIdNorm, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
-        lower: lowerStudentId,
+        lower: lowerStudentIdNorm,
         includeLower: includeLower,
-        upper: upperStudentId,
+        upper: upperStudentIdNorm,
         includeUpper: includeUpper,
       ));
     });
@@ -931,43 +947,197 @@ extension TokenModelQueryFilter
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> studentIdEqualTo(
-      Id? value) {
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'studentId',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
       studentIdGreaterThan(
-    Id? value, {
+    String? value, {
     bool include = false,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
         property: r'studentId',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> studentIdLessThan(
-    Id? value, {
+    String? value, {
     bool include = false,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
         property: r'studentId',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> studentIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'studentId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      studentIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'studentId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> studentIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'studentId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> studentIdContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'studentId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> studentIdMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'studentId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      studentIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'studentId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      studentIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'studentId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      studentIdNormIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'studentIdNorm',
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      studentIdNormIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'studentIdNorm',
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      studentIdNormEqualTo(Id? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'studentIdNorm',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      studentIdNormGreaterThan(
+    Id? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'studentIdNorm',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      studentIdNormLessThan(
+    Id? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'studentIdNorm',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      studentIdNormBetween(
     Id? lower,
     Id? upper, {
     bool includeLower = true,
@@ -975,7 +1145,7 @@ extension TokenModelQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'studentId',
+        property: r'studentIdNorm',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1050,6 +1220,18 @@ extension TokenModelQuerySortBy
   QueryBuilder<TokenModel, TokenModel, QAfterSortBy> sortByRefreshTokenDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'refreshToken', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterSortBy> sortByStudentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'studentId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterSortBy> sortByStudentIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'studentId', Sort.desc);
     });
   }
 }
@@ -1127,6 +1309,18 @@ extension TokenModelQuerySortThenBy
       return query.addSortBy(r'studentId', Sort.desc);
     });
   }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterSortBy> thenByStudentIdNorm() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'studentIdNorm', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterSortBy> thenByStudentIdNormDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'studentIdNorm', Sort.desc);
+    });
+  }
 }
 
 extension TokenModelQueryWhereDistinct
@@ -1164,13 +1358,20 @@ extension TokenModelQueryWhereDistinct
       return query.addDistinctBy(r'refreshToken', caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<TokenModel, TokenModel, QDistinct> distinctByStudentId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'studentId', caseSensitive: caseSensitive);
+    });
+  }
 }
 
 extension TokenModelQueryProperty
     on QueryBuilder<TokenModel, TokenModel, QQueryProperty> {
-  QueryBuilder<TokenModel, int, QQueryOperations> studentIdProperty() {
+  QueryBuilder<TokenModel, int, QQueryOperations> studentIdNormProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'studentId');
+      return query.addPropertyName(r'studentIdNorm');
     });
   }
 
@@ -1201,6 +1402,12 @@ extension TokenModelQueryProperty
   QueryBuilder<TokenModel, String?, QQueryOperations> refreshTokenProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'refreshToken');
+    });
+  }
+
+  QueryBuilder<TokenModel, String?, QQueryOperations> studentIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'studentId');
     });
   }
 }

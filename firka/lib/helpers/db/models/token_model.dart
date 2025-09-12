@@ -8,7 +8,8 @@ part 'token_model.g.dart';
 
 @collection
 class TokenModel {
-  Id? studentId; // Custom unique student identifier
+  Id? studentIdNorm; // Custom unique student identifier with "G0" removed
+  String? studentId; // Custom unique student identifier
   String? iss; // Institution id for student
   String? idToken; // Unique identifier for the token if needed
   String? accessToken; // The main auth token
@@ -17,10 +18,11 @@ class TokenModel {
 
   TokenModel();
 
-  factory TokenModel.fromValues(Id studentId, String iss, String idToken,
-      String accessToken, String refreshToken, int expiryDate) {
+  factory TokenModel.fromValues(Id studentIdNorm, studentId, String iss,
+      String idToken, String accessToken, String refreshToken, int expiryDate) {
     var m = TokenModel();
 
+    m.studentIdNorm = studentIdNorm;
     m.studentId = studentId;
     m.iss = iss;
     m.idToken = idToken;
@@ -35,16 +37,16 @@ class TokenModel {
     var m = TokenModel();
     final jwt = JWT.decode(resp.idToken);
 
-    // TODO: Add a proper model for jwt id
-
-    m.studentId = int.parse(jwt.payload["kreta:user_name"]);
+    m.studentIdNorm = int.parse(
+        jwt.payload["kreta:user_name"].toString().replaceAll("G0", ""));
+    m.studentId = jwt.payload["kreta:user_name"];
     m.iss = jwt.payload["kreta:institute_code"];
     m.idToken = resp.idToken;
     m.accessToken = resp.accessToken;
     m.refreshToken = resp.refreshToken;
     m.expiryDate = timeNow()
         .add(Duration(seconds: resp.expiresIn))
-        .subtract(Duration(minutes: 10)); // just to be safe
+        .subtract(Duration(minutes: 1)); // just to be safe
 
     return m;
   }
