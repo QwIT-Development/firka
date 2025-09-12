@@ -8,8 +8,10 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../../../helpers/api/consts.dart';
 import '../../../helpers/api/token_grant.dart';
 import '../../../helpers/db/models/token_model.dart';
+import '../../../helpers/firka_bundle.dart';
 import '../../../helpers/firka_state.dart';
 import '../../../helpers/settings/setting.dart';
+import '../pages/error/error_page.dart';
 
 class LoginWebviewWidget extends StatefulWidget {
   final AppInitialization data;
@@ -91,7 +93,14 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
             if (kDebugMode) {
               print("oauthredirect failed: $ex");
             }
-            // TODO: display an error popup
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => DefaultAssetBundle(
+                        bundle: FirkaBundle(),
+                        child: ErrorPage(
+                          exception: ex.toString(),
+                        ))));
           }
 
           return NavigationDecision.prevent;
