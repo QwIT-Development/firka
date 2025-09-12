@@ -137,21 +137,21 @@ class _DebugScreen extends FirkaState<DebugScreen> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  print(
+                  logger.finest(
                       "getStudent(): ${await widget.data.client.getStudent(forceCache: useCache)}");
                 },
                 child: const Text('getStudent()'),
               ),
               ElevatedButton(
                 onPressed: () async {
-                  print(
+                  logger.finest(
                       "getNoticeBoard(): ${await widget.data.client.getNoticeBoard(forceCache: useCache)}");
                 },
                 child: const Text('getNoticeBoard()'),
               ),
               ElevatedButton(
                 onPressed: () async {
-                  print(
+                  logger.finest(
                       "getGrades(): ${await widget.data.client.getGrades(forceCache: useCache)}");
                 },
                 child: const Text('getGrades()'),
@@ -163,7 +163,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                   var start = now.subtract(Duration(days: 14));
                   var end = now.add(Duration(days: 7));
 
-                  print(
+                  logger.finest(
                       "getLessons(): ${await widget.data.client.getTimeTable(start, end, forceCache: useCache)}");
                 },
                 child: const Text('getLessons()'),
@@ -175,21 +175,21 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                   var start = now.subtract(Duration(days: 7));
                   var end = now.add(Duration(days: 14));
 
-                  print(
+                  logger.finest(
                       "getHomework(): ${await widget.data.client.getHomework(start, end, forceCache: useCache)}");
                 },
                 child: const Text('getHomework()'),
               ),
               ElevatedButton(
                 onPressed: () async {
-                  print(
+                  logger.finest(
                       "getTests(): ${await widget.data.client.getTests(forceCache: useCache)}");
                 },
                 child: const Text('getTests()'),
               ),
               ElevatedButton(
                 onPressed: () async {
-                  print(
+                  logger.finest(
                       "getOmissions(): ${await widget.data.client.getOmissions(forceCache: useCache)}");
                 },
                 child: const Text('getOmissions()'),

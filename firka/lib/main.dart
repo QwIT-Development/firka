@@ -24,6 +24,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -34,6 +35,8 @@ import 'helpers/update_notifier.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/app_localizations_de.dart';
 import 'l10n/app_localizations_en.dart';
+
+late final Logger logger;
 
 Isar? isarInit;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -198,7 +201,7 @@ Future<AppInitialization> initializeApp() async {
   final tokens = await isar.tokenModels.where().findAll();
 
   if (kDebugMode) {
-    print('Token count: ${tokens.length}');
+    logger.finest('Token count: ${tokens.length}');
   }
 
   var devInfoFetched = false;
@@ -215,14 +218,14 @@ Future<AppInitialization> initializeApp() async {
     }
   } catch (e) {
     if (e is Error) {
-      debugPrintStack(stackTrace: e.stackTrace, label: e.toString());
+      logger.shout("Error in initializeApp()", e.toString(), e.stackTrace);
     } else {
-      debugPrint(e.toString());
+      logger.shout("Error in initializeApp()", e.toString());
     }
   }
 
-  debugPrint("Fetched device info: ${devInfoFetched ? "yes" : "no"}");
-  debugPrint("Using device info: ${devInfo.toString()}");
+  logger.fine("Fetched device info: ${devInfoFetched ? "yes" : "no"}");
+  logger.fine("Using device info: ${devInfo.toString()}");
 
   var init = AppInitialization(
     isar: isar,
@@ -236,25 +239,33 @@ Future<AppInitialization> initializeApp() async {
   await _initData(init);
 
   init.settingsUpdateNotifier.addListener(() {
-    debugPrint("Settings updated");
+    logger.finest("Settings updated");
   });
 
   return init;
 }
 
 void main() async {
+  logger = Logger("Firka");
   dio.options.connectTimeout = Duration(seconds: 5);
   dio.options.receiveTimeout = Duration(seconds: 3);
   dio.options.validateStatus = (status) => status != null && status < 500;
 
+  hierarchicalLoggingEnabled = true;
+  logger.level = Level.ALL;
+  logger.onRecord.listen((record) {
+    debugPrint('[Firka] [${record.level.name}] ${record.message}');
+  });
+
   runZonedGuarded(() async {
+    logger.finest("Initializing app");
     WidgetsFlutterBinding.ensureInitialized();
 
     // Run App Initialization
     runApp(InitializationScreen());
   }, (error, stackTrace) {
-    debugPrint('Caught error: $error');
-    debugPrint('Stack trace: $stackTrace');
+    logger.shout('Caught error: $error');
+    logger.shout('Stack trace: $stackTrace');
 
     navigatorKey.currentState?.push(
       MaterialPageRoute(
@@ -281,9 +292,8 @@ class InitializationScreen extends StatelessWidget {
         // Check if initialization is complete
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasError) {
-            debugPrintStack(
-                stackTrace: snapshot.stackTrace,
-                label: snapshot.error.toString());
+            logger.shout("Error in InitializationScreen",
+                snapshot.error.toString(), snapshot.stackTrace);
 
             // Handle initialization error
             return MaterialApp(
@@ -315,12 +325,12 @@ class InitializationScreen extends StatelessWidget {
             watch.messageStream.listen((e) {
               var msg = e.entries.toMap();
 
-              debugPrint("[Watch -> Phone]: ${msg["id"]}");
+              logger.finest("WatchOS IPC [Watch -> Phone]: ${msg["id"]}");
 
               switch (msg["id"]) {
                 case "ping":
                   if (initData.tokens.isNotEmpty) {
-                    debugPrint("[Phone -> Watch]: pong");
+                    logger.finest("WatchOS IPC [Phone -> Watch]: pong");
                     watch.sendMessage({"id": "pong"});
                     navigatorKey.currentState?.push(
                       MaterialPageRoute(

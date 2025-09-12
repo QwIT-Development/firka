@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:brotli/brotli.dart';
-import 'package:flutter/foundation.dart';
+import 'package:firka/main.dart';
 import 'package:flutter/services.dart';
 
 class FirkaBundle extends CachingAssetBundle {
@@ -34,13 +34,16 @@ class FirkaBundle extends CachingAssetBundle {
   @override
   Future<ByteData> load(String key) async {
     if (!_compressedBundle) {
+      logger
+          .finest("Loading asset from root bundle: assets/flutter_assets/$key");
       return rootBundle.load(key);
     } else {
       index ??= await loadIndex();
 
       final gzip = GZipCodec();
 
-      debugPrint("assets/flutter_assets/$key");
+      logger.finest(
+          "Loading asset from firka bundle: assets/flutter_assets/$key");
       switch (index!["assets/flutter_assets/$key"]!) {
         case "b": // brotli
           return decode(brotli, await rootBundle.load(key));
@@ -49,6 +52,7 @@ class FirkaBundle extends CachingAssetBundle {
         case "r": // raw
           return rootBundle.load(key);
         default:
+          logger.shout("Unknown file format: ${index![key]!}");
           throw "Unknown file format: ${index![key]!}";
       }
     }

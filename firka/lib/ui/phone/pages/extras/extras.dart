@@ -13,7 +13,7 @@ import '../../screens/home/home_screen.dart';
 void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
   Widget debugBtn = SizedBox();
 
-  debugPrint("Developer mode: ${isDeveloper()}");
+  logger.finest("showExtrasBottomSheet() developer mode: ${isDeveloper()}");
 
   if (isDeveloper()) {
     debugBtn = GestureDetector(
