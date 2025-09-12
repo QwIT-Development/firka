@@ -254,7 +254,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                       await widget.data.isar.writeTxn(() async {
                         await item.save(widget.data.isar.appSettingsModels);
                       });
-                      debugPrint('Settings saved');
+                      logger.finest('Settings saved');
                     }),
               ),
               SizedBox(width: 8),
@@ -536,7 +536,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                               await item
                                   .save(widget.data.isar.appSettingsModels);
                             });
-                            debugPrint('Settings saved');
+                            logger.finest('Settings saved');
                           })
                 ],
               ),
