@@ -272,7 +272,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
         _preloadDone = true;
       });
     } catch (e) {
-      debugPrint('Error preloading images: $e');
+      logger.severe('Home: error preloading images: $e');
       if (!mounted) return;
       setState(() {
         _preloadDone = true;

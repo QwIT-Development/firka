@@ -48,7 +48,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
 
         if (uri.path == "/ellenorzo-student/prod/oauthredirect") {
           if (kDebugMode) {
-            print("query params: ${uri.queryParameters}");
+            logger.info("query params: ${uri.queryParameters}");
           }
 
           var code = uri.queryParameters["code"]!;
@@ -58,7 +58,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
             var resp = await getAccessToken(code);
 
             if (kDebugMode) {
-              print("getAccessToken(): $resp");
+              logger.info("getAccessToken(): $resp");
             }
 
             var tokenModel = TokenModel.fromResp(resp);
@@ -91,7 +91,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
             runApp(InitializationScreen());
           } catch (ex) {
             if (kDebugMode) {
-              print("oauthredirect failed: $ex");
+              logger.info("oauthredirect failed: $ex");
             }
             Navigator.push(
                 context,

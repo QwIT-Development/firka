@@ -56,7 +56,7 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
         _preloadDone = true;
       });
     } catch (e) {
-      debugPrint('Error preloading images: $e');
+      logger.shout('LoginScreen: Error preloading images: $e');
       setState(() {
         _preloadDone = true;
       });

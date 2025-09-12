@@ -264,7 +264,8 @@ class _HomeTimetableMonthlyScreen
                       }
                       break;
                     default:
-                      debugPrint(omissionType.studentPresence!.name);
+                      logger.fine(
+                          "omission: ${omissionType.studentPresence!.name}");
                       body = Center(
                         child: FirkaIconWidget(
                           FirkaIconType.majesticons,
