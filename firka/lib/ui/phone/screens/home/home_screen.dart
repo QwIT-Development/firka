@@ -254,7 +254,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
   }
 
   void settingsUpdateListener() {
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<void> _preloadImages() async {
