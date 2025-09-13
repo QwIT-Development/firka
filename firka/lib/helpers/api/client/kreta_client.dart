@@ -77,12 +77,15 @@ class KretaClient {
 
       if (now.millisecondsSinceEpoch >=
           model.expiryDate!.millisecondsSinceEpoch) {
+        logger.finest("Token expired, refreshing: $model");
         var extended = await extendToken(model);
         var tokenModel = TokenModel.fromResp(extended);
 
         await isar.writeTxn(() async {
           await isar.tokenModels.put(tokenModel);
         });
+
+        logger.finest("Token refreshed and saved: $model");
 
         model = tokenModel;
       }
@@ -104,7 +107,24 @@ class KretaClient {
 
   Future<(dynamic, int)> _authJson(String method, String url,
       [Object? data]) async {
-    var resp = await _authReq(method, url, data);
+    Response<dynamic> resp;
+
+    try {
+      logger.finest("Sending authenticated request to: $url");
+      resp = await _authReq(method, url, data);
+      if (!url.endsWith("TanuloAdatlap")) {
+        logger.finest("Response: ${resp.statusCode} ${resp.data}");
+      }
+    } catch (ex) {
+      if (ex is Error) {
+        logger.shout(
+            "Request to url: $url failed", ex.toString(), ex.stackTrace);
+      } else {
+        logger.shout("Request to url: $url failed", ex.toString());
+      }
+
+      rethrow;
+    }
 
     return (resp.data, resp.statusCode!);
   }
@@ -121,6 +141,8 @@ class KretaClient {
     int statusCode;
     try {
       if (forceCache && cache != null) {
+        logger.finest(
+            "_cachingGet(forceCache: $forceCache}): decoding cached response for: $url");
         return (jsonDecode(cache.cacheData!), 200, null, true);
       }
 
@@ -129,25 +151,37 @@ class KretaClient {
 
         if (statusCode >= 400) {
           if (cache != null) {
+            logger.finest(
+                "_cachingGet(forceCache: $forceCache}): decoding uncached response for: $url");
             return (jsonDecode(cache.cacheData!), statusCode, null, true);
           }
         }
       } catch (ex) {
+        if (ex is Error) {
+          logger.finest(
+              "Request failed for $url", ex.toString(), ex.stackTrace);
+        } else {
+          logger.finest("Request failed for $url", ex.toString());
+        }
+        logger.finest("Retrying: $counter / $backoffCount");
         if (_isTokenExpired(ex) ||
             ex is! DioException ||
             counter >= backoffCount) {
           rethrow;
         }
 
-        await Future.delayed(
-            Duration(milliseconds: backoffMin + (counter * backoffStep)));
+        final backoffDelay = backoffMin + (counter * backoffStep);
+        logger.finest("Waiting: $backoffDelay");
+        await Future.delayed(Duration(milliseconds: backoffDelay));
 
         return _cachingGet(id, url, forceCache, counter + 1);
       }
     } catch (ex) {
       if (cache != null) {
+        logger.finest("request failed, using cache for: $url");
         return (jsonDecode(cache.cacheData!), 0, ex, true);
       } else {
+        logger.finest("request failed, no cache for: $url");
         return (null, 0, ex, false);
       }
     }
