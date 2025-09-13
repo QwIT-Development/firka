@@ -308,44 +308,42 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
         ttEmptyCards.clear();
       }
 
-      return Scaffold(
-          backgroundColor: appStyle.colors.background,
-          body: Stack(children: [
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: 74 + 16,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
+      return Stack(children: [
+        SizedBox(
+          width: MediaQuery.of(context).size.width,
+          height: 74 + 16,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Text(
+                      widget.data.l10n.timetable,
+                      style: appStyle.fonts.H_H2
+                          .apply(color: appStyle.colors.textPrimary),
+                    ),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          widget.data.l10n.timetable,
-                          style: appStyle.fonts.H_H2
-                              .apply(color: appStyle.colors.textPrimary),
-                        ),
-                        Row(
-                          children: [
-                            GestureDetector(
-                              child: Card(
-                                color: appStyle.colors.buttonSecondaryFill,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: FirkaIconWidget(
-                                    FirkaIconType.majesticons,
-                                    Majesticon.tableSolid,
-                                    size: 26.0,
-                                    color: appStyle.colors.accent,
-                                  ),
-                                ),
+                        GestureDetector(
+                          child: Card(
+                            color: appStyle.colors.buttonSecondaryFill,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.tableSolid,
+                                size: 26.0,
+                                color: appStyle.colors.accent,
                               ),
-                              onTap: () {
-                                widget.pageController(1);
-                              },
                             ),
-                            /* TODO: 1.1.0
+                          ),
+                          onTap: () {
+                            widget.pageController(1);
+                          },
+                        ),
+                        /* TODO: 1.1.0
 
                         Card(
                           color: appStyle.colors.buttonSecondaryFill,
@@ -360,166 +358,163 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                           ),
                         ),
                         */
-                            GestureDetector(
-                              child: Card(
-                                color: appStyle.colors.buttonSecondaryFill,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: FirkaIconWidget(
-                                    FirkaIconType.majesticons,
-                                    Majesticon.settingsCogSolid,
-                                    size: 26.0,
-                                    color: appStyle.colors.accent,
-                                  ),
-                                ),
-                              ),
-                              onTap: () {
-                                showSettingsSheet(
-                                    context,
-                                    MediaQuery.of(context).size.height * 0.4,
-                                    widget.data,
-                                    widget.data.settings
-                                        .group("settings")
-                                        .subGroup("timetable_toast"));
-                              },
-                            )
-                          ],
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
                         GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: FirkaIconWidget(
-                              FirkaIconType.icons,
-                              "dropdownLeft",
-                              size: 24,
-                              color: appStyle.colors.accent,
+                          child: Card(
+                            color: appStyle.colors.buttonSecondaryFill,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.settingsCogSolid,
+                                size: 26.0,
+                                color: appStyle.colors.accent,
+                              ),
                             ),
                           ),
-                          onTap: () async {
-                            var newNow = now!.subtract(Duration(days: 7));
-                            if (!mounted) return;
-                            setState(() {
-                              now = newNow;
-                              lessons = null;
-                              dates = null;
-                            });
-                            await initForWeek(newNow);
-                            setState(() {
-                              now = newNow;
-                            });
-                          },
-                        ),
-                        GestureDetector(
-                          child: Row(
-                            children: [
-                              Text(
-                                  now!.format(widget.data.l10n,
-                                      FormatMode.yyyymmddwedd),
-                                  style: appStyle.fonts.B_14R.apply(
-                                      color: appStyle.colors.textPrimary)),
-                              SizedBox(width: 4),
-                              Text("•",
-                                  style: appStyle.fonts.B_16R
-                                      .apply(color: appStyle.colors.accent)),
-                              SizedBox(width: 4),
-                              Text(
-                                  now!.isAWeek()
-                                      ? widget.data.l10n.a_week
-                                      : widget.data.l10n.b_week,
-                                  style: appStyle.fonts.B_14R.apply(
-                                      color: appStyle.colors.textPrimary)),
-                            ],
-                          ),
                           onTap: () {
-                            now = timeNow();
-                            setActiveToToday();
-                            _controller.jumpToPage(active);
+                            showSettingsSheet(
+                                context,
+                                MediaQuery.of(context).size.height * 0.4,
+                                widget.data,
+                                widget.data.settings
+                                    .group("settings")
+                                    .subGroup("timetable_toast"));
                           },
-                        ),
-                        GestureDetector(
-                          child: FirkaIconWidget(
-                            FirkaIconType.icons,
-                            "dropdownRight",
-                            size: 24,
-                            color: appStyle.colors.accent,
-                          ),
-                          onTap: () async {
-                            var newNow = now!.add(Duration(days: 7));
-                            now = newNow;
-                            if (now!.getMonday().getMidnight() ==
-                                timeNow().getMonday().getMidnight()) {
-                              now = timeNow();
-                            }
-                            await initForWeek(newNow);
-                            if (!mounted) return;
-                            setState(() {
-                              now = newNow;
-                            });
-                          },
-                        ),
+                        )
                       ],
-                    )
-                  ],
-                ),
-              ),
-            ),
-            Column(
-              children: [
-                TransparentPointer(
-                    child: SizedBox(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height / 1.4,
-                        child: CarouselSlider(
-                          items: ttDays,
-                          carouselController: _controller,
-                          options: CarouselOptions(
-                              height: MediaQuery.of(context).size.height / 1.36,
-                              viewportFraction: 1,
-                              enableInfiniteScroll: false,
-                              initialPage: active,
-                              onPageChanged: (i, _) {
-                                if (animating || !mounted) return;
-                                setState(() {
-                                  active = i;
-                                });
-                              }),
-                        ))),
-                Stack(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: ttEmptyCards,
                     ),
-                    TransparentPointer(
-                        child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: ttWidgets,
-                    )),
                   ],
                 ),
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: FirkaIconWidget(
+                          FirkaIconType.icons,
+                          "dropdownLeft",
+                          size: 24,
+                          color: appStyle.colors.accent,
+                        ),
+                      ),
+                      onTap: () async {
+                        var newNow = now!.subtract(Duration(days: 7));
+                        if (!mounted) return;
+                        setState(() {
+                          now = newNow;
+                          lessons = null;
+                          dates = null;
+                        });
+                        await initForWeek(newNow);
+                        setState(() {
+                          now = newNow;
+                        });
+                      },
+                    ),
+                    GestureDetector(
+                      child: Row(
+                        children: [
+                          Text(
+                              now!.format(
+                                  widget.data.l10n, FormatMode.yyyymmddwedd),
+                              style: appStyle.fonts.B_14R
+                                  .apply(color: appStyle.colors.textPrimary)),
+                          SizedBox(width: 4),
+                          Text("•",
+                              style: appStyle.fonts.B_16R
+                                  .apply(color: appStyle.colors.accent)),
+                          SizedBox(width: 4),
+                          Text(
+                              now!.isAWeek()
+                                  ? widget.data.l10n.a_week
+                                  : widget.data.l10n.b_week,
+                              style: appStyle.fonts.B_14R
+                                  .apply(color: appStyle.colors.textPrimary)),
+                        ],
+                      ),
+                      onTap: () {
+                        now = timeNow();
+                        setActiveToToday();
+                        _controller.jumpToPage(active);
+                      },
+                    ),
+                    GestureDetector(
+                      child: FirkaIconWidget(
+                        FirkaIconType.icons,
+                        "dropdownRight",
+                        size: 24,
+                        color: appStyle.colors.accent,
+                      ),
+                      onTap: () async {
+                        var newNow = now!.add(Duration(days: 7));
+                        now = newNow;
+                        if (now!.getMonday().getMidnight() ==
+                            timeNow().getMonday().getMidnight()) {
+                          now = timeNow();
+                        }
+                        await initForWeek(newNow);
+                        if (!mounted) return;
+                        setState(() {
+                          now = newNow;
+                        });
+                      },
+                    ),
+                  ],
+                )
               ],
-            )
-          ]));
-    } else {
-      return Scaffold(
-        backgroundColor: appStyle.colors.background,
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [DelayedSpinnerWidget()],
-            )
-          ],
+            ),
+          ),
         ),
+        Column(
+          children: [
+            TransparentPointer(
+                child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height / 1.4,
+                    child: CarouselSlider(
+                      items: ttDays,
+                      carouselController: _controller,
+                      options: CarouselOptions(
+                          height: MediaQuery.of(context).size.height / 1.36,
+                          viewportFraction: 1,
+                          enableInfiniteScroll: false,
+                          initialPage: active,
+                          onPageChanged: (i, _) {
+                            if (animating || !mounted) return;
+                            setState(() {
+                              active = i;
+                            });
+                          }),
+                    ))),
+            Stack(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: ttEmptyCards,
+                ),
+                TransparentPointer(
+                    child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: ttWidgets,
+                )),
+              ],
+            ),
+          ],
+        )
+      ]);
+    } else {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [DelayedSpinnerWidget()],
+          )
+        ],
       );
     }
   }
