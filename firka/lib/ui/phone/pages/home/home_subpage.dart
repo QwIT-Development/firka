@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../helpers/firka_state.dart';
+import '../../../model/style.dart';
 
 class PageWithSubPages extends StatefulWidget {
   final int pageIndex;
@@ -19,6 +20,7 @@ class _PageWithSubPagesState extends FirkaState<PageWithSubPages> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: appStyle.colors.background,
       body: widget.subPages[_currentSubPage]((page) {
         setState(() {
           _currentSubPage = page;
