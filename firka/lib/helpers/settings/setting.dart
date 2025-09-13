@@ -11,7 +11,6 @@ import 'package:isar/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../main.dart';
-// import 'package:restart_app/restart_app.dart';
 
 const bellRing = 1001;
 const rounding1 = 1002;
@@ -489,8 +488,6 @@ class SettingsGroup implements SettingsItem {
       await item.save(model);
     }
 
-    await postUpdate();
-
     initData.settingsUpdateNotifier.update();
   }
 }
@@ -524,8 +521,6 @@ class SettingsSubGroup implements SettingsItem {
     for (var item in children.values) {
       await item.save(model);
     }
-
-    await postUpdate();
 
     initData.settingsUpdateNotifier.update();
   }
@@ -823,7 +818,6 @@ class SettingsBoolean implements SettingsItem {
     v.valueBool = value;
 
     await model.put(v);
-    await postUpdate();
 
     initData.settingsUpdateNotifier.update();
   }
@@ -864,7 +858,6 @@ class SettingsItemsRadio implements SettingsItem {
     v.valueIndex = activeIndex;
 
     await model.put(v);
-    await postUpdate();
 
     initData.settingsUpdateNotifier.update();
   }
@@ -928,7 +921,6 @@ class SettingsDouble implements SettingsItem {
     v.valueDouble = value;
 
     await model.put(v);
-    await postUpdate();
 
     initData.settingsUpdateNotifier.update();
   }
@@ -969,7 +961,6 @@ class SettingsString implements SettingsItem {
     v.valueString = value;
 
     await model.put(v);
-    await postUpdate();
 
     initData.settingsUpdateNotifier.update();
   }

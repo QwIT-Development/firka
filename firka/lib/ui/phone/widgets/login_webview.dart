@@ -81,6 +81,8 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
               await accountPicker.save(widget.data.isar.appSettingsModels);
             });
 
+            await accountPicker.postUpdate();
+
             if (!mounted) return NavigationDecision.prevent;
 
             runApp(InitializationScreen());
