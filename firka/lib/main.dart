@@ -178,8 +178,9 @@ Future<void> _initData(AppInitialization init) async {
     final i = (init.settings.group("profile_settings")["e_kreta_account_picker"]
             as SettingsKretenAccountPicker)
         .accountIndex;
-    init.client = KretaClient(
-        (await init.isar.tokenModels.where().findAll())[i], init.isar);
+    final token = (await init.isar.tokenModels.where().findAll())[i];
+    logger.fine("Initializing kréta client as: ${token.studentId}");
+    init.client = KretaClient(token, init.isar);
 
     await WidgetCacheHelper.updateWidgetCache(appStyle, init.client);
   }
@@ -200,9 +201,7 @@ Future<AppInitialization> initializeApp() async {
   final isar = await initDB();
   final tokens = await isar.tokenModels.where().findAll();
 
-  if (kDebugMode) {
-    logger.finest('Token count: ${tokens.length}');
-  }
+  logger.finest('Token count: ${tokens.length}');
 
   var devInfoFetched = false;
   var devInfo = DeviceInfo("SM-A705FN", "11", "30");
@@ -253,9 +252,19 @@ void main() async {
 
   hierarchicalLoggingEnabled = true;
   logger.level = Level.ALL;
-  logger.onRecord.listen((record) {
-    debugPrint('[Firka] [${record.level.name}] ${record.message}');
-  });
+  {
+    final jwtPattern =
+        RegExp(r'([A-Za-z0-9-_]+)\.([A-Za-z0-9-_]+)\.([A-Za-z0-9-_]+)');
+    final omPattern = RegExp(r'(\d{3})(\d{6})([A-Za-z0-9]?)');
+    final refreshTokenPattern = RegExp(r'"([A-Z0-9-]+)"');
+
+    logger.onRecord.listen((record) {
+      debugPrint(
+          '[Firka] [${record.level.name}] ${record.message.replaceAll(jwtPattern, "***").replaceAll(refreshTokenPattern, "\"***\"").replaceAllMapped(omPattern, (match) {
+        return "${match.group(1)}******${match.group(3)}";
+      })}');
+    });
+  }
 
   runZonedGuarded(() async {
     logger.finest("Initializing app");
