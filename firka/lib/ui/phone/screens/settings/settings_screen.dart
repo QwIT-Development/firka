@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:firka/helpers/db/models/app_settings_model.dart';
@@ -11,6 +12,8 @@ import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
+import 'package:path/path.dart' as p;
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../helpers/firka_bundle.dart';
 import '../../../../helpers/firka_state.dart';
@@ -574,6 +577,76 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
             );
           },
         ));
+        continue;
+      }
+      if (item is SettingsLogs) {
+        final logFileRegex = RegExp(r'^(\d{4})_(\d{2})_(\d{2})\.log$');
+
+        for (final entity in widget.data.appDir.listSync()) {
+          if (entity is! File) continue;
+          final name = entity.uri.pathSegments.last;
+          final m = logFileRegex.firstMatch(name);
+          if (m == null) continue;
+
+          widgets.add(GestureDetector(
+            child: SizedBox(
+              height: 52,
+              child: FirkaCard(
+                left: [
+                  FirkaIconWidget(
+                    FirkaIconType.majesticons,
+                    Majesticon.noteTextSolid,
+                    color: appStyle.colors.accent,
+                  ),
+                  Text(
+                    name,
+                    style: appStyle.fonts.B_16R
+                        .apply(color: appStyle.colors.textPrimary),
+                  ),
+                ],
+              ),
+            ),
+            onTap: () async {
+              try {
+                logger.info("Compressing log file: ${entity.path}");
+                final original = File(entity.path);
+                final originalBytes = await original.readAsBytes();
+                final gzBytes = GZipCodec().encode(originalBytes);
+                final tempDir = await Directory.systemTemp.createTemp('firka');
+                final gzPath =
+                    p.join(tempDir.path, '${p.basename(entity.path)}.gz');
+                final gzFile =
+                    await File(gzPath).writeAsBytes(gzBytes, flush: true);
+
+                final params = ShareParams(
+                  text: name,
+                  files: [XFile(gzFile.path, mimeType: 'application/gzip')],
+                );
+
+                await SharePlus.instance.share(params);
+
+                await gzFile.delete();
+                await tempDir.delete();
+              } catch (ex) {
+                if (ex is Error) {
+                  logger.shout("Failed to compress log file", ex.toString(),
+                      ex.stackTrace);
+                } else {
+                  logger.shout("Failed to compress log file", ex.toString());
+                }
+
+                logger.info("Sharing regular log file instead: ${entity.path}");
+                final params = ShareParams(
+                  text: name,
+                  files: [XFile(entity.path, mimeType: 'text/plain')],
+                );
+
+                await SharePlus.instance.share(params);
+              }
+            },
+          ));
+          widgets.add(SizedBox(height: 8));
+        }
         continue;
       }
     }
