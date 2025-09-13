@@ -451,13 +451,13 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                       ),
                       onTap: () async {
                         var newNow = now!.add(Duration(days: 7));
-                        now = newNow;
-                        if (now!.getMonday().getMidnight() ==
-                            timeNow().getMonday().getMidnight()) {
-                          now = timeNow();
-                        }
-                        await initForWeek(newNow);
                         if (!mounted) return;
+                        setState(() {
+                          now = newNow;
+                          lessons = null;
+                          dates = null;
+                        });
+                        await initForWeek(newNow);
                         setState(() {
                           now = newNow;
                         });
