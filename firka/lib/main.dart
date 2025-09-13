@@ -64,6 +64,7 @@ class DeviceInfo {
 
 class AppInitialization {
   final Isar isar;
+  final Directory appDir;
   final PackageInfo packageInfo;
   final DeviceInfo devInfo;
   late KretaClient client;
@@ -76,6 +77,7 @@ class AppInitialization {
 
   AppInitialization({
     required this.isar,
+    required this.appDir,
     required this.devInfo,
     required this.packageInfo,
     required this.tokens,
@@ -229,6 +231,7 @@ Future<AppInitialization> initializeApp() async {
 
   var init = AppInitialization(
     isar: isar,
+    appDir: await getApplicationDocumentsDirectory(),
     devInfo: devInfo,
     packageInfo: await PackageInfo.fromPlatform(),
     tokens: tokens,

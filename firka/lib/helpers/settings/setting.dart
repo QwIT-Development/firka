@@ -285,6 +285,7 @@ class SettingsStore {
                     l10n.s_stats_for_nerds,
                     false,
                     always),
+                "logs": SettingsLogs(0, always),
               }),
               isDeveloper),
 
@@ -721,6 +722,29 @@ class SettingsKretenAccountPicker implements SettingsItem {
 
     initData.settingsUpdateNotifier.update();
   }
+}
+
+class SettingsLogs implements SettingsItem {
+  @override
+  Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
+  @override
+  bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
+  String title = "";
+  String icon = "";
+
+  SettingsLogs(this.key, this.visibilityProvider);
+
+  @override
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
+
+  @override
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
 }
 
 class SettingsAppIconPicker implements SettingsItem {
