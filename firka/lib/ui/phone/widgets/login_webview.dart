@@ -1,6 +1,5 @@
 import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/main.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -39,6 +38,8 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
           widget.username!, widget.schoolId!);
     }
 
+    logger.info("Using loginUrl: $loginUrl");
+
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadRequest(Uri.parse(loginUrl))
@@ -47,9 +48,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
         var uri = Uri.parse(request.url);
 
         if (uri.path == "/ellenorzo-student/prod/oauthredirect") {
-          if (kDebugMode) {
-            logger.info("query params: ${uri.queryParameters}");
-          }
+          logger.info("query params: ${uri.queryParameters}");
 
           var code = uri.queryParameters["code"]!;
 
@@ -57,9 +56,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
             var isar = widget.data.isar;
             var resp = await getAccessToken(code);
 
-            if (kDebugMode) {
-              logger.info("getAccessToken(): $resp");
-            }
+            logger.info("getAccessToken(): $resp");
 
             var tokenModel = TokenModel.fromResp(resp);
 
@@ -90,8 +87,11 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
 
             runApp(InitializationScreen());
           } catch (ex) {
-            if (kDebugMode) {
-              logger.info("oauthredirect failed: $ex");
+            if (ex is Error) {
+              logger.shout(
+                  "oauthredirect failed:", ex.toString(), ex.stackTrace);
+            } else {
+              logger.shout("oauthredirect failed:", ex.toString());
             }
             Navigator.push(
                 context,
