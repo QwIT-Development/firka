@@ -55,6 +55,8 @@ enum ActiveToastType { fetching, error, reauth, none }
 bool _fetching = true;
 bool _prefetched = false;
 bool canPop = true;
+ValueNotifier<bool> subPageActive = ValueNotifier(false);
+UpdateNotifier subPageBack = UpdateNotifier();
 
 class _HomeScreenState extends FirkaState<HomeScreen> {
   _HomeScreenState();
@@ -380,7 +382,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     return DefaultAssetBundle(
         bundle: FirkaBundle(),
         child: PopScope(
-          canPop: canPop,
+          canPop: canPop || subPageActive.value,
           child: Scaffold(
             backgroundColor: appStyle.colors.background,
             body: SafeArea(
@@ -549,21 +551,25 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
               ),
             ),
           ),
-          onPopInvokedWithResult: (_, __) => {
-            if (previousPages.isNotEmpty && page != previousPages.last)
-              {
-                setState(() {
-                  page = previousPages.removeLast();
+          onPopInvokedWithResult: (_, __) {
+            if (subPageActive.value) {
+              subPageBack.update();
+              return;
+            }
 
-                  forcedNav++;
-                  _pageController.animateToPage(
-                    page.index,
-                    duration: Duration(milliseconds: 175),
-                    curve: Curves.easeInOut,
-                  );
-                  canPop = previousPages.isEmpty;
-                })
-              }
+            if (previousPages.isNotEmpty && page != previousPages.last) {
+              setState(() {
+                page = previousPages.removeLast();
+
+                forcedNav++;
+                _pageController.animateToPage(
+                  page.index,
+                  duration: Duration(milliseconds: 175),
+                  curve: Curves.easeInOut,
+                );
+                canPop = previousPages.isEmpty;
+              });
+            }
           },
         ));
   }
@@ -601,14 +607,14 @@ class HomeSubPage extends StatelessWidget {
               data, _updateNotifier, _updateFinishNotifier, cb),
           (cb) => HomeGradesSubjectScreen(
               data, _updateNotifier, _updateFinishNotifier)
-        ], pageIndex: 0);
+        ], subPageActive, subPageBack, pageIndex: 0);
       case HomePage.timetable:
         return PageWithSubPages([
           (cb) => HomeTimetableScreen(
               data, _updateNotifier, _updateFinishNotifier, cb),
           (cb) => HomeTimetableMonthlyScreen(
               data, _updateNotifier, _updateFinishNotifier, cb)
-        ], pageIndex: 0);
+        ], subPageActive, subPageBack, pageIndex: 0);
     }
   }
 }
