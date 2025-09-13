@@ -48,8 +48,6 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
         var uri = Uri.parse(request.url);
 
         if (uri.path == "/ellenorzo-student/prod/oauthredirect") {
-          logger.info("query params: ${uri.queryParameters}");
-
           var code = uri.queryParameters["code"]!;
 
           try {
