@@ -264,6 +264,38 @@ void main() async {
 
       final docs = await getApplicationDocumentsDirectory();
 
+      Future<void> deleteOldLogFiles() async {
+        final docs = await getApplicationDocumentsDirectory();
+        final dir = Directory(docs.path);
+        if (!dir.existsSync()) return;
+
+        final now = DateTime.now();
+        final cutoff = now.subtract(Duration(days: 30));
+
+        final logFileRegex = RegExp(r'^(\d{4})_(\d{2})_(\d{2})\.log$');
+
+        for (final entity in dir.listSync()) {
+          if (entity is! File) continue;
+          final name = entity.uri.pathSegments.last;
+          final m = logFileRegex.firstMatch(name);
+          if (m == null) continue;
+
+          try {
+            final y = int.parse(m.group(1)!);
+            final mo = int.parse(m.group(2)!);
+            final d = int.parse(m.group(3)!);
+            final fileDate = DateTime(y, mo, d);
+            if (fileDate
+                .isBefore(DateTime(cutoff.year, cutoff.month, cutoff.day))) {
+              logger.info("Removing old log file: $name");
+              await entity.delete();
+            }
+          } catch (_) {
+            // ignore parse/delete errors
+          }
+        }
+      }
+
       String logFilePathForDate(DateTime dt) {
         final fileName = "${DateFormat("yyyy_MM_dd").format(dt)}.log";
         return Directory(docs.path).uri.resolve(fileName).toFilePath();
@@ -308,6 +340,10 @@ void main() async {
 
         debugPrint("[Firka] [${record.level.name}] ${record.message}");
       });
+
+      (() async {
+        await deleteOldLogFiles();
+      })();
     }
 
     // Run App Initialization
