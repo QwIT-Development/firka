@@ -142,6 +142,10 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                       .save(data.isar.appSettingsModels);
                                 });
 
+                                await data.settings
+                                    .group("settings")["developer_enabled"]!
+                                    .postUpdate();
+
                                 Navigator.of(navigatorKey.currentContext!)
                                     .popUntil((route) => false);
                                 Navigator.push(

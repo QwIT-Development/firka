@@ -107,14 +107,17 @@ class _BetaScreenState extends FirkaState<BetaScreen> {
                         await widget.data.settings
                             .group("settings")["beta_warning"]!
                             .save(widget.data.isar.appSettingsModels);
-
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  HomeScreen(widget.data, false)),
-                          (route) => false,
-                        );
                       });
+
+                      await widget.data.settings
+                          .group("settings")["beta_warning"]!
+                          .postUpdate();
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                HomeScreen(widget.data, false)),
+                        (route) => false,
+                      );
                     },
                   ),
                 ],
