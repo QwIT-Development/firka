@@ -44,7 +44,11 @@ class TimeTableDayWidget extends StatelessWidget {
     } else {
       for (var i = 0; i < events.length; i++) {
         var event = events[i];
-        ttBody.add(FirkaCard(left: [Text(event.name)]));
+        ttBody.add(FirkaCard(left: [
+          Text(event.name,
+              style: appStyle.fonts.B_14R
+                  .apply(color: appStyle.colors.textPrimary))
+        ]));
       }
       for (var i = 0; i < lessons.length; i++) {
         var lesson = lessons[i];
