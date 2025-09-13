@@ -40,6 +40,7 @@ class LessonWidget extends StatelessWidget {
 
     final showBreak =
         timeNow().isAfter(lesson.start) && timeNow().isBefore(lesson.end) ||
+            timeNow().isAfter(week.last.end) ||
             lesson.start.getMidnight() != timeNow().getMidnight();
 
     var accent = appStyle.colors.accent;
