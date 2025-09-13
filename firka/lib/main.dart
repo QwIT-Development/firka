@@ -338,7 +338,8 @@ void main() async {
         final line = '[$timestamp] [$level] [$censored]';
         sink.writeln(line);
 
-        debugPrint("[Firka] [${record.level.name}] ${record.message}");
+        debugPrint(
+            "[Firka] [${record.level.name}] ${kDebugMode ? record.message : censored}");
       });
 
       (() async {
