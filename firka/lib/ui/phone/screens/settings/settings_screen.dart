@@ -668,25 +668,27 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
   Widget build(BuildContext context) {
     var body = createWidgetTree(widget.items.values, widget.data.settings);
 
-    return Scaffold(
-      backgroundColor: appStyle.colors.background,
-      body: SafeArea(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height,
-          child: Stack(
-            children: [
-              Padding(
-                padding: EdgeInsetsGeometry.all(20),
-                child: SingleChildScrollView(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: body)),
-              )
-            ],
+    return DefaultAssetBundle(
+        bundle: FirkaBundle(),
+        child: Scaffold(
+          backgroundColor: appStyle.colors.background,
+          body: SafeArea(
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height,
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: EdgeInsetsGeometry.all(20),
+                    child: SingleChildScrollView(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: body)),
+                  )
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 }
 
