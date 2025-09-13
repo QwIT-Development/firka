@@ -224,6 +224,8 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                   await widget.data.isar.writeTxn(() async {
                     await item.save(widget.data.isar.appSettingsModels);
                   });
+
+                  await item.postUpdate();
                 })
           ],
         ));
@@ -257,6 +259,8 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                       await widget.data.isar.writeTxn(() async {
                         await item.save(widget.data.isar.appSettingsModels);
                       });
+
+                      await item.postUpdate();
                       logger.finest('Settings saved');
                     }),
               ),
@@ -279,6 +283,8 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                 await widget.data.isar.writeTxn(() async {
                   await item.save(widget.data.isar.appSettingsModels);
                 });
+
+                await item.postUpdate();
               },
             ));
           }
@@ -539,6 +545,8 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                               await item
                                   .save(widget.data.isar.appSettingsModels);
                             });
+
+                            await item.postUpdate();
                             logger.finest('Settings saved');
                           })
                 ],
@@ -551,6 +559,8 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
                   await item.save(widget.data.isar.appSettingsModels);
                 });
+
+                await item.postUpdate();
 
                 runApp(InitializationScreen());
               }
@@ -750,6 +760,7 @@ void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
 
                                             setStateOuter(() {});
                                           });
+                                          await setting.postUpdate();
                                         }),
                                   ),
                                   Text(setting.toRoundedString(),
