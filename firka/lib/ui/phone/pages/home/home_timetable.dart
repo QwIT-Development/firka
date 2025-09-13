@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firka/helpers/api/model/test.dart';
@@ -506,12 +507,16 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
             TransparentPointer(
                 child: SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height / 1.4,
+                    height: (MediaQuery.of(context).size.height / 1.251) - 12,
+                    // dear future developers. i have no idea why this number
+                    // magically makes the navbar just low enough so it doesn't
+                    // overflow. i spent 3 hours on this.
+                    // feel free to git blame me. - rnxm
                     child: CarouselSlider(
                       items: ttDays,
                       carouselController: _controller,
                       options: CarouselOptions(
-                          height: MediaQuery.of(context).size.height / 1.36,
+                          height: MediaQuery.of(context).size.height,
                           viewportFraction: 1,
                           enableInfiniteScroll: false,
                           initialPage: active,
@@ -524,18 +529,31 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                             });
                           }),
                     ))),
-            Stack(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: ttEmptyCards,
+            Container(
+              decoration: ShapeDecoration(
+                color: appStyle.colors.background,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(0),
                 ),
-                TransparentPointer(
-                    child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: ttWidgets,
-                )),
-              ],
+                shadows: [
+                  BoxShadow(
+                    color: appStyle.colors.background,
+                    blurRadius: 20,
+                    spreadRadius: 38,
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: ttEmptyCards,
+                  ),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: ttWidgets),
+                ],
+              ),
             ),
           ],
         )

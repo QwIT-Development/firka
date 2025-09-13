@@ -465,8 +465,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                           ),
                           width: MediaQuery.of(context).size.width,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 55, vertical: 15),
+                            padding: const EdgeInsets.fromLTRB(55, 0, 55, 12),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
