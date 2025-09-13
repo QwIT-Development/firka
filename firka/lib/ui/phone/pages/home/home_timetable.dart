@@ -105,6 +105,36 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     }
   }
 
+  Future<void> maybeCacheNextWeek(int active) async {
+    DateTime monday = now!.getMonday().getMidnight();
+    if (active >= 3) {
+      // thursday
+      monday = monday.add(Duration(days: 14));
+    } else {
+      return;
+    }
+    if (timeNow().add(Duration(days: 31)).isBefore(monday)) return;
+    logger.finest("caching next week for $monday");
+    var sunday = monday.add(Duration(days: 6));
+    await widget.data.client.getTimeTable(monday, sunday);
+    await widget.data.client.getTests();
+  }
+
+  Future<void> maybeCachePreviousWeek(int active) async {
+    DateTime monday = now!.getMonday().getMidnight();
+    if (active <= 2) {
+      // wednesday
+      monday = monday.subtract(Duration(days: 7));
+    } else {
+      return;
+    }
+    if (timeNow().subtract(Duration(days: 120)).isAfter(monday)) return;
+    logger.finest("caching previous week for $monday");
+    var sunday = monday.add(Duration(days: 6));
+    await widget.data.client.getTimeTable(monday, sunday);
+    await widget.data.client.getTests();
+  }
+
   Future<void> initForWeek(DateTime now, {bool forceCache = true}) async {
     var monday = now.getMonday().getMidnight();
     var sunday = monday.add(Duration(days: 6));
@@ -179,6 +209,8 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
 
   void _handleNavTap(int oldIndex, int targetIndex) async {
     if (animating) return;
+    maybeCacheNextWeek(targetIndex);
+    maybeCachePreviousWeek(targetIndex);
 
     active = -1;
 
@@ -485,6 +517,8 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                           initialPage: active,
                           onPageChanged: (i, _) {
                             if (animating || !mounted) return;
+                            maybeCacheNextWeek(i);
+                            maybeCachePreviousWeek(i);
                             setState(() {
                               active = i;
                             });
