@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -250,25 +251,64 @@ void main() async {
   dio.options.receiveTimeout = Duration(seconds: 3);
   dio.options.validateStatus = (status) => status != null && status < 500;
 
-  hierarchicalLoggingEnabled = true;
-  logger.level = Level.ALL;
-  {
-    final jwtPattern =
-        RegExp(r'([A-Za-z0-9-_]+)\.([A-Za-z0-9-_]+)\.([A-Za-z0-9-_]+)');
-    final omPattern = RegExp(r'(\d{3})(\d{6})([A-Za-z0-9]?)');
-    final refreshTokenPattern = RegExp(r'"([A-Z0-9-]+)"');
-
-    logger.onRecord.listen((record) {
-      debugPrint(
-          '[Firka] [${record.level.name}] ${record.message.replaceAll(jwtPattern, "***").replaceAll(refreshTokenPattern, "\"***\"").replaceAllMapped(omPattern, (match) {
-        return "${match.group(1)}******${match.group(3)}";
-      })}');
-    });
-  }
-
   runZonedGuarded(() async {
     logger.finest("Initializing app");
     WidgetsFlutterBinding.ensureInitialized();
+
+    {
+      final jwtPattern =
+          RegExp(r'([A-Za-z0-9-_]+)\.([A-Za-z0-9-_]+)\.([A-Za-z0-9-_]+)');
+      final omPattern = RegExp(r'(\d{3})(\d{6})([A-Za-z0-9]?)');
+      final refreshTokenPattern =
+          RegExp(r'"(?=.{21,}$)([A-Z0-9]+-[A-Z0-9_\-.~+]*)"');
+
+      final docs = await getApplicationDocumentsDirectory();
+
+      String logFilePathForDate(DateTime dt) {
+        final fileName = "${DateFormat("yyyy_MM_dd").format(dt)}.log";
+        return Directory(docs.path).uri.resolve(fileName).toFilePath();
+      }
+
+      File fileForDate(DateTime dt) {
+        final path = logFilePathForDate(dt);
+        final file = File(path);
+        if (!file.existsSync()) file.createSync(recursive: true);
+        return file;
+      }
+
+      String censorLog(String msg) {
+        return msg.replaceAll(jwtPattern, '***').replaceAllMapped(omPattern,
+            (match) {
+          return "${match.group(1)}******${match.group(3)}";
+        }).replaceAll(refreshTokenPattern, '"***"');
+      }
+
+      hierarchicalLoggingEnabled = true;
+      logger.level = Level.ALL;
+
+      DateTime currentDate = DateTime.now();
+      IOSink sink = fileForDate(currentDate).openWrite(mode: FileMode.append);
+
+      logger.onRecord.listen((record) {
+        final now = DateTime.now();
+        if (now.year != currentDate.year ||
+            now.month != currentDate.month ||
+            now.day != currentDate.day) {
+          sink.flush();
+          sink.close();
+          currentDate = now;
+          sink = fileForDate(currentDate).openWrite(mode: FileMode.append);
+        }
+
+        final censored = censorLog(record.message);
+        final timestamp = DateFormat('yyyy-MM-dd HH:mm:ss.SSS').format(now);
+        final level = record.level.name;
+        final line = '[$timestamp] [$level] [$censored]';
+        sink.writeln(line);
+
+        debugPrint("[Firka] [${record.level.name}] ${record.message}");
+      });
+    }
 
     // Run App Initialization
     runApp(InitializationScreen());
