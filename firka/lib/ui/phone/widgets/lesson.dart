@@ -59,6 +59,16 @@ class LessonWidget extends StatelessWidget {
 
     List<Widget> elements = [];
 
+    var subjectName = lesson.subject?.name ?? 'N/A';
+    if (subjectName.length >= 25) {
+      subjectName = "${subjectName.substring(0, 25 - 3)}...";
+    }
+
+    var roomName = lesson.roomName ?? '?';
+    if (roomName.length >= 8) {
+      roomName = "${roomName.substring(0, 8 - 3)}...";
+    }
+
     elements.add(GestureDetector(
       onTap: () {
         showLessonBottomSheet(
@@ -120,7 +130,7 @@ class LessonWidget extends StatelessWidget {
             ),
           ),
           SizedBox(width: !showTests && test != null ? 16 : 8),
-          Text(lesson.subject?.name ?? "N/A",
+          Text(subjectName,
               style: appStyle.fonts.B_16SB
                   .apply(color: appStyle.colors.textPrimary)),
         ],
@@ -144,7 +154,7 @@ class LessonWidget extends StatelessWidget {
                       color: appStyle.colors.a15p,
                       child: Padding(
                         padding: EdgeInsets.all(4),
-                        child: Text(lesson.roomName ?? '?',
+                        child: Text(roomName,
                             style: appStyle.fonts.B_12R
                                 .apply(color: appStyle.colors.secondary)),
                       ),
