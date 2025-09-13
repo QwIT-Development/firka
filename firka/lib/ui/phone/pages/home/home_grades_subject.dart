@@ -129,88 +129,81 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
         }
       }
 
-      return Scaffold(
-          backgroundColor: appStyle.colors.background,
-          body: Padding(
-            padding: const EdgeInsets.only(
-              left: 16.0,
-              right: 16.0,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      return Padding(
+        padding: const EdgeInsets.only(
+          left: 16.0,
+          right: 16.0,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Text(
-                      widget.data.l10n.subjects,
-                      style: appStyle.fonts
-                          .H_16px // TODO: Replace this with the proper font
-                          .apply(color: appStyle.colors.textPrimary),
-                    )
-                  ],
-                ),
-                SizedBox(height: 16),
-                SizedBox(
-                  height: MediaQuery.of(context).size.height -
-                      MediaQuery.of(context).padding.top -
-                      230,
-                  child: ListView(
-                    children: [
-                      FirkaCard(
-                        left: [
-                          Padding(
-                            padding: EdgeInsets.only(left: 4),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width / 1.45,
-                                  child: Text(
-                                    aGrade.subject.name,
-                                    style: appStyle.fonts.H_H2.apply(
-                                        color: appStyle.colors.textPrimary),
-                                  ),
-                                ),
-                                Text(
-                                  aGrade
-                                      .teacher, // For some reason the teacher's
-                                  // name isn't stored in the subject, so we need
-                                  // to get *a* grade, and then get the teacher's
-                                  // name from there :3
-                                  style: appStyle.fonts.B_14R.apply(
-                                      color: appStyle.colors.textPrimary),
-                                )
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
+                Text(
+                  widget.data.l10n.subjects,
+                  style: appStyle
+                      .fonts.H_16px // TODO: Replace this with the proper font
+                      .apply(color: appStyle.colors.textPrimary),
+                )
+              ],
+            ),
+            SizedBox(height: 16),
+            SizedBox(
+              height: MediaQuery.of(context).size.height -
+                  MediaQuery.of(context).padding.top -
+                  230,
+              child: ListView(
+                children: [
+                  FirkaCard(
+                    left: [
                       Padding(
                         padding: EdgeInsets.only(left: 4),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: gradeWidgets,
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width / 1.45,
+                              child: Text(
+                                aGrade.subject.name,
+                                style: appStyle.fonts.H_H2
+                                    .apply(color: appStyle.colors.textPrimary),
+                              ),
+                            ),
+                            Text(
+                              aGrade.teacher, // For some reason the teacher's
+                              // name isn't stored in the subject, so we need
+                              // to get *a* grade, and then get the teacher's
+                              // name from there :3
+                              style: appStyle.fonts.B_14R
+                                  .apply(color: appStyle.colors.textPrimary),
+                            )
+                          ],
                         ),
                       )
                     ],
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: EdgeInsets.only(left: 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: gradeWidgets,
+                    ),
+                  )
+                ],
+              ),
             ),
-          ));
-    } else {
-      return Scaffold(
-        backgroundColor: appStyle.colors.background,
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [DelayedSpinnerWidget()],
-            )
           ],
         ),
+      );
+    } else {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [DelayedSpinnerWidget()],
+          )
+        ],
       );
     }
   }
