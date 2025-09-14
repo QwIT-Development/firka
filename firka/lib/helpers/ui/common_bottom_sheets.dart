@@ -288,9 +288,6 @@ Future<void> showAnnouncementBottomSheet(
     enableDrag: true,
     backgroundColor: Colors.transparent,
     barrierColor: appStyle.colors.a15p,
-    constraints: BoxConstraints(
-      maxHeight: MediaQuery.of(context).size.height * 0.9,
-    ),
     builder: (BuildContext context) {
       return Stack(
         children: [
@@ -309,8 +306,10 @@ Future<void> showAnnouncementBottomSheet(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding:
+                    const EdgeInsets.all(16.0) + EdgeInsets.only(bottom: 32),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
@@ -339,51 +338,52 @@ Future<void> showAnnouncementBottomSheet(
                         ),
                       ],
                     ),
-                    SizedBox(height: 56),
-                    Row(
-                      children: [
-                        Container(
-                          decoration: ShapeDecoration(
-                              color: appStyle.colors.accent,
-                              shape: CircleBorder(
-                                eccentricity: 1,
-                              )),
-                          child: SizedBox(
-                            width: 28,
-                            height: 28,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 6),
-                                  child: Text(
-                                    info.author[0],
-                                    style: appStyle.fonts.H_18px.copyWith(
-                                        fontSize: 20,
-                                        color: appStyle.colors.textPrimary),
-                                  ),
-                                )
-                              ],
+                    Padding(
+                      padding: EdgeInsetsGeometry.symmetric(vertical: 24),
+                      child: Row(
+                        children: [
+                          Container(
+                            decoration: ShapeDecoration(
+                                color: appStyle.colors.accent,
+                                shape: CircleBorder(
+                                  eccentricity: 1,
+                                )),
+                            child: SizedBox(
+                              width: 28,
+                              height: 28,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 6),
+                                    child: Text(
+                                      info.author[0],
+                                      style: appStyle.fonts.H_18px.copyWith(
+                                          fontSize: 20,
+                                          color: appStyle.colors.textPrimary),
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(width: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width / 1.4,
-                              child: Text(
-                                info.author,
-                                style: appStyle.fonts.B_14SB
-                                    .apply(color: appStyle.colors.textPrimary),
-                              ),
-                            )
-                          ],
-                        ),
-                      ],
+                          SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width / 1.4,
+                                child: Text(
+                                  info.author,
+                                  style: appStyle.fonts.B_14SB.apply(
+                                      color: appStyle.colors.textPrimary),
+                                ),
+                              )
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    SizedBox(height: 20),
                     Padding(
                       padding: const EdgeInsets.all(4),
                       child: Container(
