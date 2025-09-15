@@ -114,6 +114,8 @@ if [ "$1" = "main" ]; then
 
     echo "All builds completed successfully!"
     ls -la build/app/outputs/flutter-apk/
+
+    update_version_for_abi 0 "."
     
     echo "Building aab for playstore"
     flutter build appbundle
