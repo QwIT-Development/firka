@@ -73,6 +73,7 @@ class AppInitialization {
   Uint8List? profilePicture;
   SettingsStore settings;
   UpdateNotifier settingsUpdateNotifier = UpdateNotifier();
+  UpdateNotifier profilePictureUpdateNotifier = UpdateNotifier();
   AppLocalizations l10n;
 
   AppInitialization({
