@@ -263,3 +263,10 @@ extension LessonExtension on List<Lesson> {
         (lesson) => lesson.start.isAfter(now.add(Duration(milliseconds: 1))));
   }
 }
+
+extension StringExtension on String {
+  bool isNumeric() {
+    final regex = RegExp(r'^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$');
+    return regex.hasMatch(trim());
+  }
+}

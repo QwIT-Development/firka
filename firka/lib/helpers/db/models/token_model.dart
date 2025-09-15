@@ -1,5 +1,9 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:firka/helpers/api/resp/token_grant.dart';
+import 'package:firka/helpers/extensions.dart';
 import 'package:isar/isar.dart';
 
 import '../../debug_helper.dart';
@@ -37,8 +41,23 @@ class TokenModel {
     var m = TokenModel();
     final jwt = JWT.decode(resp.idToken);
 
-    m.studentIdNorm = int.parse(
-        jwt.payload["kreta:user_name"].toString().replaceAll("G0", ""));
+    final username = jwt.payload["kreta:user_name"].toString();
+    if (username.isNumeric() ||
+        (username.contains("G0") &&
+            username.substring(0, username.length - 3).isNumeric())) {
+      m.studentIdNorm = int.parse(username.toString().replaceAll("G0", ""));
+    } else {
+      // you would expect all usernames to be numeric
+      // and for them be the student's student id, but NO
+      final hash = sha256.convert(utf8.encode(username));
+      final value = ((hash.bytes[0] << 24) |
+              (hash.bytes[1] << 16) |
+              (hash.bytes[2] << 8) |
+              (hash.bytes[3])) >>>
+          0;
+
+      m.studentIdNorm = value & 0x3FFFFFFF;
+    }
     m.studentId = jwt.payload["kreta:user_name"];
     m.iss = jwt.payload["kreta:institute_code"];
     m.idToken = resp.idToken;
