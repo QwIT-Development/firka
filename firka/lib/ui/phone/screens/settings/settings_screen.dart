@@ -509,7 +509,12 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         for (var i = 0; i < widget.data.tokens.length; i++) {
           final token = widget.data.tokens[i];
           final jwt = JWT.decode(token.idToken!);
-
+          String studentRole;
+          if (jwt.payload["role"] == "Tanulo") {
+            studentRole = "Tanuló";
+          } else {
+            studentRole = jwt.payload["role"];
+          }
           widgets.add(GestureDetector(
             child: SizedBox(
               height: 52,
@@ -522,7 +527,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                   ),
                   SizedBox(width: 8),
                   Text(
-                    jwt.payload["role"],
+                    studentRole,
                     style: appStyle.fonts.B_16R
                         .apply(color: appStyle.colors.textTertiary),
                   )
