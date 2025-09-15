@@ -50,32 +50,6 @@ pipeline {
             }
         }
 
-        stage('Modify firka_bundle.dart') {
-            when {
-                branch 'main'
-            }
-            steps {
-                script {
-                    sh '''#!/bin/sh
-                    set -e
-
-                    BUNDLE_FILE="firka/lib/helpers/firka_bundle.dart"
-
-                    if [ -f "$BUNDLE_FILE" ]; then
-                        echo "Modifying $BUNDLE_FILE"
-                        sed -i 's/final bool _compressedBundle = false;/final bool _compressedBundle = Platform.isAndroid;/' "$BUNDLE_FILE"
-                        echo "Modified _compressedBundle setting"
-
-                        grep "_compressedBundle" "$BUNDLE_FILE" || echo "Warning: _compressedBundle line not found after modification"
-                    else
-                        echo "$BUNDLE_FILE not found"
-                        exit 1
-                    fi
-                    '''
-                }
-            }
-        }
-
         stage('Build firka') {
             steps {
                 sh 'bash -c "./tools/linux/build_apk.sh ' + env.BRANCH_NAME + '"'
