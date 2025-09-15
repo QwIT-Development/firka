@@ -349,18 +349,19 @@ class _HomeTimetableMonthlyScreen
                                 widget.pageController(0);
                               },
                             ),
-                            Card(
-                              color: appStyle.colors.buttonSecondaryFill,
-                              child: Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: FirkaIconWidget(
-                                  FirkaIconType.majesticons,
-                                  Majesticon.plusLine,
-                                  size: 32.0,
-                                  color: appStyle.colors.accent,
-                                ),
-                              ),
-                            ),
+                            // Nincs elkészítve jelenleg: Dolgozat stb hozzáadása(?)
+                            // Card(
+                            //   color: appStyle.colors.buttonSecondaryFill,
+                            //   child: Padding(
+                            //     padding: const EdgeInsets.all(4),
+                            //     child: FirkaIconWidget(
+                            //       FirkaIconType.majesticons,
+                            //       Majesticon.plusLine,
+                            //       size: 32.0,
+                            //       color: appStyle.colors.accent,
+                            //     ),
+                            //   ),
+                            // ),
                             GestureDetector(
                               child: Card(
                                 color: appStyle.colors.buttonSecondaryFill,
