@@ -43,7 +43,10 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
   List<Lesson>? lessons;
   List<Lesson>? events;
   List<Test>? tests;
+  // Original dates list for display
   List<DateTime>? dates;
+  // Dates list for carousel animation
+  List<DateTime>? _animationDates;
   DateTime? now;
   int active = 0;
   final CarouselSliderController _controller = CarouselSliderController();
@@ -51,6 +54,9 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
   AnimationController? _cardAnimationController;
   Animation<Offset>? _cardOffsetAnimation;
   bool _showAnimatedCard = false;
+  
+  // Flag to track if we're using temporary order
+  bool _isTemporaryOrder = false;
 
   _HomeTimetableScreen();
 
@@ -174,6 +180,8 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     if (!mounted) return;
     setState(() {
       this.dates = dates;
+      _animationDates = List.from(dates);
+      _isTemporaryOrder = false;
 
       if (now.getMonday().getMidnight().millisecondsSinceEpoch ==
           timeNow().getMonday().getMidnight().millisecondsSinceEpoch) {
@@ -212,8 +220,29 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
   void _handleNavTap(int oldIndex, int targetIndex) async {
     if (animating) return;
     HapticFeedback.mediumImpact();
-    maybeCacheNextWeek(targetIndex);
-    maybeCachePreviousWeek(targetIndex);
+    
+    // Save the real target index
+    final realTargetIndex = targetIndex;
+    
+    maybeCacheNextWeek(realTargetIndex);
+    maybeCachePreviousWeek(realTargetIndex);
+
+    // If the target is not adjacent, create temporary order
+    if ((targetIndex - oldIndex).abs() > 1) {
+      // Determine the temporary target position next to the current position
+      int tempTargetIndex = oldIndex < targetIndex ? oldIndex + 1 : oldIndex - 1;
+      
+      // Create a new order where target day is next to current day
+      List<DateTime> reorderedDates = List.from(_animationDates!);
+      final targetDate = reorderedDates.removeAt(targetIndex);
+      reorderedDates.insert(tempTargetIndex, targetDate);
+      
+      setState(() {
+        _animationDates = reorderedDates;
+        _isTemporaryOrder = true;
+        targetIndex = tempTargetIndex; // Update target for animation
+      });
+    }
 
     active = -1;
 
@@ -221,8 +250,12 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     const double spacing = 8.0;
     final double totalCardWidth = cardWidth + spacing;
 
-    final double start = oldIndex * totalCardWidth;
-    final double end = targetIndex * totalCardWidth;
+    // Calculate animation positions based on real display indices
+    final oldDisplayIndex = dates!.indexOf(_animationDates![oldIndex]);
+    final targetDisplayIndex = dates!.indexOf(_animationDates![targetIndex]);
+
+    final double start = oldDisplayIndex * totalCardWidth;
+    final double end = targetDisplayIndex * totalCardWidth;
 
     _cardAnimationController!.reset();
     _cardOffsetAnimation = Tween<Offset>(
@@ -245,12 +278,29 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
+    
+    // After animation, restore the original order if necessary
+    if (_isTemporaryOrder) {
+      // Calculate the real display index for the target
+      final displayIndex = dates!.indexOf(_animationDates![targetIndex]);
+      
+      setState(() {
+        _animationDates = List.from(dates!);  // Restore from original dates
+        _isTemporaryOrder = false;
+        active = displayIndex;  // Use the display index
+      });
+      
+      // Jump to the correct position without animation
+      _controller.jumpToPage(displayIndex);
+    } else {
+      final displayIndex = dates!.indexOf(_animationDates![targetIndex]);
+      setState(() {
+        active = displayIndex;  // Use the display index
+      });
+    }
+    
     animating = false;
-
-    if (!mounted) return;
-
     setState(() {
-      active = targetIndex;
       _showAnimatedCard = false;
     });
 
@@ -263,8 +313,10 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
       List<Widget> ttWidgets = [];
       List<Widget> ttDays = [];
 
+      // Build navigation icons using original dates
       for (var i = 0; i < dates!.length; i++) {
         final date = dates![i];
+        final realIndex = i;  // Always use real index for nav icons
 
         final lessonsOnDate = lessons!
             .where((lesson) =>
@@ -286,7 +338,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
           ttWidgets.add(Stack(
             children: [
               BottomTimeTableNavIconWidget(widget.data.l10n, () {
-                _handleNavTap(active, i);
+                _handleNavTap(active, realIndex);
               }, active == i, date),
               Transform.translate(
                 offset: Offset(38, -10),
@@ -296,10 +348,32 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
           ));
         } else {
           ttWidgets.add(BottomTimeTableNavIconWidget(widget.data.l10n, () {
-            _handleNavTap(active, i);
+            _handleNavTap(active, realIndex);
           }, active == i, date));
         }
 
+      }
+      
+      // Build carousel pages using animation dates
+      for (var i = 0; i < _animationDates!.length; i++) {
+        final date = _animationDates![i];
+        
+        final lessonsOnDate = lessons!
+            .where((lesson) =>
+                lesson.start.isAfter(date) &&
+                lesson.end.isBefore(date.add(Duration(hours: 24))))
+            .toList();
+        final eventsOnDate = events!
+            .where((lesson) =>
+                lesson.start.isAfter(date.subtract(Duration(seconds: 1))) &&
+                lesson.end.isBefore(date.add(Duration(hours: 23, minutes: 59))))
+            .toList();
+        final testsOnDate = tests!
+            .where((test) =>
+                test.date.isAfter(date.subtract(Duration(seconds: 1))) &&
+                test.date.isBefore(date.add(Duration(hours: 23, minutes: 59))))
+            .toList();
+            
         ttDays.add(TimeTableDayWidget(widget.data, date, lessons!,
             lessonsOnDate, eventsOnDate, testsOnDate));
       }
@@ -524,10 +598,12 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                 initialPage: active,
                 onPageChanged: (i, _) {
                   if (animating || !mounted) return;
-                  maybeCacheNextWeek(i);
-                  maybeCachePreviousWeek(i);
+                  // Convert animation index to display index
+                  final displayIndex = dates!.indexOf(_animationDates![i]);
+                  maybeCacheNextWeek(displayIndex);
+                  maybeCachePreviousWeek(displayIndex);
                   setState(() {
-                    active = i;
+                    active = displayIndex;
                   });
                 }),
           ))),
