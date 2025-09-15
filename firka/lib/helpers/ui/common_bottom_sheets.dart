@@ -259,10 +259,25 @@ Future<void> showGradeBottomSheet(
                             placeholderMode: true,
                           ),
                           FirkaCard(left: [
-                            Text(
-                              "${data.l10n.tt_added}${grade.creationDate}",
-                              style: appStyle.fonts.B_14R
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                "${data.l10n.tt_added}${grade.creationDate}",
+                                style: appStyle.fonts.B_14R
                                   .apply(color: appStyle.colors.textPrimary),
+                                 ),
+                                Text(
+                                "${data.l10n.grade_teacherName}${grade.teacher}",
+                                style: appStyle.fonts.B_14R
+                                .apply(color: appStyle.colors.textPrimary),
+                              ),
+                                Text(
+                                "${data.l10n.grade_strValue}${grade.strValue}",
+                                style: appStyle.fonts.B_14R
+                                .apply(color: appStyle.colors.textPrimary),
+                              )
+                              ]
                             )
                           ])
                         ],
