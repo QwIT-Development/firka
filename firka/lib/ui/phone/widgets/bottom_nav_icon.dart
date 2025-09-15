@@ -8,14 +8,15 @@ import '../../widget/firka_icon.dart';
 class BottomNavIconWidget extends StatelessWidget {
   final void Function() onTap;
   final bool active;
-  final Uint8List icon;
+  final dynamic icon;
   final String text;
   final Color iconColor;
   final Color textColor;
+  final bool isProfilePicture;
 
   const BottomNavIconWidget(this.onTap, this.active, this.icon, this.text,
       this.iconColor, this.textColor,
-      {super.key});
+      {this.isProfilePicture = false, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +31,20 @@ class BottomNavIconWidget extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              FirkaIconWidget(FirkaIconType.majesticons, icon,
+              if (isProfilePicture && icon != null)
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: MemoryImage(icon as Uint8List),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                )
+              else
+                FirkaIconWidget(FirkaIconType.majesticons, icon as Uint8List,
                       color: iconColor, size: 24)
                   .build(context),
               const SizedBox(height: 4),

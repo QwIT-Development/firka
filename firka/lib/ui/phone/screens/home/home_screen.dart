@@ -251,6 +251,10 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
 
     widget.data.settingsUpdateNotifier.addListener(settingsUpdateListener);
 
+    widget.data.profilePictureUpdateNotifier.addListener(() {
+      if (mounted) setState(() {});
+    });
+
     prefetch();
     _preloadImages();
   }
@@ -533,10 +537,14 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                                     showExtrasBottomSheet(context, widget.data);
                                   },
                                   false,
-                                  Majesticon.globeEarthLine,
+                                  widget.data.profilePicture != null
+                                      ? widget.data.profilePicture!
+                                      : Majesticon.menuLine,
                                   widget.data.l10n.other,
                                   appStyle.colors.secondary,
                                   appStyle.colors.textPrimary,
+                                  isProfilePicture:
+                                      widget.data.profilePicture != null,
                                 ),
                               ],
                             ),
@@ -576,12 +584,19 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
   @override
   void dispose() {
     _pageController.dispose();
-    super.dispose();
+    widget.data.settingsUpdateNotifier.removeListener(settingsUpdateListener);
+    widget.data.profilePictureUpdateNotifier
+        .removeListener(settingsUpdateListener);
+
+    widget.data.profilePictureUpdateNotifier.removeListener(() {
+      if (mounted) setState(() {});
+    });
 
     _disposed = true;
     _fetching = false;
     _prefetched = false;
     activeToast = ActiveToastType.none;
+    super.dispose();
   }
 }
 
