@@ -108,7 +108,7 @@ class KretaClient {
     // it would be *ideal* to use xor and left shift here, however
     // binary operations seem to round the number down to
     // 32 bits for some reason???
-    var cacheKey = model.studentId! + ((id.index + 1) * pow(10, 11));
+    var cacheKey = model.studentIdNorm! + ((id.index + 1) * pow(10, 11));
     var cache = await isar.genericCacheModels.get(cacheKey as int);
 
     dynamic resp;
@@ -234,7 +234,7 @@ class KretaClient {
           DateTime? to,
           bool forceCache,
           Future<void> Function(dynamic, int) storeCache) async {
-    var cacheKey = genCacheKey(from, model.studentId!);
+    var cacheKey = genCacheKey(from, model.studentIdNorm!);
     var cache = await cacheModel.get(cacheKey);
     var formatter = DateFormat('yyyy-MM-dd');
     var fromStr = formatter.format(from);

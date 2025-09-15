@@ -32,7 +32,7 @@ const AppSettingsModelSchema = CollectionSchema(
   serialize: _appSettingsModelSerialize,
   deserialize: _appSettingsModelDeserialize,
   deserializeProp: _appSettingsModelDeserializeProp,
-  idName: r'ignored',
+  idName: r'id',
   indexes: {},
   links: {},
   embeddedSchemas: {},
@@ -111,7 +111,7 @@ void _appSettingsModelAttach(
 
 extension AppSettingsModelQueryWhereSort
     on QueryBuilder<AppSettingsModel, AppSettingsModel, QWhere> {
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhere> anyIgnored() {
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
@@ -120,69 +120,68 @@ extension AppSettingsModelQueryWhereSort
 
 extension AppSettingsModelQueryWhere
     on QueryBuilder<AppSettingsModel, AppSettingsModel, QWhereClause> {
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause>
-      ignoredEqualTo(Id ignored) {
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause> idEqualTo(
+      Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
-        lower: ignored,
-        upper: ignored,
+        lower: id,
+        upper: id,
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause>
-      ignoredNotEqualTo(Id ignored) {
+      idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
-              IdWhereClause.lessThan(upper: ignored, includeUpper: false),
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
             )
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: ignored, includeLower: false),
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
             );
       } else {
         return query
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: ignored, includeLower: false),
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
             )
             .addWhereClause(
-              IdWhereClause.lessThan(upper: ignored, includeUpper: false),
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
             );
       }
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause>
-      ignoredGreaterThan(Id ignored, {bool include = false}) {
+      idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: ignored, includeLower: include),
+        IdWhereClause.greaterThan(lower: id, includeLower: include),
       );
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause>
-      ignoredLessThan(Id ignored, {bool include = false}) {
+      idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.lessThan(upper: ignored, includeUpper: include),
+        IdWhereClause.lessThan(upper: id, includeUpper: include),
       );
     });
   }
 
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause>
-      ignoredBetween(
-    Id lowerIgnored,
-    Id upperIgnored, {
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterWhereClause> idBetween(
+    Id lowerId,
+    Id upperId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
-        lower: lowerIgnored,
+        lower: lowerId,
         includeLower: includeLower,
-        upper: upperIgnored,
+        upper: upperId,
         includeUpper: includeUpper,
       ));
     });
@@ -346,63 +345,63 @@ extension AppSettingsModelQueryFilter
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      ignoredIsNull() {
+      idIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'ignored',
+        property: r'id',
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      ignoredIsNotNull() {
+      idIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'ignored',
+        property: r'id',
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      ignoredEqualTo(Id? value) {
+      idEqualTo(Id? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'ignored',
+        property: r'id',
         value: value,
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      ignoredGreaterThan(
+      idGreaterThan(
     Id? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'ignored',
+        property: r'id',
         value: value,
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      ignoredLessThan(
+      idLessThan(
     Id? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'ignored',
+        property: r'id',
         value: value,
       ));
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
-      ignoredBetween(
+      idBetween(
     Id? lower,
     Id? upper, {
     bool includeLower = true,
@@ -410,7 +409,7 @@ extension AppSettingsModelQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'ignored',
+        property: r'id',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -501,17 +500,16 @@ extension AppSettingsModelQuerySortThenBy
     });
   }
 
-  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
-      thenByIgnored() {
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'ignored', Sort.asc);
+      return query.addSortBy(r'id', Sort.asc);
     });
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
-      thenByIgnoredDesc() {
+      thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'ignored', Sort.desc);
+      return query.addSortBy(r'id', Sort.desc);
     });
   }
 
@@ -549,9 +547,9 @@ extension AppSettingsModelQueryWhereDistinct
 
 extension AppSettingsModelQueryProperty
     on QueryBuilder<AppSettingsModel, AppSettingsModel, QQueryProperty> {
-  QueryBuilder<AppSettingsModel, int, QQueryOperations> ignoredProperty() {
+  QueryBuilder<AppSettingsModel, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'ignored');
+      return query.addPropertyName(r'id');
     });
   }
 
