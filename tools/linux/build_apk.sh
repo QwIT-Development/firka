@@ -31,6 +31,19 @@ build_abi() {
     rsync -a --exclude='build/' --exclude='.dart_tool/' --exclude='.git/' . "${temp_dir}/"
     
     cd "${temp_dir}"
+
+    BUNDLE_FILE="lib/helpers/firka_bundle.dart"
+
+    if [ -f "$BUNDLE_FILE" ]; then
+        echo "Modifying $BUNDLE_FILE"
+        sed -i 's/final bool _compressedBundle = false;/final bool _compressedBundle = Platform.isAndroid;/' "$BUNDLE_FILE"
+        echo "Modified _compressedBundle setting"
+
+        grep "_compressedBundle" "$BUNDLE_FILE" || echo "Warning: _compressedBundle line not found after modification"
+    else
+        echo "$BUNDLE_FILE not found"
+        exit 1
+    fi
     
     # Update version for this ABI
     update_version_for_abi ${build_offset} "."
