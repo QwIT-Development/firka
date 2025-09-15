@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/services.dart';
 import 'package:firka/helpers/api/model/test.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/debug_helper.dart';
@@ -210,6 +211,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
 
   void _handleNavTap(int oldIndex, int targetIndex) async {
     if (animating) return;
+    HapticFeedback.mediumImpact();
     maybeCacheNextWeek(targetIndex);
     maybeCachePreviousWeek(targetIndex);
 
