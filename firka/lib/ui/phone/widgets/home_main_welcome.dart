@@ -1,6 +1,5 @@
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/l10n/app_localizations.dart';
-import 'package:firka/main.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
@@ -77,7 +76,6 @@ class WelcomeWidget extends StatelessWidget {
       }
       var lessonsLeft =
           lessons.where((lesson) => lesson.end.isAfter(now)).length;
-      logger.finest("Lessons left: $lessonsLeft");
       if (lessonsLeft < 1) {
         return l10n.tomorrow_subtitle;
       }
