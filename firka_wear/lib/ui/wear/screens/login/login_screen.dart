@@ -49,6 +49,7 @@ class _WearLoginScreen extends State<WearLoginScreen> {
             () async {
               var data = msg["auth"];
               var tokenModel = TokenModel.fromValues(
+                  data["studentIdNorm"],
                   data["studentId"],
                   data["iss"],
                   data["idToken"],

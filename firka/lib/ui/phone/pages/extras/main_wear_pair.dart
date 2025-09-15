@@ -99,6 +99,7 @@ void showWearBottomSheet(
                             // "timetable": timetableArray,
                             "auth": {
                               "studentId": data.client.model.studentId,
+                              "studentIdNorm": data.client.model.studentIdNorm,
                               "iss": data.client.model.iss,
                               "idToken": data.client.model.idToken,
                               "accessToken": data.client.model.accessToken,
