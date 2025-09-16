@@ -17,6 +17,16 @@ class LessonSmallWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var subjectName = lesson.subject?.name ?? 'N/A';
+    if (subjectName.length >= 25) {
+      subjectName = "${subjectName.substring(0, 25 - 3)}...";
+    }
+
+    var roomName = lesson.roomName ?? '?';
+    if (roomName.length >= 8) {
+      roomName = "${roomName.substring(0, 8 - 3)}...";
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -31,7 +41,7 @@ class LessonSmallWidget extends StatelessWidget {
               category: lesson.subject?.name ?? '',
             ),
             SizedBox(width: 8),
-            Text(lesson.subject?.name ?? "N/A",
+            Text(subjectName,
                 style: appStyle.fonts.B_16SB
                     .apply(color: appStyle.colors.textPrimary)),
           ],
@@ -41,7 +51,7 @@ class LessonSmallWidget extends StatelessWidget {
               color: appStyle.colors.a15p,
               child: Padding(
                 padding: EdgeInsets.all(4),
-                child: Text(lesson.roomName ?? '?',
+                child: Text(roomName,
                     style: appStyle.fonts.B_12R
                         .apply(color: appStyle.colors.secondary)),
               ),
