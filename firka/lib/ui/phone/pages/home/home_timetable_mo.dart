@@ -3,7 +3,7 @@ import 'package:firka/helpers/api/model/omission.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
-import 'package:firka/helpers/settings/setting.dart';
+import 'package:firka/helpers/settings.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/widget/delayed_spinner.dart';
 import 'package:flutter/material.dart';

@@ -1,5 +1,5 @@
 import 'package:firka/helpers/extensions.dart';
-import 'package:firka/helpers/settings/setting.dart';
+import 'package:firka/helpers/settings.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';

@@ -10,7 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import '../../main.dart';
+import '../main.dart';
 
 const bellRing = 1001;
 const rounding1 = 1002;
