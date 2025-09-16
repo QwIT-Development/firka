@@ -9,7 +9,7 @@ import '../../../helpers/api/token_grant.dart';
 import '../../../helpers/db/models/token_model.dart';
 import '../../../helpers/firka_bundle.dart';
 import '../../../helpers/firka_state.dart';
-import '../../../helpers/settings/setting.dart';
+import '../../../helpers/settings.dart';
 import '../pages/error/error_page.dart';
 
 class LoginWebviewWidget extends StatefulWidget {

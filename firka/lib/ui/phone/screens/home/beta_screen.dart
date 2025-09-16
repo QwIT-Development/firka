@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:firka/helpers/db/models/app_settings_model.dart';
-import 'package:firka/helpers/settings/setting.dart';
+import 'package:firka/helpers/settings.dart';
 import 'package:firka/helpers/ui/firka_button.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/screens/home/home_screen.dart';

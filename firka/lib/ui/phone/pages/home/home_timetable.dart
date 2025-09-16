@@ -5,7 +5,7 @@ import 'package:firka/helpers/api/model/test.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
-import 'package:firka/helpers/settings/setting.dart';
+import 'package:firka/helpers/settings.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:firka/ui/phone/widgets/bubble_test.dart';
