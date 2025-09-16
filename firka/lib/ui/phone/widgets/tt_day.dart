@@ -75,7 +75,12 @@ class TimeTableDayWidget extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: ttBody,
+                  children: [
+                    ...ttBody,
+                    SizedBox(
+                      height: 24,
+                    )
+                  ],
                 ),
               ),
             ),
