@@ -182,7 +182,7 @@ Future<void> showGradeBottomSheet(
     backgroundColor: Colors.transparent,
     barrierColor: appStyle.colors.a15p,
     constraints: BoxConstraints(
-      maxHeight: MediaQuery.of(context).size.height * 0.32,
+      minHeight: MediaQuery.of(context).size.height * 0.34,
     ),
     builder: (BuildContext context) {
       return Stack(
@@ -202,9 +202,10 @@ Future<void> showGradeBottomSheet(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16) + EdgeInsets.only(bottom: 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(
                       children: [GradeWidget(grade)],
