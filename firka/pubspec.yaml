@@ -70,6 +70,7 @@ dependencies:
   live_activities: ^2.4.1
   logging: ^1.3.0
   share_plus: ^11.1.0
+  xml: ^6.6.1
 
 dev_dependencies:
   flutter_test:
@@ -104,6 +105,9 @@ flutter:
     - assets/icons/
     - assets/majesticons/
     - assets/firka.i
+    - assets/swears/DirtyWords.xml
+    - assets/images/cactus_error_screen.png
+    - assets/images/logos/dave_error.png
 
   fonts:
     - family: Montserrat

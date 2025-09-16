@@ -130,8 +130,10 @@ class _DebugScreen extends FirkaState<DebugScreen> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  throw 0 / 0;
+                onPressed: () async {
+                  await widget.data.isar.writeTxn(() async {
+                    await widget.data.isar.writeTxn(() async {});
+                  });
                 },
                 child: const Text('Throw Exception'),
               ),
