@@ -2,7 +2,7 @@ import 'package:firka/helpers/api/model/generic.dart';
 import 'package:firka/helpers/api/model/grade.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
-import 'package:firka/helpers/settings/setting.dart';
+import 'package:firka/helpers/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -260,25 +260,24 @@ Future<void> showGradeBottomSheet(
                           ),
                           FirkaCard(left: [
                             Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                "${data.l10n.tt_added}${grade.creationDate}",
-                                style: appStyle.fonts.B_14R
-                                  .apply(color: appStyle.colors.textPrimary),
-                                 ),
-                                Text(
-                                "${data.l10n.grade_teacherName}${grade.teacher}",
-                                style: appStyle.fonts.B_14R
-                                .apply(color: appStyle.colors.textPrimary),
-                              ),
-                                Text(
-                                "${data.l10n.grade_strValue}${grade.strValue}",
-                                style: appStyle.fonts.B_14R
-                                .apply(color: appStyle.colors.textPrimary),
-                              )
-                              ]
-                            )
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${data.l10n.tt_added}${grade.creationDate}",
+                                    style: appStyle.fonts.B_14R.apply(
+                                        color: appStyle.colors.textPrimary),
+                                  ),
+                                  Text(
+                                    "${data.l10n.grade_teacherName}${grade.teacher}",
+                                    style: appStyle.fonts.B_14R.apply(
+                                        color: appStyle.colors.textPrimary),
+                                  ),
+                                  Text(
+                                    "${data.l10n.grade_strValue}${grade.strValue}",
+                                    style: appStyle.fonts.B_14R.apply(
+                                        color: appStyle.colors.textPrimary),
+                                  )
+                                ])
                           ])
                         ],
                       ),

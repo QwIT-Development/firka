@@ -17,7 +17,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../../helpers/firka_bundle.dart';
 import '../../../../helpers/firka_state.dart';
-import '../../../../helpers/settings/setting.dart';
+import '../../../../helpers/settings.dart';
 import '../../widgets/login_webview.dart';
 
 class SettingsScreen extends StatefulWidget {

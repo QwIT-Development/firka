@@ -4,7 +4,7 @@ import 'dart:math';
 
 import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/helpers/api/exceptions/token.dart';
-import 'package:firka/helpers/settings/setting.dart';
+import 'package:firka/helpers/settings.dart';
 import 'package:firka/helpers/update_notifier.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';

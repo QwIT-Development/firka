@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:firka/helpers/settings/setting.dart';
+import 'package:firka/helpers/settings.dart';
 import 'package:firka/main.dart';
 
 import '../../ui/model/style.dart';
