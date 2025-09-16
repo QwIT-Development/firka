@@ -4,6 +4,7 @@ import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../../../helpers/api/model/timetable.dart';
 import '../../widget/class_icon.dart';
@@ -45,7 +46,7 @@ class LessonBigWidget extends StatelessWidget {
                             padding: EdgeInsets.all(4),
                             child: FirkaIconWidget(
                                 FirkaIconType.majesticons, 'cupFilled',
-                                color: wearStyle.colors.accent, size: 24),
+                                color: appStyle.colors.accent, size: 24),
                           ),
                         ),
                         Text(l10n.breakTxt,
@@ -101,7 +102,7 @@ class LessonBigWidget extends StatelessWidget {
                             padding: EdgeInsets.all(4),
                             child: FirkaIconWidget(
                                 FirkaIconType.majesticonsLocal, 'cupFilled',
-                                color: wearStyle.colors.accent, size: 24),
+                                color: appStyle.colors.accent, size: 24),
                           ),
                         ),
                         Text(l10n.breakTxt,
@@ -181,31 +182,44 @@ class LessonBigWidget extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Card(
-                        // TODO: improve this to match design
-                        shadowColor: Colors.transparent,
-                        color: appStyle.colors.a15p,
-                        child: Padding(
-                          padding: EdgeInsets.all(4),
-                          child: Text(lessonNo.toString(),
-                              style: appStyle.fonts.B_12R
-                                  .apply(color: appStyle.colors.secondary)),
+                      SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: Stack(
+                          children: [
+                            SvgPicture.asset(
+                              "assets/icons/subtract.svg",
+                              color: appStyle.colors.a15p,
+                              width: 18,
+                              height: 18,
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(left: 5),
+                              child: Text(lessonNo.toString(),
+                                  style: appStyle.fonts.B_12R
+                                      .apply(color: appStyle.colors.secondary)),
+                            )
+                          ],
                         ),
                       ),
-                      Card(
-                        shadowColor: Colors.transparent,
-                        color: appStyle.colors.a15p,
-                        child: Padding(
-                          padding: EdgeInsets.all(4),
-                          child: ClassIconWidget(
-                            color: wearStyle.colors.accent,
-                            size: 24,
-                            uid: lesson!.uid,
-                            className: lesson!.name,
-                            category: lesson!.subject?.name ?? '',
-                          ),
-                        ),
-                      ),
+                      Transform.translate(
+                          offset: Offset(-4, 0),
+                          child: Card(
+                            shadowColor: Colors.transparent,
+                            color: appStyle.colors.a15p,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                            child: Padding(
+                              padding: EdgeInsets.all(4),
+                              child: ClassIconWidget(
+                                color: appStyle.colors.accent,
+                                size: 24,
+                                uid: lesson!.uid,
+                                className: lesson!.name,
+                                category: lesson!.subject?.name ?? '',
+                              ),
+                            ),
+                          )),
                       Text(lesson!.subject?.name ?? 'N/A',
                           style: appStyle.fonts.B_16SB
                               .apply(color: appStyle.colors.textPrimary)),
@@ -287,7 +301,7 @@ class LessonBigWidget extends StatelessWidget {
                           padding: EdgeInsets.all(4),
                           child: FirkaIconWidget(
                               FirkaIconType.majesticonsLocal, 'cupFilled',
-                              color: wearStyle.colors.accent, size: 24),
+                              color: appStyle.colors.accent, size: 24),
                         ),
                       ),
                       Text(l10n.breakTxt,
