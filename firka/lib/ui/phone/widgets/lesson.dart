@@ -38,10 +38,13 @@ class LessonWidget extends StatelessWidget {
     final isSubstituted = lesson.substituteTeacher != null;
     final isDismissed = lesson.type.name == "UresOra";
 
-    final showBreak =
-        timeNow().isAfter(lesson.start) && timeNow().isBefore(lesson.end) ||
-            timeNow().isAfter(week.last.end) ||
-            lesson.start.getMidnight() != timeNow().getMidnight();
+    var showBreak = false;
+    if (week.isNotEmpty) {
+      showBreak =
+          timeNow().isAfter(lesson.start) && timeNow().isBefore(lesson.end) ||
+              timeNow().isAfter(week.last.end) ||
+              lesson.start.getMidnight() != timeNow().getMidnight();
+    }
 
     var accent = appStyle.colors.accent;
     var secondary = appStyle.colors.secondary;
