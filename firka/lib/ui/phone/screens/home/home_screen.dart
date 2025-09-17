@@ -120,7 +120,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                         SizedBox(width: 4),
                         Text(
                           widget.data.l10n.reauth,
-                          style: appStyle.fonts.B_14SB
+                          style: appStyle.fonts.B_16SB
                               .copyWith(color: appStyle.colors.warningText),
                         )
                       ],
@@ -211,7 +211,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                   children: [
                     Text(
                       widget.data.l10n.api_error,
-                      style: appStyle.fonts.B_14SB
+                      style: appStyle.fonts.B_16SB
                           .copyWith(color: appStyle.colors.errorText),
                     ),
                     SizedBox(width: 8),
@@ -370,7 +370,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                     SizedBox(width: 16),
                     Text(
                       widget.data.l10n.refreshing,
-                      style: appStyle.fonts.B_14SB
+                      style: appStyle.fonts.B_16SB
                           .copyWith(color: appStyle.colors.textPrimary),
                     )
                   ],

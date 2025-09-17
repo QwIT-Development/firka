@@ -149,7 +149,7 @@ class _HomeTimetableMonthlyScreen
                     )),
                 SizedBox(height: 4),
                 Text(d.format(widget.data.l10n, FormatMode.d),
-                    style: appStyle.fonts.B_14R.apply(
+                    style: appStyle.fonts.B_16R.apply(
                         color: (d.weekday == DateTime.saturday ||
                                 d.weekday == DateTime.sunday)
                             ? appStyle.colors.errorText
@@ -294,7 +294,7 @@ class _HomeTimetableMonthlyScreen
                 ),
                 SizedBox(height: 4),
                 Text(d.format(widget.data.l10n, FormatMode.d),
-                    style: appStyle.fonts.B_14R.apply(
+                    style: appStyle.fonts.B_16R.apply(
                         color: (d.weekday == DateTime.saturday ||
                                     d.weekday == DateTime.sunday) &&
                                 lessonsToday.isEmpty
@@ -422,7 +422,7 @@ class _HomeTimetableMonthlyScreen
                             now!
                                 .format(widget.data.l10n, FormatMode.yyyymmmm)
                                 .toLowerCase(),
-                            style: appStyle.fonts.B_14R
+                            style: appStyle.fonts.B_16R
                                 .apply(color: appStyle.colors.textPrimary)),
                         GestureDetector(
                           child: FirkaIconWidget(

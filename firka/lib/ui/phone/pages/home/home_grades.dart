@@ -276,7 +276,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                                 lesson.type.name != TimetableConsts.event)
                             .length
                             .toString(),
-                        style: appStyle.fonts.B_14SB
+                        style: appStyle.fonts.B_16SB
                             .apply(color: appStyle.colors.textPrimary),
                       ),
                     ],

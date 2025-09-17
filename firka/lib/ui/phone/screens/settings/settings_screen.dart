@@ -137,7 +137,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         }
 
         cardWidgets.add(Text(item.title,
-            style: appStyle.fonts.B_14SB
+            style: appStyle.fonts.B_16SB
                 .apply(color: appStyle.colors.textPrimary)));
 
         widgets.add(GestureDetector(
@@ -174,7 +174,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                     .apply(color: appStyle.colors.textPrimary))
           ], right: [
             Text(v == "0.0" ? "0" : v,
-                style: appStyle.fonts.B_14R
+                style: appStyle.fonts.B_16R
                     .apply(color: appStyle.colors.textPrimary))
           ]),
           onTap: () async {
@@ -415,7 +415,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
           if (group == widget.data.l10n.s_ci_icon_g6) {
             pWidgets.add(Text(widget.data.l10n.s_ci_icon_g6_desc,
-                style: appStyle.fonts.B_14R
+                style: appStyle.fonts.B_16R
                     .apply(color: appStyle.colors.textSecondary)));
           }
 
@@ -462,7 +462,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
               child: FirkaButton(
                   text: widget.data.l10n.cancel,
                   bgColor: appStyle.colors.buttonSecondaryFill,
-                  fontStyle: appStyle.fonts.B_14R
+                  fontStyle: appStyle.fonts.B_16R
                       .apply(color: appStyle.colors.textSecondary)),
               onTap: () {
                 Navigator.pop(context);
@@ -472,7 +472,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
               child: FirkaButton(
                   text: widget.data.l10n.save,
                   bgColor: appStyle.colors.accent,
-                  fontStyle: appStyle.fonts.B_14R
+                  fontStyle: appStyle.fonts.B_16R
                       .apply(color: appStyle.colors.textSecondaryLight)),
               onTap: () async {
                 if (settingAppIcon) return;
@@ -736,7 +736,7 @@ void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
                             Center(
                                 child: Text(
                               setting.title,
-                              style: appStyle.fonts.B_14R
+                              style: appStyle.fonts.B_16R
                                   .apply(color: appStyle.colors.textPrimary),
                             )),
                             Padding(
@@ -771,7 +771,7 @@ void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
                                         }),
                                   ),
                                   Text(setting.toRoundedString(),
-                                      style: appStyle.fonts.B_14R.apply(
+                                      style: appStyle.fonts.B_16R.apply(
                                           color: appStyle.colors.textPrimary))
                                 ],
                               ),

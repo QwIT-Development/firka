@@ -104,7 +104,7 @@ class WelcomeWidget extends StatelessWidget {
                 .copyWith(color: appStyle.colors.textPrimary)),
         const SizedBox(height: 2.0),
         Text(getSubtitle(dayCycle),
-            style: appStyle.fonts.B_14R
+            style: appStyle.fonts.B_16R
                 .copyWith(color: appStyle.colors.textSecondary)),
       ],
     );

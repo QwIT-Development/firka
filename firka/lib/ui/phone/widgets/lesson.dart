@@ -147,7 +147,7 @@ class LessonWidget extends StatelessWidget {
                       : lesson.start
                           .toLocal()
                           .format(data.l10n, FormatMode.hmm),
-                  style: appStyle.fonts.B_14R
+                  style: appStyle.fonts.B_16R
                       .apply(color: appStyle.colors.textPrimary)),
           placeholderMode == true
               ? SizedBox()
@@ -192,12 +192,12 @@ class LessonWidget extends StatelessWidget {
           ),
           SizedBox(width: 6),
           Text(test!.theme,
-              style: appStyle.fonts.B_14SB
+              style: appStyle.fonts.B_16SB
                   .apply(color: appStyle.colors.textSecondary))
         ],
         right: [
           Text(test!.method.description ?? "N/A",
-              style: appStyle.fonts.B_14R
+              style: appStyle.fonts.B_16R
                   .apply(color: appStyle.colors.textTertiary))
         ],
       ));
@@ -227,13 +227,13 @@ class LessonWidget extends StatelessWidget {
               shadow: false,
               left: [
                 Text(data.l10n.breakTxt,
-                    style: appStyle.fonts.B_14SB
+                    style: appStyle.fonts.B_16SB
                         .apply(color: appStyle.colors.textSecondary))
               ],
               right: [
                 Text(
                     "$preBreak ${preBreak == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                    style: appStyle.fonts.B_14R
+                    style: appStyle.fonts.B_16R
                         .apply(color: appStyle.colors.textTertiary))
               ],
             ));
@@ -285,7 +285,7 @@ class LessonWidget extends StatelessWidget {
                   isDismissed
                       ? data.l10n.class_dismissed
                       : "${emptyClass.start.toLocal().format(data.l10n, FormatMode.hmm)} - ${emptyClass.end.toLocal().format(data.l10n, FormatMode.hmm)}",
-                  style: appStyle.fonts.B_14R
+                  style: appStyle.fonts.B_16R
                       .apply(color: appStyle.colors.textPrimary))
             ],
           ));
@@ -300,13 +300,13 @@ class LessonWidget extends StatelessWidget {
               shadow: false,
               left: [
                 Text(data.l10n.breakTxt,
-                    style: appStyle.fonts.B_14SB
+                    style: appStyle.fonts.B_16SB
                         .apply(color: appStyle.colors.textSecondary))
               ],
               right: [
                 Text(
                     "$postBreak ${postBreak == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                    style: appStyle.fonts.B_14R
+                    style: appStyle.fonts.B_16R
                         .apply(color: appStyle.colors.textTertiary))
               ],
             ));
@@ -321,13 +321,13 @@ class LessonWidget extends StatelessWidget {
             shadow: false,
             left: [
               Text(data.l10n.breakTxt,
-                  style: appStyle.fonts.B_14SB
+                  style: appStyle.fonts.B_16SB
                       .apply(color: appStyle.colors.textSecondary))
             ],
             right: [
               Text(
                   "$breakMins ${breakMins == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                  style: appStyle.fonts.B_14R
+                  style: appStyle.fonts.B_16R
                       .apply(color: appStyle.colors.textTertiary))
             ],
           ));
@@ -342,13 +342,13 @@ class LessonWidget extends StatelessWidget {
           shadow: false,
           left: [
             Text(data.l10n.breakTxt,
-                style: appStyle.fonts.B_14SB
+                style: appStyle.fonts.B_16SB
                     .apply(color: appStyle.colors.textSecondary))
           ],
           right: [
             Text(
                 "$breakMins ${breakMins == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                style: appStyle.fonts.B_14R
+                style: appStyle.fonts.B_16R
                     .apply(color: appStyle.colors.textTertiary))
           ],
         ));

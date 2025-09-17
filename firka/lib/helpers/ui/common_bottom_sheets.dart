@@ -129,12 +129,12 @@ Future<void> showLessonBottomSheet(
                           ),
                           Text(
                             lesson.teacher ?? 'N/A',
-                            style: appStyle.fonts.B_14R
+                            style: appStyle.fonts.B_16R
                                 .apply(color: appStyle.colors.textPrimary),
                           ),
                           Text(
                             '${lesson.start.format(data.l10n, FormatMode.hmm)} - ${lesson.end.format(data.l10n, FormatMode.hmm)}',
-                            style: appStyle.fonts.B_14R
+                            style: appStyle.fonts.B_16R
                                 .apply(color: appStyle.colors.textPrimary),
                           ),
                         ],
@@ -225,7 +225,7 @@ Future<void> showGradeBottomSheet(
                                       MediaQuery.of(context).size.width / 1.45,
                                   child: Text(
                                     grade.mode!.description!,
-                                    style: appStyle.fonts.B_14R.apply(
+                                    style: appStyle.fonts.B_16R.apply(
                                         color: appStyle.colors.textSecondary),
                                   ),
                                 )
@@ -265,17 +265,17 @@ Future<void> showGradeBottomSheet(
                                 children: [
                                   Text(
                                     "${data.l10n.tt_added}${grade.creationDate}",
-                                    style: appStyle.fonts.B_14R.apply(
+                                    style: appStyle.fonts.B_16R.apply(
                                         color: appStyle.colors.textPrimary),
                                   ),
                                   Text(
                                     "${data.l10n.grade_teacherName}${grade.teacher}",
-                                    style: appStyle.fonts.B_14R.apply(
+                                    style: appStyle.fonts.B_16R.apply(
                                         color: appStyle.colors.textPrimary),
                                   ),
                                   Text(
                                     "${data.l10n.grade_strValue}${grade.strValue}",
-                                    style: appStyle.fonts.B_14R.apply(
+                                    style: appStyle.fonts.B_16R.apply(
                                         color: appStyle.colors.textPrimary),
                                   )
                                 ])
@@ -349,7 +349,7 @@ Future<void> showAnnouncementBottomSheet(
                         Text(
                           info.date.format(data.l10n, FormatMode.yyyymmdd),
                           textAlign: TextAlign.center,
-                          style: appStyle.fonts.B_14R
+                          style: appStyle.fonts.B_16R
                               .apply(color: appStyle.colors.textSecondary),
                         ),
                       ],
@@ -390,7 +390,7 @@ Future<void> showAnnouncementBottomSheet(
                               width: MediaQuery.of(context).size.width / 1.4,
                               child: Text(
                                 info.author,
-                                style: appStyle.fonts.B_14SB
+                                style: appStyle.fonts.B_16SB
                                     .apply(color: appStyle.colors.textPrimary),
                               ),
                             )

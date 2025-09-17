@@ -36,7 +36,7 @@ class BottomTimeTableNavIconWidget extends StatelessWidget {
                         .apply(color: appStyle.colors.textPrimary)),
                 Text(
                   date.format(l10n, FormatMode.dd),
-                  style: appStyle.fonts.B_14R
+                  style: appStyle.fonts.B_16R
                       .apply(color: appStyle.colors.textSecondary),
                 )
               ],

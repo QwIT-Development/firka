@@ -34,7 +34,7 @@ void showErrorBottomSheet(BuildContext context, String err) {
                 child: Center(
                   child: Text(
                     err,
-                    style: appStyle.fonts.B_14R,
+                    style: appStyle.fonts.B_16R,
                   ),
                 ),
               ),
