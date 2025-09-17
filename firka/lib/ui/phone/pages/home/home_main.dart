@@ -199,12 +199,12 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
                 ),
                 SizedBox(width: 6),
                 Text(test.theme,
-                    style: appStyle.fonts.B_14SB
+                    style: appStyle.fonts.B_16SB
                         .apply(color: appStyle.colors.textSecondary))
               ],
               right: [
                 Text(test.method.description ?? "N/A",
-                    style: appStyle.fonts.B_14R
+                    style: appStyle.fonts.B_16R
                         .apply(color: appStyle.colors.textTertiary))
               ],
             );
@@ -246,7 +246,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
                         SizedBox(
                           width: MediaQuery.of(context).size.width / 1.45,
                           child: Text(grade.topic ?? grade.type.description!,
-                              style: appStyle.fonts.B_14SB
+                              style: appStyle.fonts.B_16SB
                                   .apply(color: appStyle.colors.textPrimary)),
                         ),
                         grade.mode?.description != null
@@ -254,7 +254,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
                                 width: MediaQuery.of(context).size.width / 1.45,
                                 child: Text(
                                   grade.mode!.description!,
-                                  style: appStyle.fonts.B_14R.apply(
+                                  style: appStyle.fonts.B_16R.apply(
                                       color: appStyle.colors.textSecondary),
                                 ),
                               )

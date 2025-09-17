@@ -103,7 +103,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                         SizedBox(
                           width: MediaQuery.of(context).size.width / 1.45,
                           child: Text(grade.topic ?? grade.type.description!,
-                              style: appStyle.fonts.B_14SB
+                              style: appStyle.fonts.B_16SB
                                   .apply(color: appStyle.colors.textPrimary)),
                         ),
                         grade.mode?.description != null
@@ -111,7 +111,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                                 width: MediaQuery.of(context).size.width / 1.45,
                                 child: Text(
                                   grade.mode!.description!,
-                                  style: appStyle.fonts.B_14R.apply(
+                                  style: appStyle.fonts.B_16R.apply(
                                       color: appStyle.colors.textSecondary),
                                 ),
                               )
@@ -174,7 +174,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                               // name isn't stored in the subject, so we need
                               // to get *a* grade, and then get the teacher's
                               // name from there :3
-                              style: appStyle.fonts.B_14R
+                              style: appStyle.fonts.B_16R
                                   .apply(color: appStyle.colors.textPrimary),
                             )
                           ],

@@ -72,7 +72,7 @@ void showWearBottomSheet(
                         padding: const EdgeInsets.symmetric(horizontal: 6),
                         child: Text(
                           data.l10n.pairing_description,
-                          style: appStyle.fonts.B_14R
+                          style: appStyle.fonts.B_16R
                               .apply(color: appStyle.colors.textPrimary),
                           textAlign: TextAlign.center,
                         ),
@@ -87,7 +87,7 @@ void showWearBottomSheet(
                           center: [
                             Text(
                               data.l10n.pair,
-                              style: appStyle.fonts.B_14R
+                              style: appStyle.fonts.B_16R
                                   .apply(color: appStyle.colors.textSecondary),
                             )
                           ],
@@ -120,7 +120,7 @@ void showWearBottomSheet(
                           center: [
                             Text(
                               data.l10n.cancel,
-                              style: appStyle.fonts.B_14R
+                              style: appStyle.fonts.B_16R
                                   .apply(color: appStyle.colors.textSecondary),
                             )
                           ],

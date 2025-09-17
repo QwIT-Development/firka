@@ -46,7 +46,7 @@ class TimeTableDayWidget extends StatelessWidget {
         var event = events[i];
         ttBody.add(FirkaCard(left: [
           Text(event.name,
-              style: appStyle.fonts.B_14R
+              style: appStyle.fonts.B_16R
                   .apply(color: appStyle.colors.textPrimary))
         ]));
       }

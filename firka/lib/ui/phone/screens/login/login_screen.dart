@@ -201,7 +201,7 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
                               const SizedBox(height: 8),
                               Text(
                                 slides[index]['subtitle']! as String,
-                                style: appStyle.fonts.B_14R.copyWith(
+                                style: appStyle.fonts.B_16R.copyWith(
                                     color: appStyle.colors.textPrimary),
                                 softWrap: true,
                                 overflow: TextOverflow.visible,

@@ -48,13 +48,13 @@ class InfoBoardItemWidget extends StatelessWidget {
                 width: MediaQuery.of(context).size.width / 1.4,
                 child: Text(
                   item.title,
-                  style: appStyle.fonts.B_14SB
+                  style: appStyle.fonts.B_16SB
                       .apply(color: appStyle.colors.textPrimary),
                 ),
               ),
               Text(
                 item.author,
-                style: appStyle.fonts.B_14R
+                style: appStyle.fonts.B_16R
                     .apply(color: appStyle.colors.textSecondary),
               )
             ],

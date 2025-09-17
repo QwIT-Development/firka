@@ -75,7 +75,7 @@ class _BetaScreenState extends FirkaState<BetaScreen> {
                     child: FirkaButton(
                       text: widget.data.l10n.cancel,
                       bgColor: appStyle.colors.buttonSecondaryFill,
-                      fontStyle: appStyle.fonts.B_14R
+                      fontStyle: appStyle.fonts.B_16R
                           .apply(color: appStyle.colors.textPrimaryLight),
                       icon: Icon(Icons.close,
                           color: appStyle.colors.textPrimaryLight),
@@ -92,7 +92,7 @@ class _BetaScreenState extends FirkaState<BetaScreen> {
                       bgColor: counter == 0
                           ? appStyle.colors.accent
                           : appStyle.colors.secondary,
-                      fontStyle: appStyle.fonts.B_14R
+                      fontStyle: appStyle.fonts.B_16R
                           .apply(color: appStyle.colors.textPrimaryLight),
                       icon: Icon(Icons.check,
                           color: appStyle.colors.textPrimaryLight),

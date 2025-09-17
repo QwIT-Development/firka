@@ -58,7 +58,7 @@ class LessonSmallWidget extends StatelessWidget {
             ),
             Text(
                 "${lesson.start.toLocal().format(l10n, FormatMode.hmm)} - ${lesson.end.toLocal().format(l10n, FormatMode.hmm)}",
-                style: appStyle.fonts.B_14R
+                style: appStyle.fonts.B_16R
                     .apply(color: appStyle.colors.textPrimary)),
           ],
         )
