@@ -8,8 +8,7 @@ class FirkaFonts {
   TextStyle H_14px;
   TextStyle H_12px;
 
-  TextStyle H_16px_trimmed; // TODO: somehow implement this
-  // the design has this trimmed to 130% line height
+  TextStyle H_16px_trimmed;
 
   TextStyle B_16R;
   TextStyle B_16SB;
@@ -164,33 +163,43 @@ final _defaultFonts = FirkaFonts(
     fontSize: 16,
     fontFamily: 'Montserrat',
     fontVariations: [FontVariation("wght", 600)],
+    height: 1.3,
   ),
   B_16R: TextStyle(
-      fontSize: 16,
-      fontFamily: 'Figtree',
-      fontVariations: [FontVariation("wght", 600)]),
+    fontSize: 16,
+    fontFamily: 'Figtree',
+    fontVariations: [FontVariation("wght", 600)],
+    height: 1.3,
+  ),
   B_16SB: TextStyle(
     fontSize: 16,
     fontFamily: 'Figtree',
     fontVariations: [FontVariation("wght", 700)],
+    height: 1.3,
   ),
   B_14R: TextStyle(
-      fontSize: 14,
-      fontFamily: 'Figtree',
-      fontVariations: [FontVariation("wght", 600)]),
+    fontSize: 14,
+    fontFamily: 'Figtree',
+    fontVariations: [FontVariation("wght", 600)],
+    height: 1.3,
+  ),
   B_14SB: TextStyle(
     fontSize: 14,
     fontFamily: 'Figtree',
     fontVariations: [FontVariation("wght", 700)],
+    height: 1.3,
   ),
   B_12R: TextStyle(
-      fontSize: 12,
-      fontFamily: 'Figtree',
-      fontVariations: [FontVariation("wght", 600)]),
+    fontSize: 12,
+    fontFamily: 'Figtree',
+    fontVariations: [FontVariation("wght", 600)],
+    height: 1.3,
+  ),
   B_12SB: TextStyle(
     fontSize: 12,
     fontFamily: 'Figtree',
     fontVariations: [FontVariation("wght", 700)],
+    height: 1.3,
   ),
   P_14: TextStyle(
     fontSize: 14,
