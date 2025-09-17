@@ -34,10 +34,6 @@ Future<void> showLessonBottomSheet(
     enableDrag: true,
     backgroundColor: Colors.transparent,
     barrierColor: appStyle.colors.a15p,
-    constraints: BoxConstraints(
-      maxHeight: MediaQuery.of(context).size.height *
-          (statsForNerdsEnabled ? 0.35 : 0.3),
-    ),
     builder: (BuildContext context) {
       Widget statsForNerds = SizedBox();
 
@@ -70,9 +66,10 @@ Future<void> showLessonBottomSheet(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16) + EdgeInsets.only(bottom: 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(
                       children: [
