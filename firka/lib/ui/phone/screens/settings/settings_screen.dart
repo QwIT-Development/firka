@@ -664,6 +664,87 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         }
         continue;
       }
+
+      if (item is SettingsNavbar) {
+        List<Widget> pWidgets = List.empty(growable: true);
+
+        for (final k in item.pages!.keys) {
+          switch (k) {
+            case "home":
+              pWidgets.add(Text(
+                key: ValueKey("lbl_home"),
+                widget.data.l10n.s_ag_navbar_home,
+                style: appStyle.fonts.B_14SB
+                    .apply(color: appStyle.colors.textPrimary),
+              ));
+              for (final v in item.pages![k]!) {
+                pWidgets.add(ReorderableDragStartListener(
+                    key: ValueKey("opt_${v.index}"),
+                    index: v.index,
+                    child: SizedBox(
+                      height: 52,
+                      child: FirkaCard(left: [
+                        Text(v.name,
+                            style: appStyle.fonts.B_14SB
+                                .apply(color: appStyle.colors.textPrimary)),
+                      ]),
+                    )));
+              }
+            case "visible":
+              pWidgets.add(Text(
+                key: ValueKey("lbl_visible"),
+                widget.data.l10n.s_ag_navbar_home,
+                style: appStyle.fonts.B_14SB
+                    .apply(color: appStyle.colors.textPrimary),
+              ));
+              for (final v in item.pages![k]!) {
+                pWidgets.add(ReorderableDragStartListener(
+                    key: ValueKey("opt_${v.index}"),
+                    index: v.index,
+                    child: SizedBox(
+                      height: 52,
+                      child: FirkaCard(left: [
+                        Text(v.name,
+                            style: appStyle.fonts.B_14R
+                                .apply(color: appStyle.colors.textPrimary)),
+                      ]),
+                    )));
+              }
+            case "hidden":
+              pWidgets.add(Text(
+                key: ValueKey("lbl_hidden"),
+                widget.data.l10n.s_ag_navbar_home,
+                style: appStyle.fonts.B_14R
+                    .apply(color: appStyle.colors.textPrimary),
+              ));
+              for (final v in item.pages![k]!) {
+                pWidgets.add(ReorderableDragStartListener(
+                    key: ValueKey("opt_${v.index}"),
+                    index: v.index,
+                    child: SizedBox(
+                      height: 52,
+                      child: FirkaCard(left: [
+                        Text(v.name,
+                            style: appStyle.fonts.B_14R
+                                .apply(color: appStyle.colors.textPrimary)),
+                      ]),
+                    )));
+              }
+          }
+        }
+
+        widgets.add(SizedBox(
+          height: 300,
+          child: ReorderableListView.builder(
+            itemCount: pWidgets.length,
+            itemBuilder: (context, i) => pWidgets[i],
+            buildDefaultDragHandles: false,
+            onReorder: (int oldIndex, int newIndex) {},
+          ),
+        ));
+
+        continue;
+      }
     }
 
     return widgets;

@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
 
@@ -11,6 +12,7 @@ import 'package:isar/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../main.dart';
+import '../ui/phone/screens/home/home_screen.dart';
 
 const bellRing = 1001;
 const rounding1 = 1002;
@@ -29,6 +31,7 @@ const ttToastBreaks = 1014;
 const statsForNerds = 1015;
 const developerOptsEnabled = 1016;
 const themeBrightness = 1017;
+const navbar = 1018;
 
 bool always() {
   return true;
@@ -103,15 +106,30 @@ class SettingsStore {
                     null, l10n.s_ag_class_avg_on_graph, true, never),
                 "navbar": SettingsSubGroup(
                     0,
-                    null, // TODO: icon
-                    null,
+                    FirkaIconType.icons,
+                    "navbarSettings",
                     l10n.s_ag_navbar,
-                    LinkedHashMap.of({}),
-                    never),
+                    LinkedHashMap.of({
+                      "back": SettingsBackHeader(0, l10n.s_ag, always),
+                      "settings_header":
+                          SettingsHeader(0, l10n.s_ag_navbar, always),
+                      "settings_padding": SettingsPadding(0, 23, always),
+                      "navbar_settings": SettingsNavbar(
+                          navbar,
+                          {
+                            "home": [HomePage.home],
+                            "visible": [HomePage.grades, HomePage.timetable],
+                            "hidden": []
+                          },
+                          always),
+                    }),
+                    always),
                 "left_handed_mode": SettingsBoolean(leftHandedMode, null, null,
                     l10n.s_ag_left_handed_mode, false, never),
+                "navbar_padding": SettingsPadding(0, 8, always),
                 "language_header":
                     SettingsHeaderSmall(0, l10n.s_ag_language_header, always),
+                "language_header_padding": SettingsPadding(0, 8, always),
                 "language": SettingsItemsRadio(
                     language,
                     null,
@@ -656,6 +674,60 @@ class SettingsSubtitle implements SettingsItem {
 
   @override
   Future<void> save(IsarCollection<AppSettingsModel> model) async {}
+}
+
+class SettingsNavbar implements SettingsItem {
+  @override
+  Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
+  @override
+  bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
+  String title = "";
+  Map<String, List<HomePage>>? pages;
+  Map<String, List<HomePage>> defaultPages;
+
+  SettingsNavbar(this.key, this.defaultPages, this.visibilityProvider);
+
+  @override
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {
+    var v = await model.get(key);
+    if (v == null || v.valueString == null) {
+      pages = defaultPages;
+    } else {
+      pages = jsonDecode(v.valueString!);
+    }
+
+    List<HomePage> itemsInCurrentPages = List.empty(growable: true);
+    for (final list in pages!.values) {
+      for (final item in list) {
+        itemsInCurrentPages.add(item);
+      }
+    }
+
+    for (final list in defaultPages.values) {
+      for (final item in list) {
+        if (!itemsInCurrentPages.contains(item)) {
+          pages!["hidden"]!.add(item);
+        }
+      }
+    }
+  }
+
+  @override
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {
+    var v = AppSettingsModel();
+    v.id = key;
+    v.valueString = jsonEncode(pages);
+
+    await model.put(v);
+
+    initData.settingsUpdateNotifier.update();
+  }
 }
 
 class SettingsAppIconPreview implements SettingsItem {
