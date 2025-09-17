@@ -62,12 +62,12 @@ class LessonBigWidget extends StatelessWidget {
                   children: [
                     Row(children: [
                       Text('-',
-                          style: appStyle.fonts.B_14R
+                          style: appStyle.fonts.B_16R
                               .apply(color: appStyle.colors.textPrimary))
                     ]),
                     Row(children: [
                       Text('-',
-                          style: appStyle.fonts.B_14R
+                          style: appStyle.fonts.B_16R
                               .apply(color: appStyle.colors.textPrimary))
                     ])
                   ],
@@ -125,7 +125,7 @@ class LessonBigWidget extends StatelessWidget {
                   children: [
                     Row(children: [
                       Text('-',
-                          style: appStyle.fonts.B_14R
+                          style: appStyle.fonts.B_16R
                               .apply(color: appStyle.colors.textPrimary))
                     ]),
                     Row(children: [
@@ -133,7 +133,7 @@ class LessonBigWidget extends StatelessWidget {
                           nextLesson!.start
                               .toLocal()
                               .format(l10n, FormatMode.hmm),
-                          style: appStyle.fonts.B_14R
+                          style: appStyle.fonts.B_16R
                               .apply(color: appStyle.colors.textPrimary))
                     ])
                   ],
@@ -241,7 +241,7 @@ class LessonBigWidget extends StatelessWidget {
                   Row(
                     children: [
                       Text(lesson!.start.toLocal().format(l10n, FormatMode.hmm),
-                          style: appStyle.fonts.B_14R
+                          style: appStyle.fonts.B_16R
                               .apply(color: appStyle.colors.textPrimary)),
                       Card(
                         shadowColor: Colors.transparent,
@@ -328,7 +328,7 @@ class LessonBigWidget extends StatelessWidget {
                           prevLesson!.end
                               .toLocal()
                               .format(l10n, FormatMode.hmm),
-                          style: appStyle.fonts.B_14R
+                          style: appStyle.fonts.B_16R
                               .apply(color: appStyle.colors.textPrimary)),
                     ],
                   ),
@@ -338,7 +338,7 @@ class LessonBigWidget extends StatelessWidget {
                           nextLesson!.start
                               .toLocal()
                               .format(l10n, FormatMode.hmm),
-                          style: appStyle.fonts.B_14R
+                          style: appStyle.fonts.B_16R
                               .apply(color: appStyle.colors.textPrimary)),
                     ],
                   )

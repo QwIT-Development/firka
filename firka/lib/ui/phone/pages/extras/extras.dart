@@ -125,7 +125,7 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                           GestureDetector(
                             child: Text(
                                 "v${data.packageInfo.version} ${isBeta ? "beta" : ""}",
-                                style: appStyle.fonts.B_14R.apply(
+                                style: appStyle.fonts.B_16R.apply(
                                     color: appStyle.colors.textTertiary)),
                             onTap: () async {
                               if (isDebug()) return;
