@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firka/helpers/api/model/grade.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/ui/common_bottom_sheets.dart';
+import 'package:firka/ui/phone/screens/message/message_screen.dart';
 import 'package:firka/ui/phone/widgets/home_main_starting_soon.dart';
 import 'package:firka/ui/phone/widgets/info_board_item.dart';
 import 'package:firka/ui/phone/widgets/lesson_small.dart';
@@ -224,7 +225,8 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
           GestureDetector(
             child: InfoBoardItemWidget(item),
             onTap: () {
-              showAnnouncementBottomSheet(context, widget.data, item);
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => MessageScreen(widget.data, item)));
             },
           ),
           item.date
