@@ -1,4 +1,5 @@
 import 'package:firka/helpers/api/client/kreta_client.dart';
+import 'package:firka/helpers/api/model/all_lessons.dart';
 import 'package:firka/helpers/api/model/generic.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/helpers/ui/grade_helpers.dart';
@@ -32,9 +33,12 @@ class HomeGradesScreen extends StatefulWidget {
 }
 
 String activeSubjectUid = "";
+String alkalmazottNev = "";
+String tantargyNev = "";
 
 class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
   ApiResponse<List<Grade>>? grades;
+  ApiResponse<List<AllLessons>>? lessons;
   ApiResponse<List<Lesson>>? week;
   ApiResponse<List<ClassGroup>>? classGroups;
   List<ApiResponse<List<SubjectAverage>>>? subjectAvgs;
@@ -53,6 +57,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
     var end = start.add(Duration(days: 6));
 
     grades = await widget.data.client.getGrades(forceCache: false);
+    lessons = await widget.data.client.getLessons(forceCache: false);
     week = await widget.data.client.getTimeTable(start, end, forceCache: false);
     classGroups = await widget.data.client.getClassGroups(forceCache: false);
 
@@ -81,6 +86,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
       var end = start.add(Duration(days: 6));
 
       grades = await widget.data.client.getGrades();
+      lessons = await widget.data.client.getLessons();
       week = await widget.data.client.getTimeTable(start, end);
 
       if (mounted) setState(() {});
@@ -120,30 +126,60 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
         }
       }
 
+      for (var lesson in lessons!.response!) {
+        if (subjects.where((s) => s.uid == lesson.tantargyId?.toString()).isEmpty) {
+          subjects.add(Subject(
+            uid: lesson.tantargyId?.toString() ?? '',
+            name: lesson.tantargyNev,
+            alkalmazottNev: lesson.alkalmazottNev,
+
+            category: NameUidDesc(
+              uid: lesson.tantargyKategoriaId?.toString() ?? '',
+              name: lesson.tantargyKategoriaNev,
+              description: "",
+            ),
+            sortIndex: 0,
+          ));
+        }
+      }
+
       subjects.sort((s1, s2) => s1.name.compareTo(s2.name));
 
       for (var subject in subjects) {
-        for (var grade in grades!.response!) {
-          if (grade.subject.uid != subject.uid) continue;
+        final subjectGrades =
+            grades!.response!.where((g) => g.subject.uid == subject.uid).toList();
 
-          if (grade.valueType.name == "Szazalekos") {
-            grade.valueType = NameUidDesc(
-                uid: "1,Osztalyzat", name: "Osztalyzat", description: "");
-            if (grade.numericValue != null) {
-              grade.numericValue = percentageToGrade(grade.numericValue!);
+        double avg = double.nan;
+        if (subjectGrades.isNotEmpty) {
+          for (var grade in subjectGrades) {
+            if (grade.valueType.name == "Szazalekos") {
+              grade.valueType = NameUidDesc(
+                  uid: "1,Osztalyzat", name: "Osztalyzat", description: "");
+              if (grade.numericValue != null) {
+                grade.numericValue = percentageToGrade(grade.numericValue!);
+              }
             }
           }
+          avg = grades!.response!.getAverageBySubject(subject);
         }
-        var avg = grades!.response!.getAverageBySubject(subject);
 
         if (avg.isNaN) {
-          gradeCards.add(GradeSmallCard(grades!.response!, subject));
+          gradeCards.add(GestureDetector(
+            child: GradeSmallCard(grades!.response!, subject),
+            onTap: () {
+              activeSubjectUid = subject.uid;
+              alkalmazottNev = subject.alkalmazottNev ?? '';
+              tantargyNev = subject.name;
+              widget.pageController(1);
+            },
+          ));
         } else {
           gradeCards.add(GestureDetector(
             child: GradeSmallCard(grades!.response!, subject),
             onTap: () {
               activeSubjectUid = subject.uid;
-
+              alkalmazottNev = subject.alkalmazottNev  ?? '';
+              tantargyNev = subject.name;
               widget.pageController(1);
             },
           ));
