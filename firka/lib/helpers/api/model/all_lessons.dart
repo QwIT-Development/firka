@@ -1,127 +1,127 @@
 import 'dart:convert';
 
 class AllLessons {
-  final String intezmenyId;
-  final String tanevId;
-  final dynamic osztalyId;
-  final String? osztalyNev;
-  final bool osztalyMunkaTer;
-  final dynamic csoportId;
-  final String? csoportNev;
-  final bool csoportMunkaTer;
-  final String osztalyCsoportNev;
-  final dynamic tantargyId;
-  final String tantargyNev;
-  final dynamic alkalmazottId;
-  final String alkalmazottGuid;
-  final String alkalmazottNev;
-  final dynamic alkalmazottUzenoFalId;
-  final dynamic uzenoFalId;
-  final String? nyelvId;
-  final dynamic tantargyKategoriaId;
-  final String tantargyKategoriaNev;
-  final dynamic tipusId;
-  final String tipusNev;
-  final dynamic evfolyamTipusId;
-  final String evfolyamTipusNev;
-  final dynamic feladatEllatasiHelyId;
-  final String feladatEllatasiHelyNev;
-  final dynamic alkalmazottAvatarTipusId;
-  final String alkalmazottAvatarEleres;
-  final dynamic oraiFeladatGroupId;
+  final String schoolId;
+  final String yearId;
+  final dynamic classId;
+  final String? className;
+  final bool classWorkspace;
+  final dynamic groupId;
+  final String? groupName;
+  final bool groupWorkspace;
+  final String groupWorkspaceName;
+  final dynamic subjectId;
+  final String subjectName;
+  final dynamic teacherId;
+  final String teacherGuid;
+  final String teacherName;
+  final dynamic teacherAnnoId;
+  final dynamic annoId;
+  final String? languageId;
+  final dynamic subjectCategoryId;
+  final String subjectCategoryName;
+  final dynamic typeId;
+  final String typeName;
+  final dynamic gradeTypeId;
+  final String gradeTypeName;
+  final dynamic taskPlaceId;
+  final String taskPlaceName;
+  final dynamic teacherAvatarTypeId;
+  final String teacherAvatarTypePath;
+  final dynamic taskGroupId;
 
   AllLessons({
-    required this.intezmenyId,
-    required this.tanevId,
-    this.osztalyId,
-    this.osztalyNev,
-    required this.osztalyMunkaTer,
-    this.csoportId,
-    this.csoportNev,
-    required this.csoportMunkaTer,
-    required this.osztalyCsoportNev,
-    required this.tantargyId,
-    required this.tantargyNev,
-    required this.alkalmazottId,
-    required this.alkalmazottGuid,
-    required this.alkalmazottNev,
-    this.alkalmazottUzenoFalId,
-    this.uzenoFalId,
-    this.nyelvId,
-    required this.tantargyKategoriaId,
-    required this.tantargyKategoriaNev,
-    required this.tipusId,
-    required this.tipusNev,
-    required this.evfolyamTipusId,
-    required this.evfolyamTipusNev,
-    required this.feladatEllatasiHelyId,
-    required this.feladatEllatasiHelyNev,
-    required this.alkalmazottAvatarTipusId,
-    required this.alkalmazottAvatarEleres,
-    this.oraiFeladatGroupId,
+    required this.schoolId,
+    required this.yearId,
+    this.classId,
+    this.className,
+    required this.classWorkspace,
+    this.groupId,
+    this.groupName,
+    required this.groupWorkspace,
+    required this.groupWorkspaceName,
+    required this.subjectId,
+    required this.subjectName,
+    required this.teacherId,
+    required this.teacherGuid,
+    required this.teacherName,
+    this.teacherAnnoId,
+    this.annoId,
+    this.languageId,
+    required this.subjectCategoryId,
+    required this.subjectCategoryName,
+    required this.typeId,
+    required this.typeName,
+    required this.gradeTypeId,
+    required this.gradeTypeName,
+    required this.taskPlaceId,
+    required this.taskPlaceName,
+    required this.teacherAvatarTypeId,
+    required this.teacherAvatarTypePath,
+    this.taskGroupId,
   });
 
   factory AllLessons.fromJson(Map<String, dynamic> json) => AllLessons(
-      intezmenyId: json['intezmenyId']?.toString() ?? '',
-      tanevId: json['tanevId']?.toString() ?? '',
-      osztalyId: json['osztalyId'],
-      osztalyNev: json['osztalyNev']?.toString(),
-      osztalyMunkaTer: json['osztalyMunkaTer'] == true,
-      csoportId: json['csoportId'],
-      csoportNev: json['csoportNev']?.toString(),
-      csoportMunkaTer: json['csoportMunkaTer'] == true,
-      osztalyCsoportNev: json['osztalyCsoportNev']?.toString() ?? '',
-      tantargyId: json['tantargyId'],
-      tantargyNev: json['tantargyNev']?.toString() ?? '',
-      alkalmazottId: json['alkalmazottId'],
-      alkalmazottGuid: json['alkalmazottGuid']?.toString() ?? '',
-      alkalmazottNev: json['alkalmazottNev']?.toString() ?? '',
-      alkalmazottUzenoFalId: json['alkalmazottUzenoFalId'],
-      uzenoFalId: json['uzenoFalId'],
-      nyelvId: json['nyelvId']?.toString(),
-      tantargyKategoriaId: json['tantargyKategoriaId'],
-      tantargyKategoriaNev: json['tantargyKategoriaNev']?.toString() ?? '',
-      tipusId: json['tipusId'],
-      tipusNev: json['tipusNev']?.toString() ?? '',
-      evfolyamTipusId: json['evfolyamTipusId'],
-      evfolyamTipusNev: json['evfolyamTipusNev']?.toString() ?? '',
-      feladatEllatasiHelyId: json['feladatEllatasiHelyId'],
-      feladatEllatasiHelyNev: json['feladatEllatasiHelyNev']?.toString() ?? '',
-      alkalmazottAvatarTipusId: json['alkalmazottAvatarTipusId'],
-      alkalmazottAvatarEleres: json['alkalmazottAvatarEleres']?.toString() ?? '',
-      oraiFeladatGroupId: json['oraiFeladatGroupId'],
-    );
-
+        schoolId: json['intezmenyId']?.toString() ?? '',
+        yearId: json['tanevId']?.toString() ?? '',
+        classId: json['osztalyId'],
+        className: json['osztalyNev']?.toString(),
+        classWorkspace: json['osztalyMunkaTer'] == true,
+        groupId: json['csoportId'],
+        groupName: json['csoportNev']?.toString(),
+        groupWorkspace: json['csoportMunkaTer'] == true,
+        groupWorkspaceName: json['osztalyCsoportNev']?.toString() ?? '',
+        subjectId: json['tantargyId'],
+        subjectName: json['tantargyNev']?.toString() ?? '',
+        teacherId: json['alkalmazottId'],
+        teacherGuid: json['alkalmazottGuid']?.toString() ?? '',
+        teacherName: json['alkalmazottNev']?.toString() ?? '',
+        teacherAnnoId: json['alkalmazottUzenoFalId'],
+        annoId: json['uzenoFalId'],
+        languageId: json['nyelvId']?.toString(),
+        subjectCategoryId: json['tantargyKategoriaId'],
+        subjectCategoryName: json['tantargyKategoriaNev']?.toString() ?? '',
+        typeId: json['tipusId'],
+        typeName: json['tipusNev']?.toString() ?? '',
+        gradeTypeId: json['evfolyamTipusId'],
+        gradeTypeName: json['evfolyamTipusNev']?.toString() ?? '',
+        taskPlaceId: json['feladatEllatasiHelyId'],
+        taskPlaceName: json['feladatEllatasiHelyNev']?.toString() ?? '',
+        teacherAvatarTypeId: json['alkalmazottAvatarTipusId'],
+        teacherAvatarTypePath:
+            json['alkalmazottAvatarEleres']?.toString() ?? '',
+        taskGroupId: json['oraiFeladatGroupId'],
+      );
 
   Map<String, dynamic> toJson() => {
-        'intezmenyId': intezmenyId,
-        'tanevId': tanevId,
-        'osztalyId': osztalyId,
-        'osztalyNev': osztalyNev,
-        'osztalyMunkaTer': osztalyMunkaTer,
-        'csoportId': csoportId,
-        'csoportNev': csoportNev,
-        'csoportMunkaTer': csoportMunkaTer,
-        'osztalyCsoportNev': osztalyCsoportNev,
-        'tantargyId': tantargyId,
-        'tantargyNev': tantargyNev,
-        'alkalmazottId': alkalmazottId,
-        'alkalmazottGuid': alkalmazottGuid,
-        'alkalmazottNev': alkalmazottNev,
-        'alkalmazottUzenoFalId': alkalmazottUzenoFalId,
-        'uzenoFalId': uzenoFalId,
-        'nyelvId': nyelvId,
-        'tantargyKategoriaId': tantargyKategoriaId,
-        'tantargyKategoriaNev': tantargyKategoriaNev,
-        'tipusId': tipusId,
-        'tipusNev': tipusNev,
-        'evfolyamTipusId': evfolyamTipusId,
-        'evfolyamTipusNev': evfolyamTipusNev,
-        'feladatEllatasiHelyId': feladatEllatasiHelyId,
-        'feladatEllatasiHelyNev': feladatEllatasiHelyNev,
-        'alkalmazottAvatarTipusId': alkalmazottAvatarTipusId,
-        'alkalmazottAvatarEleres': alkalmazottAvatarEleres,
-        'oraiFeladatGroupId': oraiFeladatGroupId,
+        'intezmenyId': schoolId,
+        'tanevId': yearId,
+        'osztalyId': classId,
+        'osztalyNev': className,
+        'osztalyMunkaTer': classWorkspace,
+        'csoportId': groupId,
+        'csoportNev': groupName,
+        'csoportMunkaTer': groupWorkspace,
+        'osztalyCsoportNev': groupWorkspaceName,
+        'tantargyId': subjectId,
+        'tantargyNev': subjectName,
+        'alkalmazottId': teacherId,
+        'alkalmazottGuid': teacherGuid,
+        'alkalmazottNev': teacherName,
+        'alkalmazottUzenoFalId': teacherAnnoId,
+        'uzenoFalId': annoId,
+        'nyelvId': languageId,
+        'tantargyKategoriaId': subjectCategoryId,
+        'tantargyKategoriaNev': subjectCategoryName,
+        'tipusId': typeId,
+        'tipusNev': typeName,
+        'evfolyamTipusId': gradeTypeId,
+        'evfolyamTipusNev': gradeTypeName,
+        'feladatEllatasiHelyId': taskPlaceId,
+        'feladatEllatasiHelyNev': taskPlaceName,
+        'alkalmazottAvatarTipusId': teacherAvatarTypeId,
+        'alkalmazottAvatarEleres': teacherAvatarTypePath,
+        'oraiFeladatGroupId': taskGroupId,
       };
 }
 

@@ -127,15 +127,16 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
       }
 
       for (var lesson in lessons!.response!) {
-        if (subjects.where((s) => s.uid == lesson.tantargyId?.toString()).isEmpty) {
+        if (subjects
+            .where((s) => s.uid == lesson.subjectId?.toString())
+            .isEmpty) {
           subjects.add(Subject(
-            uid: lesson.tantargyId?.toString() ?? '',
-            name: lesson.tantargyNev,
-            alkalmazottNev: lesson.alkalmazottNev,
-
+            uid: lesson.subjectId?.toString() ?? '',
+            name: lesson.subjectName,
+            teacherName: lesson.teacherName,
             category: NameUidDesc(
-              uid: lesson.tantargyKategoriaId?.toString() ?? '',
-              name: lesson.tantargyKategoriaNev,
+              uid: lesson.subjectCategoryId?.toString() ?? '',
+              name: lesson.subjectCategoryName,
               description: "",
             ),
             sortIndex: 0,
@@ -146,8 +147,9 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
       subjects.sort((s1, s2) => s1.name.compareTo(s2.name));
 
       for (var subject in subjects) {
-        final subjectGrades =
-            grades!.response!.where((g) => g.subject.uid == subject.uid).toList();
+        final subjectGrades = grades!.response!
+            .where((g) => g.subject.uid == subject.uid)
+            .toList();
 
         double avg = double.nan;
         if (subjectGrades.isNotEmpty) {
@@ -168,7 +170,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
             child: GradeSmallCard(grades!.response!, subject),
             onTap: () {
               activeSubjectUid = subject.uid;
-              alkalmazottNev = subject.alkalmazottNev ?? '';
+              alkalmazottNev = subject.teacherName ?? '';
               tantargyNev = subject.name;
               widget.pageController(1);
             },
@@ -178,7 +180,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
             child: GradeSmallCard(grades!.response!, subject),
             onTap: () {
               activeSubjectUid = subject.uid;
-              alkalmazottNev = subject.alkalmazottNev  ?? '';
+              alkalmazottNev = subject.teacherName ?? '';
               tantargyNev = subject.name;
               widget.pageController(1);
             },
