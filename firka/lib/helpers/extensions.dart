@@ -133,7 +133,11 @@ extension DateExtension on DateTime {
       case FormatMode.dd:
         return DateFormat('dd', l10n.localeName).format(this);
       case FormatMode.yyyymmddwedd:
-        return "${DateFormat('yyyy MMM. dd', l10n.localeName).format(weekStart).toLowerCase()}-${DateFormat('dd', l10n.localeName).format(weekEnd)}";
+        if (l10n.localeName == "en") {
+          return "${DateFormat('yyyy MMM. dd', l10n.localeName).format(weekStart).toLowerCase()}-${DateFormat('dd', l10n.localeName).format(weekEnd)}";
+        } else {
+          return "${DateFormat('yyyy MMM dd', l10n.localeName).format(weekStart).toLowerCase()}-${DateFormat('dd', l10n.localeName).format(weekEnd)}";
+        }
       case FormatMode.yyyymmmm:
         return DateFormat('yyyy MMMM', l10n.localeName).format(this);
       case FormatMode.yyyymmdd:
