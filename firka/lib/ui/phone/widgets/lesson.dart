@@ -171,7 +171,7 @@ class LessonWidget extends StatelessWidget {
       elements.add(FirkaCard(
         left: [
           Text(data.l10n.class_substitution,
-              style: appStyle.fonts.H_14px
+              style: appStyle.fonts.H_16px
                   .apply(color: appStyle.colors.textPrimary))
         ],
         right: [
