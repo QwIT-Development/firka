@@ -33,8 +33,8 @@ class HomeGradesScreen extends StatefulWidget {
 }
 
 String activeSubjectUid = "";
-String alkalmazottNev = "";
-String tantargyNev = "";
+String teacherName = "";
+String subjectName = "";
 
 class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
   ApiResponse<List<Grade>>? grades;
@@ -170,8 +170,8 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
             child: GradeSmallCard(grades!.response!, subject),
             onTap: () {
               activeSubjectUid = subject.uid;
-              alkalmazottNev = subject.teacherName ?? '';
-              tantargyNev = subject.name;
+              teacherName = subject.teacherName ?? '';
+              subjectName = subject.name;
               widget.pageController(1);
             },
           ));
@@ -180,8 +180,8 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
             child: GradeSmallCard(grades!.response!, subject),
             onTap: () {
               activeSubjectUid = subject.uid;
-              alkalmazottNev = subject.teacherName ?? '';
-              tantargyNev = subject.name;
+              teacherName = subject.teacherName ?? '';
+              subjectName = subject.name;
               widget.pageController(1);
             },
           ));
