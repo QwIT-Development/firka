@@ -10,7 +10,6 @@ import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/update_notifier.dart';
 import '../../../../main.dart';
 import '../../../model/style.dart';
-import '../../../widget/delayed_spinner.dart';
 
 class HomeGradesSubjectScreen extends StatefulWidget {
   final AppInitialization data;
@@ -199,32 +198,32 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
       return Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-              FirkaCard(
-                left: [
-                  Padding(
-                    padding: EdgeInsets.only(left: 4),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width / 1.45,
-                          child: Text(
-                            tantargyNev,
-                            style: appStyle.fonts.H_H2
-                                .apply(color: appStyle.colors.textPrimary),
-                          ),
-                        ),
-                        Text(
-                          alkalmazottNev,
-                          style: appStyle.fonts.B_16R
-                              .apply(color: appStyle.colors.textPrimary),
-                        )
-                      ],
+          FirkaCard(
+            left: [
+              Padding(
+                padding: EdgeInsets.only(left: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width / 1.45,
+                      child: Text(
+                        subjectName,
+                        style: appStyle.fonts.H_H2
+                            .apply(color: appStyle.colors.textPrimary),
+                      ),
                     ),
-                  )
-                ],
-              ),
+                    Text(
+                      teacherName,
+                      style: appStyle.fonts.B_14R
+                          .apply(color: appStyle.colors.textPrimary),
+                    )
+                  ],
+                ),
+              )
             ],
+          ),
+        ],
       );
     }
   }
