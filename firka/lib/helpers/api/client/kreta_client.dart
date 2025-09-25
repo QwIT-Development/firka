@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
+import 'package:firka/helpers/api/model/all_lessons.dart';
 import 'package:firka/helpers/api/model/class_group.dart';
 import 'package:firka/helpers/api/model/homework.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
@@ -622,6 +623,41 @@ class KretaClient {
         .toList();
 
     return ApiResponse(lessons, 200, err, cached);
+  }
+
+  Future<ApiResponse<List<AllLessons>>> getLessons({bool forceCache = true}) async {
+    var (resp, status, ex, cached) = await _cachingGet(
+      CacheId.getLessons,
+      KretaEndpoints.getLessons(model.iss!),
+      forceCache,
+      0,
+    );
+
+    var items = <AllLessons>[];
+    String? err;
+
+    try {
+      if (resp is List) {
+        for (var item in resp) {
+          if (item != null && item is Map<String, dynamic>) {
+            items.add(AllLessons.fromJson(item));
+          } else {
+            logger.warning("$item");
+          }
+        }
+      } else {
+        err = "${resp.runtimeType}";
+      }
+    } catch (e, stack) {
+      err = e.toString();
+      logger.warning(e, stack);
+    }
+
+    if (ex != null) {
+      err = ex.toString();
+    }
+
+    return ApiResponse(items, status, err, cached);
   }
 
   Future<ApiResponse<List<Test>>> getTests({bool forceCache = true}) async {

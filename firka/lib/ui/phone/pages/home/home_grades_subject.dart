@@ -71,7 +71,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (grades != null && activeSubjectUid != "") {
+    if (grades != null && grades!.isNotEmpty && activeSubjectUid != "") {
       var aGrade = grades!.first;
       var groups = grades!.groupList((grade) => grade.recordDate);
 
@@ -197,13 +197,34 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
       );
     } else {
       return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [DelayedSpinnerWidget()],
-          )
-        ],
+              FirkaCard(
+                left: [
+                  Padding(
+                    padding: EdgeInsets.only(left: 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width / 1.45,
+                          child: Text(
+                            tantargyNev,
+                            style: appStyle.fonts.H_H2
+                                .apply(color: appStyle.colors.textPrimary),
+                          ),
+                        ),
+                        Text(
+                          alkalmazottNev,
+                          style: appStyle.fonts.B_16R
+                              .apply(color: appStyle.colors.textPrimary),
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ],
       );
     }
   }
