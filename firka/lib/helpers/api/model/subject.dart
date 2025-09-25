@@ -5,14 +5,14 @@ class Subject {
   final String name;
   final NameUidDesc category;
   final int sortIndex;
-  final String? alkalmazottNev;
+  final String? teacherName;
 
   Subject({
     required this.uid,
     required this.name,
     required this.category,
     required this.sortIndex,
-    this.alkalmazottNev,
+    this.teacherName,
   });
 
   factory Subject.fromJson(Map<String, dynamic> json) {
@@ -21,7 +21,7 @@ class Subject {
       name: json['Nev'],
       category: NameUidDesc.fromJson(json['Kategoria']),
       sortIndex: json['SortIndex'],
-      alkalmazottNev: json['alkalmazottNev'],
+      teacherName: json['alkalmazottNev'],
     );
   }
 
@@ -31,7 +31,7 @@ class Subject {
       'Nev': name,
       'Kategoria': category.toJson(),
       'SortIndex': sortIndex,
-      'alkalmazottNev': alkalmazottNev,
+      'alkalmazottNev': teacherName,
     };
   }
 
@@ -42,7 +42,7 @@ class Subject {
         'name: "$name", '
         'category: $category, '
         'sortIndex: $sortIndex, '
-        'alkalmazottNev: $alkalmazottNev'
+        'nameOfTeacher: $teacherName'
         ')';
   }
 }
