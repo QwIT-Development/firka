@@ -685,6 +685,11 @@ fun getDebugKeystorePath(): String {
 fun getDefaultAndroidSdkPath(): String? {
     val os = System.getProperty("os.name").lowercase()
     val userHome = System.getProperty("user.home")
+    val zipAlign = File("/usr/bin/zipalign")
+
+    if (zipAlign.exists()) {
+        return "/usr/bin"
+    }
 
     return when {
         os.contains("win") ->
@@ -739,6 +744,11 @@ fun findToolInSdkPath(toolName: String): String? {
                 if (toolExec.exists()) {
                     return toolExec.absolutePath
                 }
+            }
+        } else {
+            val toolExec = File(androidHome, toolName)
+            if (toolExec.exists()) {
+                return toolExec.absolutePath
             }
         }
     }
