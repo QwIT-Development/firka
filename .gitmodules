@@ -1,9 +1,6 @@
 [submodule "firka/lib/l10n"]
 	path = firka/lib/l10n
 	url = https://github.com/QwIT-Development/firka-localization
-[submodule "firka/vendor/fmb_dart"]
-	path = firka/vendor/fmb_dart
-	url = https://git.firka.app/firka/fmb_dart
 [submodule "firka_wear/vendor/wear_plus"]
 	path = firka_wear/vendor/wear_plus
 	url = https://git.firka.app/firka/wear_plus

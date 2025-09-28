@@ -56,9 +56,10 @@ dependencies:
   flutter_screenutil: ^5.9.3
   flutter_arc_text: ^0.6.0
   flutter_svg: ^1.1.6
-  # no clue where this comes from + don't care
+  # did care, to put back the original library instead of the vendor
   fmb_dart:
-    path: vendor/fmb_dart
+    hosted: https://git.anchietae.cc/api/packages/FMBCrypt/pub/
+    version: 5.0.0
   home_widget: ^0.8.0
   brotli: ^0.6.0
   crypto: ^3.0.6
