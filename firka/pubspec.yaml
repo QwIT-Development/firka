@@ -37,10 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_launcher_icons: ^0.14.3
   dio: ^5.8.0+1
-  isar:
-    path: vendor/isar
-  isar_flutter_libs:
-    path: vendor/isar_flutter_libs
+  isar: any
+  isar_flutter_libs: any
   build_runner: any
   path_provider: ^2.1.0
   carousel_slider: ^5.0.0
@@ -58,6 +56,7 @@ dependencies:
   flutter_screenutil: ^5.9.3
   flutter_arc_text: ^0.6.0
   flutter_svg: ^1.1.6
+  # no clue where this comes from + don't care
   fmb_dart:
     path: vendor/fmb_dart
   home_widget: ^0.8.0
