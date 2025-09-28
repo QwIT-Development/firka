@@ -14,6 +14,7 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
 
+    /*
     // fix for verifyReleaseResources
 
     // note(4831c0): taken from https://github.com/isar/isar/issues/1662
@@ -37,13 +38,16 @@ subprojects {
         }
     }
     // ===============================
+    */
 
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
+/*
 subprojects {
     project.evaluationDependsOn(":app")
 }
+    */
 
-tasks.register<Delete>("clean") {
+tasks.register("clean", Delete::class) {
     delete(rootProject.layout.buildDirectory)
 }

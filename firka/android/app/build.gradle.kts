@@ -1,9 +1,11 @@
 // dear god
 
-/*import org.apache.commons.io.FileUtils
-import java.io.FileInputStream
-import java.security.MessageDigest
+
 import java.util.Properties
+import java.io.FileInputStream
+
+/*import org.apache.commons.io.FileUtils
+import java.security.MessageDigest
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -45,10 +47,9 @@ android {
         jvmTarget = JavaVersion.VERSION_21.toString()
     }
 
-    // whoever thought flutter needs compose was probably on some kind of strong za
-    /*buildFeatures {
+    buildFeatures {
         compose = true
-    }*/
+    }
 
     defaultConfig {
         applicationId = "app.firka.naplo"
@@ -60,12 +61,11 @@ android {
         versionName = flutter.versionName
     }
 
-    val secretsDir = rootProject.file("secrets") // did you know, that you don't need to go up?
-    val propsFile = File(secretsDir, "keystore.properties")
-
-    if (propsFile.exists()) {
-        val props = loadProperties(propsFile)
-        signingConfigs {
+    signingConfigs {
+        val secretsDir = File(projectDir.absolutePath, "../../../secrets/")
+        val propsFile = File(secretsDir, "keystore.properties")
+        if (propsFile.exists()) {
+            val props = loadProperties(propsFile)
             create("release") {
                 // much safer
                 storeFile = File(secretsDir, props.getProperty("storeFile"))
@@ -85,10 +85,13 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfigs.findByName("release")?.let {
-                signingConfig = it
-            }
+            signingConfig = signingConfigs.getByName("release")
         }
+    }
+}
+
+androidComponents {
+    beforeVariants { variantBuilder ->
     }
 }
 

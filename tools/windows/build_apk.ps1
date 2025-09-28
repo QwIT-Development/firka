@@ -7,7 +7,7 @@ flutter clean
 flutter pub get
 flutter gen-l10n --template-arb-file app_hu.arb
 
-$CommitCount = (git -C $ProjectDirectory rev-list --count HEAD).Trim()
+$CommitCount = (git -C .. rev-list --count HEAD).Trim()
 $BuildName = "1.0.$CommitCount"
 $BuildNumber = $CommitCount
 
@@ -16,5 +16,4 @@ flutter build apk `
     --tree-shake-icons `
     --split-per-abi `
     --build-name=$BuildName `
-    --build-number=$BuildNumber `
-    --working-directory $ProjectDirectory
+    --build-number=$BuildNumber
