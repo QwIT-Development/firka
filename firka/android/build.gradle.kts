@@ -14,7 +14,8 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
 
-    // fix for verifyReleaseResources
+    // this "fix" is unnecessary if you would've wrote the app normally
+    /*// fix for verifyReleaseResources
 
     // note(4831c0): taken from https://github.com/isar/isar/issues/1662
     // note(4831c0): and adapted to kotlin
@@ -36,14 +37,17 @@ subprojects {
             }
         }
     }
-    // ===============================
+    // ===============================*/
 
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
-subprojects {
-    project.evaluationDependsOn(":app")
-}
 
-tasks.register<Delete>("clean") {
+
+// flutter no longer requires this
+/*subprojects {
+    project.evaluationDependsOn(":app")
+}*/
+
+tasks.register("clean", Delete::class) {
     delete(rootProject.layout.buildDirectory)
 }
