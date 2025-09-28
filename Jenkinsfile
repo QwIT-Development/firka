@@ -3,191 +3,79 @@ pipeline {
         label 'ubuntu'
     }
     environment {
-        PATH = "/home/jenkins/development/flutter/bin:${env.PATH}"
+        FLUTTER_HOME = tool('FlutterSDK')
+        PATH = "${FLUTTER_HOME}/bin:${env.PATH}"
+        // top 10 how to leak the user directory
+        // PATH = "/home/jenkins/development/flutter/bin:${env.PATH}"
     }
     stages {
-        stage('Pre-build Cleanup') {
+        stage('Checkout') {
             steps {
-                script {
-                    sh '''#!/bin/sh
-                    set -x
-                    fusermount -u secrets || true
-                    '''
-                }
+                checkout scm
             }
         }
-
-        stage('Decrypt main keys') {
-            when {
-                branch 'main'
-            }
-            steps {
-                script {
-                    def userInput = input(
-                        id: 'signaturePassword',
-                        message: 'Please enter the signing key password:',
-                        parameters: [
-                            password(
-                                defaultValue: '',
-                                description: 'Enter the signing key password',
-                                name: 'password'
-                            )
-                        ]
-                    )
-                    env.PASSWORD = userInput.toString()
-                }
-                sh '''#!/bin/sh
-                echo \$PASSWORD | gocryptfs $HOME/android_secrets secrets/ -nonempty
-                '''
-            }
-        }
-
-        stage('Clone submodules') {
-            steps {
-                script {
-                    sh 'git submodule update --init --recursive'
-                }
-            }
-        }
-
+        // removed unnecessary crypto cockriding
         stage('Build firka') {
             steps {
-                sh 'bash -c "./tools/linux/build_apk.sh ' + env.BRANCH_NAME + '"'
-            }
-        }
-
-        stage('Rename Release APKs') {
-            when {
-                branch 'main'
-            }
-            steps {
                 script {
-                    sh '''#!/bin/sh
-                    set -e
-                    
-                    APK_DIR="firka/build/app/outputs/flutter-apk"
-                    
-                    # Find all release APKs and rename them
-                    for apk_file in $APK_DIR/app-*-release.apk; do
-                        if [ -f "$apk_file" ]; then
-                            # Extract ABI from filename (e.g., app-arm64-v8a-release.apk -> arm64-v8a)
-                            basename_file=$(basename "$apk_file")
-                            abi=$(echo "$basename_file" | sed 's/app-//; s/-release.apk//')
-                            
-                            # Create new filename
-                            new_name="app.firka.naplo_${abi}.apk"
-                            new_path="$APK_DIR/$new_name"
-                            
-                            echo "Renaming $apk_file to $new_path"
-                            mv "$apk_file" "$new_path"
-                        fi
-                    done
-                    
-                    ls -la $APK_DIR/app.firka.naplo_*.apk || echo "APK files not found"
-                    '''
+                    def commitCount = sh(returnStdout: true, script: 'git rev-list --count HEAD').trim()
+                    // simple cleanup
+                    sh 'flutter clean'
+                    sh 'flutter pub get'
+                    sh "flutter build apk --release --build-name=1.0.${commitCount} --build-number=${commitCount}"
+                    sh "flutter build appbundle --release --build-name=1.0.${commitCount} --build-number=${commitCount}"
                 }
             }
         }
-
-        stage('Calculate Version Code') {
+        stage('Publish artifacts') {
+            when {branch 'main'}
             steps {
-                script {
-                    sh '''#!/bin/sh
-                    set -e
-                    cd firka
-                    
-                    # Calculate version code based on git commits (same logic as build script)
-                    COMMIT_COUNT=$(git rev-list --count HEAD)
-                    BASE_BUILD_NUMBER=$((1000 + COMMIT_COUNT))
-                    
-                    if [ "$BRANCH_NAME" = "main" ]; then
-                        # For main branch, highest version code is BASE + 3000 (x64 build)
-                        VERSION_CODE=$((BASE_BUILD_NUMBER + 3000))
-                    else
-                        # For debug builds, version code is BASE + 0
-                        VERSION_CODE=$BASE_BUILD_NUMBER
-                    fi
-                    
-                    echo "Calculated version code: $VERSION_CODE"
-                    echo "$VERSION_CODE" > ../version_code.txt
-                    '''
-                    
-                    env.VERSION_CODE = readFile('version_code.txt').trim()
-                    echo "Setting VERSION_CODE environment variable to: ${env.VERSION_CODE}"
-                }
+                archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/app-release.apk', fingerprint: true
+                archiveArtifacts artifacts: 'build/app/outputs/bundle/release/app-release.aab', fingerprint: true
             }
         }
-
-        stage('Publish debug artifacts') {
-            when {
-                not {
-                    branch 'main'
-                }
-            }
-            steps {
-                archiveArtifacts artifacts: 'firka/build/app/outputs/flutter-apk/app-debug.apk', fingerprint: true
-            }
-        }
-        
-        stage('Publish release artifacts') {
-            when {
-                branch 'main'
-            }
-            steps {
-                archiveArtifacts artifacts: 'firka/build/app/outputs/bundle/release/*.aab', fingerprint: true
-                sh 'rm firka/build/app/outputs/bundle/release/*.aab'
-            }
-        }
-
         stage('Upload to F-Droid Release') {
             when {
                 branch 'main'
             }
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'fdroid-ssh', usernameVariable: 'SSH_USER', passwordVariable: 'SSHPASS')]) {
-                        sh '''
-                    # Use the renamed APK files
-                    REMOTE_PATH="/home/fdroid/firka-fdroid/repo/"
-                    export SSHPASS
-                    
-                    # Loop over each APK file and upload it one by one
-                    for SOURCE_FILE in firka/build/app/outputs/flutter-apk/app.firka.naplo_*.apk; do
-                        if [ -f "$SOURCE_FILE" ]; then
-                            echo "Uploading $SOURCE_FILE to $REMOTE_PATH"
-                            sshpass -e scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-                                "$SOURCE_FILE" "$SSH_USER@10.0.0.21:$REMOTE_PATH"
-                        else
-                            echo "No APK files found to upload."
-                        fi
-                    done
-                    
-                    # Update version code in F-Droid metadata for release
-                    sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-                        "$SSH_USER@10.0.0.21" \
-                        "sed -i 's/^CurrentVersionCode: .*/CurrentVersionCode: $VERSION_CODE/' /home/fdroid/firka-fdroid/metadata/app.firka.naplo.yml"
-                    
-                    # Update F-Droid repository
-                    sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-                        "$SSH_USER@10.0.0.21" \
-                        "cd /home/fdroid/firka-fdroid && /run/current-system/sw/bin/fdroid update"
-                        '''
+                sshagent(credentials: ['fdroid-ssh-key']) {
+                    script {
+                        // how to leak the internal infra ip in easy steps
+                        // (was 10.0.0.21) i leave this here, so the "devs" can learn
+                        withCredentials([
+                            string(credentialsId: 'fdroid-host-ip', variable: 'REMOTE_HOST'),
+                            string(credentialsId: 'fdroid-remote-user', variable: 'REMOTE_USER'),
+                            string(credentialsId: 'fdroid-remote-path', variable: 'REMOTE_BASE_PATH')
+                        ]) {
+                            // the so called devs will fix their hardcoded paths later
+                            def apkDir = "firka/build/app/outputs/flutter-apk"
+                            def metadataFile = "${REMOTE_BASE_PATH}/metadata/app.firka.naplo.yml"
+                            def remoteRepoPath = "${REMOTE_BASE_PATH}/repo/"
+                            def apks = findFiles(glob: "${apkDir}/app-*-release.apk")
+                            if (apks.isEmpty()) {
+                                error "No APK files found to upload."
+                            }
+                            for (apk in apks) {
+                                echo "Uploading ${apk.path}..."
+                                sh "scp ${apk.path} ${REMOTE_USER}@${REMOTE_HOST}:${remoteRepoPath}"
+                            }
+                            sh """
+                                ssh ${REMOTE_USER}@${REMOTE_HOST} "sed -i 's/^CurrentVersionCode: .*/CurrentVersionCode: ${env.VERSION_CODE}/' ${metadataFile}"
+                            """
+                            sh """
+                                ssh ${REMOTE_USER}@${REMOTE_HOST} "cd ${REMOTE_BASE_PATH} && fdroid update"
+                            """
+                        }
                     }
                 }
             }
         }
-        stage('Post Cleanup') {
-            steps {
-                script {
-                    sh '''
-                    rm firka/build/app/outputs/flutter-apk/app.firka.naplo_*.apk || true
-                    rm firka/build/app/outputs/flutter-apk/app-debug.apk || true
-                    rm version_code.txt || true
-                    git checkout -- firka/pubspec.yaml || true
-                    git checkout -- firka/lib/helpers/firka_bundle.dart || true
-                    '''
-                }
-            }
+    }
+    post {
+        always {
+            // this will always run, even if there's an error (woah)
+            cleanWs()
         }
     }
 }
