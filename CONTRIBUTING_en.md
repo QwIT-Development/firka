@@ -1,25 +1,6 @@
 # Installing flutter
 
-To build firka you will have to use our custom Flutter fork,
-and to make a release build you will have to use our custom
-flutter engine.
 The documentation for installing flutter can be found [here](https://docs.flutter.dev/get-started/install).
-
-Instead of downloading the regular flutter zip, clone it from ([https://git.firka.app/firka/flutter/](https://git.firka.app/firka/flutter/)).
-
-# Brotli
-
-Firka uses brotli to compress libflutter during the build process to make the app smaller,
-so building Firka requires you to have brotli in your path
-
-## Windows
-- Download `brotli-x64-windows-static.zip` from [google/brotli](https://github.com/google/brotli/releases/latest)
-- Extract it to somewhere like C:\Users\\<username>\dev\brotli
-- Add the directory (ex. C:\Users\\<username>\dev\brotli) to your PATH
-- Don't forget to restart your IDE or terminal sessions for the PATH variable to update
-
-## Linux/MacOS
-Install it using your distro's package manager
 
 # Keystore
 
@@ -44,16 +25,6 @@ $ flutter build apk --debug --target-platform android-arm,android-arm64,android-
 # Android release build
 
 The release build requires using a custom keystore and our custom flutter fork
-
-## Setting up our flutter engine fork
-
-```shell
-$ git clone https://git.firka.app/firka/flutter
-$ cd flutter
-$ . dev/tools/envsetup.sh
-$ gclient sync -D
-$ ./dev/tools/build_release.sh
-```
 
 ## Building the release apk
 
