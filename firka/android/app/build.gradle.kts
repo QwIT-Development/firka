@@ -17,7 +17,7 @@ import java.util.zip.ZipOutputStream.STORED
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    //id("org.jetbrains.kotlin.plugin.compose") version "2.2.0" // flutter doesn't need compose
+    id("org.jetbrains.kotlin.plugin.compose") version "2.2.0"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
