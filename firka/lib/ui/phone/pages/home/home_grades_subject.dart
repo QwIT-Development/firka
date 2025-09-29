@@ -215,10 +215,15 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                             .apply(color: appStyle.colors.textPrimary),
                       ),
                     ),
-                    Text(
-                      teacherName,
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width / 1.45,
+                      child: Text(
+                      "Ebből a tantárgyból még nem kaptál jegyet, és további információnk sincs az óráról.",
                       style: appStyle.fonts.B_14R
-                          .apply(color: appStyle.colors.textPrimary),
+                        .apply(color: appStyle.colors.textPrimary),
+                      softWrap: true,
+                      overflow: TextOverflow.visible,
+                      ),
                     )
                   ],
                 ),
