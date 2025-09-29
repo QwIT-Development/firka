@@ -1,5 +1,4 @@
 import 'package:firka/helpers/api/client/kreta_client.dart';
-import 'package:firka/helpers/api/model/all_lessons.dart';
 import 'package:firka/helpers/api/model/generic.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
@@ -34,15 +33,13 @@ class HomeGradesScreen extends StatefulWidget {
 }
 
 String activeSubjectUid = "";
-String teacherName = "";
 String subjectName = "";
 
 class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
   ApiResponse<List<Grade>>? grades;
-  ApiResponse<List<AllLessons>>? lessons;
   ApiResponse<List<Lesson>>? week;
   ApiResponse<List<ClassGroup>>? classGroups;
-  List<ApiResponse<List<SubjectAverage>>>? subjectAvgs;
+  ApiResponse<List<SubjectAverage>>? lessons;
 
   @override
   void didUpdateWidget(HomeGradesScreen oldWidget) {
@@ -52,28 +49,23 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
     widget.updateNotifier.addListener(updateListener);
   }
 
-  void updateListener() async {
-    var now = timeNow();
-    var start = now.subtract(Duration(days: now.weekday - 1));
-    var end = start.add(Duration(days: 6));
 
-    grades = await widget.data.client.getGrades(forceCache: false);
-    lessons = await widget.data.client.getLessons(forceCache: false);
-    week = await widget.data.client.getTimeTable(start, end, forceCache: false);
-    classGroups = await widget.data.client.getClassGroups(forceCache: false);
+void updateListener() async {
+  var now = timeNow();
+  var start = now.subtract(Duration(days: now.weekday - 1));
+  var end = start.add(Duration(days: 6));
 
-    final l = List<ApiResponse<List<SubjectAverage>>>.empty(growable: true);
-    for (var group in classGroups!.response!) {
-      l.add(
-          await widget.data.client.getSubjectAverage(group, forceCache: false));
-      await Future.delayed(Duration(milliseconds: 100));
-    }
-    subjectAvgs = l;
-
-    if (mounted) setState(() {});
-
-    widget.finishNotifier.update();
+  grades = await widget.data.client.getGrades(forceCache: false);
+  week = await widget.data.client.getTimeTable(start, end, forceCache: false);
+  classGroups = await widget.data.client.getClassGroups(forceCache: false);
+  if (classGroups?.response?.isNotEmpty ?? false) {
+    var group = classGroups!.response!.first;
+    lessons = await widget.data.client.getSubjectAverage(group, forceCache: false);
+    await Future.delayed(Duration(milliseconds: 100));
   }
+  if (mounted) setState(() {});
+  widget.finishNotifier.update();
+}
 
   @override
   void initState() {
@@ -87,9 +79,13 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
       var end = start.add(Duration(days: 6));
 
       grades = await widget.data.client.getGrades();
-      lessons = await widget.data.client.getLessons();
       week = await widget.data.client.getTimeTable(start, end);
-
+      classGroups = await widget.data.client.getClassGroups();
+      if (classGroups?.response?.isNotEmpty ?? false) {
+        var group = classGroups!.response!.first;
+        lessons = await widget.data.client.getSubjectAverage(group);
+        await Future.delayed(Duration(milliseconds: 100));
+    }
       if (mounted) setState(() {});
     })();
   }
@@ -127,21 +123,22 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
         }
       }
 
-      for (var lesson in lessons!.response!) {
-        if (subjects
-            .where((s) => s.uid == lesson.subjectId?.toString())
-            .isEmpty) {
-          subjects.add(Subject(
-            uid: lesson.subjectId?.toString() ?? '',
-            name: lesson.subjectName.firstUpper(),
-            teacherName: lesson.teacherName,
-            category: NameUidDesc(
-              uid: lesson.subjectCategoryId?.toString() ?? '',
-              name: lesson.subjectCategoryName,
-              description: "",
-            ),
-            sortIndex: 0,
-          ));
+      if (lessons != null && lessons!.response != null) {
+        for (var lesson in lessons!.response!) {
+          if (subjects
+              .where((s) => s.uid == lesson.uid)
+              .isEmpty) {
+              subjects.add(Subject(
+                uid: lesson.uid,
+                name: lesson.name,
+                category: NameUidDesc(
+                  uid: lesson.subjectCategoryId,
+                  name: lesson.subjectCategoryName,
+                  description: lesson.subjectCategoryDescription,
+                ),
+                sortIndex: lesson.sortIndex,
+              ));
+          }
         }
       }
 
@@ -171,7 +168,6 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
             child: GradeSmallCard(grades!.response!, subject),
             onTap: () {
               activeSubjectUid = subject.uid;
-              teacherName = subject.teacherName ?? '';
               subjectName = subject.name;
               widget.pageController(1);
             },
@@ -181,7 +177,6 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
             child: GradeSmallCard(grades!.response!, subject),
             onTap: () {
               activeSubjectUid = subject.uid;
-              teacherName = subject.teacherName ?? '';
               subjectName = subject.name;
               widget.pageController(1);
             },
@@ -293,6 +288,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                       ),
                     ],
                   ),
+                  
                   FirkaCard(left: [
                     Text(
                       widget.data.l10n.class_avg,
