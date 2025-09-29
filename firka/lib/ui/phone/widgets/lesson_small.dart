@@ -21,6 +21,7 @@ class LessonSmallWidget extends StatelessWidget {
     if (subjectName.length >= 25) {
       subjectName = "${subjectName.substring(0, 25 - 3)}...";
     }
+    subjectName = subjectName.firstUpper();
 
     var roomName = lesson.roomName ?? '?';
     if (roomName.length >= 8) {
@@ -38,7 +39,9 @@ class LessonSmallWidget extends StatelessWidget {
               size: 20,
               uid: lesson.uid,
               className: lesson.name,
-              category: lesson.subject?.name ?? '',
+              category: lesson.subject?.name != null
+                  ? lesson.subject!.name.firstUpper()
+                  : '',
             ),
             SizedBox(width: 8),
             Text(subjectName,

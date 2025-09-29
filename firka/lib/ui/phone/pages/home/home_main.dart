@@ -247,7 +247,9 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
                       children: [
                         SizedBox(
                           width: MediaQuery.of(context).size.width / 1.45,
-                          child: Text(grade.topic ?? grade.type.description!,
+                          child: Text(
+                              (grade.topic ?? grade.type.description!)
+                                  .firstUpper(),
                               style: appStyle.fonts.B_16SB
                                   .apply(color: appStyle.colors.textPrimary)),
                         ),
@@ -255,7 +257,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
                             ? SizedBox(
                                 width: MediaQuery.of(context).size.width / 1.45,
                                 child: Text(
-                                  grade.mode!.description!,
+                                  grade.mode!.description!.firstUpper(),
                                   style: appStyle.fonts.B_16R.apply(
                                       color: appStyle.colors.textSecondary),
                                 ),
