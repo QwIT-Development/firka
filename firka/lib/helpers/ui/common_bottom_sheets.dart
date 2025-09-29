@@ -118,11 +118,23 @@ Future<void> showLessonBottomSheet(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "${lesson.name} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
-                            style: appStyle.fonts.H_18px
-                                .apply(color: appStyle.colors.textPrimary),
-                          ),
+                          Row(children: [
+                            Text(
+                              "${lesson.name} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
+                              style: appStyle.fonts.H_18px
+                                  .apply(color: appStyle.colors.textPrimary),
+                            ),
+                            Card(
+                              shadowColor: Colors.transparent,
+                              color: appStyle.colors.a15p,
+                              child: Padding(
+                                padding: EdgeInsets.all(4),
+                                child: Text(lesson.roomName ?? 'N/A',
+                                    style: appStyle.fonts.B_12R.apply(
+                                        color: appStyle.colors.secondary)),
+                              ),
+                            ),
+                          ]),
                           Text(
                             lesson.teacher ?? 'N/A',
                             style: appStyle.fonts.B_16R
