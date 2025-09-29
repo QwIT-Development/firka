@@ -106,7 +106,9 @@ Future<void> showLessonBottomSheet(
                                 size: 20,
                                 uid: lesson.uid,
                                 className: lesson.name,
-                                category: lesson.subject?.name ?? '',
+                                category: lesson.subject?.name != null
+                                    ? lesson.subject!.name.firstUpper()
+                                    : '',
                               ),
                             ),
                           ),

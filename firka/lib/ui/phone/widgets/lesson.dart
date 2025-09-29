@@ -67,6 +67,7 @@ class LessonWidget extends StatelessWidget {
     if (subjectName.length >= 25) {
       subjectName = "${subjectName.substring(0, 25 - 3)}...";
     }
+    subjectName = subjectName.firstUpper();
 
     var roomName = lesson.roomName ?? '?';
     if (roomName.length >= 8) {
@@ -121,7 +122,9 @@ class LessonWidget extends StatelessWidget {
                     size: 20,
                     uid: lesson.uid,
                     className: lesson.name,
-                    category: lesson.subject?.name ?? '',
+                    category: lesson.subject?.name != null
+                        ? lesson.subject!.name.firstUpper()
+                        : '',
                   ),
                 ),
                 !showTests && test != null
@@ -183,6 +186,15 @@ class LessonWidget extends StatelessWidget {
     }
 
     if (test != null && showTests) {
+      var theme = test!.theme;
+      if (theme.length >= 25) {
+        theme = "${theme.substring(0, 25)}...";
+      }
+      var method = test!.method.description ?? 'N/A';
+
+      theme = theme.firstUpper();
+      method = method.firstUpper();
+
       elements.add(FirkaCard(
         left: [
           FirkaIconWidget(
@@ -191,12 +203,12 @@ class LessonWidget extends StatelessWidget {
             color: appStyle.colors.accent,
           ),
           SizedBox(width: 6),
-          Text(test!.theme,
+          Text(theme,
               style: appStyle.fonts.B_16SB
                   .apply(color: appStyle.colors.textSecondary))
         ],
         right: [
-          Text(test!.method.description ?? "N/A",
+          Text(method,
               style: appStyle.fonts.B_16R
                   .apply(color: appStyle.colors.textTertiary))
         ],

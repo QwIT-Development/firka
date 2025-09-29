@@ -1,6 +1,7 @@
 import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/helpers/api/model/all_lessons.dart';
 import 'package:firka/helpers/api/model/generic.dart';
+import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/helpers/ui/grade_helpers.dart';
 import 'package:firka/ui/widget/grade_small_card.dart';
@@ -132,7 +133,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
             .isEmpty) {
           subjects.add(Subject(
             uid: lesson.subjectId?.toString() ?? '',
-            name: lesson.subjectName,
+            name: lesson.subjectName.firstUpper(),
             teacherName: lesson.teacherName,
             category: NameUidDesc(
               uid: lesson.subjectCategoryId?.toString() ?? '',

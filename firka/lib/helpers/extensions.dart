@@ -127,9 +127,10 @@ extension DateExtension on DateTime {
       case FormatMode.d:
         return DateFormat('d', l10n.localeName).format(this);
       case FormatMode.da:
-        final s =
-            DateFormat('EEEE', l10n.localeName).format(this).substring(0, 2);
-        return s[0].toUpperCase() + s[1];
+        return DateFormat('EEEE', l10n.localeName)
+            .format(this)
+            .substring(0, 2)
+            .firstUpper();
       case FormatMode.dd:
         return DateFormat('dd', l10n.localeName).format(this);
       case FormatMode.yyyymmddwedd:
@@ -272,5 +273,11 @@ extension StringExtension on String {
   bool isNumeric() {
     final regex = RegExp(r'^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$');
     return regex.hasMatch(trim());
+  }
+
+  String firstUpper() {
+    if (isEmpty) return this;
+    if (length == 1) this[0].toUpperCase();
+    return this[0].toUpperCase() + substring(1, length);
   }
 }
