@@ -3,14 +3,17 @@ import 'dart:io';
 
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:firka/helpers/db/models/app_settings_model.dart';
+import 'package:firka/helpers/db/models/token_model.dart';
 import 'package:firka/helpers/image_preloader.dart';
 import 'package:firka/helpers/ui/firka_button.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
+import 'package:firka/ui/phone/screens/login/login_screen.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:isar/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
@@ -590,6 +593,50 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                 return LoginWebviewWidget(widget.data);
               },
             );
+          },
+        ));
+        widgets.add(SizedBox(height: 20));
+        widgets.add(GestureDetector(
+          child: FirkaCard(left: [
+            Row(
+              children: [
+                FirkaIconWidget(
+                  FirkaIconType.icons,
+                  "group",
+                  color: appStyle.colors.accent,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  widget.data.l10n.s_acc_logout,
+                  style: appStyle.fonts.B_16R
+                      .apply(color: appStyle.colors.textPrimary),
+                ),
+              ],
+            )
+          ]),
+          onTap: () async {
+            final active = widget.data.client.model.studentIdNorm!;
+
+            await widget.data.isar.writeTxn(() async {
+              await widget.data.isar.tokenModels.delete(active);
+
+              item.accountIndex = 0;
+              await item.save(widget.data.isar.appSettingsModels);
+            });
+
+            final accounts =
+                await widget.data.isar.tokenModels.where().findAll();
+
+            if (accounts.isEmpty) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                    builder: (context) => LoginScreen(widget.data)),
+                (route) => false,
+              );
+            } else {
+              widget.data.tokens = accounts;
+              runApp(InitializationScreen());
+            }
           },
         ));
         continue;
