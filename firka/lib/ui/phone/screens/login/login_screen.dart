@@ -6,11 +6,15 @@ import 'package:firka/main.dart';
 import 'package:firka/ui/phone/widgets/login_webview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/image_preloader.dart';
 import '../../../model/style.dart';
 import '../../../widget/delayed_spinner.dart';
+// TODO: Replace these with actual privacy policy URLs
+const String _privacyUrlHungarian = 'https://github.com/QwIT-Development/privacy-policy/blob/master/README.md';
+const String _privacyUrlOther = 'https://firka.app/privacy';
 
 class LoginScreen extends StatefulWidget {
   final AppInitialization data;
@@ -34,6 +38,23 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     _preloadImages();
+  }
+
+  // Method to get the appropriate privacy policy URL based on language
+  String _getPrivacyPolicyUrl() {
+    // Check if current language is Hungarian by examining the locale
+    final locale = Localizations.localeOf(context).languageCode;
+    return locale == 'hu' ? _privacyUrlHungarian : _privacyUrlOther;
+  }
+
+  // Method to launch privacy policy URL
+  Future<void> _launchPrivacyPolicy() async {
+    final url = _getPrivacyPolicyUrl();
+    try {
+      await launchUrl(Uri.parse(url));
+    } catch (e) {
+      logger.shout('LoginScreen: Error launching privacy policy URL: $e');
+    }
   }
 
   Future<void> _preloadImages() async {
@@ -389,7 +410,7 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
                       style: appStyle.fonts.H_12px
                           .copyWith(color: appStyle.colors.textTertiary),
                     ),
-                    onTap: () {},
+                    onTap: _launchPrivacyPolicy,
                   )
                 ],
               ),
