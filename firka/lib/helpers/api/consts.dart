@@ -104,7 +104,7 @@ class KretaEndpoints {
       "${kreta(iss)}/ellenorzo/v3/sajat/Ertekelesek";
 
   static String getSubjectAvg(String iss, String studyGroupId) =>
-      "${kreta(iss)}/ellenorzo/v3/sajat/Ertekelesek/Atlagok/TantargyiAtlagok?oktatasiNevelesiFeladatUid=$studyGroupId";
+      "${kreta(iss)}/ellenorzo/v3/sajat/Ertekelesek/Atlagok/TantargyiAtlagok?oktatasiNevelesiFeladatUid=$studyGroupId&oktatasiNevelesiFeladatUid=$studyGroupId";
 
   static String getTimeTable(String iss) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/OrarendElemek";
@@ -117,7 +117,4 @@ class KretaEndpoints {
 
   static String getTests(String iss) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/BejelentettSzamonkeresek";
-    
-  static String getLessons(String iss) =>
-      "${kreta(iss)}/dktapi/intezmenyek/munkaterek/tanulok";
   }
