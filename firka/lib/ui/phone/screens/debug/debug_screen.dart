@@ -172,13 +172,8 @@ class _DebugScreen extends FirkaState<DebugScreen> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  var now = timeNow();
-
-                  var start = now.subtract(Duration(days: 7));
-                  var end = now.add(Duration(days: 14));
-
                   logger.finest(
-                      "getHomework(): ${await widget.data.client.getHomework(start, end, forceCache: useCache)}");
+                      "getHomework(): ${await widget.data.client.getHomework(forceCache: useCache)}");
                 },
                 child: const Text('getHomework()'),
               ),
