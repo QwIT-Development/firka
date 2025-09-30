@@ -11,7 +11,8 @@ enum CacheId {
   getTests,
   getClassGroup,
   getSubjectAvg,
-  getLessons
+  getLessons,
+  getHomework
 }
 
 @collection

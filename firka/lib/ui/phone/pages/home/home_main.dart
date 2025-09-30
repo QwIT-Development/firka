@@ -5,12 +5,14 @@ import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/ui/common_bottom_sheets.dart';
 import 'package:firka/ui/phone/screens/message/message_screen.dart';
 import 'package:firka/ui/phone/widgets/home_main_starting_soon.dart';
+import 'package:firka/ui/phone/widgets/homework.dart';
 import 'package:firka/ui/phone/widgets/info_board_item.dart';
 import 'package:firka/ui/phone/widgets/lesson_small.dart';
 import 'package:firka/ui/widget/delayed_spinner.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
+import '../../../../helpers/api/model/homework.dart';
 import '../../../../helpers/api/model/notice_board.dart';
 import '../../../../helpers/api/model/student.dart';
 import '../../../../helpers/api/model/test.dart';
@@ -47,6 +49,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   List<InfoBoardItem>? infoBoard;
   List<Test>? tests;
   List<Grade>? grades;
+  List<Homework>? homework;
   Student? student;
   Timer? timer;
 
@@ -74,25 +77,31 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
 
   Future<(List<Lesson>, List<NoticeBoardItem>, List<InfoBoardItem>, Student)>
       loadData(DateTime now, {bool forceCache = true}) async {
-    var midnight = now.getMidnight();
+    final midnight = now.getMidnight();
 
-    var respTT = await widget.data.client.getTimeTable(
+    final respTT = await widget.data.client.getTimeTable(
         midnight, midnight.add(Duration(hours: 23, minutes: 59)),
         forceCache: forceCache);
 
-    var respNB =
+    final respNB =
         await widget.data.client.getNoticeBoard(forceCache: forceCache);
 
-    var respIB = await widget.data.client.getInfoBoard(forceCache: forceCache);
+    final respIB =
+        await widget.data.client.getInfoBoard(forceCache: forceCache);
 
-    var respStudent =
+    final respStudent =
         await widget.data.client.getStudent(forceCache: forceCache);
 
-    var testsResp = await widget.data.client.getTests(forceCache: forceCache);
+    final testsResp = await widget.data.client.getTests(forceCache: forceCache);
     tests = testsResp.response;
 
-    var gradesResp = await widget.data.client.getGrades(forceCache: forceCache);
+    final gradesResp =
+        await widget.data.client.getGrades(forceCache: forceCache);
     grades = gradesResp.response;
+
+    final homeworkResp =
+        await widget.data.client.getHomework(forceCache: forceCache);
+    homework = homeworkResp.response;
 
     return Future.value((
       respTT.response!,
@@ -217,7 +226,8 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     if (student != null &&
         grades != null &&
         noticeBoard != null &&
-        lessons != null) {
+        lessons != null &&
+        tests != null) {
       List<(Widget, DateTime)> noticeBoardWidgets = List.empty(growable: true);
 
       for (final item in infoBoard!) {
@@ -275,6 +285,11 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
           ),
           grade.recordDate
         ));
+      }
+
+      for (final entry in homework!) {
+        noticeBoardWidgets
+            .add((HomeworkWidget(widget.data, entry), entry.creationDate));
       }
 
       noticeBoardWidgets
