@@ -77,7 +77,7 @@ class LessonWidget extends StatelessWidget {
     elements.add(GestureDetector(
       onTap: () {
         showLessonBottomSheet(
-            context, data, lesson, lessonNo, accent, secondary, bgColor);
+            context, data, lesson, lessonNo, accent, secondary, bgColor, test);
       },
       child: FirkaCard(
         color: isDismissed

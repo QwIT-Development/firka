@@ -3,8 +3,10 @@ import 'package:firka/helpers/api/model/grade.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/settings.dart';
+import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../main.dart';
 import '../../ui/model/style.dart';
@@ -13,6 +15,7 @@ import '../../ui/widget/class_icon.dart';
 import '../api/model/timetable.dart';
 import 'firka_card.dart';
 import 'grade.dart';
+import '../../helpers/api/model/test.dart';
 
 Future<void> showLessonBottomSheet(
     BuildContext context,
@@ -21,11 +24,17 @@ Future<void> showLessonBottomSheet(
     int? lessonNo,
     Color accent,
     Color secondary,
-    Color bgColor) async {
+    Color bgColor,
+    Test? test,
+    ) async {
   final statsForNerdsEnabled = data.settings
       .group("settings")
       .subGroup("developer")
       .boolean("stats_for_nerds");
+  final showTests = data.settings
+        .group("settings")
+        .subGroup("timetable_toast")
+        .boolean("tests_and_homework");
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -37,7 +46,6 @@ Future<void> showLessonBottomSheet(
       Widget statsForNerds = SizedBox();
 
       final y2k = DateTime(2000, 1);
-
       if (statsForNerdsEnabled) {
         final stats =
             "${data.l10n.stats_date}: ${lesson.start.isAfter(y2k) ? lesson.start.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
@@ -47,7 +55,7 @@ Future<void> showLessonBottomSheet(
             style:
                 appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary));
       }
-
+      
       return Stack(
         children: [
           Positioned.fill(
@@ -162,20 +170,82 @@ Future<void> showLessonBottomSheet(
                           ),
                           SizedBox(height: 4),
                             SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.7,
-                            child: Text(
-                              lesson.theme ?? 'N/A',
-                              style: appStyle.fonts.B_16R
-                                .apply(color: appStyle.colors.textPrimary),
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                              width: MediaQuery.of(context).size.width * 0.7,
+                              child: Text(
+                                lesson.theme ?? 'N/A',
+                                style: appStyle.fonts.B_16R
+                                  .apply(color: appStyle.colors.textPrimary),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           SizedBox(height: 4),
                           statsForNerds
                         ],
                       )
-                    ])
+                    ]),
+                    if (test != null && showTests) 
+                      FirkaCard(
+                        left: [
+                          Container(
+                            decoration: ShapeDecoration(
+                              color: appStyle.colors.a15p,
+                              shape: CircleBorder(),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.editPen4Solid,
+                                size: 26.0,
+                                color: appStyle.colors.accent,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width * 0.6,
+                                  child: Text(
+                                    test.theme,
+                                    style: appStyle.fonts.B_16SB.apply(color: appStyle.colors.textPrimary),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  )
+                                ),
+                                SizedBox(height: 4),
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width * 0.6,
+                                  child: Text(
+                                    test.method.description ?? 'N/A',
+                                    style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textSecondary),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                          Container(
+                            decoration: ShapeDecoration(
+                              color: appStyle.colors.a15p,
+                              shape: CircleBorder(),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.tooltipsSolid,
+                                size: 26.0,
+                                color: appStyle.colors.accent,
+                              ),
+                            ),
+                          ),
+                      ])
                   ],
                 ),
               ),
