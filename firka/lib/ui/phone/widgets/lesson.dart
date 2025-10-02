@@ -187,11 +187,13 @@ class LessonWidget extends StatelessWidget {
 
     if (test != null && showTests) {
       var theme = test!.theme;
-      if (theme.length >= 25) {
-        theme = "${theme.substring(0, 25)}...";
+      if (theme.length >= 20) {
+        theme = "${theme.substring(0, 20)}...";
       }
       var method = test!.method.description ?? 'N/A';
-
+      if (method.length >= 15) {
+        method = "${method.substring(0, 15)}...";
+      }
       theme = theme.firstUpper();
       method = method.firstUpper();
 
