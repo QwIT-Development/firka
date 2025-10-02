@@ -161,11 +161,16 @@ Future<void> showLessonBottomSheet(
                                 .apply(color: appStyle.colors.textPrimary),
                           ),
                           SizedBox(height: 4),
-                          Text(
-                            lesson.theme ?? 'N/A',
-                            style: appStyle.fonts.B_16R
+                            SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.7,
+                            child: Text(
+                              lesson.theme ?? 'N/A',
+                              style: appStyle.fonts.B_16R
                                 .apply(color: appStyle.colors.textPrimary),
-                          ),
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            ),
                           SizedBox(height: 4),
                           statsForNerds
                         ],
