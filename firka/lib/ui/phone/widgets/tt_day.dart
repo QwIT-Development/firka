@@ -26,7 +26,7 @@ class TimeTableDayWidget extends StatelessWidget {
     Widget noLessonsWidget = SizedBox();
     List<Widget> ttBody = List.empty(growable: true);
 
-    if (lessons.isEmpty && events.isEmpty) {
+    if (lessons.isEmpty) {
       noLessonsWidget = Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
