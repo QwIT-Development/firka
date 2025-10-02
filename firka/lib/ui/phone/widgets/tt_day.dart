@@ -39,7 +39,14 @@ class TimeTableDayWidget extends StatelessWidget {
                     .apply(color: appStyle.colors.textSecondary)),
             Text(data.l10n.tt_no_classes_l2,
                 style: appStyle.fonts.B_16R
-                    .apply(color: appStyle.colors.textSecondary))
+                    .apply(color: appStyle.colors.textSecondary)),
+            if (events.isNotEmpty)
+              ...events.map((event) => 
+              Center(
+                child: Text(event.name.replaceAll(" (Nem órarendi nap)", ""),
+                    style: appStyle.fonts.B_16R
+                        .apply(color: appStyle.colors.textSecondary)),
+              ))
           ]);
     } else {
       for (var i = 0; i < events.length; i++) {
