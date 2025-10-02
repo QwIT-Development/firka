@@ -220,10 +220,7 @@ void updateListener() async {
             ),
             SizedBox(height: 16), // TODO: Add graphs here
             // ...gradeCards,
-            SizedBox(
-              height: MediaQuery.of(context).size.height -
-                  MediaQuery.of(context).padding.top -
-                  240,
+            Expanded(
               child: ListView(
                 children: [
                   Text(
