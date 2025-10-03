@@ -3,6 +3,8 @@ import 'package:firka/helpers/api/model/grade.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/settings.dart';
+import 'package:firka/helpers/update_notifier.dart';
+import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -26,11 +28,13 @@ Future<void> showLessonBottomSheet(
     Color secondary,
     Color bgColor,
     Test? test,
+
     ) async {
   final statsForNerdsEnabled = data.settings
       .group("settings")
       .subGroup("developer")
       .boolean("stats_for_nerds");
+
   final showTests = data.settings
         .group("settings")
         .subGroup("timetable_toast")
@@ -245,7 +249,28 @@ Future<void> showLessonBottomSheet(
                               ),
                             ),
                           ),
-                      ])
+                      ]),
+                    SizedBox(height: 8),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width / 1.1,
+                      child: GestureDetector(
+                        child: FirkaCard(
+                          left: [],
+                          center: [
+                            Text(
+                              "Tantárgy megtekintése",
+                              style: appStyle.fonts.B_16R
+                                  .apply(color: appStyle.colors.textSecondary),
+                            )
+                          ],
+                          color: appStyle.colors.buttonSecondaryFill,
+                        ),
+                        onTap: () {
+                          // TODO: Ide jön az a rész, hogy átkéne irányitania a tantárgy megtekintésére
+                          
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
