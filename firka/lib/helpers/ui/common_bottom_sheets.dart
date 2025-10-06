@@ -259,7 +259,7 @@ Future<void> showLessonBottomSheet(
                           left: [],
                           center: [
                             Text(
-                              "Tantárgy megtekintése",
+                              data.l10n.view_subject_btn,
                               style: appStyle.fonts.B_16R
                                   .apply(color: appStyle.colors.textSecondary),
                             )
