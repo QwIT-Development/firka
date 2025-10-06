@@ -1,6 +1,5 @@
 import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/helpers/api/model/generic.dart';
-import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/helpers/ui/grade_helpers.dart';
 import 'package:firka/ui/widget/grade_small_card.dart';
