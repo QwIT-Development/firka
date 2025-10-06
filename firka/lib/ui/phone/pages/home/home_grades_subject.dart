@@ -5,6 +5,7 @@ import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/helpers/ui/grade.dart';
 import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/update_notifier.dart';
@@ -197,40 +198,73 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
         ),
       );
     } else {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          FirkaCard(
-            left: [
-              Padding(
-                padding: EdgeInsets.only(left: 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 1.45,
-                      child: Text(
-                        subjectName,
-                        style: appStyle.fonts.H_H2
-                            .apply(color: appStyle.colors.textPrimary),
+      logger.finest(subjectName);
+      return Padding(
+        padding: const EdgeInsets.only(
+          left: 16.0,
+          right: 16.0,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  widget.data.l10n.subjects,
+                  style: appStyle
+                      .fonts.H_16px // TODO: Replace this with the proper font
+                      .apply(color: appStyle.colors.textPrimary),
+                )
+              ],
+            ),
+            SizedBox(height: 16),
+            SizedBox(
+              height: MediaQuery.of(context).size.height -
+                  MediaQuery.of(context).padding.top -
+                  230,
+              child: ListView(
+                children: [
+                  FirkaCard(
+                    left: [
+                      Padding(
+                        padding: EdgeInsets.only(left: 4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width / 1.45,
+                              child: Text(
+                                subjectName,
+                                style: appStyle.fonts.H_H2
+                                    .apply(color: appStyle.colors.textPrimary),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - 320,
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                        SvgPicture.asset("assets/images/logos/dave.svg",
+                          width: 48, height: 48),
+                        SizedBox(height: 12),
+                        Text(widget.data.l10n.no_grades,
+                          style: appStyle.fonts.B_16R
+                            .apply(color: appStyle.colors.textSecondary)),
+                        ],
                       ),
                     ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 1.45,
-                      child: Text(
-                      "Ebből a tantárgyból még nem kaptál jegyet, és további információnk sincs az óráról.",
-                      style: appStyle.fonts.B_14R
-                        .apply(color: appStyle.colors.textPrimary),
-                      softWrap: true,
-                      overflow: TextOverflow.visible,
-                      ),
-                    )
-                  ],
-                ),
-              )
-            ],
-          ),
-        ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       );
     }
   }
