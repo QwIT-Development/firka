@@ -38,11 +38,12 @@ import '../../pages/home/home_timetable.dart';
 class PageNavData {
   HomePage page;
   String? subPageParams;
+  String subjectName;
 
-  PageNavData(this.page, this.subPageParams);
+  PageNavData(this.page, this.subPageParams, this.subjectName);
 }
 
-final ValueNotifier<PageNavData> pageNavNotifier = ValueNotifier(PageNavData(HomePage.home, null));
+final ValueNotifier<PageNavData> pageNavNotifier = ValueNotifier(PageNavData(HomePage.home, null, ""));
 bool forcedNavPage = false; // TODO: this is a hack!
 
 class HomeScreen extends StatefulWidget {
@@ -748,7 +749,7 @@ class _HomeSubPage extends State<HomeSubPage> {
     setState(() {
       forcedHomePage = pageNavNotifier.value.page;
       subPageData = pageNavNotifier.value.subPageParams;
-
+      subjectName = pageNavNotifier.value.subjectName;
       previousPages.add(homeScreenPage);
       homeScreenPage = forcedHomePage!;
       globalUpdate.update();
