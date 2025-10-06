@@ -35,6 +35,16 @@ import '../../pages/extras/main_error.dart';
 import '../../pages/home/home_grades_subject.dart';
 import '../../pages/home/home_timetable.dart';
 
+class PageNavData {
+  HomePage page;
+  String? subPageParams;
+
+  PageNavData(this.page, this.subPageParams);
+}
+
+final ValueNotifier<PageNavData> pageNavNotifier = ValueNotifier(PageNavData(HomePage.home, null));
+bool forcedNavPage = false; // TODO: this is a hack!
+
 class HomeScreen extends StatefulWidget {
   final AppInitialization data;
   final bool watchPair;
@@ -58,11 +68,12 @@ bool canPop = true;
 ValueNotifier<bool> subPageActive = ValueNotifier(false);
 UpdateNotifier subPageBack = UpdateNotifier();
 
+HomePage homeScreenPage = HomePage.home;
+List<HomePage> previousPages = List.empty(growable: true);
+
 class _HomeScreenState extends FirkaState<HomeScreen> {
   _HomeScreenState();
 
-  HomePage page = HomePage.home;
-  List<HomePage> previousPages = List.empty(growable: true);
   final PageController _pageController = PageController();
 
   Widget? toast;
@@ -71,16 +82,16 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
   bool _preloadDone = false;
   int forcedNav = 0;
   final RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
+  RefreshController(initialRefresh: false);
 
   ActiveToastType activeToast = ActiveToastType.none;
 
   void setPageCB(HomePage newPage, bool setPrev) {
     if (_disposed) return;
     setState(() {
-      if (setPrev) previousPages.add(page);
+      if (setPrev) previousPages.add(homeScreenPage);
       canPop = false;
-      page = newPage;
+      homeScreenPage = newPage;
     });
   }
 
@@ -92,7 +103,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
       var random = Random();
 
       ApiResponse<Object> res =
-          await widget.data.client.getStudent(forceCache: false);
+      await widget.data.client.getStudent(forceCache: false);
       if (res.statusCode >= 400 ||
           res.err == TokenExpiredException().toString()) {
         if (_disposed) return;
@@ -134,7 +145,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                     builder: (BuildContext context) {
                       return LoginWebviewWidget(widget.data,
                           username:
-                              widget.data.client.model.studentId.toString(),
+                          widget.data.client.model.studentId.toString(),
                           schoolId: widget.data.client.model.iss!);
                     },
                   );
@@ -163,7 +174,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
       var end = start.add(Duration(days: 6));
 
       res =
-          await widget.data.client.getTimeTable(start, end, forceCache: false);
+      await widget.data.client.getTimeTable(start, end, forceCache: false);
       if (res.err != null) {
         throw "await widget.data.client.getTimeTable\n${res.err!}";
       }
@@ -309,7 +320,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
       Timer.run(() {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => BetaScreen(widget.data)),
-          (route) => false,
+              (route) => false,
         );
       });
 
@@ -427,9 +438,9 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                                       }
 
                                       setState(() {
-                                        previousPages.add(page);
+                                        previousPages.add(homeScreenPage);
                                         canPop = false;
-                                        page = HomePage.values[index];
+                                        homeScreenPage = HomePage.values[index];
                                       });
                                     },
                                     children: [
@@ -475,7 +486,19 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                               children: [
                                 // Home Button
                                 BottomNavIconWidget(() {
-                                  if (page != HomePage.home) {
+                                  if (homeScreenPage != HomePage.home) {
+                                    if (previousPages.length > 1 && forcedNavPage) {
+                                      forcedNavPage = false;
+                                      _pageController.jumpToPage(
+                                        previousPages[previousPages.length - 2].index
+                                      );
+                                    }
+                                    if (previousPages.length > 1 && forcedNavPage) {
+                                      forcedNavPage = false;
+                                      _pageController.jumpToPage(
+                                        previousPages[previousPages.length - 2].index
+                                      );
+                                    }
                                     _pageController.animateToPage(
                                       HomePage.home.index,
                                       duration: Duration(milliseconds: 175),
@@ -483,18 +506,24 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                                     );
                                   }
                                 },
-                                    page == HomePage.home,
-                                    page == HomePage.home
+                                    homeScreenPage == HomePage.home,
+                                    homeScreenPage == HomePage.home
                                         ? Majesticon.homeSolid
                                         : Majesticon.homeLine,
                                     widget.data.l10n.home,
-                                    page == HomePage.home
+                                    homeScreenPage == HomePage.home
                                         ? appStyle.colors.accent
                                         : appStyle.colors.secondary,
                                     appStyle.colors.textPrimary),
                                 // Grades Button
                                 BottomNavIconWidget(() {
-                                  if (page != HomePage.grades) {
+                                  if (homeScreenPage != HomePage.grades) {
+                                    if (previousPages.length > 1 && forcedNavPage) {
+                                      forcedNavPage = false;
+                                      _pageController.jumpToPage(
+                                        previousPages[previousPages.length - 2].index
+                                      );
+                                    }
                                     _pageController.animateToPage(
                                       HomePage.grades.index,
                                       duration: Duration(milliseconds: 175),
@@ -502,18 +531,24 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                                     );
                                   }
                                 },
-                                    page == HomePage.grades,
-                                    page == HomePage.grades
+                                    homeScreenPage == HomePage.grades,
+                                    homeScreenPage == HomePage.grades
                                         ? Majesticon.bookmarkSolid
                                         : Majesticon.bookmarkLine,
                                     widget.data.l10n.grades,
-                                    page == HomePage.grades
+                                    homeScreenPage == HomePage.grades
                                         ? appStyle.colors.accent
                                         : appStyle.colors.secondary,
                                     appStyle.colors.textPrimary),
                                 // Timetable Button
                                 BottomNavIconWidget(() {
-                                  if (page != HomePage.timetable) {
+                                  if (homeScreenPage != HomePage.timetable) {
+                                    if (previousPages.length > 1 && forcedNavPage) {
+                                      forcedNavPage = false;
+                                      _pageController.jumpToPage(
+                                        previousPages[previousPages.length - 2].index
+                                      );
+                                    }
                                     _pageController.animateToPage(
                                       HomePage.timetable.index,
                                       duration: Duration(milliseconds: 175),
@@ -521,18 +556,18 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                                     );
                                   }
                                 },
-                                    page == HomePage.timetable,
-                                    page == HomePage.timetable
+                                    homeScreenPage == HomePage.timetable,
+                                    homeScreenPage == HomePage.timetable
                                         ? Majesticon.calendarSolid
                                         : Majesticon.calendarLine,
                                     widget.data.l10n.timetable,
-                                    page == HomePage.timetable
+                                    homeScreenPage == HomePage.timetable
                                         ? appStyle.colors.accent
                                         : appStyle.colors.secondary,
                                     appStyle.colors.textPrimary),
                                 // More Button
                                 BottomNavIconWidget(
-                                  () {
+                                      () {
                                     HapticFeedback.lightImpact();
                                     showExtrasBottomSheet(context, widget.data);
                                   },
@@ -544,7 +579,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                                   appStyle.colors.secondary,
                                   appStyle.colors.textPrimary,
                                   isProfilePicture:
-                                      widget.data.profilePicture != null,
+                                  widget.data.profilePicture != null,
                                 ),
                               ],
                             ),
@@ -564,13 +599,13 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
               return;
             }
 
-            if (previousPages.isNotEmpty && page != previousPages.last) {
+            if (previousPages.isNotEmpty && homeScreenPage != previousPages.last) {
               setState(() {
-                page = previousPages.removeLast();
+                homeScreenPage = previousPages.removeLast();
 
                 forcedNav++;
                 _pageController.animateToPage(
-                  page.index,
+                  homeScreenPage.index,
                   duration: Duration(milliseconds: 175),
                   curve: Curves.easeInOut,
                 );
@@ -600,7 +635,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
   }
 }
 
-class HomeSubPage extends StatelessWidget {
+class HomeSubPage extends StatefulWidget {
   final HomePage page;
   final AppInitialization data;
   final UpdateNotifier _updateNotifier;
@@ -611,24 +646,112 @@ class HomeSubPage extends StatelessWidget {
       {super.key});
 
   @override
+  State<HomeSubPage> createState() => _HomeSubPage();
+}
+
+class _HomeSubPage extends State<HomeSubPage> {
+
+  HomePage? forcedHomePage;
+  String? subPageData;
+
+  @override
+  void initState() {
+    super.initState();
+    pageNavNotifier.addListener(forcePageNavHandler);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    switch (page) {
+    if (forcedHomePage != null) {
+      final p = forcedHomePage!;
+      if (subPageData == null) {
+        switch (p) {
+          case HomePage.home:
+            return HomeMainScreen(widget.data, widget._updateNotifier, widget._updateFinishNotifier);
+          case HomePage.grades:
+            return PageWithSubPages([
+                  (cb) => HomeGradesScreen(
+                  widget.data, widget._updateNotifier, widget._updateFinishNotifier, cb),
+                  (cb) => HomeGradesSubjectScreen(
+                  widget.data, widget._updateNotifier, widget._updateFinishNotifier)
+            ], subPageActive, subPageBack, pageIndex: 0);
+          case HomePage.timetable:
+            return PageWithSubPages([
+                  (cb) => HomeTimetableScreen(
+                  widget.data, widget._updateNotifier, widget._updateFinishNotifier, cb),
+                  (cb) => HomeTimetableMonthlyScreen(
+                  widget.data, widget._updateNotifier, widget._updateFinishNotifier, cb)
+            ], subPageActive, subPageBack, pageIndex: 0);
+        }
+      } else {
+        switch (p) {
+          case HomePage.home:
+            return HomeMainScreen(widget.data, widget._updateNotifier,
+                widget._updateFinishNotifier);
+          case HomePage.grades:
+            activeSubjectUid = subPageData!;
+            return PageWithSubPages([
+                  (cb) =>
+                  HomeGradesSubjectScreen(
+                      widget.data, widget._updateNotifier,
+                      widget._updateFinishNotifier),
+                  (cb) =>
+                  HomeGradesScreen(
+                      widget.data, widget._updateNotifier,
+                      widget._updateFinishNotifier, cb)
+            ], subPageActive, subPageBack, pageIndex: 0);
+          case HomePage.timetable:
+            return PageWithSubPages([
+                  (cb) =>
+                  HomeTimetableMonthlyScreen(
+                      widget.data, widget._updateNotifier,
+                      widget._updateFinishNotifier, cb),
+                  (cb) =>
+                  HomeTimetableScreen(
+                      widget.data, widget._updateNotifier,
+                      widget._updateFinishNotifier, cb)
+            ], subPageActive, subPageBack, pageIndex: 0);
+        }
+      }
+    }
+
+    switch (widget.page) {
       case HomePage.home:
-        return HomeMainScreen(data, _updateNotifier, _updateFinishNotifier);
+        return HomeMainScreen(widget.data, widget._updateNotifier, widget._updateFinishNotifier);
       case HomePage.grades:
         return PageWithSubPages([
-          (cb) => HomeGradesScreen(
-              data, _updateNotifier, _updateFinishNotifier, cb),
-          (cb) => HomeGradesSubjectScreen(
-              data, _updateNotifier, _updateFinishNotifier)
+              (cb) => HomeGradesScreen(
+              widget.data, widget._updateNotifier, widget._updateFinishNotifier, cb),
+              (cb) => HomeGradesSubjectScreen(
+              widget.data, widget._updateNotifier, widget._updateFinishNotifier)
         ], subPageActive, subPageBack, pageIndex: 0);
       case HomePage.timetable:
         return PageWithSubPages([
-          (cb) => HomeTimetableScreen(
-              data, _updateNotifier, _updateFinishNotifier, cb),
-          (cb) => HomeTimetableMonthlyScreen(
-              data, _updateNotifier, _updateFinishNotifier, cb)
+              (cb) => HomeTimetableScreen(
+              widget.data, widget._updateNotifier, widget._updateFinishNotifier, cb),
+              (cb) => HomeTimetableMonthlyScreen(
+              widget.data, widget._updateNotifier, widget._updateFinishNotifier, cb)
         ], subPageActive, subPageBack, pageIndex: 0);
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    pageNavNotifier.removeListener(forcePageNavHandler);
+  }
+
+  void forcePageNavHandler() {
+    if (!mounted) return;
+
+    forcedNavPage = true;
+    setState(() {
+      forcedHomePage = pageNavNotifier.value.page;
+      subPageData = pageNavNotifier.value.subPageParams;
+
+      previousPages.add(homeScreenPage);
+      homeScreenPage = forcedHomePage!;
+      globalUpdate.update();
+    });
   }
 }

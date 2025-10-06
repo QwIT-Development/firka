@@ -12,6 +12,7 @@ import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../main.dart';
 import '../../ui/model/style.dart';
+import '../../ui/phone/screens/home/home_screen.dart';
 import '../../ui/phone/widgets/lesson.dart';
 import '../../ui/widget/class_icon.dart';
 import '../api/model/timetable.dart';
@@ -266,8 +267,8 @@ Future<void> showLessonBottomSheet(
                           color: appStyle.colors.buttonSecondaryFill,
                         ),
                         onTap: () {
-                          // TODO: Ide jön az a rész, hogy átkéne irányitania a tantárgy megtekintésére
-                          
+                          Navigator.pop(context);
+                          pageNavNotifier.value = PageNavData(HomePage.grades, lesson.subject!.uid);
                         },
                       ),
                     ),
