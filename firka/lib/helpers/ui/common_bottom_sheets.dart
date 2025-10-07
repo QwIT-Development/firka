@@ -461,7 +461,7 @@ Future<void> showTestBottomSheet(
                               crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                 SizedBox(
-                                  width: MediaQuery.of(context).size.width * 0.37,
+                                  width: MediaQuery.of(context).size.width * 0.3,
                                   child: Text(
                                     lesson.name,
                                     style: appStyle.fonts.B_16SB.apply(color: appStyle.colors.textPrimary),
@@ -472,11 +472,14 @@ Future<void> showTestBottomSheet(
                               ],
                             ),
                           ),
+                      ],
+                      right: [
                           Text(
                               formattedTime,
                               style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
                           )
-                      ]),
+                      ],
+                      ),
                     SizedBox(height: 8),
                     SizedBox(
                       width: MediaQuery.of(context).size.width / 1.1,
