@@ -54,17 +54,28 @@ class GradeWidget extends StatelessWidget {
       if (grade.numericValue != null) {
         gradeColor = getGradeColor(grade.numericValue!.toDouble());
       }
-
-      return Card(
-        shape: CircleBorder(eccentricity: eccentricity),
-        shadowColor: Colors.transparent,
-        color: gradeColor.withAlpha(38),
-        child: Padding(
-            padding: EdgeInsets.only(left: 8, right: 8),
-            child: Text(gradeStr,
-                style: appStyle.fonts.H_H1
-                    .copyWith(fontSize: 24, color: gradeColor))),
-      );
+      if (gradeStr == "0"){
+        return Card(
+          shadowColor: Colors.transparent,
+          color: gradeColor.withAlpha(38),
+          child: Padding(
+              padding: EdgeInsets.only(left: 8, right: 8, top:2, bottom:2),
+              child: Text(grade.strValue,
+                  style: appStyle.fonts.H_H1
+                      .copyWith(fontSize: 16, color: gradeColor))),
+        );
+      }else {
+        return Card(
+          shape: CircleBorder(eccentricity: eccentricity),
+          shadowColor: Colors.transparent,
+          color: gradeColor.withAlpha(38),
+          child: Padding(
+              padding: EdgeInsets.only(left: 8, right: 8),
+              child: Text(gradeStr,
+                  style: appStyle.fonts.H_H1
+                      .copyWith(fontSize: 24, color: gradeColor))),
+        );
+      }
     }
   }
 }
