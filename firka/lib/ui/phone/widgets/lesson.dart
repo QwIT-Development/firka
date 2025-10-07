@@ -197,7 +197,12 @@ class LessonWidget extends StatelessWidget {
       theme = theme.firstUpper();
       method = method.firstUpper();
 
-      elements.add(FirkaCard(
+      elements.add(GestureDetector(
+      onTap: () {
+        showTestBottomSheet(
+            context, data, lesson, lessonNo, accent, secondary, bgColor, test);
+      },
+      child: FirkaCard(
         left: [
           FirkaIconWidget(
             FirkaIconType.majesticons,
@@ -214,7 +219,7 @@ class LessonWidget extends StatelessWidget {
               style: appStyle.fonts.B_16R
                   .apply(color: appStyle.colors.textTertiary))
         ],
-      ));
+      )));
     }
 
     if (nextLesson != null) {

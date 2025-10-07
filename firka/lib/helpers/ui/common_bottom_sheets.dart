@@ -7,6 +7,7 @@ import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
+import 'package:intl/intl.dart';
 
 import '../../main.dart';
 import '../../ui/model/style.dart';
@@ -156,7 +157,7 @@ Future<void> showLessonBottomSheet(
                           Text(
                             '${lesson.start.format(data.l10n, FormatMode.hmm)} - ${lesson.end.format(data.l10n, FormatMode.hmm)}',
                             style: appStyle.fonts.B_16R
-                                .apply(color: appStyle.colors.textPrimary),
+                                .apply(color: appStyle.colors.textSecondary),
                           ),
                         ],
                       ),
@@ -281,6 +282,232 @@ Future<void> showLessonBottomSheet(
   );
 }
 
+Future<void> showTestBottomSheet(
+    BuildContext context,
+    AppInitialization data,
+    Lesson lesson,
+    int? lessonNo,
+    Color accent,
+    Color secondary,
+    Color bgColor,
+    Test? test,
+
+    ) async {
+  final date = lesson.start;
+  final formattedDate = DateFormat('MMMM d, EEEE').format(date);
+  final formattedTime = DateFormat('MMMM d, HH:mm').format(date);
+
+  final statsForNerdsEnabled = data.settings
+      .group("settings")
+      .subGroup("developer")
+      .boolean("stats_for_nerds");
+
+  final showTests = data.settings
+        .group("settings")
+        .subGroup("timetable_toast")
+        .boolean("tests_and_homework");
+  showModalBottomSheet(
+    context: context,
+    elevation: 100,
+    isScrollControlled: true,
+    enableDrag: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: appStyle.colors.a15p,
+    builder: (BuildContext context) {
+      Widget statsForNerds = SizedBox();
+
+      final y2k = DateTime(2000, 1);
+      if (statsForNerdsEnabled) {
+        final stats =
+            "${data.l10n.stats_date}: ${lesson.start.isAfter(y2k) ? lesson.start.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
+            "${data.l10n.stats_created_at}: ${lesson.createdAt.isAfter(y2k) ? lesson.createdAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
+            "${data.l10n.stats_last_mod}: ${lesson.lastModifiedAt.isAfter(y2k) ? lesson.lastModifiedAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}";
+        statsForNerds = Text(stats,
+            style:
+                appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary));
+      }
+      
+      return Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              behavior: HitTestBehavior.opaque,
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              decoration: BoxDecoration(
+                color: appStyle.colors.background,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16) + EdgeInsets.only(bottom: 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      decoration: ShapeDecoration(
+                        color: appStyle.colors.a15p,
+                        shape: CircleBorder(),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: FirkaIconWidget(
+                          FirkaIconType.majesticons,
+                          Majesticon.editPen4Solid,
+                          size: 22.0,
+                          color: appStyle.colors.accent,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(children: [
+                            Text(
+                              "${test?.theme ?? 'N/A'} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
+                              style: appStyle.fonts.H_18px
+                                  .apply(color: appStyle.colors.textPrimary),
+                            ),
+                          ]),
+                          Text(
+                            test?.method.description ?? 'N/A',
+                            style: appStyle.fonts.B_16R
+                                .apply(color: appStyle.colors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    FirkaCard(left: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 4),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.7,
+                              child: Text(
+                                "${data.l10n.date}: $formattedDate",
+                                style: appStyle.fonts.B_16R
+                                  .apply(color: appStyle.colors.textPrimary),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          SizedBox(height: 4),
+                          statsForNerds
+                        ],
+                      )
+                    ]),
+                    if (test != null && showTests) 
+                      FirkaCard(
+                        left: [
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Stack(
+                                  children: [
+                                    SvgPicture.asset(
+                                      "assets/icons/subtract.svg",
+                                      color: bgColor,
+                                      width: 24,
+                                      height: 24,
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 8, top: 4),
+                                      child: Text(lessonNo.toString(),
+                                          style: appStyle.fonts.B_12R
+                                              .apply(color: secondary)),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Transform.translate(
+                                offset: Offset(-4, 0),
+                                child: Card(
+                                  shadowColor: Colors.transparent,
+                                  color: bgColor,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16)),
+                                  child: Padding(
+                                    padding: EdgeInsetsGeometry.all(4),
+                                    child: ClassIconWidget(
+                                      color: accent,
+                                      size: 28,
+                                      uid: lesson.uid,
+                                      className: lesson.name,
+                                      category: lesson.subject?.name != null
+                                          ? lesson.subject!.name.firstUpper()
+                                          : '',
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(width: 12),
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width * 0.37,
+                                  child: Text(
+                                    lesson.name,
+                                    style: appStyle.fonts.B_16SB.apply(color: appStyle.colors.textPrimary),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  )
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                              formattedTime,
+                              style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
+                          )
+                      ]),
+                    SizedBox(height: 8),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width / 1.1,
+                      child: GestureDetector(
+                        child: FirkaCard(
+                          left: [],
+                          center: [
+                            Text(
+                              data.l10n.view_lesson_btn,
+                              style: appStyle.fonts.B_16R
+                                  .apply(color: appStyle.colors.textSecondary),
+                            )
+                          ],
+                          color: appStyle.colors.buttonSecondaryFill,
+                        ),
+                        onTap: () {
+                          showLessonBottomSheet(context, data, lesson, lessonNo, accent, secondary, bgColor, test);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 Future<void> showGradeBottomSheet(
     BuildContext context, AppInitialization data, Grade grade) async {
   showModalBottomSheet(
@@ -373,7 +600,7 @@ Future<void> showGradeBottomSheet(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "${data.l10n.tt_added}${grade.creationDate}",
+                                    "${data.l10n.tt_added}${grade.creationDate.format(data.l10n, FormatMode.yyyymmddhhmmss)}",
                                     style: appStyle.fonts.B_16R.apply(
                                         color: appStyle.colors.textPrimary),
                                   ),
