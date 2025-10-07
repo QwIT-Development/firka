@@ -524,6 +524,9 @@ Future<void> showGradeBottomSheet(
       minHeight: MediaQuery.of(context).size.height * 0.34,
     ),
     builder: (BuildContext context) {
+      final gradeCreationDate = grade.creationDate;
+      final formattedDate = DateFormat('yyyy. MMMM d., EEEE').format(gradeCreationDate);
+
       return Stack(
         children: [
           Positioned.fill(
@@ -603,7 +606,7 @@ Future<void> showGradeBottomSheet(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "${data.l10n.tt_added}${grade.creationDate.format(data.l10n, FormatMode.yyyymmddhhmmss)}",
+                                    "${data.l10n.tt_added}$formattedDate",
                                     style: appStyle.fonts.B_16R.apply(
                                         color: appStyle.colors.textPrimary),
                                   ),
