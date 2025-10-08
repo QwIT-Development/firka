@@ -29,6 +29,7 @@ const ttToastBreaks = 1014;
 const statsForNerds = 1015;
 const developerOptsEnabled = 1016;
 const themeBrightness = 1017;
+const ttToastSubstitution = 1018;
 
 bool always() {
   return true;
@@ -98,7 +99,8 @@ class SettingsStore {
                       "4": SettingsDouble(rounding4, null, null, l10n.s_ag_r4,
                           0.1, 0.5, 0.99, 2, always),
                     }),
-                    always),
+                    always,
+                    null),
                 "class_avg_on_graph": SettingsBoolean(classAvgOnGraph, null,
                     null, l10n.s_ag_class_avg_on_graph, true, never),
                 "navbar": SettingsSubGroup(
@@ -107,7 +109,8 @@ class SettingsStore {
                     null,
                     l10n.s_ag_navbar,
                     LinkedHashMap.of({}),
-                    never),
+                    never,
+                    null),
                 "left_handed_mode": SettingsBoolean(leftHandedMode, null, null,
                     l10n.s_ag_left_handed_mode, false, never),
                 "language_header":
@@ -132,7 +135,8 @@ class SettingsStore {
                   runApp(InitializationScreen());
                 })
               }),
-              always),
+              always,
+              null),
           "customization": SettingsSubGroup(
               0,
               FirkaIconType.majesticons,
@@ -229,7 +233,8 @@ class SettingsStore {
                           },
                           always),
                     }),
-                    isAndroid),
+                    isAndroid,
+                    null),
                 "icon_theme_padding": SettingsPadding(0, 16, always),
                 "theme_header":
                     SettingsHeaderSmall(0, l10n.s_c_theme_header, always),
@@ -248,7 +253,8 @@ class SettingsStore {
                   globalUpdate.update();
                 })
               }),
-              always),
+              always,
+              null),
           "notifications": SettingsSubGroup(
               0,
               FirkaIconType.majesticons,
@@ -257,7 +263,8 @@ class SettingsStore {
               LinkedHashMap.of({
                 "back": SettingsBackHeader(0, l10n.s_settings, always),
               }),
-              never),
+              never,
+              null),
           "extras": SettingsSubGroup(
               0,
               FirkaIconType.majesticons,
@@ -266,7 +273,8 @@ class SettingsStore {
               LinkedHashMap.of({
                 "back": SettingsBackHeader(0, l10n.s_settings, always),
               }),
-              never),
+              never,
+              null),
           "settings_other_padding": SettingsPadding(0, 20, never),
           "settings_other_header": SettingsHeaderSmall(0, "Egyéb", never),
 
@@ -286,7 +294,8 @@ class SettingsStore {
                     always),
                 "logs": SettingsLogs(0, always),
               }),
-              isDeveloper),
+              isDeveloper,
+              null),
 
           // misc
           "beta_warning": SettingsBoolean(
@@ -314,6 +323,13 @@ class SettingsStore {
                     l10n.tt_settings_toast_lesson_tests,
                     true,
                     always),
+                "substitution": SettingsBoolean(
+                    ttToastSubstitution,
+                    FirkaIconType.majesticons,
+                    Majesticon.usersSolid,
+                    "Helyettesítések",
+                    true,
+                    always),
                 "breaks": SettingsBoolean(
                     ttToastBreaks,
                     FirkaIconType.majesticons,
@@ -322,7 +338,38 @@ class SettingsStore {
                     true,
                     always),
               }),
-              never),
+              never,
+              null),
+              "settings_about_padding": SettingsPadding(0, 20, always),
+              "settings_about_header": SettingsHeaderSmall(0, "Névjegy", always),
+              "discord_button": SettingsSubGroup(
+                0,
+                FirkaIconType.majesticons,
+                Majesticon.chatSolid,
+                "Discord",
+                LinkedHashMap.of({}),
+                always,
+                "discord"
+              ),
+              "privacy_policy_button": SettingsSubGroup(
+                0,
+                FirkaIconType.majesticons,
+                Majesticon.lockSolid,
+                "Adatkezelési tájékoztató",
+                LinkedHashMap.of({}),
+                always,
+                "privacy"
+              ),
+              "license_page": SettingsSubGroup(
+                0,
+                FirkaIconType.majesticons,
+                Majesticon.awardSolid,
+                "Licencek",
+                LinkedHashMap.of({
+                }),
+                always,
+                null
+              ),
           "developer_enabled": SettingsBoolean(
               developerOptsEnabled, null, null, "Developer", false, never),
         }),
@@ -505,9 +552,10 @@ class SettingsSubGroup implements SettingsItem {
   Future<void> Function() postUpdate = () async {};
   String title;
   LinkedHashMap<String, SettingsItem> children;
+  String? redirectTo;
 
   SettingsSubGroup(this.key, this.iconType, this.iconData, this.title,
-      this.children, this.visibilityProvider);
+      this.children, this.visibilityProvider, this.redirectTo);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
