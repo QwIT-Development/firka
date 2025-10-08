@@ -17,6 +17,7 @@ import 'package:isar/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../../../helpers/firka_bundle.dart';
 import '../../../../helpers/firka_state.dart';
@@ -145,14 +146,25 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
         widgets.add(GestureDetector(
           onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => DefaultAssetBundle(
-                        bundle: FirkaBundle(),
-                        child: SettingsScreen(widget.data, item.children))));
+            if (item.redirectTo != null && item.redirectTo == "discord"){
+              launchUrlString("https://discord.com/invite/firka-1111649116020285532");
+              return; 
+            } else if (item.redirectTo != null && item.redirectTo == "privacy"){
+              launchUrlString("https://firka.app/privacy");
+              return; 
+            } else {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => DefaultAssetBundle(
+                          bundle: FirkaBundle(),
+                          child: SettingsScreen(widget.data, item.children))));
+            }
           },
-          child: FirkaCard(left: cardWidgets),
+    child: item.redirectTo != null
+        ? FirkaCard(left: cardWidgets, right: [RotationTransition(turns: AlwaysStoppedAnimation(-45/360), child: FirkaIconWidget(FirkaIconType.majesticons, Majesticon.arrowRightSolid, size: 24, color: appStyle.colors.textSecondary))],)
+        : FirkaCard(left: cardWidgets),
+            
         ));
 
         continue;
