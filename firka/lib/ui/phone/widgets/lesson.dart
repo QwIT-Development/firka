@@ -34,7 +34,10 @@ class LessonWidget extends StatelessWidget {
         .group("settings")
         .subGroup("timetable_toast")
         .boolean("tests_and_homework");
-
+    final showSubstitutions = data.settings
+        .group("settings")
+        .subGroup("timetable_toast")
+        .boolean("substitution");
     final isSubstituted = lesson.substituteTeacher != null;
     final isDismissed = lesson.type.name == "UresOra";
 
@@ -170,7 +173,7 @@ class LessonWidget extends StatelessWidget {
       ),
     ));
 
-    if (isSubstituted) {
+    if (isSubstituted && showSubstitutions) {
       elements.add(FirkaCard(
         left: [
           Text(data.l10n.class_substitution,
