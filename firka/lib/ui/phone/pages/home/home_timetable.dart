@@ -628,13 +628,14 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
               ),
               child: Stack(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Wrap(
+                    spacing: 10,
                     children: ttEmptyCards,
                   ),
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: ttWidgets),
+                  Wrap(
+                    spacing: 10,
+                    children: ttWidgets,
+                  ),
                 ],
               )),
         ])
