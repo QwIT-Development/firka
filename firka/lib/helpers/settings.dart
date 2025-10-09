@@ -327,7 +327,7 @@ class SettingsStore {
                     ttToastSubstitution,
                     FirkaIconType.majesticons,
                     Majesticon.usersSolid,
-                    "Helyettesítések",
+                    l10n.tt_settings_toast_lesson_substitution,
                     true,
                     always),
                 "breaks": SettingsBoolean(
