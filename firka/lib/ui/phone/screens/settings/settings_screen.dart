@@ -11,6 +11,7 @@ import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/screens/login/login_screen.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:isar/isar.dart';
@@ -305,6 +306,70 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           }
         }
 
+        continue;
+      }
+      if (item is ShowLicensePage) {
+        widgets.add(
+          FutureBuilder<List<LicenseEntry>>(
+            future: LicenseRegistry.licenses.toList(),
+            builder: (BuildContext context, AsyncSnapshot<List<LicenseEntry>> snapshot) {
+              if (!snapshot.hasData) {
+                return Center(child: CircularProgressIndicator());
+              }
+              final licenses = snapshot.data!;
+              final shownPackages = <String>{};
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: licenses.where((license) {
+              return license.packages.any((pkg) => !shownPackages.contains(pkg));
+                }).map((license) {
+              final packageName = license.packages.firstWhere(
+                (pkg) => !shownPackages.contains(pkg),
+                orElse: () => license.packages.first,
+              );
+              shownPackages.add(packageName);
+              final paragraphs = license.paragraphs.map((p) => p.text).join('\n\n');
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text(packageName, style: TextStyle(fontWeight: FontWeight.bold)),
+                              content: SingleChildScrollView(
+                            child: Text(paragraphs),
+                              ),
+                              actions: [
+                                TextButton(
+                                  child: Text(widget.data.l10n.close),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      child: FirkaCard(left: [
+                        Text(
+                          packageName,
+                          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                            ),
+                      ]),
+                    )
+                  ],
+                ),
+              );}).toList(),
+              );
+            },
+          )
+        );
         continue;
       }
 
