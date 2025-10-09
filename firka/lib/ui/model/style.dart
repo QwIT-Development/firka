@@ -12,6 +12,7 @@ class FirkaFonts {
 
   TextStyle B_16R;
   TextStyle B_16SB;
+  TextStyle B_15SB;
 
   TextStyle B_14R;
   TextStyle B_14SB;
@@ -32,6 +33,7 @@ class FirkaFonts {
     required this.H_16px_trimmed,
     required this.B_16R,
     required this.B_16SB,
+    required this.B_15SB,
     required this.B_14R,
     required this.B_14SB,
     required this.B_12R,
@@ -185,6 +187,12 @@ final _defaultFonts = FirkaFonts(
   ),
   B_14SB: TextStyle(
     fontSize: 14,
+    fontFamily: 'Figtree',
+    fontVariations: [FontVariation("wght", 700)],
+    height: 1.3,
+  ),
+  B_15SB: TextStyle(
+    fontSize: 15,
     fontFamily: 'Figtree',
     fontVariations: [FontVariation("wght", 700)],
     height: 1.3,

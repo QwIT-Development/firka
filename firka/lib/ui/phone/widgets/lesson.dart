@@ -67,14 +67,14 @@ class LessonWidget extends StatelessWidget {
     List<Widget> elements = [];
 
     var subjectName = lesson.subject?.name ?? 'N/A';
-    if (subjectName.length >= 25) {
-      subjectName = "${subjectName.substring(0, 25 - 3)}...";
+    if (subjectName.length >= 19) {
+      subjectName = "${subjectName.substring(0, 19 - 3)}...";
     }
     subjectName = subjectName.firstUpper();
 
-    var roomName = lesson.roomName ?? '?';
-    if (roomName.length >= 8) {
-      roomName = "${roomName.substring(0, 8 - 3)}...";
+    var roomName = lesson.roomName ?? 'N/A';
+    if (roomName.length >= 11) {
+      roomName = "${roomName.substring(0, 11 - 3)}...";
     }
 
     elements.add(GestureDetector(
@@ -141,7 +141,7 @@ class LessonWidget extends StatelessWidget {
           ),
           SizedBox(width: !showTests && test != null ? 16 : 8),
           Text(subjectName,
-              style: appStyle.fonts.B_16SB
+              style: appStyle.fonts.B_15SB
                   .apply(color: appStyle.colors.textPrimary)),
         ],
         right: [
@@ -153,7 +153,7 @@ class LessonWidget extends StatelessWidget {
                       : lesson.start
                           .toLocal()
                           .format(data.l10n, FormatMode.hmm),
-                  style: appStyle.fonts.B_16R
+                  style: appStyle.fonts.B_14R
                       .apply(color: appStyle.colors.textPrimary)),
           placeholderMode == true
               ? SizedBox()
@@ -163,7 +163,7 @@ class LessonWidget extends StatelessWidget {
                       shadowColor: Colors.transparent,
                       color: appStyle.colors.a15p,
                       child: Padding(
-                        padding: EdgeInsets.all(4),
+                        padding: EdgeInsets.all(5),
                         child: Text(roomName,
                             style: appStyle.fonts.B_12R
                                 .apply(color: appStyle.colors.secondary)),

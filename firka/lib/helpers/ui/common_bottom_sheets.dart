@@ -142,7 +142,7 @@ Future<void> showLessonBottomSheet(
                               shadowColor: Colors.transparent,
                               color: appStyle.colors.a15p,
                               child: Padding(
-                                padding: EdgeInsets.all(4),
+                                padding: EdgeInsets.all(5),
                                 child: Text(lesson.roomName ?? 'N/A',
                                     style: appStyle.fonts.B_12R.apply(
                                         color: appStyle.colors.secondary)),
