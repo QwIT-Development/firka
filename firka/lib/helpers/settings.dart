@@ -355,7 +355,7 @@ class SettingsStore {
                 0,
                 FirkaIconType.majesticons,
                 Majesticon.lockSolid,
-                "Adatkezelési tájékoztató",
+                l10n.privacyLabel,
                 LinkedHashMap.of({}),
                 always,
                 "privacy"
@@ -364,8 +364,13 @@ class SettingsStore {
                 0,
                 FirkaIconType.majesticons,
                 Majesticon.awardSolid,
-                "Licencek",
+                l10n.licensesLabel,
                 LinkedHashMap.of({
+                  "back": SettingsBackHeader(0, l10n.s_settings, always),
+                  "header": SettingsMediumHeader(0, l10n.licensesLabel, always),
+                  "licenses_header":
+                      SettingsHeaderSmall(0, l10n.licenseDescription, always),
+                  "show_license": ShowLicensePage(),
                 }),
                 always,
                 null
@@ -677,6 +682,27 @@ class SettingsHeaderSmall implements SettingsItem {
 
   SettingsHeaderSmall(this.key, this.title, this.visibilityProvider);
 
+  @override
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
+
+  @override
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
+}
+
+class ShowLicensePage implements SettingsItem {
+  @override
+  Id key = 0;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
+  @override
+  bool Function() visibilityProvider = always;
+  @override
+  Future<void> Function() postUpdate = () async {};
+
+  ShowLicensePage();
+  
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {}
 
