@@ -314,7 +314,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
             future: LicenseRegistry.licenses.toList(),
             builder: (BuildContext context, AsyncSnapshot<List<LicenseEntry>> snapshot) {
               if (!snapshot.hasData) {
-                return Center(child: CircularProgressIndicator());
+                return Center(child: CircularProgressIndicator(color: appStyle.colors.accent));
               }
               final licenses = snapshot.data!;
               final shownPackages = <String>{};
@@ -359,7 +359,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                       child: FirkaCard(left: [
                         Text(
                           packageName,
-                          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                          style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textPrimary),
                             ),
                       ]),
                     )
