@@ -3,7 +3,7 @@ cd firka
 set -e
 SHORT_SHA=$(git rev-parse --short HEAD)
 COMMIT_COUNT=$(git rev-list --count HEAD)
-BASE_BUILD_NUMBER=$((1000 + COMMIT_COUNT))
+BASE_BUILD_NUMBER=$((1300 + COMMIT_COUNT))
 ORIGINAL_VERSION=$(grep "^version:" pubspec.yaml | sed 's/version: *//' | sed 's/+.*//')
 
 update_version_for_abi() {

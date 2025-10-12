@@ -98,7 +98,7 @@ pipeline {
                     
                     # Calculate version code based on git commits (same logic as build script)
                     COMMIT_COUNT=$(git rev-list --count HEAD)
-                    BASE_BUILD_NUMBER=$((1000 + COMMIT_COUNT))
+                    BASE_BUILD_NUMBER=$((1300 + COMMIT_COUNT))
                     
                     if [ "$BRANCH_NAME" = "main" ]; then
                         # For main branch, highest version code is BASE + 3000 (x64 build)
