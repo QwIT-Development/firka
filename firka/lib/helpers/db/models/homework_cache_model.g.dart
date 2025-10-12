@@ -535,3 +535,571 @@ extension HomeworkCacheModelQueryProperty
     });
   }
 }
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+
+extension GetHomeworkDoneModelCollection on Isar {
+  IsarCollection<HomeworkDoneModel> get homeworkDoneModels => this.collection();
+}
+
+const HomeworkDoneModelSchema = CollectionSchema(
+  name: r'HomeworkDoneModel',
+  id: -864135255844965497,
+  properties: {
+    r'doneAt': PropertySchema(
+      id: 0,
+      name: r'doneAt',
+      type: IsarType.dateTime,
+    ),
+    r'homeworkId': PropertySchema(
+      id: 1,
+      name: r'homeworkId',
+      type: IsarType.string,
+    )
+  },
+  estimateSize: _homeworkDoneModelEstimateSize,
+  serialize: _homeworkDoneModelSerialize,
+  deserialize: _homeworkDoneModelDeserialize,
+  deserializeProp: _homeworkDoneModelDeserializeProp,
+  idName: r'id',
+  indexes: {},
+  links: {},
+  embeddedSchemas: {},
+  getId: _homeworkDoneModelGetId,
+  getLinks: _homeworkDoneModelGetLinks,
+  attach: _homeworkDoneModelAttach,
+  version: '3.1.0+1',
+);
+
+int _homeworkDoneModelEstimateSize(
+  HomeworkDoneModel object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  bytesCount += 3 + object.homeworkId.length * 3;
+  return bytesCount;
+}
+
+void _homeworkDoneModelSerialize(
+  HomeworkDoneModel object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeDateTime(offsets[0], object.doneAt);
+  writer.writeString(offsets[1], object.homeworkId);
+}
+
+HomeworkDoneModel _homeworkDoneModelDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = HomeworkDoneModel();
+  object.doneAt = reader.readDateTime(offsets[0]);
+  object.homeworkId = reader.readString(offsets[1]);
+  object.id = id;
+  return object;
+}
+
+P _homeworkDoneModelDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readDateTime(offset)) as P;
+    case 1:
+      return (reader.readString(offset)) as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+Id _homeworkDoneModelGetId(HomeworkDoneModel object) {
+  return object.id ?? Isar.autoIncrement;
+}
+
+List<IsarLinkBase<dynamic>> _homeworkDoneModelGetLinks(
+    HomeworkDoneModel object) {
+  return [];
+}
+
+void _homeworkDoneModelAttach(
+    IsarCollection<dynamic> col, Id id, HomeworkDoneModel object) {
+  object.id = id;
+}
+
+extension HomeworkDoneModelQueryWhereSort
+    on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QWhere> {
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterWhere> anyId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(const IdWhereClause.any());
+    });
+  }
+}
+
+extension HomeworkDoneModelQueryWhere
+    on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QWhereClause> {
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterWhereClause>
+      idEqualTo(Id id) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IdWhereClause.between(
+        lower: id,
+        upper: id,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterWhereClause>
+      idNotEqualTo(Id id) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            )
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            )
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            );
+      }
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterWhereClause>
+      idGreaterThan(Id id, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IdWhereClause.greaterThan(lower: id, includeLower: include),
+      );
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterWhereClause>
+      idLessThan(Id id, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IdWhereClause.lessThan(upper: id, includeUpper: include),
+      );
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterWhereClause>
+      idBetween(
+    Id lowerId,
+    Id upperId, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IdWhereClause.between(
+        lower: lowerId,
+        includeLower: includeLower,
+        upper: upperId,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+}
+
+extension HomeworkDoneModelQueryFilter
+    on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QFilterCondition> {
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      doneAtEqualTo(DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'doneAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      doneAtGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'doneAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      doneAtLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'doneAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      doneAtBetween(
+    DateTime lower,
+    DateTime upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'doneAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      homeworkIdEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'homeworkId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      homeworkIdGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'homeworkId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      homeworkIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'homeworkId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      homeworkIdBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'homeworkId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      homeworkIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'homeworkId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      homeworkIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'homeworkId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      homeworkIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'homeworkId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      homeworkIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'homeworkId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      homeworkIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'homeworkId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      homeworkIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'homeworkId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      idIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'id',
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      idIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'id',
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      idEqualTo(Id? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'id',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      idGreaterThan(
+    Id? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      idLessThan(
+    Id? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+      idBetween(
+    Id? lower,
+    Id? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+}
+
+extension HomeworkDoneModelQueryObject
+    on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QFilterCondition> {}
+
+extension HomeworkDoneModelQueryLinks
+    on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QFilterCondition> {}
+
+extension HomeworkDoneModelQuerySortBy
+    on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QSortBy> {
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
+      sortByDoneAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'doneAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
+      sortByDoneAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'doneAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
+      sortByHomeworkId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'homeworkId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
+      sortByHomeworkIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'homeworkId', Sort.desc);
+    });
+  }
+}
+
+extension HomeworkDoneModelQuerySortThenBy
+    on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QSortThenBy> {
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
+      thenByDoneAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'doneAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
+      thenByDoneAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'doneAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
+      thenByHomeworkId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'homeworkId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
+      thenByHomeworkIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'homeworkId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy> thenById() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'id', Sort.asc);
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
+      thenByIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+}
+
+extension HomeworkDoneModelQueryWhereDistinct
+    on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QDistinct> {
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QDistinct>
+      distinctByDoneAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'doneAt');
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QDistinct>
+      distinctByHomeworkId({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'homeworkId', caseSensitive: caseSensitive);
+    });
+  }
+}
+
+extension HomeworkDoneModelQueryProperty
+    on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QQueryProperty> {
+  QueryBuilder<HomeworkDoneModel, int, QQueryOperations> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, DateTime, QQueryOperations> doneAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'doneAt');
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, String, QQueryOperations>
+      homeworkIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'homeworkId');
+    });
+  }
+}
