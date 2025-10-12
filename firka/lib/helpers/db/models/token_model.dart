@@ -41,7 +41,8 @@ class TokenModel {
     var m = TokenModel();
     final jwt = JWT.decode(resp.idToken);
 
-    final username = jwt.payload["kreta:user_name"].toString();
+    final payload = jwt as Map<String, dynamic>;
+    final username = payload["kreta:user_name"].toString();
     if (username.isNumeric() ||
         (username.contains("G0") &&
             username.substring(0, username.length - 3).isNumeric())) {
@@ -58,8 +59,8 @@ class TokenModel {
 
       m.studentIdNorm = value & 0x3FFFFFFF;
     }
-    m.studentId = jwt.payload["kreta:user_name"];
-    m.iss = jwt.payload["kreta:institute_code"];
+    m.studentId = payload["kreta:user_name"];
+    m.iss = payload["kreta:institute_code"];
     m.idToken = resp.idToken;
     m.accessToken = resp.accessToken;
     m.refreshToken = resp.refreshToken;
