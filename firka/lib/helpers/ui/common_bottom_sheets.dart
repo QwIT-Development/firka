@@ -754,7 +754,7 @@ Future<void> showHomeworkBottomSheet(
                                     left: [],
                                     center: [
                                       Text(
-                                        "Megjelölés készként",
+                                        data.l10n.mark_as_done,
                                         style: appStyle.fonts.B_16SB.apply(
                                             color: appStyle.colors.textSecondary),
                                       )
@@ -775,7 +775,7 @@ Future<void> showHomeworkBottomSheet(
                                     left: [],
                                     center: [
                                       Text(
-                                        "Megjelölés nem készként",
+                                        data.l10n.mark_as_not_done,
                                         style: appStyle.fonts.B_16SB.apply(
                                             color: appStyle.colors.textSecondary),
                                       )
