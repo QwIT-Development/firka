@@ -41,7 +41,7 @@ class TokenModel {
     var m = TokenModel();
     final jwt = JWT.decode(resp.idToken);
 
-    final payload = jwt as Map<String, dynamic>;
+    final payload = jwt.payload as Map<String, dynamic>;
     final username = payload["kreta:user_name"].toString();
     if (username.isNumeric() ||
         (username.contains("G0") &&

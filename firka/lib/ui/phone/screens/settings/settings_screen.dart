@@ -590,7 +590,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           final token = widget.data.tokens[i];
           final jwt = JWT.decode(token.idToken!);
           String studentRole;
-          final payload = jwt as Map<String, dynamic>;
+          final payload = jwt.payload as Map<String, dynamic>;
           if (payload["role"] == "Tanulo") {
             studentRole = "Tanuló";
           } else {
