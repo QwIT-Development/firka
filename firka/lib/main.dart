@@ -103,6 +103,7 @@ Future<Isar> initDB() async {
       TimetableCacheModelSchema,
       HomeworkCacheModelSchema,
       AppSettingsModelSchema,
+      HomeworkDoneModelSchema,
     ],
     inspector: true,
     directory: dir.path,
