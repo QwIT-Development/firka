@@ -1,5 +1,7 @@
 import 'package:firka/helpers/api/model/generic.dart';
 import 'package:firka/helpers/api/model/grade.dart';
+import 'package:firka/helpers/api/model/homework.dart';
+import 'package:firka/helpers/db/models/homework_cache_model.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/settings.dart';
@@ -295,8 +297,8 @@ Future<void> showTestBottomSheet(
 
     ) async {
   final date = lesson.start;
-  final formattedDate = DateFormat('MMMM d, EEEE').format(date);
-  final formattedTime = DateFormat('MMMM d, HH:mm').format(date);
+  final formattedDate = DateFormat('MMMM d, EEEE', data.l10n.localeName).format(date);
+  final formattedTime = DateFormat('MMMM d, HH:mm', data.l10n.localeName).format(date);
 
   final statsForNerdsEnabled = data.settings
       .group("settings")
@@ -526,7 +528,7 @@ Future<void> showGradeBottomSheet(
     ),
     builder: (BuildContext context) {
       final gradeCreationDate = grade.creationDate;
-      final formattedDate = DateFormat('yyyy. MMMM d., EEEE').format(gradeCreationDate);
+      final formattedDate = DateFormat('yyyy. MMMM d., EEEE', data.l10n.localeName).format(gradeCreationDate);
 
       return Stack(
         children: [
@@ -625,6 +627,189 @@ Future<void> showGradeBottomSheet(
                                 ])
                           ])
                         ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Future<void> showHomeworkBottomSheet(
+    BuildContext context, AppInitialization data, Homework homework) async {
+  showModalBottomSheet(
+    context: context,
+    elevation: 100,
+    isScrollControlled: true,
+    enableDrag: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: appStyle.colors.a15p,
+    builder: (BuildContext context) {
+
+      final formattedDate = DateFormat('yyyy. MMMM d.', data.l10n.localeName).format(homework.dueDate);
+
+      return Stack(
+        children: [
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              decoration: BoxDecoration(
+                color: appStyle.colors.background,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16) + EdgeInsets.only(bottom: 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(children: [
+                            Text(
+                              data.l10n.homework,
+                              style: appStyle.fonts.H_18px
+                                  .apply(color: appStyle.colors.textPrimary),
+                            ),
+                          ]),
+                          Text(
+                            formattedDate,
+                            style: appStyle.fonts.B_16R
+                                .apply(color: appStyle.colors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    LessonWidget(
+                      data,
+                      [],
+                      [], 
+                      -1,
+                      Lesson(
+                          uid: "-1",
+                          date: "",
+                          start: homework.startDate,
+                          end: homework.dueDate ,
+                          name: homework.subjectName,
+                          type: NameUidDesc(
+                              uid: "", name: "", description: ""),
+                          state: NameUidDesc(
+                              uid: "", name: "", description: ""),
+                          canStudentEditHomework: false,
+                          isHomeworkComplete: false,
+                          attachments: [],
+                          isDigitalLesson: false,
+                          digitalSupportDeviceTypeList: [],
+                          createdAt: timeNow(),
+                          subject: homework.subject,
+                          lastModifiedAt: timeNow()),
+                      null,
+                      null,
+                      placeholderMode: true,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: appStyle.colors.card,
+                        borderRadius:
+                          BorderRadius.all(Radius.circular(16))),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(
+                        homework.description,
+                        style: appStyle.fonts.B_16R.apply(
+                          color: appStyle.colors.textPrimary),
+                        textAlign: TextAlign.start,
+                        ),
+                      ),
+                      ),
+                    ),
+                    FutureBuilder<bool>(
+                      future: isHomeworkDone(data.isar, homework.uid),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return SizedBox(); // or a loading indicator
+                        }
+
+                        final done = snapshot.data!;
+
+                        return Column(
+                          children: [
+                            if (!done)
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width / 1.1,
+                                child: GestureDetector(
+                                  child: FirkaCard(
+                                    left: [],
+                                    center: [
+                                      Text(
+                                        "Megjelölés készként",
+                                        style: appStyle.fonts.B_16SB.apply(
+                                            color: appStyle.colors.textSecondary),
+                                      )
+                                    ],
+                                    color: appStyle.colors.accent,
+                                  ),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    markAsDone(data.isar, homework.uid);
+                                  },
+                                ),
+                              ),
+                            if (done)
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width / 1.1,
+                                child: GestureDetector(
+                                  child: FirkaCard(
+                                    left: [],
+                                    center: [
+                                      Text(
+                                        "Megjelölés nem készként",
+                                        style: appStyle.fonts.B_16SB.apply(
+                                            color: appStyle.colors.textSecondary),
+                                      )
+                                    ],
+                                    color: appStyle.colors.accent,
+                                  ),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    markAsNotDone(data.isar, homework.uid);
+                                  },
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width / 1.1,
+                      child: GestureDetector(
+                        child: FirkaCard(
+                          left: [],
+                          center: [
+                            Text(
+                              data.l10n.view_subject_btn,
+                              style: appStyle.fonts.B_16R
+                                  .apply(color: appStyle.colors.textSecondary),
+                            )
+                          ],
+                          color: appStyle.colors.buttonSecondaryFill,
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          pageNavNotifier.value = PageNavData(HomePage.grades, homework.subject.uid, homework.subjectName);
+                        },
                       ),
                     ),
                   ],
