@@ -401,6 +401,11 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                 lesson.start.isAfter(date) &&
                 lesson.end.isBefore(date.add(Duration(hours: 24))))
             .toList();
+        final lessonsOnDay = lessons!
+            .where((lesson) =>
+                lesson.start.getMidnight().millisecondsSinceEpoch ==
+                date.getMidnight().millisecondsSinceEpoch)
+            .toList();
         final eventsOnDate = events!
             .where((lesson) =>
                 lesson.start.isAfter(date.subtract(Duration(seconds: 1))) &&
@@ -413,7 +418,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
             .toList();
 
         ttDays.add(TimeTableDayWidget(widget.data, date, lessons!,
-            lessonsOnDate, eventsOnDate, testsOnDate));
+            lessonsOnDate, eventsOnDate, testsOnDate, lessonsOnDay));
       }
 
       List<Widget> ttEmptyCards = List.empty(growable: true);

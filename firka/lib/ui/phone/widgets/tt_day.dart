@@ -16,9 +16,10 @@ class TimeTableDayWidget extends StatelessWidget {
   final List<Lesson> lessons;
   final List<Lesson> events;
   final List<Test> tests;
+  final List<Lesson> day; 
 
   const TimeTableDayWidget(
-      this.data, this.date, this.week, this.lessons, this.events, this.tests,
+      this.data, this.date, this.week, this.lessons, this.events, this.tests, this.day,
       {super.key});
 
   @override
@@ -63,6 +64,7 @@ class TimeTableDayWidget extends StatelessWidget {
         ttBody.add(LessonWidget(
             data,
             week,
+            day,
             lessons.getLessonNo(lesson),
             lesson,
             tests.firstWhereOrNull(

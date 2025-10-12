@@ -18,13 +18,14 @@ import 'bubble_test.dart';
 class LessonWidget extends StatelessWidget {
   final AppInitialization data;
   final List<Lesson> week;
+  final List<Lesson> day;
   final int? lessonNo;
   final Lesson lesson;
   final Test? test;
   final Lesson? nextLesson;
   final bool? placeholderMode;
 
-  const LessonWidget(this.data, this.week, this.lessonNo, this.lesson,
+  const LessonWidget(this.data, this.week, this.day, this.lessonNo, this.lesson,
       this.test, this.nextLesson,
       {super.key, this.placeholderMode});
 
@@ -46,9 +47,8 @@ class LessonWidget extends StatelessWidget {
       showBreak =
           timeNow().isAfter(lesson.start) && timeNow().isBefore(lesson.end) ||
               timeNow().isAfter(week.last.end) ||
-              lesson.start.getMidnight() != timeNow().getMidnight();
+              lesson.start.getMidnight() != timeNow().getMidnight() || timeNow().isAfter(day.last.end);
     }
-
     var accent = appStyle.colors.accent;
     var secondary = appStyle.colors.secondary;
     var bgColor = appStyle.colors.a15p;
