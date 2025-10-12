@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/main.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +12,7 @@ import '../../../helpers/db/models/token_model.dart';
 import '../../../helpers/firka_bundle.dart';
 import '../../../helpers/firka_state.dart';
 import '../../../helpers/settings.dart';
+import '../../../ui/model/style.dart';
 import '../pages/error/error_page.dart';
 
 class LoginWebviewWidget extends StatefulWidget {
@@ -24,12 +27,24 @@ class LoginWebviewWidget extends StatefulWidget {
   State<LoginWebviewWidget> createState() => _LoginWebviewWidgetState();
 }
 
-class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
+class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
+    with TickerProviderStateMixin {
   late WebViewController _webViewController;
+  bool _isLoading = true;
+  AnimationController? _fadeAnimationController;
+  Animation<double>? _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
+
+    _fadeAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+
+    _fadeAnimation =
+        Tween<double>(begin: 1.0, end: 0.0).animate(_fadeAnimationController!);
 
     var loginUrl = KretaEndpoints.kretaLoginUrl;
 
@@ -44,6 +59,24 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadRequest(Uri.parse(loginUrl))
       ..setNavigationDelegate(NavigationDelegate(
+          onPageFinished: (String url) {
+            Timer(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                setState(() {
+                  _isLoading = false;
+                });
+                _fadeAnimationController?.forward().then((_) {
+                  _fadeAnimationController?.reset();
+                });
+              }
+            });
+          },
+          onPageStarted: (String url) {
+            setState(() {
+              _isLoading = true;
+            });
+            _fadeAnimationController?.reset();
+          },
           onNavigationRequest: (NavigationRequest request) async {
         var uri = Uri.parse(request.url);
 
@@ -111,47 +144,88 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
   }
 
   @override
+  void dispose() {
+    _fadeAnimationController?.dispose();
+    super.dispose();
+  }
+
+
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding:
-          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: FractionallySizedBox(
-        heightFactor: 0.90,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFB9C8E5),
-                        borderRadius: BorderRadius.all(Radius.circular(2)),
+    return Material(
+      color: appStyle.colors.card,
+      child: Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: FractionallySizedBox(
+          heightFactor: 0.90,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: appStyle.colors.secondary.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.all(Radius.circular(2)),
+                        ),
+                        width: 40,
+                        height: 4,
                       ),
-                      width: 40,
-                      height: 4,
+                    ),
+                  ],
+                ),
+                Container(
+                  height: MediaQuery.of(context).size.height * 0.8,
+                  // Adjust height for content
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  // Add ClipRRect for circular edges
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Stack(
+                      children: [
+                        WebViewWidget(
+                          controller: _webViewController,
+                        ),
+                        if (_fadeAnimationController != null && _fadeAnimation != null)
+                          AnimatedBuilder(
+                            animation: _fadeAnimationController!,
+                            builder: (context, child) => AnimatedOpacity(
+                              opacity: _isLoading
+                                  ? 1.0
+                                  : _fadeAnimationController!.isAnimating
+                                      ? _fadeAnimation!.value
+                                      : 0.0,
+                              duration: const Duration(milliseconds: 500),
+                              child: Container(
+                                color: appStyle.colors.background,
+                                child: Center(
+                                  child: SizedBox(
+                                    width: 32,
+                                    height: 32,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 3,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        appStyle.colors.accent,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-              Container(
-                height: MediaQuery.of(context).size.height * 0.8,
-                // Adjust height for content
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                // Add ClipRRect for circular edges
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: WebViewWidget(
-                    controller: _webViewController,
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
