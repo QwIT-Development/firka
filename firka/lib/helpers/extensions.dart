@@ -123,7 +123,10 @@ extension DateExtension on DateTime {
       case FormatMode.hmm:
         return DateFormat('H:mm', l10n.localeName).format(this);
       case FormatMode.welcome:
-        return DateFormat('EEE, MMM d', l10n.localeName).format(this);
+        final dayName = DateFormat('EEEE', l10n.localeName).format(this).firstUpper();
+        final monthAbbr = DateFormat('MMM', l10n.localeName).format(this).firstUpper();
+        final day = DateFormat('d', l10n.localeName).format(this);
+        return "$dayName, $monthAbbr $day";
       case FormatMode.d:
         return DateFormat('d', l10n.localeName).format(this);
       case FormatMode.da:
