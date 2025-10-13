@@ -374,10 +374,14 @@ Future<void> showTestBottomSheet(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(children: [
-                            Text(
-                              "${test?.theme ?? 'N/A'} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
-                              style: appStyle.fonts.H_18px
-                                  .apply(color: appStyle.colors.textPrimary),
+                            Expanded(
+                              child: Text(
+                                "${test?.theme ?? 'N/A'} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
+                                style: appStyle.fonts.H_18px
+                                    .apply(color: appStyle.colors.textPrimary),
+                                maxLines: 4,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ]),
                           Text(
