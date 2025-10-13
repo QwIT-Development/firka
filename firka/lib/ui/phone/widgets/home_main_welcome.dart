@@ -1,3 +1,5 @@
+import 'package:confetti/confetti.dart';
+import 'package:intl/intl.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
@@ -8,7 +10,7 @@ import '../../../helpers/api/model/student.dart';
 import '../../../helpers/api/model/timetable.dart';
 import '../../model/style.dart';
 
-class WelcomeWidget extends StatelessWidget {
+class WelcomeWidget extends StatefulWidget {
   final AppLocalizations l10n;
   final Student student;
   final List<Lesson> lessons;
@@ -16,6 +18,31 @@ class WelcomeWidget extends StatelessWidget {
 
   const WelcomeWidget(this.l10n, this.now, this.student, this.lessons,
       {super.key});
+
+  @override
+  State<WelcomeWidget> createState() => _WelcomeWidgetState();
+}
+
+class _WelcomeWidgetState extends State<WelcomeWidget> {
+  late ConfettiController _controllerCenter;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllerCenter = ConfettiController(duration: const Duration(seconds: 2));
+
+    final birthDate = DateFormat("MM-dd").format(widget.student.birthdate);
+    if (birthDate == DateFormat("MM-dd").format(widget.now)) {
+      _controllerCenter.play();
+    }
+  }
+
+
+  @override
+  void dispose() {
+    _controllerCenter.dispose();
+    super.dispose();
+  }
 
   getIconForCycle(Cycle dayCycle) {
     switch (dayCycle) {
@@ -38,13 +65,13 @@ class WelcomeWidget extends StatelessWidget {
   String getRawTitle(String name, Cycle dayCycle) {
     switch (dayCycle) {
       case Cycle.morning:
-        return l10n.good_morning(name);
+        return widget.l10n.good_morning(name);
       case Cycle.day:
-        return l10n.good_day(name);
+        return widget.l10n.good_day(name);
       case Cycle.afternoon:
-        return l10n.good_afternoon(name);
+        return widget.l10n.good_afternoon(name);
       case Cycle.night:
-        return l10n.good_night(name);
+        return widget.l10n.good_night(name);
     }
   }
 
@@ -52,22 +79,26 @@ class WelcomeWidget extends StatelessWidget {
     var name = "";
 
     try {
-      name = student.name.split(" ")[1];
+      name = widget.student.name.split(" ")[1];
     } catch (ex) {
-      name = student.name;
+      name = widget.student.name;
     }
 
-    if (lessons.isEmpty) {
-      return getRawTitle(name, dayCycle);
-    } else {
-      if (now.isBefore(lessons.first.start)) {
+    final birthDate = DateFormat("MM-dd").format(widget.student.birthdate);
+    if (birthDate == DateFormat("MM-dd").format(widget.now)) {
+      return "Boldog születésnapot, $name!";
+    } else if (widget.now.isBefore(widget.lessons.first.start)) {
         return getRawTitle(name, dayCycle);
-      }
+    } else {
       return getRawTitle(name, dayCycle);
     }
   }
 
   String getSubtitle(Cycle dayCycle) {
+    final now = widget.now;
+    final lessons = widget.lessons;
+    final l10n = widget.l10n;
+
     if (lessons.isEmpty) {
       return now.format(l10n, FormatMode.welcome);
     } else {
@@ -92,20 +123,32 @@ class WelcomeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var dayCycle = now.getDayCycle();
+    var dayCycle = widget.now.getDayCycle();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Stack(
+      alignment: Alignment.center,
       children: [
-        getIconForCycle(dayCycle),
-        const SizedBox(height: 16.0),
-        Text(getTitle(dayCycle),
-            style: appStyle.fonts.H_H2
+        ConfettiWidget(
+          confettiController: _controllerCenter,
+          blastDirectionality: BlastDirectionality.explosive,
+          emissionFrequency: 0.05,
+          numberOfParticles: 10,
+          gravity: 0.4,
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            getIconForCycle(dayCycle),
+            const SizedBox(height: 16.0),
+            Text(getTitle(dayCycle),
+              style: appStyle.fonts.H_H2
                 .copyWith(color: appStyle.colors.textPrimary)),
-        const SizedBox(height: 2.0),
-        Text(getSubtitle(dayCycle),
-            style: appStyle.fonts.B_16R
+            const SizedBox(height: 2.0),
+            Text(getSubtitle(dayCycle),
+              style: appStyle.fonts.B_16R
                 .copyWith(color: appStyle.colors.textSecondary)),
+          ],
+        ),
       ],
     );
   }
