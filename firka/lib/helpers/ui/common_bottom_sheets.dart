@@ -629,7 +629,28 @@ Future<void> showGradeBottomSheet(
                                         color: appStyle.colors.textPrimary),
                                   )
                                 ])
-                          ])
+                          ]),
+                          SizedBox(height: 8),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width / 1.1,
+                            child: GestureDetector(
+                              child: FirkaCard(
+                                left: [],
+                                center: [
+                                  Text(
+                                    data.l10n.view_subject_btn,
+                                    style: appStyle.fonts.B_16R
+                                        .apply(color: appStyle.colors.textSecondary),
+                                  )
+                                ],
+                                color: appStyle.colors.buttonSecondaryFill,
+                              ),
+                              onTap: () {
+                                Navigator.pop(context);
+                                pageNavNotifier.value = PageNavData(HomePage.grades, grade.subject.uid, grade.subject.name);
+                              },
+                            ),
+                          ),
                         ],
                       ),
                     ),
