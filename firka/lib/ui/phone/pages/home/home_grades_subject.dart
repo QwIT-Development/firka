@@ -290,7 +290,12 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                         style: appStyle.fonts.H_H2
                             .apply(color: appStyle.colors.textPrimary),
                       ),
-                      SizedBox(height: 15)
+                      SizedBox(height: 2),
+                      Text(
+                        widget.data.l10n.unknown_teacher,
+                        style: appStyle.fonts.B_16R
+                            .apply(color: appStyle.colors.textSecondary),
+                      ),
                   ]),
                   SizedBox(
                     height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - 320,
