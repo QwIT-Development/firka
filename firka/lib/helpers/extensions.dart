@@ -105,7 +105,9 @@ extension DateExtension on DateTime {
     switch (mode) {
       case FormatMode.grades:
         if (isBefore(yesterdayLim)) {
-          return format(l10n, FormatMode.yearly);
+          final month = DateFormat('MMMM', l10n.localeName).format(this).firstUpper();
+          final day = DateFormat('d', l10n.localeName).format(this);
+          return "$month $day";
         }
         if (isAfter(yesterdayLim) && isBefore(today)) {
           return l10n.yesterday;
