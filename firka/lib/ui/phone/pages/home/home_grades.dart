@@ -33,6 +33,7 @@ class HomeGradesScreen extends StatefulWidget {
 
 String activeSubjectUid = "";
 String subjectName = "";
+List<Subject> subjectInfo = [];
 
 class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
   ApiResponse<List<Grade>>? grades;
@@ -168,6 +169,7 @@ void updateListener() async {
             onTap: () {
               activeSubjectUid = subject.uid;
               subjectName = subject.name;
+              subjectInfo = subjects.where((s) => s.uid == subject.uid).toList();
               widget.pageController(1);
             },
           ));
@@ -177,6 +179,7 @@ void updateListener() async {
             onTap: () {
               activeSubjectUid = subject.uid;
               subjectName = subject.name;
+              subjectInfo = subjects.where((s) => s.uid == subject.uid).toList();
               widget.pageController(1);
             },
           ));

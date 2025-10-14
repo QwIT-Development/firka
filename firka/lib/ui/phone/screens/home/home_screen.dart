@@ -916,8 +916,8 @@ class _HomeSubPage extends State<HomeSubPage> {
             return PageWithSubPages([
               (cb) => HomeGradesScreen(widget.data, widget._updateNotifier,
                   widget._updateFinishNotifier, cb),
-              (cb) => HomeGradesSubjectScreen(widget.data,
-                  widget._updateNotifier, widget._updateFinishNotifier)
+              (cb) => HomeGradesSubjectScreen(widget.data, widget._updateNotifier,
+                  widget._updateFinishNotifier, cb),
             ], subPageActive, subPageBack, pageIndex: 0);
           case HomePage.timetable:
             return PageWithSubPages([
@@ -935,10 +935,10 @@ class _HomeSubPage extends State<HomeSubPage> {
           case HomePage.grades:
             activeSubjectUid = subPageData!;
             return PageWithSubPages([
-              (cb) => HomeGradesSubjectScreen(widget.data,
-                  widget._updateNotifier, widget._updateFinishNotifier),
+              (cb) => HomeGradesSubjectScreen(widget.data, widget._updateNotifier,
+                  widget._updateFinishNotifier, cb),
               (cb) => HomeGradesScreen(widget.data, widget._updateNotifier,
-                  widget._updateFinishNotifier, cb)
+                  widget._updateFinishNotifier, cb),
             ], subPageActive, subPageBack, pageIndex: 0);
           case HomePage.timetable:
             return PageWithSubPages([
@@ -959,8 +959,8 @@ class _HomeSubPage extends State<HomeSubPage> {
         return PageWithSubPages([
           (cb) => HomeGradesScreen(widget.data, widget._updateNotifier,
               widget._updateFinishNotifier, cb),
-          (cb) => HomeGradesSubjectScreen(
-              widget.data, widget._updateNotifier, widget._updateFinishNotifier)
+          (cb) => HomeGradesSubjectScreen(widget.data, widget._updateNotifier,
+              widget._updateFinishNotifier, cb),
         ], subPageActive, subPageBack, pageIndex: 0);
       case HomePage.timetable:
         return PageWithSubPages([
