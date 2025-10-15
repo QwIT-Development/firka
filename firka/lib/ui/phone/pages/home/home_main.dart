@@ -236,7 +236,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         }
 
         welcomeWidget = LessonBigWidget(widget.data.l10n, now, lessonIndex,
-            currentLesson, prevLesson, nextLesson);
+            currentLesson, prevLesson, nextLesson, lessons!, tests!);
       }
     }
     if (lessons != null && lessons!.isNotEmpty) {

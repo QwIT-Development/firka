@@ -1,10 +1,13 @@
+import 'package:firka/helpers/api/model/test.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/l10n/app_localizations.dart';
+import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../../helpers/api/model/timetable.dart';
 import '../../widget/class_icon.dart';
@@ -16,17 +19,116 @@ class LessonBigWidget extends StatelessWidget {
   final Lesson? lesson;
   final Lesson? prevLesson;
   final Lesson? nextLesson;
+  final List<Lesson> lessons;
+  final List<Test> tests;
 
   const LessonBigWidget(this.l10n, this.now, this.lessonNo, this.lesson,
-      this.prevLesson, this.nextLesson,
+      this.prevLesson, this.nextLesson, this.lessons, this.tests,
       {super.key});
 
   @override
   Widget build(BuildContext context) {
     var hasLesson = lesson != null;
+    var lessonsLeft =
+      lessons.where((lesson) => lesson.end.isAfter(now)).length;
     var hasPrevLesson = prevLesson != null;
     var hasNextLesson = nextLesson != null;
-
+    var testsTomorrow = tests.where((test) =>
+        test.date.isAfter(now) &&
+        test.date.isBefore(DateTime(now.year, now.month, now.day + 2))).length;  
+  
+    logger.finest(testsTomorrow);
+    if (lessonsLeft < 1){
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          FirkaCard(
+            left: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: Stack(
+                          children: [
+                            Card(
+                              shadowColor: Colors.transparent,
+                              color: appStyle.colors.a15p,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                              child: Padding(
+                                padding: EdgeInsets.all(6),
+                                child: FirkaIconWidget(
+                                  FirkaIconType.majesticons,
+                                  Majesticon.moonSolid,
+                                  size: 32.0,
+                                  color: appStyle.colors.accent,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        testsTomorrow == 0
+                        ? l10n.tt_no_classes_l2
+                        : l10n.get_ready,
+                        style: appStyle.fonts.B_16R
+                            .apply(color: appStyle.colors.textPrimary)),
+                    ],
+                  )
+                ],
+              )
+            ],
+            extra: Column(
+              children: [
+                SizedBox(height: 4),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(360),
+                  child: Container(
+                    width: double.infinity,
+                    color: appStyle.colors.background,
+                    padding: EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: Stack(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(2),
+                                child: FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.editPen4Solid,
+                                size: 32.0,
+                                color: appStyle.colors.accent,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          testsTomorrow == 0
+                            ? l10n.no_tests_tomorrow
+                            : l10n.tests_tomorrow(testsTomorrow.toString()),
+                            textAlign: TextAlign.left,
+                            style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
+                    ])
+                  ),
+                ),
+              ],
+            )
+          )
+        ],
+      );
+    }
     if (!hasLesson && (!hasPrevLesson || !hasNextLesson)) {
       if (!hasPrevLesson && !hasNextLesson) {
         return Column(
@@ -266,11 +368,14 @@ class LessonBigWidget extends StatelessWidget {
                 ],
               )
             ],
-            extra: LinearProgressIndicator(
-              // TODO: Make this rounded
-              value: progress / duration,
-              backgroundColor: appStyle.colors.a15p,
-              color: appStyle.colors.accent,
+            extra: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: progress / duration,
+                backgroundColor: appStyle.colors.a15p,
+                color: appStyle.colors.accent,
+                minHeight: 8,
+              ),
             ),
           )
         ],
