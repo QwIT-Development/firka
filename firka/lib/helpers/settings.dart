@@ -35,6 +35,7 @@ const liveActivityEnabled = 1019;
 const liveActivityPrivacyEverDeclined = 1020;
 const morningNotificationEnabled = 1021;
 const morningNotificationTime = 1022;
+const ttToastABTimetable = 1023;
 
 bool always() {
   return true;
@@ -425,6 +426,13 @@ class SettingsStore {
                     FirkaIconType.majesticons,
                     Majesticon.viewRowsLine,
                     l10n.tt_settings_toast_lesson_breaks,
+                    true,
+                    always),
+                "ab_timetable": SettingsBoolean(
+                    ttToastABTimetable,
+                    FirkaIconType.majesticons,
+                    Majesticon.calendarSolid,
+                    l10n.tt_settings_toast_lesson_ab_timetable,
                     true,
                     always),
               }),

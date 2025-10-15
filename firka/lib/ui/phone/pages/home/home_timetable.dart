@@ -361,7 +361,10 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     if (lessons != null && tests != null && events != null && dates != null) {
       List<Widget> ttWidgets = [];
       List<Widget> ttDays = [];
-
+      final showABTimetable = widget.data.settings
+          .group("settings")
+          .subGroup("timetable_toast")
+          .boolean("ab_timetable");
       // Build navigation icons using original dates
       for (var i = 0; i < dates!.length; i++) {
         final date = dates![i];
@@ -577,16 +580,18 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                                 style: appStyle.fonts.B_16R
                                     .apply(color: appStyle.colors.textPrimary)),
                             SizedBox(width: 4),
-                            Text("•",
-                                style: appStyle.fonts.B_16R
-                                    .apply(color: appStyle.colors.accent)),
-                            SizedBox(width: 4),
-                            Text(
-                                now!.isAWeek()
-                                    ? widget.data.l10n.a_week
-                                    : widget.data.l10n.b_week,
-                                style: appStyle.fonts.B_16R
-                                    .apply(color: appStyle.colors.textPrimary)),
+                              if (showABTimetable) ...[
+                                Text("•",
+                                    style: appStyle.fonts.B_16R
+                                        .apply(color: appStyle.colors.accent)),
+                                SizedBox(width: 4),
+                                Text(
+                                    now!.isAWeek()
+                                        ? widget.data.l10n.a_week
+                                        : widget.data.l10n.b_week,
+                                    style: appStyle.fonts.B_16R
+                                        .apply(color: appStyle.colors.textPrimary)),
+                              ]
                           ],
                         ),
                         onTap: () {
