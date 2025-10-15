@@ -39,6 +39,10 @@ class LessonWidget extends StatelessWidget {
         .group("settings")
         .subGroup("timetable_toast")
         .boolean("substitution");
+    final showLessonNos = data.settings
+        .group("settings")
+        .subGroup("timetable_toast")
+        .boolean("lesson_no");
     final isSubstituted = lesson.substituteTeacher != null;
     final isDismissed = lesson.type.name == "UresOra";
 
@@ -88,7 +92,7 @@ class LessonWidget extends StatelessWidget {
             : appStyle.colors.card,
         shadow: !isDismissed,
         left: [
-          placeholderMode == true
+          showLessonNos == false
               ? SizedBox()
               : SizedBox(
                   width: 18,
