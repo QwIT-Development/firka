@@ -48,6 +48,7 @@ dependencies:
   flutter_dotenv: ^5.2.1
   xml: ^6.6.1
   confetti: ^0.8.0
+  flutter_html: ^3.0.0
 
 dev_dependencies:
   flutter_test:

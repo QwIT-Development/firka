@@ -7,6 +7,7 @@ import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/settings.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:intl/intl.dart';
@@ -744,20 +745,28 @@ Future<void> showHomeworkBottomSheet(
                     Padding(
                       padding: const EdgeInsets.all(4),
                       child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: appStyle.colors.card,
-                        borderRadius:
-                          BorderRadius.all(Radius.circular(16))),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Text(
-                        homework.description,
-                        style: appStyle.fonts.B_16R.apply(
-                          color: appStyle.colors.textPrimary),
-                        textAlign: TextAlign.start,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: appStyle.colors.card,
+                          borderRadius: const BorderRadius.all(Radius.circular(16)),
                         ),
-                      ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Html(
+                            data: homework.description,
+                            style: {
+                              "*": Style(
+                                color: appStyle.colors.textPrimary,
+                                fontSize: FontSize(16),
+                                fontFamily: appStyle.fonts.B_16R.fontFamily,
+                                fontWeight: FontWeight.w900,
+                                margin: Margins.zero,
+                                padding: HtmlPaddings.zero,
+                                textAlign: TextAlign.start,
+                              ),
+                            },
+                          ),
+                        ),
                       ),
                     ),
                     FutureBuilder<bool>(
