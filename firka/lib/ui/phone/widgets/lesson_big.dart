@@ -2,7 +2,6 @@ import 'package:firka/helpers/api/model/test.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/l10n/app_localizations.dart';
-import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
@@ -33,11 +32,13 @@ class LessonBigWidget extends StatelessWidget {
       lessons.where((lesson) => lesson.end.isAfter(now)).length;
     var hasPrevLesson = prevLesson != null;
     var hasNextLesson = nextLesson != null;
+    // TODO: holnapi órák száma kiszámolás
+    var lessonsTomorrow = 0;
+    
     var testsTomorrow = tests.where((test) =>
         test.date.isAfter(now) &&
-        test.date.isBefore(DateTime(now.year, now.month, now.day + 2))).length;  
+        test.date.isBefore(DateTime(now.year, now.month, now.day + 2))).length;
   
-    logger.finest(testsTomorrow);
     if (lessonsLeft < 1){
       return Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -112,9 +113,13 @@ class LessonBigWidget extends StatelessWidget {
                         ),
                         SizedBox(width: 8),
                         Text(
-                          testsTomorrow == 0
+                            (lessonsTomorrow == 0 && testsTomorrow == 0)
                             ? l10n.no_tests_tomorrow
-                            : l10n.tests_tomorrow(testsTomorrow.toString()),
+                            : (testsTomorrow > 1)
+                              ? l10n.tests_tomorrow(testsTomorrow.toString())
+                              : (testsTomorrow < 1 && lessonsTomorrow > 0)
+                                ? l10n.lessons_tomorrow(lessonsTomorrow.toString())
+                                : l10n.tests_tomorrow(testsTomorrow.toString()),
                             textAlign: TextAlign.left,
                             style: appStyle.fonts.B_16R.apply(
                             color: appStyle.colors.textPrimary,
