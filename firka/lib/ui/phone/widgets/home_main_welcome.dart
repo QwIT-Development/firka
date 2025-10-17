@@ -87,7 +87,7 @@ class _WelcomeWidgetState extends State<WelcomeWidget> {
     final birthDate = DateFormat("MM-dd").format(widget.student.birthdate);
     if (birthDate == DateFormat("MM-dd").format(widget.now)) {
       return widget.l10n.happy_birthday(name);
-    } else if (widget.now.isBefore(widget.lessons.first.start)) {
+    } else if (widget.lessons.length > 1 &&widget.now.isBefore(widget.lessons.first.start)) {
         return getRawTitle(name, dayCycle);
     } else {
       return getRawTitle(name, dayCycle);
