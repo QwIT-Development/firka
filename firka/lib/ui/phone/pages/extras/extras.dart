@@ -110,7 +110,7 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                             final itemWidth = (constraints.maxWidth - 8) / 2;
                             return Wrap(
                               spacing: 2,
-                              runSpacing: 8,
+                              runSpacing: 2,
                               children: [
                                 debugBtn(itemWidth),
                                 GestureDetector( // Fiókod
