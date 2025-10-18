@@ -1,22 +1,24 @@
 import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/helpers/settings.dart';
-import 'package:firka/helpers/ui/firka_card.dart';
+import 'package:firka/helpers/ui/firka_shadow.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
+import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../../../../helpers/firka_bundle.dart';
 import '../../screens/debug/debug_screen.dart';
 import '../../screens/home/home_screen.dart';
 
 void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
-  Widget debugBtn = SizedBox();
+  Widget Function(double) debugBtn = (_) => const SizedBox();
 
   logger.finest("showExtrasBottomSheet() developer mode: ${isDeveloper()}");
 
   if (isDeveloper()) {
-    debugBtn = GestureDetector(
+    debugBtn = (double itemWidth) => GestureDetector( // Fejlesztői menü
       onTap: () => {
         Navigator.pop(context),
         Navigator.push(
@@ -25,13 +27,38 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                 builder: (context) => DefaultAssetBundle(
                     bundle: FirkaBundle(), child: DebugScreen(data))))
       },
-      child: FirkaCard(
-        left: [
-          Text(data.l10n.debug_screen,
-              style: appStyle.fonts.B_16R
-                  .apply(color: appStyle.colors.textPrimary))
-        ],
-        right: [],
+      child: SizedBox(
+        height: 60,
+        width: itemWidth,
+        child: FirkaShadow(
+          shadow: true,
+          child: Card(
+            color: appStyle.colors.card,
+            shadowColor: isLightMode.value ? null : Colors.transparent,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Row(
+                  children: [
+                    FirkaIconWidget(
+                      FirkaIconType.majesticons,
+                      Majesticon.bug2Solid,
+                      size: 22.0,
+                      color: appStyle.colors.accent,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      data.l10n.debug_screen,
+                      textAlign: TextAlign.right,
+                      style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -70,50 +97,118 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                 child: Stack(
                   children: [
                     Column(
-                      children: [
-                        debugBtn,
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => DefaultAssetBundle(
-                                        bundle: FirkaBundle(),
-                                        child: SettingsScreen(
-                                            data, data.settings.items))));
-                          },
-                          child: FirkaCard(
-                            left: [
-                              Text(data.l10n.settings_screen,
-                                  style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.textPrimary))
-                            ],
-                            right: [],
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                            data.l10n.other,
+                            style: appStyle.fonts.H_H2.apply(color: appStyle.colors.textPrimary),
+                            ),
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => DefaultAssetBundle(
-                                        bundle: FirkaBundle(),
-                                        child: SettingsScreen(
+                          SizedBox(height: 8),
+                          LayoutBuilder(builder: (context, constraints) {
+                            final itemWidth = (constraints.maxWidth - 8) / 2;
+                            return Wrap(
+                              spacing: 2,
+                              runSpacing: 8,
+                              children: [
+                                debugBtn(itemWidth),
+                                GestureDetector( // Fiókod
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DefaultAssetBundle(
+                                          bundle: FirkaBundle(),
+                                          child: SettingsScreen(
                                             data,
                                             data.settings.items
-                                                .group("profile_settings")))));
-                          },
-                          child: FirkaCard(
-                            left: [
-                              Text(data.l10n.s_your_account,
-                                  style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.textPrimary))
-                            ],
-                            right: [],
-                          ),
-                        )
+                                              .group("profile_settings")))));
+                                  },
+                                  child: SizedBox(
+                                    height: 60,
+                                    width: itemWidth,
+                                    child: FirkaShadow(
+                                      shadow: true,
+                                      child: Card(
+                                        color: appStyle.colors.card,
+                                        shadowColor: isLightMode.value ? null : Colors.transparent,
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                            child: Row(
+                                              children: [
+                                                FirkaIconWidget(
+                                                  FirkaIconType.majesticons,
+                                                  Majesticon.userSolid,
+                                                  size: 22.0,
+                                                  color: appStyle.colors.accent,
+                                                ),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  data.l10n.s_your_account,
+                                                  textAlign: TextAlign.right,
+                                                  style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                GestureDetector( // Beállítás
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DefaultAssetBundle(
+                                          bundle: FirkaBundle(),
+                                          child: SettingsScreen(
+                                            data, data.settings.items))));
+                                  },
+                                  child: SizedBox(
+                                    height: 60,
+                                    width: itemWidth,
+                                    child: FirkaShadow(
+                                      shadow: true,
+                                      child: Card(
+                                        color: appStyle.colors.card,
+                                        shadowColor: isLightMode.value ? null : Colors.transparent,
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                            child: Row(
+                                              children: [
+                                                FirkaIconWidget(
+                                                  FirkaIconType.majesticons,
+                                                  Majesticon.settingsCogSolid,
+                                                  size: 22.0,
+                                                  color: appStyle.colors.accent,
+                                                ),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  data.l10n.settings_screen,
+                                                  textAlign: TextAlign.right,
+                                                  style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // Ide jön a többi gomb majd
+                              ],
+                            );
+                          }),
                       ],
                     ),
                     Padding(
