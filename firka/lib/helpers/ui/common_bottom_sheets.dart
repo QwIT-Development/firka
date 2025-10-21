@@ -92,6 +92,7 @@ Future<void> showLessonBottomSheet(
                           width: 18,
                           height: 18,
                           child: Stack(
+                            alignment: Alignment.center,
                             children: [
                               SvgPicture.asset(
                                 "assets/icons/subtract.svg",
@@ -99,12 +100,11 @@ Future<void> showLessonBottomSheet(
                                 width: 18,
                                 height: 18,
                               ),
-                              Padding(
-                                padding: EdgeInsets.only(left: 5),
-                                child: Text(lessonNo.toString(),
-                                    style: appStyle.fonts.B_12R
-                                        .apply(color: secondary)),
-                              )
+                              Text(
+                                lessonNo.toString(),
+                                style: appStyle.fonts.B_12R.apply(color: secondary),
+                                textAlign: TextAlign.center,
+                              ),
                             ],
                           ),
                         ),
