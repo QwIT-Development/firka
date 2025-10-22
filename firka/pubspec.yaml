@@ -49,6 +49,7 @@ dependencies:
   xml: ^6.6.1
   confetti: ^0.8.0
   flutter_html: ^3.0.0
+  fl_chart: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -97,3 +98,6 @@ flutter:
       fonts:
         - asset: assets/fonts/RobotoMono-VariableFont_wght.ttf
           style: normal
+
+dependency_overrides:
+  vector_math: ^2.2.0

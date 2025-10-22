@@ -2,6 +2,7 @@ import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/helpers/api/model/generic.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/helpers/ui/grade_helpers.dart';
+import 'package:firka/ui/phone/widgets/grade_chart.dart';
 import 'package:firka/ui/widget/grade_small_card.dart';
 import 'package:flutter/material.dart';
 
@@ -220,7 +221,8 @@ void updateListener() async {
                 )
               ],
             ),
-            SizedBox(height: 16), // TODO: Add graphs here
+            // SizedBox(height: 16), // TODO: Add graphs here
+            GradeChart(grades: grades?.response ?? []),
             // ...gradeCards,
             Expanded(
               child: ListView(
