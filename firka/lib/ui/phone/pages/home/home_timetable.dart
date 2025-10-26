@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firka/helpers/api/client/kreta_client.dart';
+import 'package:firka/helpers/api/client/kreta_stream.dart';
 import 'package:firka/helpers/api/model/test.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/debug_helper.dart';
@@ -144,13 +146,10 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     await widget.data.client.getTests();
   }
 
-  Future<void> initForWeek(DateTime now, {bool forceCache = true}) async {
+  Future<void> _updateState(DateTime now, ApiResponse<List<Lesson>> lessonsResp,
+      ApiResponse<List<Test>> testsResp) async {
     var monday = now.getMonday().getMidnight();
-    var sunday = monday.add(Duration(days: 6));
 
-    var lessonsResp = await widget.data.client
-        .getTimeTable(monday, sunday, forceCache: forceCache);
-    var testsResp = await widget.data.client.getTests(forceCache: forceCache);
     List<DateTime> dates = List.empty(growable: true);
 
     if (lessonsResp.response != null) {
@@ -191,6 +190,37 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
         active = 0;
       }
     });
+  }
+
+  Future<void> initForWeek(DateTime now, {bool forceCache = true}) async {
+    var monday = now.getMonday().getMidnight();
+    var sunday = monday.add(Duration(days: 6));
+
+    ApiResponse<List<Lesson>>? lessonsResp;
+    var lessonsFetched = 0;
+    ApiResponse<List<Test>>? testsResp;
+    var testsFetched = 0;
+
+    widget.data.client
+        .getTimeTableStream(monday, sunday, cacheOnly: forceCache)
+        .forEach((lessons) {
+      lessonsResp = lessons;
+      lessonsFetched++;
+    });
+
+    widget.data.client.getTestsStream(cacheOnly: forceCache).forEach((tests) {
+      testsResp = tests;
+      testsFetched++;
+    });
+
+    while (lessonsFetched < 1 || testsFetched < 1) {
+      await Future.delayed(Duration(milliseconds: 50));
+    }
+    await _updateState(now, lessonsResp!, testsResp!);
+    while (lessonsFetched < 2 || testsFetched < 2) {
+      await Future.delayed(Duration(milliseconds: 50));
+    }
+    await _updateState(now, lessonsResp!, testsResp!);
   }
 
   void updateListener() async {
@@ -320,16 +350,6 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
         final date = dates![i];
         final realIndex = i; // Always use real index for nav icons
 
-        final lessonsOnDate = lessons!
-            .where((lesson) =>
-                lesson.start.isAfter(date) &&
-                lesson.end.isBefore(date.add(Duration(hours: 24))))
-            .toList();
-        final eventsOnDate = events!
-            .where((lesson) =>
-                lesson.start.isAfter(date.subtract(Duration(seconds: 1))) &&
-                lesson.end.isBefore(date.add(Duration(hours: 23, minutes: 59))))
-            .toList();
         final testsOnDate = tests!
             .where((test) =>
                 test.date.isAfter(date.subtract(Duration(seconds: 1))) &&
