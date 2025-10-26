@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firka/helpers/api/client/kreta_stream.dart';
 import 'package:firka/helpers/api/model/grade.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/ui/common_bottom_sheets.dart';
@@ -62,53 +63,115 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   }
 
   void updateListener() async {
-    final newData = await loadData(now, forceCache: false);
+    await fetchData(cacheOnly: false);
 
-    if (mounted) {
-      setState(() {
-        lessons = newData.$1;
-        noticeBoard = newData.$2;
-        infoBoard = newData.$3;
-        student = newData.$4;
-      });
-    }
     widget.finishNotifier.update();
   }
 
-  Future<(List<Lesson>, List<NoticeBoardItem>, List<InfoBoardItem>, Student)>
-      loadData(DateTime now, {bool forceCache = true}) async {
+  Future<void> fetchData({bool cacheOnly = true}) async {
     final midnight = now.getMidnight();
 
-    final respTT = await widget.data.client.getTimeTable(
-        midnight, midnight.add(Duration(hours: 23, minutes: 59)),
-        forceCache: forceCache);
+    var lessonsFetched = 0;
+    var noticeBoardFetched = 0;
+    var infoBoardFetched = 0;
+    var studentFetched = 0;
+    var testsFetched = 0;
+    var gradesFetched = 0;
+    var homeworkFetched = 0;
 
-    final respNB =
-        await widget.data.client.getNoticeBoard(forceCache: forceCache);
+    widget.data.client
+        .getTimeTableStream(
+            midnight, midnight.add(Duration(hours: 23, minutes: 59)),
+            cacheOnly: cacheOnly)
+        .forEach((lessons) {
+      lessonsFetched++;
 
-    final respIB =
-        await widget.data.client.getInfoBoard(forceCache: forceCache);
+      if (mounted) {
+        setState(() {
+          this.lessons = lessons.response;
+        });
+      }
+    });
 
-    final respStudent =
-        await widget.data.client.getStudent(forceCache: forceCache);
+    widget.data.client
+        .getNoticeBoardStream(cacheOnly: cacheOnly)
+        .forEach((items) {
+      noticeBoardFetched++;
 
-    final testsResp = await widget.data.client.getTests(forceCache: forceCache);
-    tests = testsResp.response;
+      if (mounted) {
+        setState(() {
+          noticeBoard = items.response;
+        });
+      }
+    });
 
-    final gradesResp =
-        await widget.data.client.getGrades(forceCache: forceCache);
-    grades = gradesResp.response;
+    widget.data.client
+        .getInfoBoardStream(cacheOnly: cacheOnly)
+        .forEach((items) {
+      infoBoardFetched++;
 
-    final homeworkResp =
-        await widget.data.client.getHomework(forceCache: forceCache);
-    homework = homeworkResp.response;
+      if (mounted) {
+        setState(() {
+          infoBoard = items.response;
+        });
+      }
+    });
 
-    return Future.value((
-      respTT.response!,
-      respNB.response!,
-      respIB.response!,
-      respStudent.response!,
-    ));
+    widget.data.client
+        .getStudentStream(cacheOnly: cacheOnly)
+        .forEach((student) {
+      studentFetched++;
+
+      if (mounted) {
+        setState(() {
+          this.student = student.response;
+        });
+      }
+    });
+
+    widget.data.client.getTestsStream(cacheOnly: cacheOnly).forEach((tests) {
+      testsFetched++;
+
+      if (mounted) {
+        setState(() {
+          this.tests = tests.response;
+        });
+      }
+    });
+
+    widget.data.client.getGradesStream(cacheOnly: cacheOnly).forEach((grades) {
+      gradesFetched++;
+
+      if (mounted) {
+        setState(() {
+          this.grades = grades.response;
+        });
+      }
+    });
+
+    widget.data.client
+        .getHomeworkStream(cacheOnly: cacheOnly)
+        .forEach((homework) {
+      homeworkFetched++;
+
+      if (mounted) {
+        setState(() {
+          this.homework = homework.response;
+        });
+      }
+    });
+
+    final r = cacheOnly ? 1 : 2;
+
+    while (lessonsFetched < r ||
+        noticeBoardFetched < r ||
+        infoBoardFetched < r ||
+        studentFetched < r ||
+        testsFetched < r ||
+        gradesFetched < r ||
+        homeworkFetched < r) {
+      await Future.delayed(Duration(milliseconds: 50));
+    }
   }
 
   @override
@@ -121,16 +184,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     if (!mounted) return;
 
     (() async {
-      final newData = await loadData(now);
-
-      if (mounted) {
-        setState(() {
-          lessons = newData.$1;
-          noticeBoard = newData.$2;
-          infoBoard = newData.$3;
-          student = newData.$4;
-        });
-      }
+      await fetchData();
     })();
 
     timer = Timer.periodic(Duration(seconds: 1), (timer) async {
@@ -227,6 +281,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         grades != null &&
         noticeBoard != null &&
         lessons != null &&
+        homework != null &&
         tests != null) {
       List<(Widget, DateTime)> noticeBoardWidgets = List.empty(growable: true);
 
