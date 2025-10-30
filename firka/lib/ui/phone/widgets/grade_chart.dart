@@ -52,21 +52,25 @@ class _GradeChartState extends State<GradeChart> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        AspectRatio(
-          aspectRatio: 1.70,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: appStyle.colors.card,
+        ),
+        child: AspectRatio(
+          aspectRatio: 1.90,
           child: Padding(
             padding: const EdgeInsets.only(
-              right: 18,
+              right: 28,
               left: 12,
-              top: 24,
+              top: 0,
               bottom: 12,
             ),
             child: LineChart(avgData()),
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -134,7 +138,38 @@ class _GradeChartState extends State<GradeChart> {
     }
 
     return LineChartData(
-      lineTouchData: const LineTouchData(enabled: true),
+      lineTouchData: LineTouchData(
+        enabled: true,
+        touchTooltipData: LineTouchTooltipData(
+          tooltipMargin: 0,
+          getTooltipColor: (touchedSpot) => appStyle.colors.buttonSecondaryFill,
+          tooltipBorderRadius: BorderRadius.circular(90),
+          getTooltipItems: (touchedSpots) {
+            return touchedSpots.map((LineBarSpot touchedSpot) {
+              final textStyle = TextStyle(
+                color: colorForY(touchedSpot.y),
+                fontWeight: FontWeight.bold,
+                fontSize: 18
+              );
+              return LineTooltipItem(touchedSpot.y.toString(), textStyle);
+            }).toList();
+          },
+        ),
+        getTouchedSpotIndicator: (barData, spotIndexes) {
+          return spotIndexes.map((index) {
+            final touchedSpot = barData.spots[index]; 
+            return TouchedSpotIndicatorData(
+              FlLine(
+                color: colorForY(touchedSpot.y),
+                strokeWidth: 3,
+              ),
+              FlDotData(
+                show: false,
+              ),
+            );
+          }).toList();
+        },
+      ),
       backgroundColor: appStyle.colors.card,
       gridData: FlGridData(
         show: true,
@@ -144,14 +179,14 @@ class _GradeChartState extends State<GradeChart> {
         getDrawingHorizontalLine: (value) {
           if (value != 5) {
             return FlLine(
-              color: appStyle.colors.a15p,
-              strokeWidth: 1,
+              color: Color(0xFFC8C8C8),
+              strokeWidth: 1.0,
               dashArray: [8, 12],
             );
           } else {
             return FlLine(
-              color: appStyle.colors.a15p,
-              strokeWidth: 1.3,
+              color: Color(0xFFC8C8C8),
+              strokeWidth: 1.0,
             );
           }
         },
