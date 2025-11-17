@@ -12,6 +12,7 @@ import 'package:firka/helpers/db/widget.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/firka_bundle.dart';
 import 'package:firka/helpers/settings.dart';
+import 'package:firka/helpers/swear_generator.dart';
 import 'package:firka/l10n/app_localizations_hu.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/pages/error/error_page.dart';
@@ -350,6 +351,10 @@ void main() async {
         await deleteOldLogFiles();
       })();
     }
+
+    logger.finest('loading dirty words');
+    await loadDirtyWords();
+    logger.finest('loaded dirty words');
 
     // Run App Initialization
     runApp(InitializationScreen());

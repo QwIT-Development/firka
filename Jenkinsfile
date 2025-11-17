@@ -129,7 +129,7 @@ pipeline {
             }
         }
         
-        stage('Publish release artifacts') {
+        stage('Publish release AABs artifacts') {
             when {
                 branch 'main'
             }
@@ -139,47 +139,21 @@ pipeline {
             }
         }
 
-        stage('Upload to F-Droid Release') {
+        stage('Publish release APKs artifacts') {
             when {
                 branch 'main'
             }
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'fdroid-ssh', usernameVariable: 'SSH_USER', passwordVariable: 'SSHPASS')]) {
-                        sh '''
-                    # Use the renamed APK files
-                    REMOTE_PATH="/home/fdroid/firka-fdroid/repo/"
-                    export SSHPASS
-                    
-                    # Loop over each APK file and upload it one by one
-                    for SOURCE_FILE in firka/build/app/outputs/flutter-apk/app.firka.naplo_*.apk; do
-                        if [ -f "$SOURCE_FILE" ]; then
-                            echo "Uploading $SOURCE_FILE to $REMOTE_PATH"
-                            sshpass -e scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-                                "$SOURCE_FILE" "$SSH_USER@10.0.0.21:$REMOTE_PATH"
-                        else
-                            echo "No APK files found to upload."
-                        fi
-                    done
-                    
-                    # Update version code in F-Droid metadata for release
-                    sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-                        "$SSH_USER@10.0.0.21" \
-                        "sed -i 's/^CurrentVersionCode: .*/CurrentVersionCode: $VERSION_CODE/' /home/fdroid/firka-fdroid/metadata/app.firka.naplo.yml"
-                    
-                    # Update F-Droid repository
-                    sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-                        "$SSH_USER@10.0.0.21" \
-                        "cd /home/fdroid/firka-fdroid && /run/current-system/sw/bin/fdroid update"
-                        '''
-                    }
-                }
+                archiveArtifacts artifacts: 'firka/build/app/outputs/flutter-apk/app.firka.naplo_*.apk', fingerprint: true
+                sh 'rm firka/build/app/outputs/flutter-apk/app.firka.naplo_*.apk'
             }
         }
+
         stage('Post Cleanup') {
             steps {
                 script {
                     sh '''
+                    rm firka/build/app/outputs/bundle/release/*.aab || true
                     rm firka/build/app/outputs/flutter-apk/app.firka.naplo_*.apk || true
                     rm firka/build/app/outputs/flutter-apk/app-debug.apk || true
                     rm version_code.txt || true
