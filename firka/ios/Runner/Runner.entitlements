@@ -8,7 +8,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.app.firka.firkaa</string>
+		<string>group.app.firka.firka</string>
 	</array>
 </dict>
 </plist>
