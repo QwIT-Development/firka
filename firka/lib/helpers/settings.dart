@@ -3,6 +3,7 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:firka/helpers/db/models/app_settings_model.dart';
+import 'package:firka/helpers/live_activity_service.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/cupertino.dart';
@@ -29,7 +30,7 @@ const ttToastBreaks = 1014;
 const statsForNerds = 1015;
 const developerOptsEnabled = 1016;
 const themeBrightness = 1017;
-const ttToastSubstitution = 1018;
+const liveActivityEnabled = 1018;
 
 bool always() {
   return true;
@@ -48,8 +49,16 @@ bool isAndroid() {
   return Platform.isAndroid;
 }
 
+bool isIOS() {
+  return Platform.isIOS;
+}
+
 bool isDebug() {
   return kDebugMode;
+}
+
+bool isDebugIOS() {
+  return kDebugMode && Platform.isIOS;
 }
 
 class SettingsStore {
@@ -99,8 +108,7 @@ class SettingsStore {
                       "4": SettingsDouble(rounding4, null, null, l10n.s_ag_r4,
                           0.1, 0.5, 0.99, 2, always),
                     }),
-                    always,
-                    null),
+                    always),
                 "class_avg_on_graph": SettingsBoolean(classAvgOnGraph, null,
                     null, l10n.s_ag_class_avg_on_graph, true, never),
                 "navbar": SettingsSubGroup(
@@ -109,10 +117,33 @@ class SettingsStore {
                     null,
                     l10n.s_ag_navbar,
                     LinkedHashMap.of({}),
-                    never,
-                    null),
+                    never),
                 "left_handed_mode": SettingsBoolean(leftHandedMode, null, null,
                     l10n.s_ag_left_handed_mode, false, never),
+                "live_activity_enabled": SettingsBoolean(
+                    liveActivityEnabled,
+                    FirkaIconType.majesticons,
+                    Majesticon.clockSolid,
+                    "LiveActivity",
+                    true,
+                    isIOS,
+                    () async {
+                      final setting = initData.settings
+                          .group("settings")
+                          .subGroup("application")["live_activity_enabled"] as SettingsBoolean;
+
+                      final enabled = setting.value;
+                      await LiveActivityService.handleEnabledChange(enabled);
+                    }),
+                "test_notification": SettingsButton(
+                    0,
+                    FirkaIconType.majesticons,
+                    Majesticon.bellSolid,
+                    "Teszt értesítés küldése",
+                    isDebugIOS,
+                    () async {
+                      await LiveActivityService.sendTestNotification();
+                    }),
                 "language_header":
                     SettingsHeaderSmall(0, l10n.s_ag_language_header, always),
                 "language": SettingsItemsRadio(
@@ -135,8 +166,7 @@ class SettingsStore {
                   runApp(InitializationScreen());
                 })
               }),
-              always,
-              null),
+              always),
           "customization": SettingsSubGroup(
               0,
               FirkaIconType.majesticons,
@@ -233,8 +263,7 @@ class SettingsStore {
                           },
                           always),
                     }),
-                    isAndroid,
-                    null),
+                    isAndroid),
                 "icon_theme_padding": SettingsPadding(0, 16, always),
                 "theme_header":
                     SettingsHeaderSmall(0, l10n.s_c_theme_header, always),
@@ -253,8 +282,7 @@ class SettingsStore {
                   globalUpdate.update();
                 })
               }),
-              always,
-              null),
+              always),
           "notifications": SettingsSubGroup(
               0,
               FirkaIconType.majesticons,
@@ -263,8 +291,7 @@ class SettingsStore {
               LinkedHashMap.of({
                 "back": SettingsBackHeader(0, l10n.s_settings, always),
               }),
-              never,
-              null),
+              never),
           "extras": SettingsSubGroup(
               0,
               FirkaIconType.majesticons,
@@ -273,8 +300,7 @@ class SettingsStore {
               LinkedHashMap.of({
                 "back": SettingsBackHeader(0, l10n.s_settings, always),
               }),
-              never,
-              null),
+              never),
           "settings_other_padding": SettingsPadding(0, 20, never),
           "settings_other_header": SettingsHeaderSmall(0, "Egyéb", never),
 
@@ -294,8 +320,7 @@ class SettingsStore {
                     always),
                 "logs": SettingsLogs(0, always),
               }),
-              isDeveloper,
-              null),
+              isDeveloper),
 
           // misc
           "beta_warning": SettingsBoolean(
@@ -323,13 +348,6 @@ class SettingsStore {
                     l10n.tt_settings_toast_lesson_tests,
                     true,
                     always),
-                "substitution": SettingsBoolean(
-                    ttToastSubstitution,
-                    FirkaIconType.majesticons,
-                    Majesticon.usersSolid,
-                    l10n.tt_settings_toast_lesson_substitution,
-                    true,
-                    always),
                 "breaks": SettingsBoolean(
                     ttToastBreaks,
                     FirkaIconType.majesticons,
@@ -338,43 +356,7 @@ class SettingsStore {
                     true,
                     always),
               }),
-              never,
-              null),
-              "settings_about_padding": SettingsPadding(0, 20, always),
-              "settings_about_header": SettingsHeaderSmall(0, "Névjegy", always),
-              "discord_button": SettingsSubGroup(
-                0,
-                FirkaIconType.majesticons,
-                Majesticon.chatSolid,
-                "Discord",
-                LinkedHashMap.of({}),
-                always,
-                "discord"
-              ),
-              "privacy_policy_button": SettingsSubGroup(
-                0,
-                FirkaIconType.majesticons,
-                Majesticon.lockSolid,
-                l10n.privacyLabel,
-                LinkedHashMap.of({}),
-                always,
-                "privacy"
-              ),
-              "license_page": SettingsSubGroup(
-                0,
-                FirkaIconType.majesticons,
-                Majesticon.awardSolid,
-                l10n.licensesLabel,
-                LinkedHashMap.of({
-                  "back": SettingsBackHeader(0, l10n.s_settings, always),
-                  "header": SettingsMediumHeader(0, l10n.licensesLabel, always),
-                  "licenses_header":
-                      SettingsHeaderSmall(0, l10n.licenseDescription, always),
-                  "show_license": ShowLicensePage(),
-                }),
-                always,
-                null
-              ),
+              never),
           "developer_enabled": SettingsBoolean(
               developerOptsEnabled, null, null, "Developer", false, never),
         }),
@@ -557,10 +539,9 @@ class SettingsSubGroup implements SettingsItem {
   Future<void> Function() postUpdate = () async {};
   String title;
   LinkedHashMap<String, SettingsItem> children;
-  String? redirectTo;
 
   SettingsSubGroup(this.key, this.iconType, this.iconData, this.title,
-      this.children, this.visibilityProvider, this.redirectTo);
+      this.children, this.visibilityProvider);
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -682,27 +663,6 @@ class SettingsHeaderSmall implements SettingsItem {
 
   SettingsHeaderSmall(this.key, this.title, this.visibilityProvider);
 
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
-}
-
-class ShowLicensePage implements SettingsItem {
-  @override
-  Id key = 0;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider = always;
-  @override
-  Future<void> Function() postUpdate = () async {};
-
-  ShowLicensePage();
-  
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {}
 
@@ -873,7 +833,11 @@ class SettingsBoolean implements SettingsItem {
   bool defaultValue;
 
   SettingsBoolean(this.key, this.iconType, this.iconData, this.title,
-      this.defaultValue, this.visibilityProvider);
+      this.defaultValue, this.visibilityProvider, [Future<void> Function()? postUpdateFn]) {
+    if (postUpdateFn != null) {
+      postUpdate = postUpdateFn;
+    }
+  }
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -1038,4 +1002,28 @@ class SettingsString implements SettingsItem {
 
     initData.settingsUpdateNotifier.update();
   }
+}
+
+class SettingsButton implements SettingsItem {
+  @override
+  Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
+  @override
+  bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
+  String title;
+  Future<void> Function() onTap;
+
+  SettingsButton(this.key, this.iconType, this.iconData, this.title,
+      this.visibilityProvider, this.onTap);
+
+  @override
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
+
+  @override
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
 }

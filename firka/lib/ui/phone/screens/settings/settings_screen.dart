@@ -1,25 +1,22 @@
 import 'dart:collection';
 import 'dart:io';
-
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/helpers/db/models/token_model.dart';
 import 'package:firka/helpers/image_preloader.dart';
+import 'package:firka/helpers/live_activity_service.dart';
 import 'package:firka/helpers/ui/firka_button.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/screens/login/login_screen.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:isar/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher_string.dart';
-
 import '../../../../helpers/firka_bundle.dart';
 import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/settings.dart';
@@ -147,25 +144,14 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
         widgets.add(GestureDetector(
           onTap: () {
-            if (item.redirectTo != null && item.redirectTo == "discord"){
-              launchUrlString("https://discord.com/invite/firka-1111649116020285532");
-              return; 
-            } else if (item.redirectTo != null && item.redirectTo == "privacy"){
-              launchUrlString("https://firka.app/privacy");
-              return; 
-            } else {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => DefaultAssetBundle(
-                          bundle: FirkaBundle(),
-                          child: SettingsScreen(widget.data, item.children))));
-            }
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => DefaultAssetBundle(
+                        bundle: FirkaBundle(),
+                        child: SettingsScreen(widget.data, item.children))));
           },
-    child: item.redirectTo != null
-        ? FirkaCard(left: cardWidgets, right: [RotationTransition(turns: AlwaysStoppedAnimation(-45/360), child: FirkaIconWidget(FirkaIconType.majesticons, Majesticon.arrowRightSolid, size: 24, color: appStyle.colors.textSecondary))],)
-        : FirkaCard(left: cardWidgets),
-            
+          child: FirkaCard(left: cardWidgets),
         ));
 
         continue;
@@ -248,6 +234,31 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
         continue;
       }
+      if (item is SettingsButton) {
+        widgets.add(GestureDetector(
+          child: FirkaCard(
+            left: [
+              item.iconType != null
+                  ? Row(
+                      children: [
+                        FirkaIconWidget(item.iconType!, item.iconData!,
+                            color: appStyle.colors.accent),
+                        SizedBox(width: 4),
+                      ],
+                    )
+                  : SizedBox(),
+              Text(item.title,
+                  style: appStyle.fonts.B_16SB
+                      .apply(color: appStyle.colors.textPrimary))
+            ],
+          ),
+          onTap: () async {
+            await item.onTap();
+          },
+        ));
+
+        continue;
+      }
       if (item is SettingsItemsRadio) {
         for (var i = 0; i < item.values.length; i++) {
           var k = item.values[i];
@@ -306,70 +317,6 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           }
         }
 
-        continue;
-      }
-      if (item is ShowLicensePage) {
-        widgets.add(
-          FutureBuilder<List<LicenseEntry>>(
-            future: LicenseRegistry.licenses.toList(),
-            builder: (BuildContext context, AsyncSnapshot<List<LicenseEntry>> snapshot) {
-              if (!snapshot.hasData) {
-                return Center(child: CircularProgressIndicator(color: appStyle.colors.accent));
-              }
-              final licenses = snapshot.data!;
-              final shownPackages = <String>{};
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: licenses.where((license) {
-              return license.packages.any((pkg) => !shownPackages.contains(pkg));
-                }).map((license) {
-              final packageName = license.packages.firstWhere(
-                (pkg) => !shownPackages.contains(pkg),
-                orElse: () => license.packages.first,
-              );
-              shownPackages.add(packageName);
-              final paragraphs = license.paragraphs.map((p) => p.text).join('\n\n');
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text(packageName, style: TextStyle(fontWeight: FontWeight.bold)),
-                              content: SingleChildScrollView(
-                            child: Text(paragraphs),
-                              ),
-                              actions: [
-                                TextButton(
-                                  child: Text(widget.data.l10n.close),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                      child: FirkaCard(left: [
-                        Text(
-                          packageName,
-                          style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textPrimary),
-                            ),
-                      ]),
-                    )
-                  ],
-                ),
-              );}).toList(),
-              );
-            },
-          )
-        );
         continue;
       }
 
@@ -590,11 +537,10 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           final token = widget.data.tokens[i];
           final jwt = JWT.decode(token.idToken!);
           String studentRole;
-          final payload = jwt.payload as Map<String, dynamic>;
-          if (payload["role"] == "Tanulo") {
+          if (jwt.payload["role"] == "Tanulo") {
             studentRole = "Tanuló";
           } else {
-            studentRole = payload["role"];
+            studentRole = jwt.payload["role"];
           }
           widgets.add(GestureDetector(
             child: SizedBox(
@@ -602,7 +548,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
               child: FirkaCard(
                 left: [
                   Text(
-                    payload["name"],
+                    jwt.payload["name"],
                     style: appStyle.fonts.B_16R
                         .apply(color: appStyle.colors.textPrimary),
                   ),
@@ -694,6 +640,10 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           ]),
           onTap: () async {
             final active = widget.data.client.model.studentIdNorm!;
+
+            if (Platform.isIOS) {
+              await LiveActivityService.onUserLogout();
+            }
 
             await widget.data.isar.writeTxn(() async {
               await widget.data.isar.tokenModels.delete(active);
