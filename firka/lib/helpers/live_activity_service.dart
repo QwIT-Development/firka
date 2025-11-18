@@ -200,15 +200,16 @@ class LiveActivityService {
 
   /// Handle LiveActivity push token received from Swift side
   static Future<void> _onPushTokenReceived(String activityId, String pushToken) async {
-    _logger.info('LiveActivity push token received, updating backend...');
-
-    try {
-      final deviceToken = _cachedDeviceToken ?? await LiveActivityManager.getDeviceToken();
-      if (deviceToken == null) {
-        _logger.warning('No device token available to update push token');
-        return;
-      }
-
+          _logger.info('LiveActivity push token received, updating backend...');
+    
+        try {
+          final deviceToken = _cachedDeviceToken ?? await LiveActivityManager.getDeviceToken();
+          _logger.info('Device token for LiveActivity push token update: $deviceToken');
+          _logger.info('LiveActivity push token to send: $pushToken');
+          if (deviceToken == null) {
+            _logger.warning('No device token available to update push token');
+            return;
+          }
       final success = await _backendClient.updatePushToken(
         deviceToken: deviceToken,
         pushToken: pushToken,
