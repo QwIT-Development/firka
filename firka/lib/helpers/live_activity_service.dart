@@ -15,7 +15,8 @@ import '../main.dart';
 /// Handles timetable synchronization, device token management, and activity updates
 class LiveActivityService {
   static final Logger _logger = Logger('LiveActivityService');
-  static final LiveActivityBackendClient _backendClient = LiveActivityBackendClient();
+  static final LiveActivityBackendClient _backendClient =
+      LiveActivityBackendClient();
 
   static const String _deviceTokenKey = 'live_activity_device_token';
   static const String _lastTimetableUpdateKey = 'live_activity_last_update';
@@ -34,15 +35,19 @@ class LiveActivityService {
       }
 
       final settingsStore = initData.settings;
-      final languageSetting = settingsStore.group("settings")
+      final languageSetting = settingsStore
+          .group("settings")
           .subGroup("application")["language"] as SettingsItemsRadio?;
 
       if (languageSetting == null) return 'hu';
 
       switch (languageSetting.activeIndex) {
-        case 1: return 'hu';
-        case 2: return 'en';
-        case 3: return 'de';
+        case 1:
+          return 'hu';
+        case 2:
+          return 'en';
+        case 3:
+          return 'de';
         default: // auto
           final systemLang = Platform.localeName.split('_').first;
           if (['hu', 'en', 'de'].contains(systemLang)) {
@@ -56,7 +61,8 @@ class LiveActivityService {
     }
   }
 
-  static Future<String> _resolveStudentName(KretaClient client, {String? preferredName}) async {
+  static Future<String> _resolveStudentName(KretaClient client,
+      {String? preferredName}) async {
     if (preferredName != null && preferredName.isNotEmpty) {
       _cachedStudentName = preferredName;
       return preferredName;
@@ -123,15 +129,20 @@ class LiveActivityService {
     _cachedDeviceToken = null;
 
     try {
+      _logger.info('Initializing LiveActivityManager...');
       await LiveActivityManager.initialize();
 
       LiveActivityManager.setOnPushTokenReceived(_onPushTokenReceived);
 
-      final deviceToken = await LiveActivityManager.registerForPushNotifications();
+      final deviceToken =
+          await LiveActivityManager.registerForPushNotifications();
 
       if (deviceToken != null) {
+        _logger.info('APNs device token acquired (len=${deviceToken.length})');
         _cachedDeviceToken = deviceToken;
         await _saveDeviceToken(deviceToken);
+      } else {
+        _logger.warning('APNs device token is null after registration');
       }
 
       _isInitialized = true;
@@ -192,24 +203,31 @@ class LiveActivityService {
       await LiveActivityManager.endAllActivities();
 
       _stopTimetableMonitoring();
-
     } catch (e) {
       _logger.severe('Error handling token expiration for LiveActivity: $e');
     }
   }
 
   /// Handle LiveActivity push token received from Swift side
-  static Future<void> _onPushTokenReceived(String activityId, String pushToken) async {
-          _logger.info('LiveActivity push token received, updating backend...');
-    
-        try {
-          final deviceToken = _cachedDeviceToken ?? await LiveActivityManager.getDeviceToken();
-          _logger.info('Device token for LiveActivity push token update: $deviceToken');
-          _logger.info('LiveActivity push token to send: $pushToken');
-          if (deviceToken == null) {
-            _logger.warning('No device token available to update push token');
-            return;
-          }
+  static Future<void> _onPushTokenReceived(
+      String activityId, String pushToken) async {
+    _logger.info(
+        'LiveActivity push token received (len=${pushToken.length}) for activityId=$activityId, updating backend...');
+
+    try {
+      final deviceToken =
+          _cachedDeviceToken ?? await LiveActivityManager.getDeviceToken();
+
+      _logger.info('Device token for LiveActivity push token update: '
+          '${deviceToken?.substring(0, deviceToken.length > 16 ? 16 : deviceToken.length)}... '
+          '(len=${deviceToken?.length})');
+
+      if (deviceToken == null) {
+        _logger.warning(
+            'No device token available to update Live Activity push token');
+        return;
+      }
+
       final success = await _backendClient.updatePushToken(
         deviceToken: deviceToken,
         pushToken: pushToken,
@@ -251,25 +269,23 @@ class LiveActivityService {
       final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
 
-      final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek);
+      final timetableResponse =
+          await client.getTimeTable(startOfWeek, endOfWeek);
 
       final allLessons = timetableResponse.response ?? [];
 
-
       if (allLessons.isEmpty) {
+        _logger.info('No lessons in timetable, skipping LiveActivity setup');
         return;
       }
 
       final deviceToken = await _getOrWaitDeviceToken();
 
       if (deviceToken == null) {
+        _logger.warning(
+            'No device token available during onUserLogin, skipping LiveActivity registration');
         return;
       }
-
-      /*final apnsTokenSuccess = await _backendClient.updateApnsToken(
-        deviceToken: deviceToken,
-        apnsPushToken: deviceToken,
-      );*/
 
       String? currentLanguage = _getCurrentLanguageCode();
 
@@ -290,7 +306,8 @@ class LiveActivityService {
           studentName: resolvedStudentName,
           settingsStore: settingsStore,
         );
-        _logger.info('LiveActivity registration completed for $resolvedStudentName');
+        _logger.info(
+            'LiveActivity registration completed for $resolvedStudentName');
       } else {
         _logger.warning('Failed to register device with backend');
       }
@@ -322,19 +339,20 @@ class LiveActivityService {
 
       final activeActivities = await LiveActivityManager.getActiveActivities();
       if (activeActivities.isNotEmpty) {
-        _logger.info('Activity already running, sending timetable update to backend.');
+        _logger.info(
+            'Activity already running, sending timetable update to backend.');
         await checkAndUpdateTimetable(
             client: client,
             studentName: resolvedStudentName,
-            settingsStore: settingsStore
-        );
+            settingsStore: settingsStore);
         return;
       }
 
       final now = DateTime.now();
       final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
-      final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek);
+      final timetableResponse =
+          await client.getTimeTable(startOfWeek, endOfWeek);
       final allLessons = timetableResponse.response ?? [];
 
       await _startPlaceholderActivity(allLessons, resolvedStudentName);
@@ -342,9 +360,7 @@ class LiveActivityService {
       await checkAndUpdateTimetable(
           client: client,
           studentName: resolvedStudentName,
-          settingsStore: settingsStore
-      );
-
+          settingsStore: settingsStore);
     } catch (e) {
       _logger.severe('Error handling onAppOpened for LiveActivity: $e');
     }
@@ -357,7 +373,8 @@ class LiveActivityService {
     try {
       await LiveActivityManager.endAllActivities();
 
-      final deviceToken = _cachedDeviceToken ?? await LiveActivityManager.getDeviceToken();
+      final deviceToken =
+          _cachedDeviceToken ?? await LiveActivityManager.getDeviceToken();
       if (deviceToken != null) {
         await _backendClient.unregisterDevice(deviceToken: deviceToken);
       }
@@ -390,16 +407,22 @@ class LiveActivityService {
       final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
 
-      final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek);
+      final timetableResponse =
+          await client.getTimeTable(startOfWeek, endOfWeek);
       final allLessons = timetableResponse.response ?? [];
 
       if (allLessons.isEmpty) {
+        _logger.info('Timetable is empty, ending LiveActivity');
         await LiveActivityManager.endAllActivities();
         return;
       }
 
       final deviceToken = await _getOrWaitDeviceToken();
-      if (deviceToken == null) return;
+      if (deviceToken == null) {
+        _logger.warning(
+            'No device token available in checkAndUpdateTimetable, skipping');
+        return;
+      }
 
       final lastUpdate = await _getLastUpdate();
       final hasChanges = await _backendClient.checkTimetableChanges(
@@ -417,7 +440,8 @@ class LiveActivityService {
 
         if (success) {
           await _saveLastUpdate();
-          _logger.info('Timetable sent to backend successfully. Backend will update LiveActivity.');
+          _logger.info(
+              'Timetable sent to backend successfully. Backend will update LiveActivity.');
         }
       }
     } catch (e) {
@@ -439,12 +463,10 @@ class LiveActivityService {
       settingsStore: settingsStore,
     );
 
-    // Pediódikus frissítés (minden 30 percben)
-    // Ez azért kell, hogy a KRETA változásokat észleljük,
-    // és összevessük az adatbázisban tárolt adatokkal.
+    // Periodikus frissítés (30 percenként)
     _updateTimer = Timer.periodic(
       const Duration(minutes: 30),
-          (timer) async {
+      (timer) async {
         await checkAndUpdateTimetable(
           client: client,
           studentName: studentName,
@@ -475,14 +497,16 @@ class LiveActivityService {
   }
 
   /// Starts a minimal placeholder activity shell - backend will update with real data
-  static Future<void> _startPlaceholderActivity(List<Lesson> allLessons, String studentName) async {
+  static Future<void> _startPlaceholderActivity(
+      List<Lesson> allLessons, String studentName) async {
     final activeActivities = await LiveActivityManager.getActiveActivities();
     if (activeActivities.isNotEmpty) {
       _logger.info('_startPlaceholderActivity: Activity already running.');
       return;
     }
 
-    _logger.info('_startPlaceholderActivity: Creating minimal loading shell, backend will update.');
+    _logger.info(
+        '_startPlaceholderActivity: Creating minimal loading shell, backend will update.');
 
     final now = DateTime.now();
 
@@ -506,8 +530,10 @@ class LiveActivityService {
         lastModifiedAt: now,
       );
     } else {
-      final emptyType = NameUidDesc(uid: 'placeholder', name: 'Placeholder', description: null);
-      final emptyState = NameUidDesc(uid: 'active', name: 'Active', description: null);
+      final emptyType = NameUidDesc(
+          uid: 'placeholder', name: 'Placeholder', description: null);
+      final emptyState =
+          NameUidDesc(uid: 'active', name: 'Active', description: null);
 
       placeholderLesson = Lesson(
         uid: 'loading-placeholder',
@@ -535,7 +561,8 @@ class LiveActivityService {
       mode: 'loading',
     );
 
-    _logger.info('_startPlaceholderActivity: Placeholder created, waiting for backend update.');
+    _logger.info(
+        '_startPlaceholderActivity: Placeholder created, waiting for backend update.');
   }
 
   static Future<void> _saveDeviceToken(String token) async {
@@ -570,11 +597,6 @@ class LiveActivityService {
     await prefs.setBool(_isRegisteredKey, true);
   }
 
-  /*static Future<bool> _isRegistered() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_isRegisteredKey) ?? false;
-  }*/
-
   static Future<void> _clearCache() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_deviceTokenKey);
@@ -585,7 +607,8 @@ class LiveActivityService {
   }
 
   /// Try to get cached token or wait a short period until iOS provides it
-  static Future<String?> _getOrWaitDeviceToken({Duration timeout = const Duration(seconds: 5)}) async {
+  static Future<String?> _getOrWaitDeviceToken(
+      {Duration timeout = const Duration(seconds: 5)}) async {
     if (_cachedDeviceToken != null) {
       return _cachedDeviceToken;
     }

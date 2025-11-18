@@ -7,7 +7,7 @@ import UserNotifications
 @objc class AppDelegate: FlutterAppDelegate {
   private var liveActivityManager: Any?
   private var fallbackChannel: FlutterMethodChannel?
-  private var apnsNotificationToken: String?  // <-- csak az értesítésekhez
+  private var deviceTokenString: String?
   private var notificationChannel: FlutterMethodChannel?
 
   override func application(
@@ -38,30 +38,33 @@ import UserNotifications
         [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) in
         switch call.method {
         case "registerForPushNotifications":
-          UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound])
-          { granted, error in
-            if granted {
-              DispatchQueue.main.async {
-                application.registerForRemoteNotifications()
+          UNUserNotificationCenter.current()
+            .requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+              if granted {
+                DispatchQueue.main.async {
+                  application.registerForRemoteNotifications()
+                }
+                result(self?.deviceTokenString)
+              } else {
+                result(
+                  FlutterError(
+                    code: "PERMISSION_DENIED",
+                    message: "Push notification permission denied",
+                    details: error?.localizedDescription
+                  ))
               }
-              result(self?.apnsNotificationToken)
-            } else {
-              result(
-                FlutterError(
-                  code: "PERMISSION_DENIED",
-                  message: "Push notification permission denied",
-                  details: error?.localizedDescription
-                )
-              )
             }
-          }
 
         case "getDeviceToken":
-          if let token = self?.apnsNotificationToken {
+          if let token = self?.deviceTokenString {
             result(token)
           } else {
             result(
-              FlutterError(code: "NO_TOKEN", message: "Device token not available", details: nil))
+              FlutterError(
+                code: "NO_TOKEN",
+                message: "Device token not available",
+                details: nil
+              ))
           }
 
         default:
@@ -70,15 +73,16 @@ import UserNotifications
       }
     }
 
-    // Always ask for notification permission
-    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) {
-      granted, error in
-      if granted {
-        DispatchQueue.main.async {
-          application.registerForRemoteNotifications()
+    UNUserNotificationCenter.current()
+      .requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+        if granted {
+          DispatchQueue.main.async {
+            application.registerForRemoteNotifications()
+          }
+        } else if let error = error {
+          print("Push authorization error: \(error)")
         }
       }
-    }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -87,8 +91,14 @@ import UserNotifications
     _ application: UIApplication,
     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
   ) {
-    let tokenString = deviceToken.map { String(format: "%02x", $0) }.joined()
-    self.apnsNotificationToken = tokenString
+    let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+    self.deviceTokenString = tokenString
+    print("APNs device token: \(tokenString)")
+
+    if #available(iOS 16.2, *) {
+      (liveActivityManager as? LiveActivityMethodChannelManager)?
+        .setDeviceToken(tokenString)
+    }
   }
 
   override func application(
@@ -104,6 +114,7 @@ import UserNotifications
     withCompletionHandler completionHandler: @escaping () -> Void
   ) {
     let userInfo = response.notification.request.content.userInfo
+
     UIApplication.shared.applicationIconBadgeNumber = 0
 
     var action = userInfo["action"] as? String
@@ -149,9 +160,7 @@ import UserNotifications
     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
   ) {
     if let aps = userInfo["aps"] as? [AnyHashable: Any] {
-      if let contentState = aps["content-state"] {
-        if let contentStateDict = contentState as? [AnyHashable: Any] {
-        }
+      if aps["content-state"] as? [AnyHashable: Any] != nil {
       }
     }
 
