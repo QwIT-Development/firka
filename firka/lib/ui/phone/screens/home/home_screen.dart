@@ -58,7 +58,7 @@ bool canPop = true;
 ValueNotifier<bool> subPageActive = ValueNotifier(false);
 UpdateNotifier subPageBack = UpdateNotifier();
 
-class _HomeScreenState extends FirkaState<HomeScreen> {
+class _HomeScreenState extends FirkaState<HomeScreen> with WidgetsBindingObserver {
   _HomeScreenState();
 
   HomePage page = HomePage.home;
@@ -262,7 +262,9 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     });
     
     if (Platform.isIOS) {
+      WidgetsBinding.instance.addObserver(this);
       _notificationChannel.setMethodCallHandler(_handleNotificationTap);
+      _scheduleLiveActivityRefresh();
     }
 
     prefetch();
@@ -312,6 +314,30 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
       setState(() {
         _preloadDone = true;
       });
+    }
+  }
+
+  void _scheduleLiveActivityRefresh() {
+    if (!Platform.isIOS) return;
+    unawaited(_refreshLiveActivity());
+  }
+
+  Future<void> _refreshLiveActivity() async {
+    try {
+      await LiveActivityService.onAppOpened(
+        client: widget.data.client,
+        settingsStore: widget.data.settings,
+      );
+    } catch (e, st) {
+      logger.warning('Home: LiveActivity sync failed: $e', e, st);
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!Platform.isIOS) return;
+    if (state == AppLifecycleState.resumed) {
+      _scheduleLiveActivityRefresh();
     }
   }
 
@@ -620,6 +646,11 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     widget.data.profilePictureUpdateNotifier.removeListener(() {
       if (mounted) setState(() {});
     });
+
+    if (Platform.isIOS) {
+      WidgetsBinding.instance.removeObserver(this);
+      _notificationChannel.setMethodCallHandler(null);
+    }
 
     _disposed = true;
     _fetching = false;

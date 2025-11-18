@@ -27,6 +27,7 @@ const betaWarning = 1011;
 const ttToastLessonNo = 1012;
 const ttToastTestsAndHw = 1013;
 const ttToastBreaks = 1014;
+const ttToastSubstitution = 1019;
 const statsForNerds = 1015;
 const developerOptsEnabled = 1016;
 const themeBrightness = 1017;
@@ -346,6 +347,13 @@ class SettingsStore {
                     FirkaIconType.majesticons,
                     Majesticon.editPen4Solid,
                     l10n.tt_settings_toast_lesson_tests,
+                    true,
+                    always),
+                "substitution": SettingsBoolean(
+                    ttToastSubstitution,
+                    FirkaIconType.majesticons,
+                    Majesticon.viewRowsLine,
+                    l10n.tt_settings_toast_lesson_substitution,
                     true,
                     always),
                 "breaks": SettingsBoolean(

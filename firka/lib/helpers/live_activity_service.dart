@@ -23,16 +23,18 @@ class LiveActivityService {
 
   static Timer? _updateTimer;
   static String? _cachedDeviceToken;
+  static String? _cachedStudentName;
   static bool _isInitialized = false;
 
   /// Get current language code from settings
   static String? _getCurrentLanguageCode() {
     try {
-      if (!initDone || initData.settings == null) {
+      if (!initDone) {
         return 'hu';
       }
 
-      final languageSetting = initData.settings.group("settings")
+      final settingsStore = initData.settings;
+      final languageSetting = settingsStore.group("settings")
           .subGroup("application")["language"] as SettingsItemsRadio?;
 
       if (languageSetting == null) return 'hu';
@@ -52,6 +54,35 @@ class LiveActivityService {
       _logger.warning('Error getting current language: $e');
       return 'hu';
     }
+  }
+
+  static Future<String> _resolveStudentName(KretaClient client, {String? preferredName}) async {
+    if (preferredName != null && preferredName.isNotEmpty) {
+      _cachedStudentName = preferredName;
+      return preferredName;
+    }
+
+    if (_cachedStudentName != null) {
+      return _cachedStudentName!;
+    }
+
+    try {
+      final response = await client.getStudent();
+      final resolved = response.response?.name;
+      if (resolved != null && resolved.isNotEmpty) {
+        _cachedStudentName = resolved;
+        return resolved;
+      }
+    } catch (e) {
+      _logger.warning('Unable to fetch student name for LiveActivity: $e');
+    }
+
+    final fallback = initDone && initData.tokens.isNotEmpty
+        ? initData.tokens.first.studentId
+        : null;
+    final resolvedName = fallback ?? 'Student';
+    _cachedStudentName = resolvedName;
+    return resolvedName;
   }
 
   /// Update language preference on backend for Live Activity localization
@@ -138,8 +169,7 @@ class LiveActivityService {
         await _clearCache();
         _logger.info('LiveActivity disabled - all activities ended');
       } else {
-        final studentResp = await initData.client.getStudent();
-        final studentName = studentResp.response?.name ?? initData.tokens.first.studentId ?? "Student";
+        final studentName = await _resolveStudentName(initData.client);
 
         await onUserLogin(
           client: initData.client,
@@ -212,6 +242,10 @@ class LiveActivityService {
     }
 
     try {
+      final resolvedStudentName = await _resolveStudentName(
+        client,
+        preferredName: studentName,
+      );
       final now = DateTime.now();
       final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
@@ -248,14 +282,14 @@ class LiveActivityService {
         await _markAsRegistered();
         await _saveLastUpdate();
 
-        await _startPlaceholderActivity(allLessons, studentName);
+        await _startPlaceholderActivity(allLessons, resolvedStudentName);
 
         await _startTimetableMonitoring(
           client: client,
-          studentName: studentName,
+          studentName: resolvedStudentName,
           settingsStore: settingsStore,
         );
-        _logger.info('LiveActivity registration completed for $studentName');
+        _logger.info('LiveActivity registration completed for $resolvedStudentName');
       } else {
         _logger.warning('Failed to register device with backend');
       }
@@ -267,7 +301,7 @@ class LiveActivityService {
   /// Called when app is opened - sends timetable to backend, backend handles updates
   static Future<void> onAppOpened({
     required KretaClient client,
-    required String studentName,
+    String? studentName,
     SettingsStore? settingsStore,
   }) async {
     if (!Platform.isIOS || !_isInitialized) return;
@@ -280,12 +314,17 @@ class LiveActivityService {
         return;
       }
 
+      final resolvedStudentName = await _resolveStudentName(
+        client,
+        preferredName: studentName,
+      );
+
       final activeActivities = await LiveActivityManager.getActiveActivities();
       if (activeActivities.isNotEmpty) {
         _logger.info('Activity already running, sending timetable update to backend.');
         await checkAndUpdateTimetable(
             client: client,
-            studentName: studentName,
+            studentName: resolvedStudentName,
             settingsStore: settingsStore
         );
         return;
@@ -297,11 +336,11 @@ class LiveActivityService {
       final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek);
       final allLessons = timetableResponse.response ?? [];
 
-      await _startPlaceholderActivity(allLessons, studentName);
+      await _startPlaceholderActivity(allLessons, resolvedStudentName);
 
       await checkAndUpdateTimetable(
           client: client,
-          studentName: studentName,
+          studentName: resolvedStudentName,
           settingsStore: settingsStore
       );
 
@@ -541,6 +580,7 @@ class LiveActivityService {
     await prefs.remove(_lastTimetableUpdateKey);
     await prefs.remove(_isRegisteredKey);
     _cachedDeviceToken = null;
+    _cachedStudentName = null;
   }
 
   /// Try to get cached token or wait a short period until iOS provides it
