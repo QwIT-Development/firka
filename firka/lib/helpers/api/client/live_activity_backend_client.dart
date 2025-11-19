@@ -66,6 +66,11 @@ class LiveActivityBackendClient {
         requestData['language'] = language;
       }
 
+      _logger.info('Registering device with backend. Sending ${lessonsData.length} lessons.');
+      if (_logger.isLoggable(Level.FINE)) {
+        lessonsData.forEach((lesson) => _logger.fine('  Lesson data: ${lesson}'));
+      }
+
       final response = await _dio.post(
         '/live-activity/register',
         data: requestData,
@@ -112,6 +117,11 @@ class LiveActivityBackendClient {
           'lastModified': validLastModified.toIso8601String(),
         };
       }).toList();
+
+      _logger.info('Updating timetable with backend. Sending ${lessonsData.length} lessons.');
+      if (_logger.isLoggable(Level.FINE)) {
+        lessonsData.forEach((lesson) => _logger.fine('  Lesson data: ${lesson}'));
+      }
 
       final response = await _dio.put(
         '/live-activity/timetable',
