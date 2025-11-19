@@ -50,6 +50,7 @@ Future<void> showLessonBottomSheet(
       Widget statsForNerds = SizedBox();
 
       final y2k = DateTime(2000, 1);
+
       if (statsForNerdsEnabled) {
         final stats =
             "${data.l10n.stats_date}: ${lesson.start.isAfter(y2k) ? lesson.start.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
@@ -394,7 +395,7 @@ Future<void> showTestBottomSheet(
                             SizedBox(
                               width: MediaQuery.of(context).size.width * 0.7,
                               child: Text(
-                                "${data.l10n.date}: $formattedDate",
+                                "${data.l10n.data}: $formattedDate",
                                 style: appStyle.fonts.B_16R
                                   .apply(color: appStyle.colors.textPrimary),
                                 maxLines: 3,
