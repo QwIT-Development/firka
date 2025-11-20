@@ -3,6 +3,7 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:firka/helpers/db/models/app_settings_model.dart';
+import 'package:firka/helpers/live_activity_service.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/cupertino.dart';
@@ -30,6 +31,7 @@ const statsForNerds = 1015;
 const developerOptsEnabled = 1016;
 const themeBrightness = 1017;
 const ttToastSubstitution = 1018;
+const liveActivityEnabled = 1019;
 
 bool always() {
   return true;
@@ -48,8 +50,16 @@ bool isAndroid() {
   return Platform.isAndroid;
 }
 
+bool isIOS() {
+  return Platform.isIOS;
+}
+
 bool isDebug() {
   return kDebugMode;
+}
+
+bool isDebugIOS() {
+  return kDebugMode && Platform.isIOS;
 }
 
 class SettingsStore {
@@ -113,6 +123,30 @@ class SettingsStore {
                     null),
                 "left_handed_mode": SettingsBoolean(leftHandedMode, null, null,
                     l10n.s_ag_left_handed_mode, false, never),
+                "live_activity_enabled": SettingsBoolean(
+                    liveActivityEnabled,
+                    FirkaIconType.majesticons,
+                    Majesticon.clockSolid,
+                    "LiveActivity",
+                    true,
+                    isIOS,
+                    () async {
+                      final setting = initData.settings
+                          .group("settings")
+                          .subGroup("application")["live_activity_enabled"] as SettingsBoolean;
+
+                      final enabled = setting.value;
+                      await LiveActivityService.handleEnabledChange(enabled);
+                    }),
+                "test_notification": SettingsButton(
+                    0,
+                    FirkaIconType.majesticons,
+                    Majesticon.bellSolid,
+                    "Teszt értesítés küldése",
+                    isDebugIOS,
+                    () async {
+                      await LiveActivityService.sendTestNotification();
+                    }),
                 "language_header":
                     SettingsHeaderSmall(0, l10n.s_ag_language_header, always),
                 "language": SettingsItemsRadio(
@@ -873,7 +907,11 @@ class SettingsBoolean implements SettingsItem {
   bool defaultValue;
 
   SettingsBoolean(this.key, this.iconType, this.iconData, this.title,
-      this.defaultValue, this.visibilityProvider);
+      this.defaultValue, this.visibilityProvider, [Future<void> Function()? postUpdateFn]) {
+    if (postUpdateFn != null) {
+      postUpdate = postUpdateFn;
+    }
+  }
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -1038,4 +1076,28 @@ class SettingsString implements SettingsItem {
 
     initData.settingsUpdateNotifier.update();
   }
+}
+
+class SettingsButton implements SettingsItem {
+  @override
+  Id key;
+  @override
+  FirkaIconType? iconType;
+  @override
+  Object? iconData;
+  @override
+  bool Function() visibilityProvider;
+  @override
+  Future<void> Function() postUpdate = () async {};
+  String title;
+  Future<void> Function() onTap;
+
+  SettingsButton(this.key, this.iconType, this.iconData, this.title,
+      this.visibilityProvider, this.onTap);
+
+  @override
+  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
+
+  @override
+  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
 }

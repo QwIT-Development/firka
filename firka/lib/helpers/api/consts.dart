@@ -117,4 +117,7 @@ class KretaEndpoints {
 
   static String getTests(String iss) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/BejelentettSzamonkeresek";
+    
+  static String getLessons(String iss) =>
+      "${kreta(iss)}/dktapi/intezmenyek/munkaterek/tanulok";
   }

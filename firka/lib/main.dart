@@ -31,9 +31,11 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'helpers/db/models/homework_cache_model.dart';
 import 'helpers/update_notifier.dart';
+import 'helpers/live_activity_service.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/app_localizations_de.dart';
 import 'l10n/app_localizations_en.dart';
@@ -107,32 +109,49 @@ Future<Isar> initDB() async {
   return isarInit!;
 }
 
-void initLang(AppInitialization data) {
+Future<void> initLang(AppInitialization data) async {
+  String? languageCode;
+
   switch ((data.settings.group("settings").subGroup("application")["language"]
           as SettingsItemsRadio)
       .activeIndex) {
     case 1: // hu
       data.l10n = AppLocalizationsHu();
+      languageCode = 'hu';
       break;
     case 2: // en
       data.l10n = AppLocalizationsEn();
+      languageCode = 'en';
       break;
     case 3: // de
       data.l10n = AppLocalizationsDe();
+      languageCode = 'de';
       break;
     default: // auto
       switch (ui.window.locale.languageCode) {
         case 'hu':
           data.l10n = AppLocalizationsHu();
+          languageCode = 'hu';
           break;
         case 'en':
           data.l10n = AppLocalizationsEn();
+          languageCode = 'en';
           break;
         case 'de':
           data.l10n = AppLocalizationsDe();
+          languageCode = 'de';
           break;
       }
       break;
+  }
+
+  // Update language preference on backend for Live Activity localization
+  if (languageCode != null && Platform.isIOS) {
+    try {
+      await LiveActivityService.updateLanguagePreference(languageCode);
+    } catch (e) {
+      logger.warning('Failed to update language preference on backend: $e');
+    }
   }
 }
 
@@ -188,6 +207,20 @@ Future<void> _initData(AppInitialization init) async {
     init.client = KretaClient(token, init.isar);
 
     await WidgetCacheHelper.updateWidgetCache(appStyle, init.client);
+
+    if (Platform.isIOS) {
+      try {
+        final studentResp = await init.client.getStudent();
+        final studentName = studentResp.response?.name ?? token.studentId ?? "Student";
+        await LiveActivityService.onUserLogin(
+          client: init.client,
+          studentName: studentName,
+          settingsStore: init.settings,
+        );
+      } catch (e, st) {
+        logger.severe('LiveActivity registration failed: $e', e, st);
+      }
+    }
   }
 
   final dataDir = await getApplicationDocumentsDirectory();
@@ -241,6 +274,15 @@ Future<AppInitialization> initializeApp() async {
     l10n: AppLocalizationsHu(),
   );
 
+  if (Platform.isIOS) {
+    try {
+      await LiveActivityService.initialize();
+
+    } catch (e, st) {
+      logger.severe('Failed to initialize LiveActivity: $e', e, st);
+    }
+  }
+
   await _initData(init);
 
   init.settingsUpdateNotifier.addListener(() {
@@ -259,6 +301,10 @@ void main() async {
   runZonedGuarded(() async {
     logger.finest("Initializing app");
     WidgetsFlutterBinding.ensureInitialized();
+
+    // Load environment variables from .env file
+    await dotenv.load(fileName: ".env");
+    logger.info("Environment variables loaded");
 
     {
       final jwtPattern =
@@ -496,6 +542,14 @@ class InitializationScreen extends StatelessWidget {
                     child: LoginScreen(
                       initData,
                       key: ValueKey('loginScreen'),
+                    ),
+                  ),
+              '/home': (context) => DefaultAssetBundle(
+                    bundle: FirkaBundle(),
+                    child: HomeScreen(
+                      initData,
+                      false,
+                      key: ValueKey('homeScreen'),
                     ),
                   ),
               '/debug': (context) => DefaultAssetBundle(
