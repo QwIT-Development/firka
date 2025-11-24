@@ -78,6 +78,7 @@ class AppInitialization {
   UpdateNotifier settingsUpdateNotifier = UpdateNotifier();
   UpdateNotifier profilePictureUpdateNotifier = UpdateNotifier();
   AppLocalizations l10n;
+  final GlobalKey<NavigatorState> navigatorKey;
 
   AppInitialization({
     required this.isar,
@@ -87,6 +88,7 @@ class AppInitialization {
     required this.tokens,
     required this.settings,
     required this.l10n,
+    required this.navigatorKey,
   });
 }
 
@@ -145,7 +147,6 @@ Future<void> initLang(AppInitialization data) async {
       break;
   }
 
-  // Update language preference on backend for Live Activity localization
   if (languageCode != null && Platform.isIOS) {
     try {
       await LiveActivityService.updateLanguagePreference(languageCode);
@@ -272,6 +273,7 @@ Future<AppInitialization> initializeApp() async {
     tokens: tokens,
     settings: SettingsStore(AppLocalizationsHu()),
     l10n: AppLocalizationsHu(),
+    navigatorKey: navigatorKey,
   );
 
   if (Platform.isIOS) {
