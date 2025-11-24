@@ -32,6 +32,7 @@ const developerOptsEnabled = 1016;
 const themeBrightness = 1017;
 const ttToastSubstitution = 1018;
 const liveActivityEnabled = 1019;
+const liveActivityPrivacyEverDeclined = 1020;
 
 bool always() {
   return true;
@@ -127,8 +128,8 @@ class SettingsStore {
                     liveActivityEnabled,
                     FirkaIconType.majesticons,
                     Majesticon.clockSolid,
-                    "LiveActivity",
-                    true,
+                    l10n.la_enable,
+                    false,
                     isIOS,
                     () async {
                       final setting = initData.settings
@@ -136,8 +137,16 @@ class SettingsStore {
                           .subGroup("application")["live_activity_enabled"] as SettingsBoolean;
 
                       final enabled = setting.value;
-                      await LiveActivityService.handleEnabledChange(enabled);
+
+                      await LiveActivityService.handleEnabledChange(enabled, isManual: true);
                     }),
+                "live_activity_privacy_ever_declined": SettingsBoolean(
+                    liveActivityPrivacyEverDeclined,
+                    null,
+                    null,
+                    "Privacy Ever Declined",
+                    false,
+                    never),
                 "test_notification": SettingsButton(
                     0,
                     FirkaIconType.majesticons,

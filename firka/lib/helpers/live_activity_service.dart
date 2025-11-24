@@ -4,8 +4,11 @@ import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/helpers/api/client/live_activity_backend_client.dart';
 import 'package:firka/helpers/api/model/generic.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
+import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/helpers/live_activity_manager.dart';
 import 'package:firka/helpers/settings.dart';
+import 'package:firka/ui/phone/screens/live_activity/live_activity_consent_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -127,29 +130,109 @@ class LiveActivityService {
   }
 
   /// Handle LiveActivity enabled state change
-  /// Called from settings toggle callback - does NOT save settings (already saved)
-  static Future<void> handleEnabledChange(bool enabled) async {
+  /// Called from settings toggle callback
+  static Future<void> handleEnabledChange(bool enabled, {bool isManual = false}) async {
     if (!Platform.isIOS) return;
 
     try {
-      if (!enabled) {
-        await LiveActivityManager.endAllActivities();
-        _stopTimetableMonitoring();
-        await _clearCache();
-        _logger.info('LiveActivity disabled - all activities ended');
-      } else {
-        final studentResp = await initData.client.getStudent();
-        final studentName = studentResp.response?.name ?? initData.tokens.first.studentId ?? "Student";
+      final enabledSetting = initData.settings
+              .group("settings")
+              .subGroup("application")["live_activity_enabled"]
+          as SettingsBoolean;
 
-        await onUserLogin(
-          client: initData.client,
-          studentName: studentName,
-          settingsStore: initData.settings,
-        );
+      if (!enabled) {
+        await onUserLogout();
+        enabledSetting.value = false;
+        await initData.isar.writeTxn(() async {
+          await enabledSetting.save(initData.isar.appSettingsModels);
+        });
+        globalUpdate.update();
+        _logger.info('LiveActivity disabled and user data cleared.');
+      } else {
+        _logger.info('Showing privacy consent screen (manual: $isManual)');
+        final bool? accepted = await _showPrivacyConsentScreen();
+
+        if (accepted == true) {
+          _logger.info('User accepted privacy policy');
+
+          enabledSetting.value = true;
+          await initData.isar.writeTxn(() async {
+            await enabledSetting.save(initData.isar.appSettingsModels);
+          });
+          globalUpdate.update();
+
+          final studentResp = await initData.client.getStudent();
+          final studentName = studentResp.response?.name ?? initData.tokens.first.studentId ?? "Student";
+
+          await onUserLogin(
+            client: initData.client,
+            studentName: studentName,
+            settingsStore: initData.settings,
+          );
+        } else {
+          _logger.info('User declined privacy policy or swiped back');
+
+          final everDeclinedSetting = initData.settings
+                  .group("settings")
+                  .subGroup("application")["live_activity_privacy_ever_declined"]
+              as SettingsBoolean;
+
+          enabledSetting.value = false;
+          everDeclinedSetting.value = true;
+
+          await initData.isar.writeTxn(() async {
+            await enabledSetting.save(initData.isar.appSettingsModels);
+            await everDeclinedSetting.save(initData.isar.appSettingsModels);
+          });
+          globalUpdate.update();
+        }
       }
     } catch (e) {
       _logger.warning('Error handling LiveActivity enabled change: $e');
     }
+  }
+
+  /// Show privacy consent screen automatically on first use or user switch
+  /// Only shows if user hasn't declined before
+  static Future<void> showConsentScreenIfNeeded() async {
+    if (!Platform.isIOS) return;
+
+    try {
+      final enabledSetting = initData.settings
+          .group("settings")
+          .subGroup("application")["live_activity_enabled"] as SettingsBoolean;
+
+      final everDeclinedSetting = initData.settings
+          .group("settings")
+          .subGroup("application")["live_activity_privacy_ever_declined"] as SettingsBoolean;
+
+      if (!enabledSetting.value && !everDeclinedSetting.value) {
+        _logger.info('First use or new user - showing privacy consent automatically');
+        await handleEnabledChange(true, isManual: false);
+      }
+    } catch (e) {
+      _logger.warning('Error checking if consent screen needed: $e');
+    }
+  }
+
+  /// Show privacy consent screen
+  static Future<bool?> _showPrivacyConsentScreen() async {
+    final context = initData.navigatorKey.currentContext;
+    if (context == null) {
+      _logger.warning('No context available to show consent screen');
+      return false;
+    }
+
+    final bool? result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LiveActivityConsentScreen(
+          data: initData,
+        ),
+      ),
+    );
+
+    return result;
   }
 
   /// Handle token expiration - deactivate LiveActivity

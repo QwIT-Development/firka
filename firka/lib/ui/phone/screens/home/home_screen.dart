@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:firka/helpers/api/client/kreta_stream.dart';
 import 'package:firka/helpers/extensions.dart';
+import 'package:firka/helpers/live_activity_service.dart';
 import 'package:firka/helpers/settings.dart';
 import 'package:firka/helpers/update_notifier.dart';
 import 'package:firka/main.dart';
@@ -246,6 +247,12 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
 
     prefetch();
     _preloadImages();
+
+    if (Platform.isIOS) {
+      Future.delayed(Duration(seconds: 2), () async {
+        await LiveActivityService.showConsentScreenIfNeeded();
+      });
+    }
   }
 
   void settingsUpdateListener() {
