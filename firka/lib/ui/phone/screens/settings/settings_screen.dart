@@ -719,6 +719,31 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         ));
         continue;
       }
+      if (item is SettingsButton) {
+        widgets.add(GestureDetector(
+          child: FirkaCard(
+            left: [
+              item.iconType != null
+                  ? Row(
+                      children: [
+                        FirkaIconWidget(item.iconType!, item.iconData!,
+                            color: appStyle.colors.accent),
+                        SizedBox(width: 8),
+                      ],
+                    )
+                  : SizedBox(),
+              Text(item.title,
+                  style: appStyle.fonts.B_16SB
+                      .apply(color: appStyle.colors.textPrimary))
+            ],
+          ),
+          onTap: () async {
+            await item.onTap();
+          },
+        ));
+
+        continue;
+      }
       if (item is SettingsLogs) {
         final logFileRegex = RegExp(r'^(\d{4})_(\d{2})_(\d{2})\.log$');
 

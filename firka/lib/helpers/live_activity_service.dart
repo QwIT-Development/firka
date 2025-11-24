@@ -434,7 +434,46 @@ class LiveActivityService {
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
 
       final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek);
-      final allLessons = timetableResponse.response ?? [];
+      List<Lesson> allLessons = timetableResponse.response ?? [];
+
+      final nextMonday = endOfWeek.add(const Duration(days: 1));
+      final nextMondayEnd = nextMonday.add(const Duration(days: 1));
+
+      try {
+        final nextMondayResponse = await client.getTimeTable(nextMonday, nextMondayEnd);
+        if (nextMondayResponse.response != null && nextMondayResponse.response!.isNotEmpty) {
+          final mondayLessons = nextMondayResponse.response!;
+          mondayLessons.sort((a, b) => a.start.compareTo(b.start));
+          final firstLesson = mondayLessons.first;
+
+          final markedLesson = Lesson(
+            uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
+            date: firstLesson.date,
+            start: firstLesson.start,
+            end: firstLesson.end,
+            name: firstLesson.name,
+            lessonNumber: firstLesson.lessonNumber,
+            teacher: firstLesson.teacher,
+            theme: firstLesson.theme,
+            roomName: firstLesson.roomName,
+            substituteTeacher: firstLesson.substituteTeacher,
+            type: firstLesson.type,
+            state: firstLesson.state,
+            canStudentEditHomework: firstLesson.canStudentEditHomework,
+            isHomeworkComplete: firstLesson.isHomeworkComplete,
+            attachments: firstLesson.attachments,
+            isDigitalLesson: firstLesson.isDigitalLesson,
+            digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
+            createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
+            lastModifiedAt: firstLesson.lastModifiedAt,
+          );
+
+          allLessons.add(markedLesson);
+          _logger.info('Added first lesson from next Monday (${firstLesson.name}) marked for notification scheduling only');
+        }
+      } catch (e) {
+        _logger.warning('Could not fetch next Monday first lesson: $e');
+      }
 
       if (allLessons.isEmpty) {
         await LiveActivityManager.endAllActivities();

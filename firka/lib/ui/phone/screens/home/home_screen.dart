@@ -96,6 +96,30 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     });
   }
 
+  void _setupNotificationListener() {
+    final notificationChannel = MethodChannel('firka.app/notifications');
+
+    notificationChannel.setMethodCallHandler((call) async {
+      if (call.method == 'onNotificationTapped') {
+        logger.info('Notification tapped: ${call.arguments}');
+
+        final args = call.arguments as Map<Object?, Object?>?;
+        if (args == null) return;
+
+        final action = args['action'] as String?;
+        final route = args['route'] as String?;
+
+        if (action != null || route != null) {
+          logger.info('Navigating to timetable from notification');
+          setState(() {
+            homeScreenPage = HomePage.timetable;
+            _pageController.jumpToPage(HomePage.timetable.index);
+          });
+        }
+      }
+    });
+  }
+
   void prefetch() async {
     if (_prefetched) return;
 
@@ -244,6 +268,8 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     widget.data.profilePictureUpdateNotifier.addListener(() {
       if (mounted) setState(() {});
     });
+
+    _setupNotificationListener();
 
     prefetch();
     _preloadImages();

@@ -49,24 +49,7 @@ struct TimetableLiveActivity: Widget {
                 return DynamicIsland {
                     // Expanded UI
                     DynamicIslandExpandedRegion(.leading) {
-                        let season = context.state.season ?? ""
-                        HStack(alignment: .center, spacing: 4) {
-                            if mode == "beforeSchool" {
-                                Image(systemName: SeasonalIconHelper.iconName(for: mode, season: season))
-                                    .font(.system(size: 18))
-                                    .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
-                            } else if !SeasonalIconHelper.isSeasonalMode(mode) && !context.state.isBreak {
-                                if let lessonNumber = context.state.lessonNumber {
-                                    Text("\(lessonNumber).")
-                                        .font(.system(size: 16, weight: .bold))
-                                        .foregroundColor(.white)
-                                } else {
-                                    EmptyView()
-                                }
-                            } else {
-                                EmptyView()
-                            }
-                        }
+                        EmptyView()
                     }
                     
                     DynamicIslandExpandedRegion(.trailing) {
@@ -78,7 +61,7 @@ struct TimetableLiveActivity: Widget {
                         if SeasonalIconHelper.isSeasonalMode(mode) {
                             EmptyView()
                         } else if mode == "beforeSchool", let timeString = beforeSchoolTime {
-                            Text("Kezdés: \(timeString)")
+                            Text("\(context.state.labels?.startTimeLabel ?? "Kezdés:") \(timeString)")
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(.gray)
                         } else {
@@ -92,23 +75,28 @@ struct TimetableLiveActivity: Widget {
                         let season = context.state.season ?? ""
                         VStack(spacing: 4) {
                             if mode == "beforeSchool" {
-                                Text("Hamarosan suli")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundColor(.white)
+                                HStack(alignment: .center, spacing: 6) {
+                                    Image(systemName: SeasonalIconHelper.iconName(for: mode, season: season))
+                                        .font(.system(size: 18))
+                                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
+                                    Text(context.state.labels?.title ?? "Hamarosan suli")
+                                        .font(.system(size: 18, weight: .bold))
+                                        .foregroundColor(.white)
+                                }
                                 
                                 VStack(alignment: .leading, spacing: 2) {
                                     HStack(spacing: 4) {
-                                        Text("Első órád:")
+                                        Text(context.state.labels?.firstLessonLabel ?? "Első órád:")
                                             .font(.system(size: 12))
                                             .foregroundColor(.gray)
                                         Text(context.state.lessonName)
                                             .font(.system(size: 12, weight: .semibold))
                                             .foregroundColor(.white)
                                     }
-                                    
+
                                     if let roomName = context.state.roomName {
                                         HStack(spacing: 4) {
-                                            Text("Terem:")
+                                            Text(context.state.labels?.roomLabel ?? "Terem:")
                                                 .font(.system(size: 12))
                                                 .foregroundColor(.gray)
                                             Text(roomName)
@@ -119,7 +107,7 @@ struct TimetableLiveActivity: Widget {
                                     
                                     if let teacherName = context.state.teacherName {
                                         HStack(spacing: 4) {
-                                            Text("Tanár:")
+                                            Text(context.state.labels?.teacherLabel ?? "Tanár:")
                                                 .font(.system(size: 12))
                                                 .foregroundColor(.gray)
                                             Text(teacherName)
@@ -130,7 +118,6 @@ struct TimetableLiveActivity: Widget {
                                 }
                             } else if SeasonalIconHelper.isSeasonalMode(mode) {
                                 if mode == "xmas" || mode == "newYearEve" || mode == "newYearDay" {
-                                    // Global holidays: show message prominently
                                     HStack(alignment: .center, spacing: 6) {
                                         Image(systemName: SeasonalIconHelper.iconName(for: mode, season: season))
                                             .font(.system(size: 18))
@@ -141,7 +128,6 @@ struct TimetableLiveActivity: Widget {
                                             .lineLimit(2)
                                     }
                                 } else {
-                                    // Seasonal breaks: show holiday title
                                     HStack(alignment: .center, spacing: 6) {
                                         Image(systemName: SeasonalIconHelper.iconName(for: mode, season: season))
                                             .font(.system(size: 18))
@@ -153,13 +139,18 @@ struct TimetableLiveActivity: Widget {
                                     }
                                 }
                             } else if context.state.isBreak {
-                                Text("Szünet")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundColor(.white)
+                                HStack(alignment: .center, spacing: 6) {
+                                    Image(systemName: "cup.and.saucer.fill")
+                                        .font(.system(size: 18))
+                                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
+                                    Text(context.state.labels?.title ?? "Szünet")
+                                        .font(.system(size: 18, weight: .bold))
+                                        .foregroundColor(.white)
+                                }
                                 
                                 if let nextLessonName = context.state.nextLessonName {
                                     HStack(spacing: 4) {
-                                        Text("Következő:")
+                                        Text(context.state.labels?.nextLabel ?? "Következő:")
                                             .font(.system(size: 14))
                                             .foregroundColor(.gray)
                                         Text(nextLessonName)
@@ -167,42 +158,45 @@ struct TimetableLiveActivity: Widget {
                                             .foregroundColor(.white)
                                     }
                                 }
-                                
+
                                 if let nextRoomName = context.state.nextRoomName {
-                                    Text("Terem: \(nextRoomName)")
+                                    Text("\(context.state.labels?.roomLabel ?? "Terem:") \(nextRoomName)")
                                         .font(.system(size: 12))
                                         .foregroundColor(.gray)
                                 }
                             } else {
-                                Text(context.state.lessonName)
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .lineLimit(1)
-                                
-                                if let lessonTheme = context.state.lessonTheme, !lessonTheme.isEmpty {
-                                    Text(lessonTheme)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(.gray)
+                                HStack(alignment: .center, spacing: 6) {
+                                    if let lessonNumber = context.state.lessonNumber {
+                                        Text("\(lessonNumber).")
+                                            .font(.system(size: 18, weight: .bold))
+                                            .foregroundColor(.white)
+                                    }
+                                    Text(context.state.lessonName)
+                                        .font(.system(size: 18, weight: .bold))
+                                        .foregroundColor(.white)
                                         .lineLimit(1)
                                 }
-                                
+
+                                if !(context.state.isCancelled ?? false) {
+                                    if let lessonTheme = context.state.lessonTheme, !lessonTheme.isEmpty {
+                                        Text(lessonTheme)
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.gray)
+                                            .lineLimit(1)
+                                    }
+                                }
+
                                 HStack(spacing: 8) {
                                     if let roomName = context.state.roomName {
                                         Label(roomName, systemImage: "door.left.hand.closed")
                                             .font(.system(size: 12))
                                             .foregroundColor(.gray)
                                     }
-                                    
+
                                     if context.state.isSubstitution ?? false {
-                                        Label("Helyettesítés", systemImage: "arrow.triangle.2.circlepath")
+                                        Label(context.state.labels?.substitutionText ?? "Helyettesítés", systemImage: "arrow.triangle.2.circlepath")
                                             .font(.system(size: 12))
                                             .foregroundColor(.orange)
-                                    }
-                                    
-                                    if context.state.isCancelled ?? false {
-                                        Label("Elmaradt", systemImage: "xmark.circle")
-                                            .font(.system(size: 12))
-                                            .foregroundColor(.red)
                                     }
                                 }
                             }
@@ -234,6 +228,11 @@ struct TimetableLiveActivity: Widget {
                                     .foregroundColor(.green)
                                     .multilineTextAlignment(.center)
                                     .monospacedDigit()
+                            } else if context.state.isCancelled ?? false {
+                                Text(context.state.labels?.cancelledText ?? "Elmaradt")
+                                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                                    .foregroundColor(.red)
+                                    .multilineTextAlignment(.center)
                             } else {
                                 Text(timerInterval: context.state.currentTime...context.state.endTime, countsDown: true)
                                     .font(.system(size: 24, weight: .bold, design: .rounded))
@@ -258,7 +257,6 @@ struct TimetableLiveActivity: Widget {
                         .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
                 } compactTrailing: {
                     if SeasonalIconHelper.isSeasonalMode(mode) {
-                        // Show timer for New Year's Eve countdown and seasonal breaks
                         if mode == "newYearEve" || mode == "seasonalBreak" {
                              Text(timerInterval: context.state.currentTime...context.state.endTime, countsDown: true)
                                 .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -266,10 +264,13 @@ struct TimetableLiveActivity: Widget {
                                 .monospacedDigit()
                                 .frame(width: 50)
                         } else {
-                            // No timer for xmas and newYearDay
                             Text("")
                                 .frame(width: 50)
                         }
+                    } else if context.state.isCancelled ?? false {
+                        Text("❌")
+                            .font(.system(size: 12, weight: .semibold))
+                            .frame(width: 50)
                     } else {
                         Text(timerInterval: context.state.currentTime...context.state.endTime, countsDown: true)
                             .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -346,30 +347,27 @@ struct TimetableLiveActivityView: View {
 
                     VStack(alignment: .leading, spacing: 2) {
                         if mode == "beforeSchool" {
-                            Text("Hamarosan suli")
+                            Text(context.state.labels?.title ?? "Hamarosan suli")
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.white)
                         } else if SeasonalIconHelper.isSeasonalMode(mode) {
-                            // Check if it's a special holiday with a prominent message
                             if mode == "xmas" || mode == "newYearEve" || mode == "newYearDay" {
-                                // Global holidays: show message prominently
                                 Text(context.state.message ?? context.state.lessonName)
                                     .font(.system(size: 20, weight: .bold))
                                     .foregroundColor(.white)
                                     .lineLimit(2)
                             } else {
-                                // Seasonal breaks: show holiday title
                                 Text(SeasonalIconHelper.holidayTitle(for: context.state.season))
                                     .font(.system(size: 20, weight: .bold))
                                     .foregroundColor(.white)
                                     .lineLimit(1)
                             }
                         } else if context.state.isBreak {
-                            Text("Szünet")
+                            Text(context.state.labels?.title ?? "Szünet")
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.white)
                             if let nextLessonName = context.state.nextLessonName {
-                                Text("Következő: \(nextLessonName)")
+                                Text("\(context.state.labels?.nextLabel ?? "Következő:") \(nextLessonName)")
                                     .font(.system(size: 14))
                                     .foregroundColor(.gray)
                             }
@@ -392,7 +390,7 @@ struct TimetableLiveActivityView: View {
                         if SeasonalIconHelper.isSeasonalMode(mode) {
                             EmptyView()
                         } else if mode == "beforeSchool", let timeString = beforeSchoolTime {
-                            Text("Kezdés: \(timeString)")
+                            Text("\(context.state.labels?.startTimeLabel ?? "Kezdés:") \(timeString)")
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(.white)
                         } else {
@@ -407,7 +405,7 @@ struct TimetableLiveActivityView: View {
                             EmptyView()
                         } else if context.state.isBreak {
                             if let _ = context.state.nextStartTime {
-                                Text("Kezdés: \(context.state.formattedNextStartTime)")
+                                Text("\(context.state.labels?.startTimeLabel ?? "Kezdés:") \(context.state.formattedNextStartTime)")
                                     .font(.system(size: 12))
                                     .foregroundColor(.gray)
                             } else {
@@ -434,17 +432,17 @@ struct TimetableLiveActivityView: View {
                 if mode2 == "beforeSchool" {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: 4) {
-                            Text("Első órád:")
+                            Text(context.state.labels?.firstLessonLabel ?? "Első órád:")
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(.gray)
                             Text(context.state.lessonName)
                                 .font(.system(size: 12))
                                 .foregroundColor(.white)
                         }
-                        
+
                         if let roomName = context.state.roomName {
                             HStack(spacing: 4) {
-                                Text("Terem:")
+                                Text(context.state.labels?.roomLabel ?? "Terem:")
                                     .font(.system(size: 12, weight: .semibold))
                                     .foregroundColor(.gray)
                                 Text(roomName)
@@ -452,10 +450,10 @@ struct TimetableLiveActivityView: View {
                                     .foregroundColor(.white)
                             }
                         }
-                        
+
                         if let teacherName = context.state.teacherName {
                             HStack(spacing: 4) {
-                                Text("Tanár:")
+                                Text(context.state.labels?.teacherLabel ?? "Tanár:")
                                     .font(.system(size: 12, weight: .semibold))
                                     .foregroundColor(.gray)
                                 Text(teacherName)
@@ -469,15 +467,17 @@ struct TimetableLiveActivityView: View {
                     EmptyView()
                 } else if !context.state.isBreak {
                     VStack(alignment: .leading, spacing: 4) {
-                        if let lessonTheme = context.state.lessonTheme, !lessonTheme.isEmpty {
-                            HStack {
-                                Text("Téma:")
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(.gray)
-                                Text(lessonTheme)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.white)
-                                    .lineLimit(1)
+                        if !(context.state.isCancelled ?? false) {
+                            if let lessonTheme = context.state.lessonTheme, !lessonTheme.isEmpty {
+                                HStack {
+                                    Text(context.state.labels?.themeLabel ?? "Téma:")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundColor(.gray)
+                                    Text(lessonTheme)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.white)
+                                        .lineLimit(1)
+                                }
                             }
                         }
 
@@ -485,7 +485,7 @@ struct TimetableLiveActivityView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "arrow.triangle.2.circlepath")
                                     .font(.system(size: 12))
-                                Text("Helyettesítés")
+                                Text(context.state.labels?.substitutionText ?? "Helyettesítés")
                                     .font(.system(size: 12, weight: .semibold))
                                 if let substituteTeacher = context.state.substituteTeacher {
                                     Text("(\(substituteTeacher))")
@@ -493,16 +493,6 @@ struct TimetableLiveActivityView: View {
                                 }
                             }
                             .foregroundColor(.orange)
-                        }
-
-                        if context.state.isCancelled ?? false {
-                            HStack(spacing: 4) {
-                                Image(systemName: "xmark.circle")
-                                    .font(.system(size: 12))
-                                Text("Elmaradt óra")
-                                    .font(.system(size: 12, weight: .semibold))
-                            }
-                            .foregroundColor(.red)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -553,25 +543,32 @@ struct TimetableLiveActivityView: View {
                                 .multilineTextAlignment(.center)
                                 .monospacedDigit()
                         } else {
-                            let labelText: String = {
-                                if mode3 == "newYearEve" {
-                                    return "Új év"
-                                } else if mode3 == "beforeSchool" {
-                                    return "Első óra kezdése"
-                                } else if context.state.isBreak {
-                                    return "Szünet vége"
-                                } else {
-                                    return "Óra vége"
-                                }
-                            }()
-                            Text(labelText)
-                                .font(.system(size: 10))
-                                .foregroundColor(.gray)
-                            Text(timerInterval: context.state.currentTime...context.state.endTime, countsDown: true)
-                                .font(.system(size: 32, weight: .bold, design: .rounded))
-                                .foregroundColor(.green)
-                                .multilineTextAlignment(.center)
-                                .monospacedDigit()
+                            if context.state.isCancelled ?? false {
+                                Text(context.state.labels?.cancelledText ?? "Elmaradt")
+                                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                                    .foregroundColor(.red)
+                                    .multilineTextAlignment(.center)
+                            } else {
+                                let labelText: String = {
+                                    if mode3 == "newYearEve" {
+                                        return "Új év"
+                                    } else if mode3 == "beforeSchool" {
+                                        return context.state.labels?.timerLabel ?? "Első óra kezdése"
+                                    } else if context.state.isBreak {
+                                        return context.state.labels?.timerLabel ?? "Szünet vége"
+                                    } else {
+                                        return context.state.labels?.timerLabel ?? "Óra vége"
+                                    }
+                                }()
+                                Text(labelText)
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.gray)
+                                Text(timerInterval: context.state.currentTime...context.state.endTime, countsDown: true)
+                                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                                    .foregroundColor(.green)
+                                    .multilineTextAlignment(.center)
+                                    .monospacedDigit()
+                            }
                         }
                     }
                     Spacer()
