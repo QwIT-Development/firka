@@ -132,13 +132,15 @@ class SettingsStore {
                     false,
                     isIOS,
                     () async {
-                      final setting = initData.settings
+                      final globalSetting = initData.settings
                           .group("settings")
                           .subGroup("application")["live_activity_enabled"] as SettingsBoolean;
 
-                      final enabled = setting.value;
+                      final enabled = globalSetting.value;
 
                       await LiveActivityService.handleEnabledChange(enabled, isManual: true);
+
+                      await LiveActivityService.syncGlobalSettingWithCurrentUser();
                     }),
                 "live_activity_privacy_ever_declined": SettingsBoolean(
                     liveActivityPrivacyEverDeclined,

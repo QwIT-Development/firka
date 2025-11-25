@@ -28,6 +28,92 @@ class LiveActivityService {
   static String? _cachedDeviceToken;
   static bool _isInitialized = false;
 
+  /// Get current user's studentId for user-specific settings
+  static String? _getCurrentStudentId() {
+    try {
+      if (!initDone || initData.client == null || initData.client.model == null) {
+        return null;
+      }
+      return initData.client.model.studentId;
+    } catch (e) {
+      _logger.warning('Error getting current studentId: $e');
+      return null;
+    }
+  }
+
+  /// Get user-specific Live Activity enabled state from SharedPreferences
+  static Future<bool> _getUserLiveActivityEnabled() async {
+    final studentId = _getCurrentStudentId();
+    if (studentId == null) return false;
+
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'live_activity_enabled_$studentId';
+    return prefs.getBool(key) ?? false;
+  }
+
+  /// Set user-specific Live Activity enabled state to SharedPreferences
+  static Future<void> _setUserLiveActivityEnabled(bool value) async {
+    final studentId = _getCurrentStudentId();
+    if (studentId == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'live_activity_enabled_$studentId';
+    await prefs.setBool(key, value);
+    _logger.info('Saved LiveActivity enabled=$value for user $studentId');
+  }
+
+  /// Get user-specific privacy declined state from SharedPreferences
+  static Future<bool> _getUserPrivacyEverDeclined() async {
+    final studentId = _getCurrentStudentId();
+    if (studentId == null) return false;
+
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'live_activity_privacy_ever_declined_$studentId';
+    return prefs.getBool(key) ?? false;
+  }
+
+  /// Set user-specific privacy declined state to SharedPreferences
+  static Future<void> _setUserPrivacyEverDeclined(bool value) async {
+    final studentId = _getCurrentStudentId();
+    if (studentId == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'live_activity_privacy_ever_declined_$studentId';
+    await prefs.setBool(key, value);
+    _logger.info('Saved privacy ever declined=$value for user $studentId');
+  }
+
+  /// Sync global setting with current user's setting
+  /// This ensures the Settings UI shows the correct state for the current user
+  static Future<void> syncGlobalSettingWithCurrentUser() async {
+    if (!Platform.isIOS) return;
+
+    try {
+      final studentId = _getCurrentStudentId();
+      if (studentId == null) {
+        _logger.warning('Cannot sync global setting: no current user');
+        return;
+      }
+
+      final userEnabled = await _getUserLiveActivityEnabled();
+
+      final globalSetting = initData.settings
+          .group("settings")
+          .subGroup("application")["live_activity_enabled"] as SettingsBoolean;
+
+      if (globalSetting.value != userEnabled) {
+        globalSetting.value = userEnabled;
+        await initData.isar.writeTxn(() async {
+          await globalSetting.save(initData.isar.appSettingsModels);
+        });
+        globalUpdate.update();
+        _logger.info('Global LiveActivity setting synced with user setting: $userEnabled for user $studentId');
+      }
+    } catch (e) {
+      _logger.warning('Error syncing global setting: $e');
+    }
+  }
+
   /// Get current language code from settings
   static String? _getCurrentLanguageCode() {
     try {
@@ -115,14 +201,7 @@ class LiveActivityService {
   /// Check if LiveActivity is enabled in settings
   static Future<bool> isEnabled([SettingsStore? settingsStore]) async {
     try {
-      if (settingsStore == null) {
-        return false;
-      }
-
-      final enabled = settingsStore
-          .group("settings")
-          .subGroup("application")["live_activity_enabled"] as SettingsBoolean;
-      return enabled.value;
+      return await _getUserLiveActivityEnabled();
     } catch (e) {
       _logger.warning('Error reading LiveActivity setting: $e');
       return false;
@@ -135,18 +214,19 @@ class LiveActivityService {
     if (!Platform.isIOS) return;
 
     try {
-      final enabledSetting = initData.settings
-              .group("settings")
-              .subGroup("application")["live_activity_enabled"]
-          as SettingsBoolean;
+      final studentId = _getCurrentStudentId();
+      if (studentId == null) {
+        _logger.warning('Cannot change LiveActivity state: no current user');
+        return;
+      }
 
       if (!enabled) {
         await onUserLogout();
-        enabledSetting.value = false;
-        await initData.isar.writeTxn(() async {
-          await enabledSetting.save(initData.isar.appSettingsModels);
-        });
-        globalUpdate.update();
+
+        await _setUserLiveActivityEnabled(false);
+
+        await syncGlobalSettingWithCurrentUser();
+
         _logger.info('LiveActivity disabled and user data cleared.');
       } else {
         _logger.info('Showing privacy consent screen (manual: $isManual)');
@@ -155,11 +235,9 @@ class LiveActivityService {
         if (accepted == true) {
           _logger.info('User accepted privacy policy');
 
-          enabledSetting.value = true;
-          await initData.isar.writeTxn(() async {
-            await enabledSetting.save(initData.isar.appSettingsModels);
-          });
-          globalUpdate.update();
+          await _setUserLiveActivityEnabled(true);
+
+          await syncGlobalSettingWithCurrentUser();
 
           final studentResp = await initData.client.getStudent();
           final studentName = studentResp.response?.name ?? initData.tokens.first.studentId ?? "Student";
@@ -172,19 +250,10 @@ class LiveActivityService {
         } else {
           _logger.info('User declined privacy policy or swiped back');
 
-          final everDeclinedSetting = initData.settings
-                  .group("settings")
-                  .subGroup("application")["live_activity_privacy_ever_declined"]
-              as SettingsBoolean;
+          await _setUserLiveActivityEnabled(false);
+          await _setUserPrivacyEverDeclined(true);
 
-          enabledSetting.value = false;
-          everDeclinedSetting.value = true;
-
-          await initData.isar.writeTxn(() async {
-            await enabledSetting.save(initData.isar.appSettingsModels);
-            await everDeclinedSetting.save(initData.isar.appSettingsModels);
-          });
-          globalUpdate.update();
+          await syncGlobalSettingWithCurrentUser();
         }
       }
     } catch (e) {
@@ -198,17 +267,22 @@ class LiveActivityService {
     if (!Platform.isIOS) return;
 
     try {
-      final enabledSetting = initData.settings
-          .group("settings")
-          .subGroup("application")["live_activity_enabled"] as SettingsBoolean;
+      final studentId = _getCurrentStudentId();
+      if (studentId == null) {
+        _logger.warning('Cannot check consent screen: no current user');
+        return;
+      }
 
-      final everDeclinedSetting = initData.settings
-          .group("settings")
-          .subGroup("application")["live_activity_privacy_ever_declined"] as SettingsBoolean;
+      await syncGlobalSettingWithCurrentUser();
 
-      if (!enabledSetting.value && !everDeclinedSetting.value) {
+      final enabled = await _getUserLiveActivityEnabled();
+      final everDeclined = await _getUserPrivacyEverDeclined();
+
+      if (!enabled && !everDeclined) {
         _logger.info('First use or new user - showing privacy consent automatically');
         await handleEnabledChange(true, isManual: false);
+      } else {
+        _logger.info('User already has LiveActivity setting: enabled=$enabled, declined=$everDeclined');
       }
     } catch (e) {
       _logger.warning('Error checking if consent screen needed: $e');
@@ -277,6 +351,16 @@ class LiveActivityService {
     }
   }
 
+  /// Get next Monday's date (or this Monday if today is Monday and it's early morning)
+  static DateTime _getNextMonday(DateTime now) {
+    final int daysUntilMonday = ((DateTime.monday - now.weekday) % 7);
+    final int daysToAdd = daysUntilMonday == 0 ? 7 : daysUntilMonday;
+
+    final nextMonday = now.add(Duration(days: daysToAdd));
+
+    return DateTime(nextMonday.year, nextMonday.month, nextMonday.day);
+  }
+
   /// Called when user logs in successfully
   /// Registers the device and uploads the *full* timetable
   static Future<void> onUserLogin({
@@ -284,28 +368,80 @@ class LiveActivityService {
     required String studentName,
     SettingsStore? settingsStore,
   }) async {
+    _logger.info('onUserLogin: Function called for $studentName');
+
     if (!Platform.isIOS || !_isInitialized) {
+      _logger.warning('onUserLogin: Returning early - Platform.isIOS=${Platform.isIOS}, _isInitialized=$_isInitialized');
       return;
     }
 
     final enabled = await isEnabled(settingsStore);
+    _logger.info('onUserLogin: LiveActivity enabled=$enabled');
 
     if (!enabled) {
+      _logger.warning('onUserLogin: LiveActivity not enabled, returning early');
       return;
     }
 
     try {
+      _logger.info('onUserLogin: Starting timetable fetch');
       final now = DateTime.now();
       final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
 
+      _logger.info('onUserLogin: Fetching timetable from $startOfWeek to $endOfWeek');
       final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek);
 
-      final allLessons = timetableResponse.response ?? [];
-
+      final allLessons = List<Lesson>.from(timetableResponse.response ?? []);
+      _logger.info('onUserLogin: Fetched ${allLessons.length} lessons for current week');
 
       if (allLessons.isEmpty) {
+        _logger.warning('onUserLogin: No lessons found, returning early');
         return;
+      }
+
+      final nextMonday = _getNextMonday(now);
+      final nextMondayEndOfDay = nextMonday.add(const Duration(days: 1));
+
+      _logger.info('Fetching next Monday timetable from $nextMonday to $nextMondayEndOfDay');
+
+      try {
+        final nextMondayTimetable = await client.getTimeTable(nextMonday, nextMondayEndOfDay);
+        final nextMondayLessons = nextMondayTimetable.response ?? [];
+
+        _logger.info('Fetched ${nextMondayLessons.length} lessons for next Monday');
+
+        if (nextMondayLessons.isNotEmpty) {
+          nextMondayLessons.sort((a, b) => a.start.compareTo(b.start));
+          final firstLesson = nextMondayLessons.first;
+
+          final notificationLesson = Lesson(
+            uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
+            date: firstLesson.date,
+            start: firstLesson.start,
+            end: firstLesson.end,
+            name: firstLesson.name,
+            lessonNumber: firstLesson.lessonNumber,
+            teacher: firstLesson.teacher,
+            theme: firstLesson.theme,
+            roomName: firstLesson.roomName,
+            substituteTeacher: firstLesson.substituteTeacher,
+            type: firstLesson.type,
+            state: firstLesson.state,
+            canStudentEditHomework: firstLesson.canStudentEditHomework,
+            isHomeworkComplete: firstLesson.isHomeworkComplete,
+            attachments: firstLesson.attachments,
+            isDigitalLesson: firstLesson.isDigitalLesson,
+            digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
+            createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
+            lastModifiedAt: firstLesson.lastModifiedAt,
+          );
+
+          allLessons.add(notificationLesson);
+          _logger.info('Added next Monday first lesson for notification: ${firstLesson.name} at ${firstLesson.start}');
+        }
+      } catch (e) {
+        _logger.warning('Could not fetch next Monday timetable for notification: $e');
       }
 
       final deviceToken = await _getOrWaitDeviceToken();
@@ -395,18 +531,29 @@ class LiveActivityService {
 
   /// Called when user logs out
   static Future<void> onUserLogout() async {
-    if (!Platform.isIOS) return;
+    _logger.info('onUserLogout: Function called');
+
+    if (!Platform.isIOS) {
+      _logger.warning('onUserLogout: Not iOS, returning early');
+      return;
+    }
 
     try {
+      _logger.info('onUserLogout: Ending all activities');
       await LiveActivityManager.endAllActivities();
 
       final deviceToken = _cachedDeviceToken ?? await LiveActivityManager.getDeviceToken();
+      _logger.info('onUserLogout: Device token = ${deviceToken?.substring(0, 10)}...');
+
       if (deviceToken != null) {
+        _logger.info('onUserLogout: Unregistering device from backend');
         await _backendClient.unregisterDevice(deviceToken: deviceToken);
       }
 
+      _logger.info('onUserLogout: Clearing cache');
       await _clearCache();
 
+      _logger.info('onUserLogout: Stopping timetable monitoring');
       _stopTimetableMonitoring();
 
       _logger.info('User logout processed for LiveActivity');
@@ -434,7 +581,7 @@ class LiveActivityService {
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
 
       final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek);
-      List<Lesson> allLessons = timetableResponse.response ?? [];
+      List<Lesson> allLessons = List<Lesson>.from(timetableResponse.response ?? []);
 
       final nextMonday = endOfWeek.add(const Duration(days: 1));
       final nextMondayEnd = nextMonday.add(const Duration(days: 1));

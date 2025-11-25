@@ -274,8 +274,8 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     prefetch();
     _preloadImages();
 
-    if (Platform.isIOS) {
-      Future.delayed(Duration(seconds: 2), () async {
+    if (Platform.isIOS && widget.data.settings.group("settings").boolean("beta_warning")) {
+      Future.delayed(Duration(seconds: 5), () async {
         await LiveActivityService.showConsentScreenIfNeeded();
       });
     }
