@@ -327,5 +327,32 @@ class LiveActivityBackendClient {
       return false;
     }
   }
+
+  /// Update bellDelay preference for device
+  Future<bool> updateBellDelay({
+    required String deviceToken,
+    required double bellDelay,
+  }) async {
+    try {
+      final response = await _dio.put(
+        '/live-activity/bell-delay',
+        data: {
+          'deviceToken': deviceToken,
+          'bellDelay': bellDelay,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        _logger.info('BellDelay updated to $bellDelay minutes successfully');
+        return true;
+      }
+
+      _logger.warning('Failed to update bellDelay: ${response.statusCode}');
+      return false;
+    } catch (e) {
+      _logger.severe('Error updating bellDelay: $e');
+      return false;
+    }
+  }
 }
 

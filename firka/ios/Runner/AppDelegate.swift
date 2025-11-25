@@ -2,6 +2,7 @@ import Flutter
 import UIKit
 import ActivityKit
 import UserNotifications
+import BackgroundTasks
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -9,15 +10,49 @@ import UserNotifications
   private var fallbackChannel: FlutterMethodChannel?
   private var deviceTokenString: String?
   private var notificationChannel: FlutterMethodChannel?
+  private var backgroundFetchChannel: FlutterMethodChannel?
+
+  private let backgroundTaskIdentifier = "app.firka.timetable.refresh"
   
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
-    
+
     let controller = window?.rootViewController as! FlutterViewController
-    
+
+    backgroundFetchChannel = FlutterMethodChannel(name: "firka.app/background_fetch", binaryMessenger: controller.binaryMessenger)
+
+    backgroundFetchChannel?.setMethodCallHandler { [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) in
+      guard let self = self else {
+        result(FlutterError(code: "UNAVAILABLE", message: "AppDelegate not available", details: nil))
+        return
+      }
+
+      if #available(iOS 13.0, *) {
+        switch call.method {
+        case "scheduleBackgroundFetch":
+          self.scheduleBackgroundRefresh()
+          result(true)
+        case "cancelBackgroundFetch":
+          BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: self.backgroundTaskIdentifier)
+          print("[AppDelegate] Background fetch cancelled from Flutter")
+          result(true)
+        default:
+          result(FlutterMethodNotImplemented)
+        }
+      } else {
+        result(FlutterError(code: "UNAVAILABLE", message: "Background fetch requires iOS 13+", details: nil))
+      }
+    }
+
+    if #available(iOS 13.0, *) {
+      BGTaskScheduler.shared.register(forTaskWithIdentifier: backgroundTaskIdentifier, using: nil) { task in
+        self.handleBackgroundRefresh(task: task as! BGAppRefreshTask)
+      }
+    }
+
     notificationChannel = FlutterMethodChannel(name: "firka.app/notifications", binaryMessenger: controller.binaryMessenger)
     
     UNUserNotificationCenter.current().delegate = self
@@ -118,7 +153,57 @@ import UserNotifications
         }
       }
     }
-    
+
     completionHandler(.newData)
+  }
+
+  // MARK: - Background Refresh
+
+  @available(iOS 13.0, *)
+  private func handleBackgroundRefresh(task: BGAppRefreshTask) {
+    scheduleBackgroundRefresh()
+
+    let queue = OperationQueue()
+    queue.maxConcurrentOperationCount = 1
+
+    let operation = BlockOperation {
+      DispatchQueue.main.async {
+        self.backgroundFetchChannel?.invokeMethod("performBackgroundFetch", arguments: nil) { result in
+          if let success = result as? Bool, success {
+            task.setTaskCompleted(success: true)
+          } else {
+            task.setTaskCompleted(success: false)
+          }
+        }
+      }
+    }
+
+    task.expirationHandler = {
+      queue.cancelAllOperations()
+      task.setTaskCompleted(success: false)
+    }
+
+    queue.addOperation(operation)
+  }
+
+  @available(iOS 13.0, *)
+  func scheduleBackgroundRefresh() {
+    let request = BGAppRefreshTaskRequest(identifier: backgroundTaskIdentifier)
+
+    // IMPORTANT: iOS may delay this based on system conditions and user behavior
+    // The default setting is 30 minutes
+    request.earliestBeginDate = Date(timeIntervalSinceNow: 30 * 60)
+
+    do {
+      try BGTaskScheduler.shared.submit(request)
+      print("[AppDelegate] Background refresh scheduled for ~30 minutes from now")
+    } catch {
+      print("[AppDelegate] Could not schedule background refresh: \(error)")
+    }
+  }
+
+  override func applicationDidEnterBackground(_ application: UIApplication) {
+    // Background fetch will be scheduled from Flutter side when needed
+    // No automatic scheduling here to give Flutter full control
   }
 }
