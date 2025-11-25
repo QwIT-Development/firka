@@ -23,6 +23,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../../../helpers/firka_bundle.dart';
 import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/settings.dart';
+import '../../../../helpers/live_activity_service.dart';
 import '../../widgets/login_webview.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -640,6 +641,10 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
             ),
             onTap: () async {
               if (i != item.accountIndex) {
+                if (Platform.isIOS) {
+                  await LiveActivityService.onUserLogout();
+                }
+
                 await widget.data.isar.writeTxn(() async {
                   item.accountIndex = i;
 
@@ -693,6 +698,10 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
             )
           ]),
           onTap: () async {
+            if (Platform.isIOS) {
+              await LiveActivityService.onUserLogout();
+            }
+
             final active = widget.data.client.model.studentIdNorm!;
 
             await widget.data.isar.writeTxn(() async {
@@ -701,6 +710,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
               item.accountIndex = 0;
               await item.save(widget.data.isar.appSettingsModels);
             });
+
 
             final accounts =
                 await widget.data.isar.tokenModels.where().findAll();
