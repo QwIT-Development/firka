@@ -9,6 +9,7 @@ import 'package:firka/helpers/live_activity_manager.dart';
 import 'package:firka/helpers/settings.dart';
 import 'package:firka/ui/phone/screens/live_activity/live_activity_consent_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,9 +29,18 @@ class LiveActivityService {
   static String? _cachedDeviceToken;
   static bool _isInitialized = false;
 
+  static Timer? _bellDelayDebounceTimer;
+  static double? _pendingBellDelay;
+  static double? _lastSentBellDelay;
+  static const Duration _bellDelayDebounceInterval = Duration(seconds: 5);
+
   /// Get current user's studentId for user-specific settings
-  static String? _getCurrentStudentId() {
+  /// If client is provided, use it directly instead of initData.client
+  static String? _getCurrentStudentId({KretaClient? client}) {
     try {
+      if (client != null && client.model != null) {
+        return client.model.studentId;
+      }
       if (!initDone || initData.client == null || initData.client.model == null) {
         return null;
       }
@@ -42,8 +52,8 @@ class LiveActivityService {
   }
 
   /// Get user-specific Live Activity enabled state from SharedPreferences
-  static Future<bool> _getUserLiveActivityEnabled() async {
-    final studentId = _getCurrentStudentId();
+  static Future<bool> _getUserLiveActivityEnabled({KretaClient? client}) async {
+    final studentId = _getCurrentStudentId(client: client);
     if (studentId == null) return false;
 
     final prefs = await SharedPreferences.getInstance();
@@ -52,8 +62,8 @@ class LiveActivityService {
   }
 
   /// Set user-specific Live Activity enabled state to SharedPreferences
-  static Future<void> _setUserLiveActivityEnabled(bool value) async {
-    final studentId = _getCurrentStudentId();
+  static Future<void> _setUserLiveActivityEnabled(bool value, {KretaClient? client}) async {
+    final studentId = _getCurrentStudentId(client: client);
     if (studentId == null) return;
 
     final prefs = await SharedPreferences.getInstance();
@@ -63,8 +73,8 @@ class LiveActivityService {
   }
 
   /// Get user-specific privacy declined state from SharedPreferences
-  static Future<bool> _getUserPrivacyEverDeclined() async {
-    final studentId = _getCurrentStudentId();
+  static Future<bool> _getUserPrivacyEverDeclined({KretaClient? client}) async {
+    final studentId = _getCurrentStudentId(client: client);
     if (studentId == null) return false;
 
     final prefs = await SharedPreferences.getInstance();
@@ -73,8 +83,8 @@ class LiveActivityService {
   }
 
   /// Set user-specific privacy declined state to SharedPreferences
-  static Future<void> _setUserPrivacyEverDeclined(bool value) async {
-    final studentId = _getCurrentStudentId();
+  static Future<void> _setUserPrivacyEverDeclined(bool value, {KretaClient? client}) async {
+    final studentId = _getCurrentStudentId(client: client);
     if (studentId == null) return;
 
     final prefs = await SharedPreferences.getInstance();
@@ -85,17 +95,17 @@ class LiveActivityService {
 
   /// Sync global setting with current user's setting
   /// This ensures the Settings UI shows the correct state for the current user
-  static Future<void> syncGlobalSettingWithCurrentUser() async {
+  static Future<void> syncGlobalSettingWithCurrentUser({KretaClient? client}) async {
     if (!Platform.isIOS) return;
 
     try {
-      final studentId = _getCurrentStudentId();
+      final studentId = _getCurrentStudentId(client: client);
       if (studentId == null) {
         _logger.warning('Cannot sync global setting: no current user');
         return;
       }
 
-      final userEnabled = await _getUserLiveActivityEnabled();
+      final userEnabled = await _getUserLiveActivityEnabled(client: client);
 
       final globalSetting = initData.settings
           .group("settings")
@@ -192,16 +202,206 @@ class LiveActivityService {
         await _saveDeviceToken(deviceToken);
       }
 
+      _setupBackgroundFetchChannel();
+
       _isInitialized = true;
     } catch (e, stackTrace) {
       _logger.severe('Failed to initialize LiveActivity: $e', e, stackTrace);
     }
   }
 
-  /// Check if LiveActivity is enabled in settings
-  static Future<bool> isEnabled([SettingsStore? settingsStore]) async {
+  /// Setup method channel for background fetch
+  static void _setupBackgroundFetchChannel() {
+    const platform = MethodChannel('firka.app/background_fetch');
+    platform.setMethodCallHandler((call) async {
+      if (call.method == 'performBackgroundFetch') {
+        _logger.info('Background fetch triggered by iOS');
+        final success = await _performBackgroundFetch();
+        return success;
+      }
+      return false;
+    });
+  }
+
+  /// Schedule background fetch on iOS
+  static Future<void> scheduleBackgroundFetch() async {
+    if (!Platform.isIOS) return;
+
     try {
-      return await _getUserLiveActivityEnabled();
+      const platform = MethodChannel('firka.app/background_fetch');
+      await platform.invokeMethod('scheduleBackgroundFetch');
+      _logger.info('Background fetch scheduled');
+    } catch (e) {
+      _logger.warning('Failed to schedule background fetch: $e');
+    }
+  }
+
+  /// Cancel background fetch on iOS
+  static Future<void> cancelBackgroundFetch() async {
+    if (!Platform.isIOS) return;
+
+    try {
+      const platform = MethodChannel('firka.app/background_fetch');
+      await platform.invokeMethod('cancelBackgroundFetch');
+      _logger.info('Background fetch cancelled');
+    } catch (e) {
+      _logger.warning('Failed to cancel background fetch: $e');
+    }
+  }
+
+  /// Check if there are any remaining lessons today
+  static bool _hasRemainingLessonsToday(List<Lesson> lessons) {
+    final now = DateTime.now();
+    final todayLessons = lessons.where((lesson) {
+      final uid = lesson.uid?.toLowerCase() ?? '';
+      return lesson.date == now.toIso8601String().split('T').first &&
+             lesson.end.isAfter(now) &&
+             (uid.contains('orarendiora') ||
+              uid.contains('tanitasiora') ||
+              uid.contains('uresora'));
+    }).toList();
+
+    return todayLessons.isNotEmpty;
+  }
+
+  /// Perform background fetch - fetch fresh timetable from KRÉTA API and send to backend
+  /// This is called by iOS BGTaskScheduler when the app is in background
+  static Future<bool> _performBackgroundFetch() async {
+    if (!Platform.isIOS || !_isInitialized || !initDone) {
+      _logger.warning('Background fetch skipped: not initialized or initDone=false');
+      return false;
+    }
+
+    try {
+      final client = initData.client;
+      if (client == null || client.model == null) {
+        _logger.warning('Background fetch skipped: no client available');
+        return false;
+      }
+
+      final enabled = await isEnabled(initData.settings, client);
+      if (!enabled) {
+        _logger.info('Background fetch skipped: LiveActivity disabled');
+        return false;
+      }
+
+      _logger.info('Background fetch: fetching fresh timetable from KRÉTA API');
+
+      final now = DateTime.now();
+      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+      final endOfWeek = startOfWeek.add(const Duration(days: 6));
+
+      List<Lesson> allLessons = [];
+
+      try {
+        _logger.info('Background fetch: attempting to fetch fresh data from KRÉTA API');
+        final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek, forceCache: false);
+
+        if (timetableResponse.response != null) {
+          allLessons = List<Lesson>.from(timetableResponse.response!);
+          _logger.info('Background fetch: successfully fetched ${allLessons.length} lessons from KRÉTA API');
+        } else {
+          throw Exception('KRÉTA API returned null response');
+        }
+      } catch (e) {
+        _logger.warning('Background fetch: KRÉTA API failed ($e), falling back to cache');
+        try {
+          final cachedResponse = await client.getTimeTable(startOfWeek, endOfWeek, forceCache: true);
+          if (cachedResponse.response != null) {
+            allLessons = List<Lesson>.from(cachedResponse.response!);
+            _logger.info('Background fetch: successfully loaded ${allLessons.length} lessons from cache');
+          } else {
+            _logger.severe('Background fetch: both API and cache failed');
+            return false;
+          }
+        } catch (cacheError) {
+          _logger.severe('Background fetch: cache fallback also failed: $cacheError');
+          return false;
+        }
+      }
+
+      final nextMonday = endOfWeek.add(const Duration(days: 1));
+      final nextMondayEnd = nextMonday.add(const Duration(days: 1));
+
+      try {
+        final nextMondayResponse = await client.getTimeTable(nextMonday, nextMondayEnd, forceCache: false);
+        if (nextMondayResponse.response != null && nextMondayResponse.response!.isNotEmpty) {
+          final mondayLessons = nextMondayResponse.response!;
+          mondayLessons.sort((a, b) => a.start.compareTo(b.start));
+          final firstLesson = mondayLessons.first;
+
+          final markedLesson = Lesson(
+            uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
+            date: firstLesson.date,
+            start: firstLesson.start,
+            end: firstLesson.end,
+            name: firstLesson.name,
+            lessonNumber: firstLesson.lessonNumber,
+            teacher: firstLesson.teacher,
+            theme: firstLesson.theme,
+            roomName: firstLesson.roomName,
+            substituteTeacher: firstLesson.substituteTeacher,
+            type: firstLesson.type,
+            state: firstLesson.state,
+            canStudentEditHomework: firstLesson.canStudentEditHomework,
+            isHomeworkComplete: firstLesson.isHomeworkComplete,
+            attachments: firstLesson.attachments,
+            isDigitalLesson: firstLesson.isDigitalLesson,
+            digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
+            createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
+            lastModifiedAt: firstLesson.lastModifiedAt,
+          );
+
+          allLessons.add(markedLesson);
+          _logger.info('Background fetch: added next Monday first lesson for notification');
+        }
+      } catch (e) {
+        _logger.warning('Background fetch: could not fetch next Monday lesson: $e');
+      }
+
+      if (allLessons.isEmpty) {
+        _logger.info('Background fetch: no lessons to send');
+        return true;
+      }
+
+      final deviceToken = await _getOrWaitDeviceToken();
+      if (deviceToken == null) {
+        _logger.warning('Background fetch: no device token available');
+        return false;
+      }
+
+      _logger.info('Background fetch: sending ${allLessons.length} lessons to backend');
+      final success = await _backendClient.updateTimetable(
+        deviceToken: deviceToken,
+        timetable: allLessons,
+      );
+
+      if (success) {
+        await _saveLastUpdate();
+        _logger.info('Background fetch: successfully sent timetable to backend');
+
+        if (!_hasRemainingLessonsToday(allLessons)) {
+          _logger.info('Background fetch: no remaining lessons today, cancelling future background fetches until app reopens');
+          await cancelBackgroundFetch();
+        } else {
+          _logger.info('Background fetch: remaining lessons today, will continue background fetches');
+        }
+
+        return true;
+      } else {
+        _logger.warning('Background fetch: failed to send timetable to backend');
+        return false;
+      }
+    } catch (e, stackTrace) {
+      _logger.severe('Background fetch: unexpected error: $e', e, stackTrace);
+      return false;
+    }
+  }
+
+  /// Check if LiveActivity is enabled in settings
+  static Future<bool> isEnabled([SettingsStore? settingsStore, KretaClient? client]) async {
+    try {
+      return await _getUserLiveActivityEnabled(client: client);
     } catch (e) {
       _logger.warning('Error reading LiveActivity setting: $e');
       return false;
@@ -210,11 +410,12 @@ class LiveActivityService {
 
   /// Handle LiveActivity enabled state change
   /// Called from settings toggle callback
-  static Future<void> handleEnabledChange(bool enabled, {bool isManual = false}) async {
+  static Future<void> handleEnabledChange(bool enabled, {bool isManual = false, KretaClient? client}) async {
     if (!Platform.isIOS) return;
 
     try {
-      final studentId = _getCurrentStudentId();
+      final effectiveClient = client ?? initData.client;
+      final studentId = _getCurrentStudentId(client: effectiveClient);
       if (studentId == null) {
         _logger.warning('Cannot change LiveActivity state: no current user');
         return;
@@ -223,9 +424,9 @@ class LiveActivityService {
       if (!enabled) {
         await onUserLogout();
 
-        await _setUserLiveActivityEnabled(false);
+        await _setUserLiveActivityEnabled(false, client: effectiveClient);
 
-        await syncGlobalSettingWithCurrentUser();
+        await syncGlobalSettingWithCurrentUser(client: effectiveClient);
 
         _logger.info('LiveActivity disabled and user data cleared.');
       } else {
@@ -235,25 +436,25 @@ class LiveActivityService {
         if (accepted == true) {
           _logger.info('User accepted privacy policy');
 
-          await _setUserLiveActivityEnabled(true);
+          await _setUserLiveActivityEnabled(true, client: effectiveClient);
 
-          await syncGlobalSettingWithCurrentUser();
+          await syncGlobalSettingWithCurrentUser(client: effectiveClient);
 
-          final studentResp = await initData.client.getStudent();
+          final studentResp = await effectiveClient.getStudent();
           final studentName = studentResp.response?.name ?? initData.tokens.first.studentId ?? "Student";
 
           await onUserLogin(
-            client: initData.client,
+            client: effectiveClient,
             studentName: studentName,
             settingsStore: initData.settings,
           );
         } else {
           _logger.info('User declined privacy policy or swiped back');
 
-          await _setUserLiveActivityEnabled(false);
-          await _setUserPrivacyEverDeclined(true);
+          await _setUserLiveActivityEnabled(false, client: effectiveClient);
+          await _setUserPrivacyEverDeclined(true, client: effectiveClient);
 
-          await syncGlobalSettingWithCurrentUser();
+          await syncGlobalSettingWithCurrentUser(client: effectiveClient);
         }
       }
     } catch (e) {
@@ -263,24 +464,25 @@ class LiveActivityService {
 
   /// Show privacy consent screen automatically on first use or user switch
   /// Only shows if user hasn't declined before
-  static Future<void> showConsentScreenIfNeeded() async {
+  static Future<void> showConsentScreenIfNeeded({KretaClient? client}) async {
     if (!Platform.isIOS) return;
 
     try {
-      final studentId = _getCurrentStudentId();
+      final effectiveClient = client ?? initData.client;
+      final studentId = _getCurrentStudentId(client: effectiveClient);
       if (studentId == null) {
         _logger.warning('Cannot check consent screen: no current user');
         return;
       }
 
-      await syncGlobalSettingWithCurrentUser();
+      await syncGlobalSettingWithCurrentUser(client: effectiveClient);
 
-      final enabled = await _getUserLiveActivityEnabled();
-      final everDeclined = await _getUserPrivacyEverDeclined();
+      final enabled = await _getUserLiveActivityEnabled(client: effectiveClient);
+      final everDeclined = await _getUserPrivacyEverDeclined(client: effectiveClient);
 
       if (!enabled && !everDeclined) {
         _logger.info('First use or new user - showing privacy consent automatically');
-        await handleEnabledChange(true, isManual: false);
+        await handleEnabledChange(true, isManual: false, client: effectiveClient);
       } else {
         _logger.info('User already has LiveActivity setting: enabled=$enabled, declined=$everDeclined');
       }
@@ -375,7 +577,7 @@ class LiveActivityService {
       return;
     }
 
-    final enabled = await isEnabled(settingsStore);
+    final enabled = await isEnabled(settingsStore, client);
     _logger.info('onUserLogin: LiveActivity enabled=$enabled');
 
     if (!enabled) {
@@ -474,6 +676,9 @@ class LiveActivityService {
           studentName: studentName,
           settingsStore: settingsStore,
         );
+
+        await scheduleBackgroundFetch();
+
         _logger.info('LiveActivity registration completed for $studentName');
       } else {
         _logger.warning('Failed to register device with backend');
@@ -492,7 +697,7 @@ class LiveActivityService {
     if (!Platform.isIOS || !_isInitialized) return;
 
     try {
-      final enabled = await isEnabled(settingsStore);
+      final enabled = await isEnabled(settingsStore, client);
       if (!enabled) {
         _logger.info('LiveActivity is disabled, ending any running activities');
         await LiveActivityManager.endAllActivities();
@@ -523,6 +728,8 @@ class LiveActivityService {
           studentName: studentName,
           settingsStore: settingsStore
       );
+
+      await scheduleBackgroundFetch();
 
     } catch (e) {
       _logger.severe('Error handling onAppOpened for LiveActivity: $e');
@@ -570,7 +777,7 @@ class LiveActivityService {
   }) async {
     if (!Platform.isIOS || !_isInitialized) return;
 
-    final enabled = await isEnabled(settingsStore);
+    final enabled = await isEnabled(settingsStore, client);
     if (!enabled) {
       return;
     }
@@ -862,6 +1069,70 @@ class LiveActivityService {
     } catch (e) {
       _logger.severe('Error sending test notification: $e');
       return false;
+    }
+  }
+
+  /// Handle bellDelay change with debounce
+  /// Waits 5 seconds after the last change before sending update to backend
+  /// If value changes during the wait, reschedules the update with the new value
+  static void onBellDelayChanged(double newValue) {
+    if (!Platform.isIOS || !_isInitialized) return;
+
+    _logger.info('BellDelay changed to $newValue minutes, scheduling debounced update');
+
+    _bellDelayDebounceTimer?.cancel();
+
+    _pendingBellDelay = newValue;
+
+    _bellDelayDebounceTimer = Timer(_bellDelayDebounceInterval, () async {
+      await _sendBellDelayUpdate();
+    });
+  }
+
+  /// Internal function to send bellDelay update to backend
+  static Future<void> _sendBellDelayUpdate() async {
+    if (_pendingBellDelay == null) return;
+
+    final bellDelayToSend = _pendingBellDelay!;
+
+    if (_lastSentBellDelay == bellDelayToSend) {
+      _logger.info('BellDelay $bellDelayToSend already sent to backend, skipping');
+      _pendingBellDelay = null;
+      return;
+    }
+
+    try {
+      final deviceToken = await _getOrWaitDeviceToken();
+      if (deviceToken == null) {
+        _logger.warning('No device token available to update bellDelay');
+        return;
+      }
+
+      _logger.info('Sending bellDelay update to backend: $bellDelayToSend minutes');
+
+      final success = await _backendClient.updateBellDelay(
+        deviceToken: deviceToken,
+        bellDelay: bellDelayToSend,
+      );
+
+      if (success) {
+        _lastSentBellDelay = bellDelayToSend;
+        _logger.info('BellDelay updated successfully in backend');
+
+        if (_pendingBellDelay != bellDelayToSend) {
+          _logger.info('BellDelay changed to $_pendingBellDelay during update, scheduling another update');
+          _bellDelayDebounceTimer?.cancel();
+          _bellDelayDebounceTimer = Timer(_bellDelayDebounceInterval, () async {
+            await _sendBellDelayUpdate();
+          });
+        } else {
+          _pendingBellDelay = null;
+        }
+      } else {
+        _logger.warning('Failed to update bellDelay in backend');
+      }
+    } catch (e) {
+      _logger.severe('Error updating bellDelay: $e');
     }
   }
 }

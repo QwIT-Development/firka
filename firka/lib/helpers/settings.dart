@@ -480,6 +480,14 @@ class SettingsStore {
       "xmas2": l10n.ic_xmas2,
       "xmas3": l10n.ic_xmas3
     };
+
+    if (Platform.isIOS) {
+      final bellDelaySetting = group("settings")
+          .subGroup("application")["bell_delay"] as SettingsDouble;
+      bellDelaySetting.postUpdate = () async {
+        LiveActivityService.onBellDelayChanged(bellDelaySetting.value);
+      };
+    }
   }
 
   LinkedHashMap<String, SettingsItem> group(String key) {
