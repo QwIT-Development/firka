@@ -34,6 +34,21 @@ class LiveActivityService {
   static double? _lastSentBellDelay;
   static const Duration _bellDelayDebounceInterval = Duration(seconds: 5);
 
+  /// Get current bellDelay value from settings
+  static double? _getCurrentBellDelay() {
+    try {
+      if (!initDone || initData.settings == null) {
+        return null;
+      }
+      final bellDelaySetting = initData.settings.group("settings")
+          .subGroup("application")["bell_delay"] as SettingsDouble?;
+      return bellDelaySetting?.value;
+    } catch (e) {
+      _logger.warning('Error getting current bellDelay: $e');
+      return null;
+    }
+  }
+
   /// Get current user's studentId for user-specific settings
   /// If client is provided, use it directly instead of initData.client
   static String? _getCurrentStudentId({KretaClient? client}) {
@@ -157,6 +172,12 @@ class LiveActivityService {
   static Future<void> updateLanguagePreference(String languageCode) async {
     try {
       if (!Platform.isIOS) return;
+
+      final isEnabled = await _getUserLiveActivityEnabled();
+      if (!isEnabled) {
+        _logger.fine('Skipping language update: Live Activity is disabled');
+        return;
+      }
 
       final prefs = await SharedPreferences.getInstance();
       final deviceToken = prefs.getString(_deviceTokenKey);
@@ -374,6 +395,7 @@ class LiveActivityService {
       final success = await _backendClient.updateTimetable(
         deviceToken: deviceToken,
         timetable: allLessons,
+        bellDelay: _getCurrentBellDelay(),
       );
 
       if (success) {
@@ -663,6 +685,7 @@ class LiveActivityService {
         deviceToken: deviceToken,
         timetable: allLessons,
         language: currentLanguage,
+        bellDelay: _getCurrentBellDelay(),
       );
 
       if (success) {
@@ -849,6 +872,7 @@ class LiveActivityService {
         final success = await _backendClient.updateTimetable(
           deviceToken: deviceToken,
           timetable: allLessons,
+          bellDelay: _getCurrentBellDelay(),
         );
 
         if (success) {
