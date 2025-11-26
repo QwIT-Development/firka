@@ -31,6 +31,7 @@ class LiveActivityBackendClient {
     required String deviceToken,
     required List<Lesson> timetable,
     String? language,
+    double? bellDelay,
   }) async {
     try {
       final lessonsData = timetable.map((lesson) {
@@ -66,6 +67,10 @@ class LiveActivityBackendClient {
         requestData['language'] = language;
       }
 
+      if (bellDelay != null) {
+        requestData['bellDelay'] = bellDelay;
+      }
+
       _logger.info('Registering device with backend. Sending ${lessonsData.length} lessons.');
       if (_logger.isLoggable(Level.FINE)) {
         lessonsData.forEach((lesson) => _logger.fine('  Lesson data: ${lesson}'));
@@ -93,6 +98,7 @@ class LiveActivityBackendClient {
   Future<bool> updateTimetable({
     required String deviceToken,
     required List<Lesson> timetable,
+    double? bellDelay,
   }) async {
     try {
       final lessonsData = timetable.map((lesson) {
@@ -100,7 +106,7 @@ class LiveActivityBackendClient {
         if (validLastModified.year < 1900) {
           validLastModified = lesson.start;
         }
-        
+
         return {
           'uid': lesson.uid,
           'date': lesson.date,
@@ -123,13 +129,19 @@ class LiveActivityBackendClient {
         lessonsData.forEach((lesson) => _logger.fine('  Lesson data: ${lesson}'));
       }
 
+      final requestData = {
+        'deviceToken': deviceToken,
+        'lessons': lessonsData,
+        'lastUpdated': DateTime.now().toIso8601String(),
+      };
+
+      if (bellDelay != null) {
+        requestData['bellDelay'] = bellDelay;
+      }
+
       final response = await _dio.put(
         '/live-activity/timetable',
-        data: {
-          'deviceToken': deviceToken,
-          'lessons': lessonsData,
-          'lastUpdated': DateTime.now().toIso8601String(),
-        },
+        data: requestData,
       );
 
       if (response.statusCode == 200) {

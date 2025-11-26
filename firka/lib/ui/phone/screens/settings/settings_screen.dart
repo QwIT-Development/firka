@@ -176,24 +176,28 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         var v = item.toRoundedString();
 
         widgets.add(GestureDetector(
-          child: FirkaCard(left: [
-            item.iconType != null
-                ? Row(
-                    children: [
-                      FirkaIconWidget(item.iconType!, item.iconData!,
-                          color: appStyle.colors.accent),
-                      SizedBox(width: 4),
-                    ],
-                  )
-                : SizedBox(),
-            Text(item.title,
-                style: appStyle.fonts.B_16SB
-                    .apply(color: appStyle.colors.textPrimary))
-          ], right: [
-            Text(v == "0.0" ? "0" : v,
-                style: appStyle.fonts.B_16R
-                    .apply(color: appStyle.colors.textPrimary))
-          ]),
+          child: FirkaCard(
+            height: 52 + 12,
+            left: [
+              item.iconType != null
+                  ? Row(
+                      children: [
+                        FirkaIconWidget(item.iconType!, item.iconData!,
+                            color: appStyle.colors.accent),
+                        SizedBox(width: 4),
+                      ],
+                    )
+                  : SizedBox(),
+              Text(item.title,
+                  style: appStyle.fonts.B_16SB
+                      .apply(color: appStyle.colors.textPrimary))
+            ],
+            right: [
+              Text(v == "0.0" ? "0" : v,
+                  style: appStyle.fonts.B_16R
+                      .apply(color: appStyle.colors.textPrimary))
+            ]
+          ),
           onTap: () async {
             showSetDoubleSheet(context, item, widget.data, setState);
           },
@@ -203,15 +207,16 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
       }
       if (item is SettingsBoolean) {
         widgets.add(FirkaCard(
+          height: 52 + 12,
           left: [
             item.iconType != null
                 ? Row(
-                    children: [
-                      FirkaIconWidget(item.iconType!, item.iconData!,
-                          color: appStyle.colors.accent),
-                      SizedBox(width: 4),
-                    ],
-                  )
+              children: [
+                FirkaIconWidget(item.iconType!, item.iconData!,
+                    color: appStyle.colors.accent),
+                SizedBox(width: 4),
+              ],
+            )
                 : SizedBox(),
             Text(item.title,
                 style: appStyle.fonts.B_16SB

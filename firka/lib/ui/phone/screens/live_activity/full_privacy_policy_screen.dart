@@ -117,10 +117,10 @@ class _FullPrivacyPolicyScreenState extends FirkaState<FullPrivacyPolicyScreen> 
             style:
                 appStyle.fonts.H_16px.apply(color: appStyle.colors.textPrimary),
           ),
-          SizedBox(height: 8),
+          SizedBox(height: 10),
           Text(
             body,
-            style: appStyle.fonts.B_14R
+            style: appStyle.fonts.B_16R
                 .apply(color: appStyle.colors.textSecondary),
           ),
         ],

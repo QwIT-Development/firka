@@ -118,7 +118,7 @@ class _LiveActivityConsentScreenState
                         style: appStyle.fonts.B_16R
                             .apply(color: appStyle.colors.textPrimary),
                       ),
-                      SizedBox(height: 16),
+                      SizedBox(height: 20),
                       _buildPrivacySummaryItem(
                         icon: Majesticon.editPen4Solid,
                         title: widget.data.l10n.la_privacy_section1_title,
@@ -144,18 +144,19 @@ class _LiveActivityConsentScreenState
                                       FullPrivacyPolicyScreen(data: widget.data)));
                         },
                         child: FirkaCard(
-                          left: [
+                          color: appStyle.colors.buttonSecondaryFill,
+                          left: [],
+                          center: [
                             Text(
                               widget.data.l10n.la_learn_more,
                               style: appStyle.fonts.B_16SB
-                                  .apply(color: appStyle.colors.accent),
+                                  .apply(color: appStyle.colors.textSecondary),
                             ),
-                          ],
-                          right: [
+                            SizedBox(width: 8),
                             FirkaIconWidget(
                               FirkaIconType.majesticons,
                               Majesticon.chevronRightLine,
-                              color: appStyle.colors.accent,
+                              color: appStyle.colors.textSecondary,
                             ),
                           ],
                         ),
@@ -167,34 +168,30 @@ class _LiveActivityConsentScreenState
 
               SizedBox(height: 16),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context, false);
-                      },
-                      child: FirkaButton(
-                        text: widget.data.l10n.la_decline,
-                        bgColor: appStyle.colors.buttonSecondaryFill,
-                        fontStyle: appStyle.fonts.B_16R
-                            .apply(color: appStyle.colors.textSecondary),
-                      ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context, true);
+                    },
+                    child: FirkaButton(
+                      text: widget.data.l10n.la_accept,
+                      bgColor: appStyle.colors.accent,
+                      fontStyle: appStyle.fonts.B_16R.apply(
+                          color: appStyle.colors.textPrimary),
                     ),
                   ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context, true);
-                      },
-                      child: FirkaButton(
-                        text: widget.data.l10n.la_accept,
-                        bgColor: appStyle.colors.accent,
-                        fontStyle: appStyle.fonts.B_16R.apply(
-                            color: appStyle.colors.textSecondaryLight),
-                      ),
+                  SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context, false);
+                    },
+                    child: FirkaButton(
+                      text: widget.data.l10n.la_decline,
+                      bgColor: appStyle.colors.buttonSecondaryFill,
+                      fontStyle: appStyle.fonts.B_16R
+                          .apply(color: appStyle.colors.textSecondary),
                     ),
                   ),
                 ],
@@ -212,7 +209,7 @@ class _LiveActivityConsentScreenState
     required String description,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.only(bottom: 16.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -220,7 +217,7 @@ class _LiveActivityConsentScreenState
             FirkaIconType.majesticons,
             icon,
             color: appStyle.colors.accent,
-            size: 20,
+            size: 24,
           ),
           SizedBox(width: 12),
           Expanded(
@@ -229,13 +226,13 @@ class _LiveActivityConsentScreenState
               children: [
                 Text(
                   title,
-                  style: appStyle.fonts.B_14SB
+                  style: appStyle.fonts.B_16SB
                       .apply(color: appStyle.colors.textPrimary),
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: 6),
                 Text(
                   description,
-                  style: appStyle.fonts.B_14R
+                  style: appStyle.fonts.B_16R
                       .apply(color: appStyle.colors.textSecondary),
                 ),
               ],
