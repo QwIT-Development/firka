@@ -32,7 +32,7 @@ class LiveActivityService {
   static Timer? _bellDelayDebounceTimer;
   static double? _pendingBellDelay;
   static double? _lastSentBellDelay;
-  static const Duration _bellDelayDebounceInterval = Duration(seconds: 5);
+  static const Duration _bellDelayDebounceInterval = Duration(seconds: 3);
 
   /// Get current bellDelay value from settings
   static double? _getCurrentBellDelay() {
@@ -813,43 +813,133 @@ class LiveActivityService {
       final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek);
       List<Lesson> allLessons = List<Lesson>.from(timetableResponse.response ?? []);
 
-      final nextMonday = endOfWeek.add(const Duration(days: 1));
-      final nextMondayEnd = nextMonday.add(const Duration(days: 1));
+      bool foundFirstSchoolDay = false;
+      for (int dayOffset = 1; dayOffset <= 5; dayOffset++) {
+        final candidateDay = endOfWeek.add(Duration(days: dayOffset));
 
-      try {
-        final nextMondayResponse = await client.getTimeTable(nextMonday, nextMondayEnd);
-        if (nextMondayResponse.response != null && nextMondayResponse.response!.isNotEmpty) {
-          final mondayLessons = nextMondayResponse.response!;
-          mondayLessons.sort((a, b) => a.start.compareTo(b.start));
-          final firstLesson = mondayLessons.first;
-
-          final markedLesson = Lesson(
-            uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
-            date: firstLesson.date,
-            start: firstLesson.start,
-            end: firstLesson.end,
-            name: firstLesson.name,
-            lessonNumber: firstLesson.lessonNumber,
-            teacher: firstLesson.teacher,
-            theme: firstLesson.theme,
-            roomName: firstLesson.roomName,
-            substituteTeacher: firstLesson.substituteTeacher,
-            type: firstLesson.type,
-            state: firstLesson.state,
-            canStudentEditHomework: firstLesson.canStudentEditHomework,
-            isHomeworkComplete: firstLesson.isHomeworkComplete,
-            attachments: firstLesson.attachments,
-            isDigitalLesson: firstLesson.isDigitalLesson,
-            digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
-            createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
-            lastModifiedAt: firstLesson.lastModifiedAt,
-          );
-
-          allLessons.add(markedLesson);
-          _logger.info('Added first lesson from next Monday (${firstLesson.name}) marked for notification scheduling only');
+        if (candidateDay.weekday == DateTime.saturday || candidateDay.weekday == DateTime.sunday) {
+          continue;
         }
-      } catch (e) {
-        _logger.warning('Could not fetch next Monday first lesson: $e');
+
+        try {
+          final candidateDayEnd = candidateDay.add(const Duration(days: 1));
+          final response = await client.getTimeTable(candidateDay, candidateDayEnd);
+
+          if (response.response != null && response.response!.isNotEmpty) {
+            final schoolLessons = response.response!.where((lesson) {
+              final uid = lesson.uid.toLowerCase();
+              return uid.contains('tanitasiora');
+            }).toList();
+
+            if (schoolLessons.isNotEmpty) {
+              schoolLessons.sort((a, b) => a.start.compareTo(b.start));
+              final firstLesson = schoolLessons.first;
+
+              final markedLesson = Lesson(
+                uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
+                date: firstLesson.date,
+                start: firstLesson.start,
+                end: firstLesson.end,
+                name: firstLesson.name,
+                lessonNumber: firstLesson.lessonNumber,
+                teacher: firstLesson.teacher,
+                theme: firstLesson.theme,
+                roomName: firstLesson.roomName,
+                substituteTeacher: firstLesson.substituteTeacher,
+                type: firstLesson.type,
+                state: firstLesson.state,
+                canStudentEditHomework: firstLesson.canStudentEditHomework,
+                isHomeworkComplete: firstLesson.isHomeworkComplete,
+                attachments: firstLesson.attachments,
+                isDigitalLesson: firstLesson.isDigitalLesson,
+                digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
+                createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
+                lastModifiedAt: firstLesson.lastModifiedAt,
+              );
+
+              allLessons.add(markedLesson);
+
+              const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+              final dayName = dayNames[candidateDay.weekday - 1];
+              _logger.info('Added first lesson from next week $dayName (${firstLesson.name}) marked for notification scheduling only');
+
+              foundFirstSchoolDay = true;
+              break;
+            }
+          }
+        } catch (e) {
+          _logger.warning('Could not fetch lessons for day offset $dayOffset: $e');
+        }
+      }
+
+      if (!foundFirstSchoolDay) {
+        _logger.info('No school lessons found in next week for push notification scheduling');
+      }
+
+      final breakEventsInWeek = allLessons.where((lesson) {
+        final uid = lesson.uid.toLowerCase();
+        final name = lesson.name.toLowerCase();
+
+        return uid.contains('tanevrendjeesemeny') &&
+               !name.contains('tanítási nap') &&
+               (name.contains('szünet') ||
+                name.contains('pihenőnap') ||
+                name.contains('munkaszüneti') ||
+                name.contains('ünnepnap') ||
+                name.contains('tanítás nélküli') ||
+                name.contains('nem órarendi nap'));
+      }).toList();
+
+      if (breakEventsInWeek.isNotEmpty) {
+        final firstBreak = breakEventsInWeek.first;
+        final breakName = firstBreak.name.toLowerCase();
+
+        String? breakType;
+        if (breakName.contains('őszi')) {
+          breakType = 'őszi';
+        } else if (breakName.contains('téli')) {
+          breakType = 'téli';
+        } else if (breakName.contains('tavaszi')) {
+          breakType = 'tavaszi';
+        } else if (breakName.contains('nyári')) {
+          breakType = 'nyári';
+        }
+
+        if (breakType != null) {
+          _logger.info('Found $breakType break in current week, fetching all break days...');
+
+          final extendedStart = startOfWeek.subtract(const Duration(days: 28));
+          final extendedEnd = endOfWeek.add(const Duration(days: 28));
+
+          try {
+            final extendedResponse = await client.getTimeTable(extendedStart, extendedEnd);
+            if (extendedResponse.response != null) {
+              final allBreakEventsOfType = extendedResponse.response!.where((lesson) {
+                final uid = lesson.uid.toLowerCase();
+                final name = lesson.name.toLowerCase();
+
+                return uid.contains('tanevrendjeesemeny') &&
+                       !name.contains('tanítási nap') &&
+                       name.contains(breakType!);
+              }).toList();
+
+              int addedCount = 0;
+              for (final breakEvent in allBreakEventsOfType) {
+                if (!allLessons.any((l) => l.uid == breakEvent.uid && l.date == breakEvent.date)) {
+                  allLessons.add(breakEvent);
+                  addedCount++;
+                  _logger.info('[Firka] [INFO] Added break day: ${breakEvent.date} - ${breakEvent.name}');
+                }
+              }
+
+              if (addedCount > 0) {
+                _logger.info('[Firka] [INFO] Added $addedCount $breakType break day(s) to timetable for backend processing');
+              }
+            }
+          } catch (e) {
+            _logger.warning('Could not fetch extended break events: $e');
+          }
+        }
       }
 
       if (allLessons.isEmpty) {
@@ -1097,7 +1187,7 @@ class LiveActivityService {
   }
 
   /// Handle bellDelay change with debounce
-  /// Waits 5 seconds after the last change before sending update to backend
+  /// Waits 3 seconds after the last change before sending update to backend
   /// If value changes during the wait, reschedules the update with the new value
   static void onBellDelayChanged(double newValue) {
     if (!Platform.isIOS || !_isInitialized) return;
