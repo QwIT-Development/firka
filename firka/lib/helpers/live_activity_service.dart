@@ -309,7 +309,8 @@ class LiveActivityService {
       _logger.info('Background fetch: fetching fresh timetable from KRÉTA API');
 
       final now = DateTime.now();
-      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+      final todayStart = DateTime(now.year, now.month, now.day);
+      final startOfWeek = todayStart.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
 
       List<Lesson> allLessons = [];
@@ -610,7 +611,8 @@ class LiveActivityService {
     try {
       _logger.info('onUserLogin: Starting timetable fetch');
       final now = DateTime.now();
-      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+      final todayStart = DateTime(now.year, now.month, now.day);
+      final startOfWeek = todayStart.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
 
       _logger.info('onUserLogin: Fetching timetable from $startOfWeek to $endOfWeek');
@@ -739,7 +741,8 @@ class LiveActivityService {
       }
 
       final now = DateTime.now();
-      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+      final todayStart = DateTime(now.year, now.month, now.day);
+      final startOfWeek = todayStart.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
       final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek);
       final allLessons = timetableResponse.response ?? [];
@@ -807,7 +810,8 @@ class LiveActivityService {
 
     try {
       final now = DateTime.now();
-      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+      final todayStart = DateTime(now.year, now.month, now.day);
+      final startOfWeek = todayStart.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
 
       final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek);
