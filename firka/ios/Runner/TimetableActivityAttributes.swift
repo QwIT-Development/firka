@@ -12,7 +12,7 @@ struct TimetableActivityAttributes: ActivityAttributes {
         var endTime: Date
         var lessonNumber: Int?
         
-        var mode: String? // "lesson" | "break" | "seasonalBreak" | "xmas" | "newYear"
+        var mode: String? // "lesson" | "break" | "seasonalBreak" | "xmas" | "newYearEve" | "newYearDay"
         var message: String?
         var season: String?
         
@@ -27,6 +27,8 @@ struct TimetableActivityAttributes: ActivityAttributes {
                 var substituteTeacher: String?
 
                 var currentTime: Date
+
+                var tokenExpirationWarning: String?
 
                 enum CodingKeys: String, CodingKey {
         
@@ -63,49 +65,53 @@ struct TimetableActivityAttributes: ActivityAttributes {
                     case isCancelled
         
                     case substituteTeacher
-        
+
                     case currentTime
-        
+
+                    case tokenExpirationWarning
+
                 }
 
-                init(isBreak: Bool, lessonName: String, lessonTheme: String?, roomName: String?, teacherName: String?, startTime: Date, endTime: Date, lessonNumber: Int?, mode: String?, message: String?, season: String?, nextLessonName: String?, nextRoomName: String?, nextStartTime: Date?, isSubstitution: Bool?, isCancelled: Bool?, substituteTeacher: String?, currentTime: Date) {
-        
+                init(isBreak: Bool, lessonName: String, lessonTheme: String?, roomName: String?, teacherName: String?, startTime: Date, endTime: Date, lessonNumber: Int?, mode: String?, message: String?, season: String?, nextLessonName: String?, nextRoomName: String?, nextStartTime: Date?, isSubstitution: Bool?, isCancelled: Bool?, substituteTeacher: String?, currentTime: Date, tokenExpirationWarning: String? = nil) {
+
                     self.isBreak = isBreak
-        
+
                     self.lessonName = lessonName
-        
+
                     self.lessonTheme = lessonTheme
-        
+
                     self.roomName = roomName
-        
+
                     self.teacherName = teacherName
-        
+
                     self.startTime = startTime
-        
+
                     self.endTime = endTime
-        
+
                     self.lessonNumber = lessonNumber
-        
+
                     self.mode = mode
-        
+
                     self.message = message
-        
+
                     self.season = season
-        
+
                     self.nextLessonName = nextLessonName
-        
+
                     self.nextRoomName = nextRoomName
-        
+
                     self.nextStartTime = nextStartTime
-        
+
                     self.isSubstitution = isSubstitution
-        
+
                     self.isCancelled = isCancelled
-        
+
                     self.substituteTeacher = substituteTeacher
-        
+
                     self.currentTime = currentTime
-        
+
+                    self.tokenExpirationWarning = tokenExpirationWarning
+
                 }
         
                 
@@ -185,12 +191,14 @@ struct TimetableActivityAttributes: ActivityAttributes {
                     
         
                     isSubstitution = try container.decodeIfPresent(Bool.self, forKey: .isSubstitution)
-        
+
                     isCancelled = try container.decodeIfPresent(Bool.self, forKey: .isCancelled)
-        
+
                     substituteTeacher = try container.decodeIfPresent(String.self, forKey: .substituteTeacher)
-        
-                    
+
+                    tokenExpirationWarning = try container.decodeIfPresent(String.self, forKey: .tokenExpirationWarning)
+
+
 
                     let currentTimeStr = try container.decode(String.self, forKey: .currentTime)
         
@@ -259,12 +267,14 @@ struct TimetableActivityAttributes: ActivityAttributes {
                     
         
                     try container.encodeIfPresent(isSubstitution, forKey: .isSubstitution)
-        
+
                     try container.encodeIfPresent(isCancelled, forKey: .isCancelled)
-        
+
                     try container.encodeIfPresent(substituteTeacher, forKey: .substituteTeacher)
-        
-                    
+
+                    try container.encodeIfPresent(tokenExpirationWarning, forKey: .tokenExpirationWarning)
+
+
 
                     try container.encode(isoFormatter.string(from: currentTime), forKey: .currentTime)
         
@@ -530,15 +540,21 @@ struct TimetableActivityAttributes: ActivityAttributes {
                 }
         
                 if let season = season {
-        
+
                     json["season"] = season
-        
+
                 }
-        
-                
-        
+
+                if let tokenExpirationWarning = tokenExpirationWarning {
+
+                    json["tokenExpirationWarning"] = tokenExpirationWarning
+
+                }
+
+
+
                 return json
-        
+
             }
         
             
@@ -619,15 +635,17 @@ struct TimetableActivityAttributes: ActivityAttributes {
                     nextStartTime: nextStartTime,
         
                     isSubstitution: json["isSubstitution"] as? Bool,
-        
+
                     isCancelled: json["isCancelled"] as? Bool,
-        
+
                     substituteTeacher: json["substituteTeacher"] as? String,
-        
-                    currentTime: currentTime
-        
+
+                    currentTime: currentTime,
+
+                    tokenExpirationWarning: json["tokenExpirationWarning"] as? String
+
                 )
-        
+
             }
         
         }

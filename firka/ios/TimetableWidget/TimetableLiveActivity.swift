@@ -12,41 +12,10 @@ struct TimetableLiveActivity: Widget {
                 .activitySystemActionForegroundColor(Color.white)
         } dynamicIsland: { context in
             let mode = context.state.mode ?? (context.state.isBreak ? "break" : "lesson")
+            let timeFormatter = DateFormatter()
+            timeFormatter.dateFormat = "HH:mm"
 
-            if mode == "end" {
-                return DynamicIsland {
-                    // Expanded UI for 'end' state
-                    DynamicIslandExpandedRegion(.leading) {
-                        Image(systemName: "checkmark.circle.fill").foregroundColor(.green)
-                    }
-                    DynamicIslandExpandedRegion(.trailing) {
-                        EmptyView()
-                    }
-                    DynamicIslandExpandedRegion(.center) {
-                        Text(context.state.lessonName)
-                            .lineLimit(1)
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                    DynamicIslandExpandedRegion(.bottom) {
-                        Text("A mai órarended véget ért.")
-                            .font(.system(size: 12))
-                            .foregroundColor(.gray)
-                    }
-                } compactLeading: {
-                    Image(systemName: "checkmark.circle.fill").foregroundColor(.green)
-                } compactTrailing: {
-                    Text("Vége")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                        .foregroundColor(.green)
-                } minimal: {
-                    Image(systemName: "checkmark.circle.fill").foregroundColor(.green)
-                }
-            } else {
-                let timeFormatter = DateFormatter()
-                timeFormatter.dateFormat = "HH:mm"
-                
-                return DynamicIsland {
+            return DynamicIsland {
                     // Expanded UI
                     DynamicIslandExpandedRegion(.leading) {
                         EmptyView()
@@ -132,7 +101,7 @@ struct TimetableLiveActivity: Widget {
                                         Image(systemName: SeasonalIconHelper.iconName(for: mode, season: season))
                                             .font(.system(size: 18))
                                             .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
-                                        Text(SeasonalIconHelper.holidayTitle(for: season))
+                                        Text(context.state.labels?.title ?? SeasonalIconHelper.holidayTitle(for: season))
                                             .font(.system(size: 18, weight: .bold))
                                             .foregroundColor(.white)
                                             .lineLimit(1)
@@ -204,9 +173,10 @@ struct TimetableLiveActivity: Widget {
                     }
                     
                     DynamicIslandExpandedRegion(.bottom) {
-                        HStack {
-                            Spacer()
-                            if mode == "xmas" || mode == "newYearDay" {
+                        VStack(spacing: 4) {
+                            HStack {
+                                Spacer()
+                                if mode == "xmas" || mode == "newYearDay" {
                                 EmptyView()
                             } else if mode == "beforeSchool" {
                                 if context.state.endTime > context.state.currentTime {
@@ -240,7 +210,24 @@ struct TimetableLiveActivity: Widget {
                                     .multilineTextAlignment(.center)
                                     .monospacedDigit()
                             }
-                            Spacer()
+                                Spacer()
+                            }
+
+                            // Token expiration warning (only for specific modes)
+                            let mode3 = context.state.mode ?? (context.state.isBreak ? "break" : "lesson")
+                            let showWarningModes = ["newYearEve", "lesson", "break", "seasonalBreak"]
+                            if let warning = context.state.tokenExpirationWarning, !warning.isEmpty, showWarningModes.contains(mode3) {
+                                HStack(spacing: 3) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .font(.system(size: 8))
+                                        .foregroundColor(.orange)
+                                    Text(warning)
+                                        .font(.system(size: 8, weight: .semibold))
+                                        .foregroundColor(.orange)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.6)
+                                }
+                            }
                         }
                     }
                 } compactLeading: {
@@ -294,7 +281,6 @@ struct TimetableLiveActivity: Widget {
             }
         }
     }
-}
 
 // MARK: - Lock Screen View
 @available(iOS 16.2, *)
@@ -303,31 +289,12 @@ struct TimetableLiveActivityView: View {
 
     var body: some View {
         let mode = context.state.mode ?? (context.state.isBreak ? "break" : "lesson")
-        
-        if mode == "end" {
-            VStack(spacing: 8) {
-                HStack {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.green)
-                    Text(context.state.lessonName)
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
-                    Spacer()
-                }
-                Text("A mai órarended véget ért.")
-                    .font(.system(size: 14))
-                    .foregroundColor(.gray)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .padding(16)
-        } else {
             VStack(spacing: 12) {
                 let season = context.state.season ?? ""
                 let screenTimeFormatter = DateFormatter()
                 let _ = { screenTimeFormatter.dateFormat = "HH:mm" }()
                 
-                let beforeSchoolTime = mode == "beforeSchool" ? {
+                let beforeSchoolTime: String? = mode == "beforeSchool" ? {
                     let adjustedDate = context.state.endTime
                     return screenTimeFormatter.string(from: adjustedDate)
                 }() : nil
@@ -357,7 +324,7 @@ struct TimetableLiveActivityView: View {
                                     .foregroundColor(.white)
                                     .lineLimit(2)
                             } else {
-                                Text(SeasonalIconHelper.holidayTitle(for: context.state.season))
+                                Text(context.state.labels?.title ?? SeasonalIconHelper.holidayTitle(for: context.state.season))
                                     .font(.system(size: 20, weight: .bold))
                                     .foregroundColor(.white)
                                     .lineLimit(1)
@@ -373,7 +340,7 @@ struct TimetableLiveActivityView: View {
                             }
                         } else {
                             if let lessonNumber = context.state.lessonNumber {
-                                Text("\(lessonNumber). óra")
+                                Text("\(lessonNumber)\(context.state.labels?.lessonNumberLabel ?? ". óra")")
                                     .font(.system(size: 12))
                                     .foregroundColor(.gray)
                             }
@@ -501,7 +468,7 @@ struct TimetableLiveActivityView: View {
                         Image(systemName: "door.left.hand.closed")
                             .font(.system(size: 12))
                             .foregroundColor(.gray)
-                        Text("Következő terem: \(nextRoomName)")
+                        Text("\(context.state.labels?.nextRoomLabel ?? "Következő terem:") \(nextRoomName)")
                             .font(.system(size: 12))
                             .foregroundColor(.gray)
                     }
@@ -516,7 +483,7 @@ struct TimetableLiveActivityView: View {
                         if mode3 == "xmas" || mode3 == "newYearDay" {
                             EmptyView()
                         } else if mode3 == "beforeSchool" {
-                            Text("Első óra kezdése")
+                            Text(context.state.labels?.timerLabel ?? "Első óra kezdése")
                                 .font(.system(size: 10))
                                 .foregroundColor(.gray)
                             
@@ -534,7 +501,7 @@ struct TimetableLiveActivityView: View {
                                     .monospacedDigit()
                             }
                         } else if mode3 == "seasonalBreak" {
-                            Text("Szünetből hátralévő idő")
+                            Text(context.state.labels?.remainingLabel ?? "Szünetből hátralévő idő")
                                 .font(.system(size: 10))
                                 .foregroundColor(.gray)
                             Text(context.state.seasonalDisplayValue)
@@ -551,7 +518,7 @@ struct TimetableLiveActivityView: View {
                             } else {
                                 let labelText: String = {
                                     if mode3 == "newYearEve" {
-                                        return "Új év"
+                                        return context.state.labels?.timerLabel ?? "Új év"
                                     } else if mode3 == "beforeSchool" {
                                         return context.state.labels?.timerLabel ?? "Első óra kezdése"
                                     } else if context.state.isBreak {
@@ -573,8 +540,23 @@ struct TimetableLiveActivityView: View {
                     }
                     Spacer()
                 }
+
+                // Token expiration warning (only for specific modes)
+                let showWarningModes = ["newYearEve", "lesson", "break", "seasonalBreak"]
+                if let warning = context.state.tokenExpirationWarning, !warning.isEmpty, showWarningModes.contains(mode) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 10))
+                            .foregroundColor(.orange)
+                        Text(warning)
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.orange)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+                    .padding(.top, 2)
+                }
             }
             .padding(16)
         }
-    }
 }

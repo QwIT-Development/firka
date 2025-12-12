@@ -210,17 +210,15 @@ Future<void> _initData(AppInitialization init) async {
     await WidgetCacheHelper.updateWidgetCache(appStyle, init.client);
 
     if (Platform.isIOS) {
-      try {
-        final studentResp = await init.client.getStudent();
-        final studentName = studentResp.response?.name ?? token.studentId ?? "Student";
-        await LiveActivityService.onUserLogin(
-          client: init.client,
-          studentName: studentName,
-          settingsStore: init.settings,
-        );
-      } catch (e, st) {
+      final studentName = token.studentId ?? "Student";
+
+      LiveActivityService.onUserLogin(
+        client: init.client,
+        studentName: studentName,
+        settingsStore: init.settings,
+      ).catchError((e, st) {
         logger.severe('LiveActivity registration failed: $e', e, st);
-      }
+      });
     }
   }
 
@@ -304,7 +302,6 @@ void main() async {
     logger.finest("Initializing app");
     WidgetsFlutterBinding.ensureInitialized();
 
-    // Load environment variables from .env file
     await dotenv.load(fileName: ".env");
     logger.info("Environment variables loaded");
 
