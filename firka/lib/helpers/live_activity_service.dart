@@ -34,6 +34,13 @@ class LiveActivityService {
   static double? _lastSentBellDelay;
   static const Duration _bellDelayDebounceInterval = Duration(seconds: 3);
 
+  static Timer? _morningNotificationDebounceTimer;
+  static double? _pendingMorningNotificationTime;
+  static bool? _pendingMorningNotificationEnabled;
+  static double? _lastSentMorningNotificationTime;
+  static bool? _lastSentMorningNotificationEnabled;
+  static const Duration _morningNotificationDebounceInterval = Duration(seconds: 3);
+
   /// Get current bellDelay value from settings
   static double? _getCurrentBellDelay() {
     try {
@@ -124,7 +131,7 @@ class LiveActivityService {
 
       final globalSetting = initData.settings
           .group("settings")
-          .subGroup("application")["live_activity_enabled"] as SettingsBoolean;
+          .subGroup("notifications")["live_activity_enabled"] as SettingsBoolean;
 
       if (globalSetting.value != userEnabled) {
         globalSetting.value = userEnabled;
@@ -342,43 +349,67 @@ class LiveActivityService {
         }
       }
 
-      final nextMonday = endOfWeek.add(const Duration(days: 1));
-      final nextMondayEnd = nextMonday.add(const Duration(days: 1));
+      bool foundFirstSchoolDay = false;
+      for (int dayOffset = 1; dayOffset <= 5; dayOffset++) {
+        final candidateDay = endOfWeek.add(Duration(days: dayOffset));
 
-      try {
-        final nextMondayResponse = await client.getTimeTable(nextMonday, nextMondayEnd, forceCache: false);
-        if (nextMondayResponse.response != null && nextMondayResponse.response!.isNotEmpty) {
-          final mondayLessons = nextMondayResponse.response!;
-          mondayLessons.sort((a, b) => a.start.compareTo(b.start));
-          final firstLesson = mondayLessons.first;
-
-          final markedLesson = Lesson(
-            uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
-            date: firstLesson.date,
-            start: firstLesson.start,
-            end: firstLesson.end,
-            name: firstLesson.name,
-            lessonNumber: firstLesson.lessonNumber,
-            teacher: firstLesson.teacher,
-            theme: firstLesson.theme,
-            roomName: firstLesson.roomName,
-            substituteTeacher: firstLesson.substituteTeacher,
-            type: firstLesson.type,
-            state: firstLesson.state,
-            canStudentEditHomework: firstLesson.canStudentEditHomework,
-            isHomeworkComplete: firstLesson.isHomeworkComplete,
-            attachments: firstLesson.attachments,
-            isDigitalLesson: firstLesson.isDigitalLesson,
-            digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
-            createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
-            lastModifiedAt: firstLesson.lastModifiedAt,
-          );
-
-          allLessons.add(markedLesson);
-          _logger.info('Background fetch: added next Monday first lesson for notification');
+        if (candidateDay.weekday == DateTime.saturday || candidateDay.weekday == DateTime.sunday) {
+          continue;
         }
-      } catch (e) {
-        _logger.warning('Background fetch: could not fetch next Monday lesson: $e');
+
+        try {
+          final candidateDayEnd = candidateDay.add(const Duration(days: 1));
+          final response = await client.getTimeTable(candidateDay, candidateDayEnd, forceCache: false);
+
+          if (response.response != null && response.response!.isNotEmpty) {
+            final schoolLessons = response.response!.where((lesson) {
+              final uid = lesson.uid.toLowerCase();
+              return uid.contains('orarendiora') || uid.contains('tanitasiora') || uid.contains('uresora');
+            }).toList();
+
+            if (schoolLessons.isNotEmpty) {
+              schoolLessons.sort((a, b) => a.start.compareTo(b.start));
+              final firstLesson = schoolLessons.first;
+
+              final markedLesson = Lesson(
+                uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
+                date: firstLesson.date,
+                start: firstLesson.start,
+                end: firstLesson.end,
+                name: firstLesson.name,
+                lessonNumber: firstLesson.lessonNumber,
+                teacher: firstLesson.teacher,
+                theme: firstLesson.theme,
+                roomName: firstLesson.roomName,
+                substituteTeacher: firstLesson.substituteTeacher,
+                type: firstLesson.type,
+                state: firstLesson.state,
+                canStudentEditHomework: firstLesson.canStudentEditHomework,
+                isHomeworkComplete: firstLesson.isHomeworkComplete,
+                attachments: firstLesson.attachments,
+                isDigitalLesson: firstLesson.isDigitalLesson,
+                digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
+                createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
+                lastModifiedAt: firstLesson.lastModifiedAt,
+              );
+
+              allLessons.add(markedLesson);
+
+              const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+              final dayName = dayNames[candidateDay.weekday - 1];
+              _logger.info('Background fetch: added first lesson from next week $dayName (${firstLesson.name}) marked for notification scheduling only');
+
+              foundFirstSchoolDay = true;
+              break;
+            }
+          }
+        } catch (e) {
+          _logger.warning('Background fetch: could not fetch lessons for day offset $dayOffset: $e');
+        }
+      }
+
+      if (!foundFirstSchoolDay) {
+        _logger.info('Background fetch: no school lessons found in next week for push notification scheduling');
       }
 
       if (allLessons.isEmpty) {
@@ -445,13 +476,28 @@ class LiveActivityService {
       }
 
       if (!enabled) {
-        await onUserLogout();
+        final deviceToken = _cachedDeviceToken ?? await LiveActivityManager.getDeviceToken();
+        if (deviceToken != null) {
+          _logger.info('Notifying backend that Live Activity is disabled');
+          await _backendClient.toggleLiveActivity(
+            deviceToken: deviceToken,
+            liveActivityEnabled: false,
+          );
+        }
+
+        _logger.info('Ending all LiveActivities');
+        await LiveActivityManager.endAllActivities();
+
+        _logger.info('Clearing cache');
+        await _clearCache();
+
+        _logger.info('Stopping timetable monitoring');
+        _stopTimetableMonitoring();
 
         await _setUserLiveActivityEnabled(false, client: effectiveClient);
-
         await syncGlobalSettingWithCurrentUser(client: effectiveClient);
 
-        _logger.info('LiveActivity disabled and user data cleared.');
+        _logger.info('LiveActivity disabled and user data cleared (device remains in backend for push notifications)');
       } else {
         _logger.info('Showing privacy consent screen (manual: $isManual)');
         final bool? accepted = await _showPrivacyConsentScreen();
@@ -460,8 +506,17 @@ class LiveActivityService {
           _logger.info('User accepted privacy policy');
 
           await _setUserLiveActivityEnabled(true, client: effectiveClient);
-
           await syncGlobalSettingWithCurrentUser(client: effectiveClient);
+
+          final deviceToken = _cachedDeviceToken ?? await LiveActivityManager.getDeviceToken();
+
+          if (deviceToken != null) {
+            _logger.info('Notifying backend that Live Activity is enabled');
+            await _backendClient.toggleLiveActivity(
+              deviceToken: deviceToken,
+              liveActivityEnabled: true,
+            );
+          }
 
           final studentResp = await effectiveClient.getStudent();
           final studentName = studentResp.response?.name ?? initData.tokens.first.studentId ?? "Student";
@@ -576,16 +631,6 @@ class LiveActivityService {
     }
   }
 
-  /// Get next Monday's date (or this Monday if today is Monday and it's early morning)
-  static DateTime _getNextMonday(DateTime now) {
-    final int daysUntilMonday = ((DateTime.monday - now.weekday) % 7);
-    final int daysToAdd = daysUntilMonday == 0 ? 7 : daysUntilMonday;
-
-    final nextMonday = now.add(Duration(days: daysToAdd));
-
-    return DateTime(nextMonday.year, nextMonday.month, nextMonday.day);
-  }
-
   /// Called when user logs in successfully
   /// Registers the device and uploads the *full* timetable
   static Future<void> onUserLogin({
@@ -600,11 +645,12 @@ class LiveActivityService {
       return;
     }
 
-    final enabled = await isEnabled(settingsStore, client);
-    _logger.info('onUserLogin: LiveActivity enabled=$enabled');
+    final liveActivityEnabled = await isEnabled(settingsStore, client);
+    final morningNotificationEnabled = _getCurrentMorningNotificationEnabled() ?? false;
+    _logger.info('onUserLogin: liveActivityEnabled=$liveActivityEnabled, morningNotificationEnabled=$morningNotificationEnabled');
 
-    if (!enabled) {
-      _logger.warning('onUserLogin: LiveActivity not enabled, returning early');
+    if (!liveActivityEnabled && !morningNotificationEnabled) {
+      _logger.warning('onUserLogin: Both Live Activity and Morning Notifications are disabled, returning early');
       return;
     }
 
@@ -615,59 +661,103 @@ class LiveActivityService {
       final startOfWeek = todayStart.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
 
-      _logger.info('onUserLogin: Fetching timetable from $startOfWeek to $endOfWeek');
-      final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek);
+      List<Lesson> allLessons = [];
 
-      final allLessons = List<Lesson>.from(timetableResponse.response ?? []);
-      _logger.info('onUserLogin: Fetched ${allLessons.length} lessons for current week');
+      try {
+        _logger.info('onUserLogin: Attempting to fetch fresh timetable from KRÉTA API');
+        final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek, forceCache: false);
+
+        if (timetableResponse.response != null) {
+          allLessons = List<Lesson>.from(timetableResponse.response!);
+          _logger.info('onUserLogin: Successfully fetched ${allLessons.length} lessons from KRÉTA API');
+        } else {
+          throw Exception('KRÉTA API returned null response');
+        }
+      } catch (e) {
+        _logger.warning('onUserLogin: KRÉTA API failed ($e), falling back to cache');
+        try {
+          final cachedResponse = await client.getTimeTable(startOfWeek, endOfWeek, forceCache: true);
+          if (cachedResponse.response != null) {
+            allLessons = List<Lesson>.from(cachedResponse.response!);
+            _logger.info('onUserLogin: Successfully loaded ${allLessons.length} lessons from cache');
+          } else {
+            _logger.severe('onUserLogin: Both API and cache failed');
+            return;
+          }
+        } catch (cacheError) {
+          _logger.severe('onUserLogin: Cache fallback also failed: $cacheError');
+          return;
+        }
+      }
 
       if (allLessons.isEmpty) {
         _logger.warning('onUserLogin: No lessons found, returning early');
         return;
       }
 
-      final nextMonday = _getNextMonday(now);
-      final nextMondayEndOfDay = nextMonday.add(const Duration(days: 1));
+      _logger.info('Searching for first school day of next week');
 
-      _logger.info('Fetching next Monday timetable from $nextMonday to $nextMondayEndOfDay');
+      bool foundFirstSchoolDay = false;
+      for (int dayOffset = 1; dayOffset <= 5; dayOffset++) {
+        final candidateDay = endOfWeek.add(Duration(days: dayOffset));
 
-      try {
-        final nextMondayTimetable = await client.getTimeTable(nextMonday, nextMondayEndOfDay);
-        final nextMondayLessons = nextMondayTimetable.response ?? [];
-
-        _logger.info('Fetched ${nextMondayLessons.length} lessons for next Monday');
-
-        if (nextMondayLessons.isNotEmpty) {
-          nextMondayLessons.sort((a, b) => a.start.compareTo(b.start));
-          final firstLesson = nextMondayLessons.first;
-
-          final notificationLesson = Lesson(
-            uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
-            date: firstLesson.date,
-            start: firstLesson.start,
-            end: firstLesson.end,
-            name: firstLesson.name,
-            lessonNumber: firstLesson.lessonNumber,
-            teacher: firstLesson.teacher,
-            theme: firstLesson.theme,
-            roomName: firstLesson.roomName,
-            substituteTeacher: firstLesson.substituteTeacher,
-            type: firstLesson.type,
-            state: firstLesson.state,
-            canStudentEditHomework: firstLesson.canStudentEditHomework,
-            isHomeworkComplete: firstLesson.isHomeworkComplete,
-            attachments: firstLesson.attachments,
-            isDigitalLesson: firstLesson.isDigitalLesson,
-            digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
-            createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
-            lastModifiedAt: firstLesson.lastModifiedAt,
-          );
-
-          allLessons.add(notificationLesson);
-          _logger.info('Added next Monday first lesson for notification: ${firstLesson.name} at ${firstLesson.start}');
+        if (candidateDay.weekday == DateTime.saturday || candidateDay.weekday == DateTime.sunday) {
+          continue;
         }
-      } catch (e) {
-        _logger.warning('Could not fetch next Monday timetable for notification: $e');
+
+        try {
+          final candidateDayEnd = candidateDay.add(const Duration(days: 1));
+          final response = await client.getTimeTable(candidateDay, candidateDayEnd, forceCache: false);
+
+          if (response.response != null && response.response!.isNotEmpty) {
+            final schoolLessons = response.response!.where((lesson) {
+              final uid = lesson.uid.toLowerCase();
+              return uid.contains('orarendiora') || uid.contains('tanitasiora') || uid.contains('uresora');
+            }).toList();
+
+            if (schoolLessons.isNotEmpty) {
+              schoolLessons.sort((a, b) => a.start.compareTo(b.start));
+              final firstLesson = schoolLessons.first;
+
+              final notificationLesson = Lesson(
+                uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
+                date: firstLesson.date,
+                start: firstLesson.start,
+                end: firstLesson.end,
+                name: firstLesson.name,
+                lessonNumber: firstLesson.lessonNumber,
+                teacher: firstLesson.teacher,
+                theme: firstLesson.theme,
+                roomName: firstLesson.roomName,
+                substituteTeacher: firstLesson.substituteTeacher,
+                type: firstLesson.type,
+                state: firstLesson.state,
+                canStudentEditHomework: firstLesson.canStudentEditHomework,
+                isHomeworkComplete: firstLesson.isHomeworkComplete,
+                attachments: firstLesson.attachments,
+                isDigitalLesson: firstLesson.isDigitalLesson,
+                digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
+                createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
+                lastModifiedAt: firstLesson.lastModifiedAt,
+              );
+
+              allLessons.add(notificationLesson);
+
+              const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+              final dayName = dayNames[candidateDay.weekday - 1];
+              _logger.info('Added first lesson from next week $dayName (${firstLesson.name}) marked for notification scheduling only');
+
+              foundFirstSchoolDay = true;
+              break;
+            }
+          }
+        } catch (e) {
+          _logger.warning('Failed to fetch lessons for day offset $dayOffset: $e');
+        }
+      }
+
+      if (!foundFirstSchoolDay) {
+        _logger.info('No school lessons found in next week for push notification scheduling');
       }
 
       final deviceToken = await _getOrWaitDeviceToken();
@@ -714,6 +804,7 @@ class LiveActivityService {
   }
 
   /// Called when app is opened - sends timetable to backend, backend handles updates
+  /// IMPORTANT: Recreates Live Activity on every app open to refresh the 8-hour push token
   static Future<void> onAppOpened({
     required KretaClient client,
     required String studentName,
@@ -731,13 +822,9 @@ class LiveActivityService {
 
       final activeActivities = await LiveActivityManager.getActiveActivities();
       if (activeActivities.isNotEmpty) {
-        _logger.info('Activity already running, sending timetable update to backend.');
-        await checkAndUpdateTimetable(
-            client: client,
-            studentName: studentName,
-            settingsStore: settingsStore
-        );
-        return;
+        _logger.info('Ending existing activity to refresh push token (8-hour expiration)');
+        await LiveActivityManager.endAllActivities();
+        await Future.delayed(const Duration(milliseconds: 500));
       }
 
       final now = DateTime.now();
@@ -748,6 +835,8 @@ class LiveActivityService {
       final allLessons = timetableResponse.response ?? [];
 
       await _startPlaceholderActivity(allLessons, studentName);
+
+      _logger.info('New activity created with fresh push token');
 
       await checkAndUpdateTimetable(
           client: client,
@@ -800,11 +889,15 @@ class LiveActivityService {
     required KretaClient client,
     required String studentName,
     SettingsStore? settingsStore,
+    bool forceUpdate = false,
   }) async {
     if (!Platform.isIOS || !_isInitialized) return;
 
-    final enabled = await isEnabled(settingsStore, client);
-    if (!enabled) {
+    final liveActivityEnabled = await isEnabled(settingsStore, client);
+    final morningNotificationEnabled = _getCurrentMorningNotificationEnabled() ?? false;
+
+    if (!liveActivityEnabled && !morningNotificationEnabled) {
+      _logger.info('Both Live Activity and Morning Notifications are disabled, skipping timetable fetch');
       return;
     }
 
@@ -814,8 +907,31 @@ class LiveActivityService {
       final startOfWeek = todayStart.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
 
-      final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek);
-      List<Lesson> allLessons = List<Lesson>.from(timetableResponse.response ?? []);
+      List<Lesson> allLessons = [];
+
+      try {
+        final timetableResponse = await client.getTimeTable(startOfWeek, endOfWeek, forceCache: false);
+
+        if (timetableResponse.response != null) {
+          allLessons = List<Lesson>.from(timetableResponse.response!);
+        } else {
+          throw Exception('KRÉTA API returned null response');
+        }
+      } catch (e) {
+        _logger.warning('checkAndUpdateTimetable: KRÉTA API failed ($e), falling back to cache');
+        try {
+          final cachedResponse = await client.getTimeTable(startOfWeek, endOfWeek, forceCache: true);
+          if (cachedResponse.response != null) {
+            allLessons = List<Lesson>.from(cachedResponse.response!);
+          } else {
+            _logger.severe('checkAndUpdateTimetable: Both API and cache failed');
+            return;
+          }
+        } catch (cacheError) {
+          _logger.severe('checkAndUpdateTimetable: Cache fallback also failed: $cacheError');
+          return;
+        }
+      }
 
       bool foundFirstSchoolDay = false;
       for (int dayOffset = 1; dayOffset <= 5; dayOffset++) {
@@ -827,12 +943,12 @@ class LiveActivityService {
 
         try {
           final candidateDayEnd = candidateDay.add(const Duration(days: 1));
-          final response = await client.getTimeTable(candidateDay, candidateDayEnd);
+          final response = await client.getTimeTable(candidateDay, candidateDayEnd, forceCache: false);
 
           if (response.response != null && response.response!.isNotEmpty) {
             final schoolLessons = response.response!.where((lesson) {
               final uid = lesson.uid.toLowerCase();
-              return uid.contains('tanitasiora');
+              return uid.contains('orarendiora') || uid.contains('tanitasiora') || uid.contains('uresora');
             }).toList();
 
             if (schoolLessons.isNotEmpty) {
@@ -954,14 +1070,23 @@ class LiveActivityService {
       final deviceToken = await _getOrWaitDeviceToken();
       if (deviceToken == null) return;
 
-      final lastUpdate = await _getLastUpdate();
-      final hasChanges = await _backendClient.checkTimetableChanges(
-        deviceToken: deviceToken,
-        lastUpdated: lastUpdate,
-      );
+      bool shouldUpdate = forceUpdate;
 
-      if (hasChanges) {
-        _logger.info('Timetable changes detected, sending to backend...');
+      if (!forceUpdate) {
+        final lastUpdate = await _getLastUpdate();
+        final hasChanges = await _backendClient.checkTimetableChanges(
+          deviceToken: deviceToken,
+          lastUpdated: lastUpdate,
+        );
+        shouldUpdate = hasChanges;
+      }
+
+      if (shouldUpdate) {
+        if (forceUpdate) {
+          _logger.info('Forcing timetable update (notification settings changed)...');
+        } else {
+          _logger.info('Timetable changes detected, sending to backend...');
+        }
 
         final success = await _backendClient.updateTimetable(
           deviceToken: deviceToken,
@@ -1030,10 +1155,12 @@ class LiveActivityService {
 
   /// Starts a minimal placeholder activity shell - backend will update with real data
   static Future<void> _startPlaceholderActivity(List<Lesson> allLessons, String studentName) async {
+    // Always end existing activities to ensure fresh token (8-hour expiration)
     final activeActivities = await LiveActivityManager.getActiveActivities();
     if (activeActivities.isNotEmpty) {
-      _logger.info('_startPlaceholderActivity: Activity already running.');
-      return;
+      _logger.info('_startPlaceholderActivity: Ending existing activities before creating new one');
+      await LiveActivityManager.endAllActivities();
+      await Future.delayed(const Duration(milliseconds: 500));
     }
 
     _logger.info('_startPlaceholderActivity: Creating minimal loading shell, backend will update.');
@@ -1251,6 +1378,151 @@ class LiveActivityService {
       }
     } catch (e) {
       _logger.severe('Error updating bellDelay: $e');
+    }
+  }
+
+  /// Handle morning notification enabled change with debounce
+  /// Waits 3 seconds after the last change before sending update to backend
+  static void onMorningNotificationEnabledChanged(bool newValue) {
+    if (!Platform.isIOS || !_isInitialized) return;
+
+    _logger.info('Morning notification enabled changed to $newValue, scheduling debounced update');
+
+    _morningNotificationDebounceTimer?.cancel();
+
+    _pendingMorningNotificationEnabled = newValue;
+
+    _morningNotificationDebounceTimer = Timer(_morningNotificationDebounceInterval, () async {
+      await _sendMorningNotificationUpdate();
+    });
+  }
+
+  /// Handle morning notification time change with debounce
+  /// Waits 3 seconds after the last change before sending update to backend
+  static void onMorningNotificationTimeChanged(double newValue) {
+    if (!Platform.isIOS || !_isInitialized) return;
+
+    _logger.info('Morning notification time changed to $newValue minutes, scheduling debounced update');
+
+    _morningNotificationDebounceTimer?.cancel();
+
+    _pendingMorningNotificationTime = newValue;
+
+    _morningNotificationDebounceTimer = Timer(_morningNotificationDebounceInterval, () async {
+      await _sendMorningNotificationUpdate();
+    });
+  }
+
+  /// Internal function to send morning notification settings update to backend
+  static Future<void> _sendMorningNotificationUpdate() async {
+    final enabledToSend = _pendingMorningNotificationEnabled ?? _getCurrentMorningNotificationEnabled();
+    final timeToSend = _pendingMorningNotificationTime ?? _getCurrentMorningNotificationTime();
+
+    if (_lastSentMorningNotificationEnabled == enabledToSend &&
+        _lastSentMorningNotificationTime == timeToSend) {
+      _logger.info('Morning notification settings already sent to backend, skipping');
+      _pendingMorningNotificationEnabled = null;
+      _pendingMorningNotificationTime = null;
+      return;
+    }
+
+    try {
+      final deviceToken = await _getOrWaitDeviceToken();
+      if (deviceToken == null) {
+        _logger.warning('No device token available to update morning notification settings');
+        return;
+      }
+
+      _logger.info('Sending morning notification settings update to backend: enabled=$enabledToSend, time=$timeToSend minutes');
+
+      final success = await _backendClient.updateMorningNotificationSettings(
+        deviceToken: deviceToken,
+        morningNotificationEnabled: enabledToSend,
+        morningNotificationTime: timeToSend?.toInt(),
+      );
+
+      if (success) {
+        final wasDisabled = _lastSentMorningNotificationEnabled == false;
+        final isNowEnabled = enabledToSend == true;
+
+        _lastSentMorningNotificationEnabled = enabledToSend;
+        _lastSentMorningNotificationTime = timeToSend;
+        _logger.info('Morning notification settings updated successfully in backend');
+
+        if (wasDisabled && isNowEnabled) {
+          _logger.info('Morning notifications re-enabled, fetching timetable to recreate notifications');
+          try {
+            final client = initData.client;
+            final settingsStore = initData.settings;
+
+            if (client != null) {
+              final studentResp = await client.getStudent();
+              final studentName = studentResp.response?.name ?? client.model?.studentId ?? 'Student';
+
+              await checkAndUpdateTimetable(
+                client: client,
+                studentName: studentName,
+                settingsStore: settingsStore,
+                forceUpdate: true,
+              );
+              _logger.info('Timetable fetch completed after re-enabling notifications');
+            } else {
+              _logger.warning('Cannot fetch timetable: client is null');
+            }
+          } catch (e) {
+            _logger.severe('Error fetching timetable after re-enabling notifications: $e');
+          }
+        }
+
+        final currentEnabled = _pendingMorningNotificationEnabled ?? _getCurrentMorningNotificationEnabled();
+        final currentTime = _pendingMorningNotificationTime ?? _getCurrentMorningNotificationTime();
+
+        if (_lastSentMorningNotificationEnabled != currentEnabled ||
+            _lastSentMorningNotificationTime != currentTime) {
+          _logger.info('Morning notification settings changed during update, scheduling another update');
+          _morningNotificationDebounceTimer?.cancel();
+          _morningNotificationDebounceTimer = Timer(_morningNotificationDebounceInterval, () async {
+            await _sendMorningNotificationUpdate();
+          });
+        } else {
+          _pendingMorningNotificationEnabled = null;
+          _pendingMorningNotificationTime = null;
+        }
+      } else {
+        _logger.warning('Failed to update morning notification settings in backend');
+      }
+    } catch (e) {
+      _logger.severe('Error updating morning notification settings: $e');
+    }
+  }
+
+  /// Get current morning notification enabled value from settings
+  static bool? _getCurrentMorningNotificationEnabled() {
+    try {
+      if (!initDone || initData.settings == null) {
+        return null;
+      }
+      final setting = initData.settings.group("settings")
+          .subGroup("notifications")["morning_notification_enabled"] as SettingsBoolean?;
+      return setting?.value;
+    } catch (e) {
+      _logger.warning('Error getting current morning notification enabled: $e');
+      return null;
+    }
+  }
+
+  /// Get current morning notification time value from settings
+  static double? _getCurrentMorningNotificationTime() {
+    try {
+      if (!initDone || initData.settings == null) {
+        return null;
+      }
+      final setting = initData.settings.group("settings")
+          .subGroup("notifications")["morning_notification_time"] as SettingsDouble?;
+      return setting?.value;
+    } catch (e) {
+      _logger.warning('Error getting current morning notification time: $e');
+      return null;
     }
   }
 }

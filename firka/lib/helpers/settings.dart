@@ -33,6 +33,8 @@ const themeBrightness = 1017;
 const ttToastSubstitution = 1018;
 const liveActivityEnabled = 1019;
 const liveActivityPrivacyEverDeclined = 1020;
+const morningNotificationEnabled = 1021;
+const morningNotificationTime = 1022;
 
 bool always() {
   return true;
@@ -53,6 +55,22 @@ bool isAndroid() {
 
 bool isIOS() {
   return Platform.isIOS;
+}
+
+bool isLiveActivityEnabled() {
+  return Platform.isIOS &&
+      initData.settings
+          .group("settings")
+          .subGroup("notifications")
+          .boolean("live_activity_enabled");
+}
+
+bool isMorningNotificationEnabled() {
+  return Platform.isIOS &&
+      initData.settings
+          .group("settings")
+          .subGroup("notifications")
+          .boolean("morning_notification_enabled");
 }
 
 bool isDebug() {
@@ -124,24 +142,6 @@ class SettingsStore {
                     null),
                 "left_handed_mode": SettingsBoolean(leftHandedMode, null, null,
                     l10n.s_ag_left_handed_mode, false, never),
-                "live_activity_enabled": SettingsBoolean(
-                    liveActivityEnabled,
-                    FirkaIconType.majesticons,
-                    Majesticon.clockSolid,
-                    l10n.la_enable,
-                    false,
-                    isIOS,
-                    () async {
-                      final globalSetting = initData.settings
-                          .group("settings")
-                          .subGroup("application")["live_activity_enabled"] as SettingsBoolean;
-
-                      final enabled = globalSetting.value;
-
-                      await LiveActivityService.handleEnabledChange(enabled, isManual: true);
-
-                      await LiveActivityService.syncGlobalSettingWithCurrentUser();
-                    }),
                 "live_activity_privacy_ever_declined": SettingsBoolean(
                     liveActivityPrivacyEverDeclined,
                     null,
@@ -149,15 +149,6 @@ class SettingsStore {
                     "Privacy Ever Declined",
                     false,
                     never),
-                "test_notification": SettingsButton(
-                    0,
-                    FirkaIconType.majesticons,
-                    Majesticon.bellSolid,
-                    "Teszt értesítés küldése",
-                    isDebugIOS,
-                    () async {
-                      await LiveActivityService.sendTestNotification();
-                    }),
                 "language_header":
                     SettingsHeaderSmall(0, l10n.s_ag_language_header, always),
                 "language": SettingsItemsRadio(
@@ -304,11 +295,65 @@ class SettingsStore {
               0,
               FirkaIconType.majesticons,
               Majesticon.bellSolid,
-              "Értesítések",
+              l10n.s_n,
               LinkedHashMap.of({
                 "back": SettingsBackHeader(0, l10n.s_settings, always),
+                "settings_header": SettingsHeader(0, l10n.s_n, always),
+                "settings_padding": SettingsPadding(0, 23, always),
+                "morning_notification_enabled": SettingsBoolean(
+                    morningNotificationEnabled,
+                    FirkaIconType.majesticons,
+                    Majesticon.bellSolid,
+                    l10n.s_n_morning,
+                    true,
+                    always,
+                    () async {
+                      final setting = initData.settings
+                          .group("settings")
+                          .subGroup("notifications")["morning_notification_enabled"] as SettingsBoolean;
+
+                      LiveActivityService.onMorningNotificationEnabledChanged(setting.value);
+                    }),
+                "morning_notification_time": SettingsDouble(
+                    morningNotificationTime,
+                    FirkaIconType.majesticons,
+                    Majesticon.clockSolid,
+                    l10n.s_n_morning_time,
+                    30,   // minValue
+                    120,  // defaultValue
+                    240,  // maxValue
+                    0,    // precision (0 = whole numbers)
+                    isMorningNotificationEnabled,
+                    step: 15), // 15 minute steps
+                "live_activity_enabled": SettingsBoolean(
+                    liveActivityEnabled,
+                    FirkaIconType.majesticons,
+                    Majesticon.clockSolid,
+                    l10n.s_n_live_activity,
+                    false,
+                    always,
+                    () async {
+                      final globalSetting = initData.settings
+                          .group("settings")
+                          .subGroup("notifications")["live_activity_enabled"] as SettingsBoolean;
+
+                      final enabled = globalSetting.value;
+
+                      await LiveActivityService.handleEnabledChange(enabled, isManual: true);
+
+                      await LiveActivityService.syncGlobalSettingWithCurrentUser();
+                    }),
+                "test_notification": SettingsButton(
+                    0,
+                    FirkaIconType.majesticons,
+                    Majesticon.bellSolid,
+                    l10n.s_n_test,
+                    isDebugIOS,
+                    () async {
+                      await LiveActivityService.sendTestNotification();
+                    }),
               }),
-              never,
+              isIOS,
               null),
           "extras": SettingsSubGroup(
               0,
@@ -486,6 +531,12 @@ class SettingsStore {
           .subGroup("application")["bell_delay"] as SettingsDouble;
       bellDelaySetting.postUpdate = () async {
         LiveActivityService.onBellDelayChanged(bellDelaySetting.value);
+      };
+
+      final morningNotificationTimeSetting = group("settings")
+          .subGroup("notifications")["morning_notification_time"] as SettingsDouble;
+      morningNotificationTimeSetting.postUpdate = () async {
+        LiveActivityService.onMorningNotificationTimeChanged(morningNotificationTimeSetting.value);
       };
     }
   }
@@ -1011,6 +1062,7 @@ class SettingsDouble implements SettingsItem {
   double defaultValue;
   double maxValue = 0.0;
   int precision;
+  double? step;
 
   SettingsDouble(
       this.key,
@@ -1021,7 +1073,8 @@ class SettingsDouble implements SettingsItem {
       this.defaultValue,
       this.maxValue,
       this.precision,
-      this.visibilityProvider);
+      this.visibilityProvider,
+      {this.step});
 
   double toRoundedDouble() {
     return double.parse(toRoundedString());

@@ -12,7 +12,7 @@ struct TimetableActivityAttributes: ActivityAttributes {
         var endTime: Date
         var lessonNumber: Int?
 
-        var mode: String? // "lesson" | "break" | "seasonalBreak" | "xmas" | "newYear"
+        var mode: String? // "lesson" | "break" | "seasonalBreak" | "xmas" | "newYearEve" | "newYearDay"
         var message: String?
         var season: String?
 
@@ -27,6 +27,7 @@ struct TimetableActivityAttributes: ActivityAttributes {
         var currentTime: Date
 
         var labels: Labels?
+        var tokenExpirationWarning: String?
 
         struct Labels: Codable, Hashable {
             var title: String?
@@ -39,6 +40,9 @@ struct TimetableActivityAttributes: ActivityAttributes {
             var nextLabel: String?
             var firstLessonLabel: String?
             var startTimeLabel: String?
+            var lessonNumberLabel: String?
+            var nextRoomLabel: String?
+            var remainingLabel: String?
         }
 
         enum CodingKeys: String, CodingKey {
@@ -61,9 +65,10 @@ struct TimetableActivityAttributes: ActivityAttributes {
             case substituteTeacher
             case currentTime
             case labels
+            case tokenExpirationWarning
         }
 
-        init(isBreak: Bool, lessonName: String, lessonTheme: String?, roomName: String?, teacherName: String?, startTime: Date, endTime: Date, lessonNumber: Int?, mode: String?, message: String?, season: String?, nextLessonName: String?, nextRoomName: String?, nextStartTime: Date?, isSubstitution: Bool, isCancelled: Bool, substituteTeacher: String?, currentTime: Date, labels: Labels? = nil) {
+        init(isBreak: Bool, lessonName: String, lessonTheme: String?, roomName: String?, teacherName: String?, startTime: Date, endTime: Date, lessonNumber: Int?, mode: String?, message: String?, season: String?, nextLessonName: String?, nextRoomName: String?, nextStartTime: Date?, isSubstitution: Bool, isCancelled: Bool, substituteTeacher: String?, currentTime: Date, labels: Labels? = nil, tokenExpirationWarning: String? = nil) {
             self.isBreak = isBreak
             self.lessonName = lessonName
             self.lessonTheme = lessonTheme
@@ -83,6 +88,7 @@ struct TimetableActivityAttributes: ActivityAttributes {
             self.substituteTeacher = substituteTeacher
             self.currentTime = currentTime
             self.labels = labels
+            self.tokenExpirationWarning = tokenExpirationWarning
         }
         
         init(from decoder: Decoder) throws {
@@ -126,6 +132,7 @@ struct TimetableActivityAttributes: ActivityAttributes {
             isCancelled = try container.decode(Bool.self, forKey: .isCancelled)
             substituteTeacher = try container.decodeIfPresent(String.self, forKey: .substituteTeacher)
             labels = try container.decodeIfPresent(Labels.self, forKey: .labels)
+            tokenExpirationWarning = try container.decodeIfPresent(String.self, forKey: .tokenExpirationWarning)
 
             let currentTimeStr = try container.decode(String.self, forKey: .currentTime)
             guard let currentTimeDate = isoFormatter.date(from: currentTimeStr) else {
@@ -164,6 +171,7 @@ struct TimetableActivityAttributes: ActivityAttributes {
             try container.encode(isCancelled, forKey: .isCancelled)
             try container.encodeIfPresent(substituteTeacher, forKey: .substituteTeacher)
             try container.encodeIfPresent(labels, forKey: .labels)
+            try container.encodeIfPresent(tokenExpirationWarning, forKey: .tokenExpirationWarning)
 
             try container.encode(isoFormatter.string(from: currentTime), forKey: .currentTime)
         }
@@ -293,7 +301,10 @@ extension TimetableActivityAttributes.ContentState {
         if let season = season {
             json["season"] = season
         }
-        
+        if let tokenExpirationWarning = tokenExpirationWarning {
+            json["tokenExpirationWarning"] = tokenExpirationWarning
+        }
+
         return json
     }
     
@@ -334,7 +345,10 @@ extension TimetableActivityAttributes.ContentState {
                 themeLabel: labelsDict["themeLabel"] as? String,
                 nextLabel: labelsDict["nextLabel"] as? String,
                 firstLessonLabel: labelsDict["firstLessonLabel"] as? String,
-                startTimeLabel: labelsDict["startTimeLabel"] as? String
+                startTimeLabel: labelsDict["startTimeLabel"] as? String,
+                lessonNumberLabel: labelsDict["lessonNumberLabel"] as? String,
+                nextRoomLabel: labelsDict["nextRoomLabel"] as? String,
+                remainingLabel: labelsDict["remainingLabel"] as? String
             )
         } else {
             labels = nil
@@ -359,7 +373,8 @@ extension TimetableActivityAttributes.ContentState {
             isCancelled: isCancelled,
             substituteTeacher: json["substituteTeacher"] as? String,
             currentTime: currentTime,
-            labels: labels
+            labels: labels,
+            tokenExpirationWarning: json["tokenExpirationWarning"] as? String
         )
     }
 }

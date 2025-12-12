@@ -916,12 +916,19 @@ void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
                                         min: setting.minValue,
                                         value: setting.value,
                                         max: setting.maxValue,
+                                        divisions: setting.step != null
+                                            ? ((setting.maxValue - setting.minValue) / setting.step!).round()
+                                            : null,
                                         thumbColor: appStyle.colors.accent,
                                         activeColor: appStyle.colors.secondary,
                                         inactiveColor: appStyle.colors.a15p,
                                         onChanged: (v) async {
                                           setState(() {
-                                            setting.value = v;
+                                            if (setting.step != null) {
+                                              setting.value = (v / setting.step!).round() * setting.step!;
+                                            } else {
+                                              setting.value = v;
+                                            }
                                             setting.value =
                                                 setting.toRoundedDouble();
                                           });

@@ -101,13 +101,9 @@ class LiveActivityManager {
     try {
       await _syncActivityState();
       if (_isActivityActive) {
-        _logger.info('Activity already exists, updating instead.');
-        return updateActivity(
-          currentLesson: currentLesson,
-          nextLesson: nextLesson,
-          isBreak: isBreak,
-          mode: mode,
-        );
+        _logger.info('Activity already exists, ending it to create new one with fresh token');
+        await endAllActivities();
+        await Future.delayed(const Duration(milliseconds: 500));
       }
 
       final contentState = _createContentState(

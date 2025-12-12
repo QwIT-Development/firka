@@ -141,11 +141,12 @@ class LiveActivityMethodChannelManager: NSObject {
                 let attributes = try JSONDecoder().decode([String: String].self, from: attributesData)
                 let contentState = try JSONDecoder().decode(TimetableActivityAttributes.ContentState.self, from: contentStateData)
 
-                if let existingActivity = Activity<TimetableActivityAttributes>.activities.first {
-                    await existingActivity.update(ActivityContent<TimetableActivityAttributes.ContentState>(state: contentState, staleDate: nil))
-                    result(existingActivity.id)
-                    return
+                let existingActivities = Activity<TimetableActivityAttributes>.activities
+                for activity in existingActivities {
+                    await activity.end(nil, dismissalPolicy: .immediate)
                 }
+
+                try await Task.sleep(nanoseconds: 100_000_000)
 
                 guard let studentName = attributes["studentName"],
                       let schoolName = attributes["schoolName"] else {

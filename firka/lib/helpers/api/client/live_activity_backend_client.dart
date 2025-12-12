@@ -366,5 +366,61 @@ class LiveActivityBackendClient {
       return false;
     }
   }
+
+  /// Update morning notification settings for device
+  Future<bool> updateMorningNotificationSettings({
+    required String deviceToken,
+    int? morningNotificationTime,
+    bool? morningNotificationEnabled,
+  }) async {
+    try {
+      final response = await _dio.put(
+        '/live-activity/morning-notification',
+        data: {
+          'deviceToken': deviceToken,
+          if (morningNotificationTime != null) 'morningNotificationTime': morningNotificationTime,
+          if (morningNotificationEnabled != null) 'morningNotificationEnabled': morningNotificationEnabled,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        _logger.info('Morning notification settings updated successfully: enabled=$morningNotificationEnabled, time=$morningNotificationTime');
+        return true;
+      }
+
+      _logger.warning('Failed to update morning notification settings: ${response.statusCode}');
+      return false;
+    } catch (e) {
+      _logger.severe('Error updating morning notification settings: $e');
+      return false;
+    }
+  }
+
+  /// Toggle Live Activity feature (enable/disable)
+  Future<bool> toggleLiveActivity({
+    required String deviceToken,
+    required bool liveActivityEnabled,
+  }) async {
+    try {
+      final response = await _dio.put(
+        '/live-activity/toggle',
+        data: {
+          'deviceToken': deviceToken,
+          'liveActivityEnabled': liveActivityEnabled,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        _logger.info('Live Activity ${liveActivityEnabled ? "enabled" : "disabled"} successfully');
+        return true;
+      }
+
+      _logger.warning('Failed to toggle Live Activity: ${response.statusCode}');
+      return false;
+    } catch (e) {
+      _logger.severe('Error toggling Live Activity: $e');
+      return false;
+    }
+  }
 }
 
