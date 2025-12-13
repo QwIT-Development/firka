@@ -405,41 +405,25 @@ struct TimetableActivityAttributes: ActivityAttributes {
         
 
             var seasonalRemainingText: String {
-        
                 let remaining = max(0, timeRemaining)
-        
                 let hours = Int(remaining) / 3600
-        
                 if hours >= 24 {
-        
                     let days = hours / 24
-        
                     return "Szünetből hátralévő idő: \(days) nap"
-        
                 }
-        
                 return "Szünetből hátralévő idő: \(hours) óra"
-        
             }
         
             
         
             var seasonalDisplayValue: String {
-        
                 let remaining = max(0, timeRemaining)
-        
                 let hours = Int(remaining) / 3600
-        
                 if hours >= 24 {
-        
                     let days = hours / 24
-        
                     return "\(days) nap"
-        
                 }
-        
                 return "\(hours) óra"
-        
             }
         
         }

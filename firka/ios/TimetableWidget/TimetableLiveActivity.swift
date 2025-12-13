@@ -101,7 +101,7 @@ struct TimetableLiveActivity: Widget {
                                         Image(systemName: SeasonalIconHelper.iconName(for: mode, season: season))
                                             .font(.system(size: 18))
                                             .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
-                                        Text(context.state.labels?.title ?? SeasonalIconHelper.holidayTitle(for: season))
+                                        Text(context.state.labels?.title ?? context.state.lessonName)
                                             .font(.system(size: 18, weight: .bold))
                                             .foregroundColor(.white)
                                             .lineLimit(1)
@@ -243,27 +243,32 @@ struct TimetableLiveActivity: Widget {
                         .font(.system(size: 14))
                         .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
                 } compactTrailing: {
-                    if SeasonalIconHelper.isSeasonalMode(mode) {
-                        if mode == "newYearEve" || mode == "seasonalBreak" {
-                             Text(timerInterval: context.state.currentTime...context.state.endTime, countsDown: true)
-                                .font(.system(size: 12, weight: .semibold, design: .rounded))
-                                .foregroundColor(.green)
-                                .monospacedDigit()
-                                .frame(width: 50)
-                        } else {
-                            Text("")
-                                .frame(width: 50)
-                        }
+                    if mode == "seasonalBreak" {
+                        // Seasonal break: static short format from backend message
+                        let compactText = TimeFormatHelper.compactSeasonalBreak(from: context.state.message ?? "")
+
+                        Text(compactText)
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundColor(.green)
+                            .frame(width: 50)
+                    } else if mode == "xmas" || mode == "newYearDay" {
+                        Text("")
+                            .frame(width: 50)
                     } else if context.state.isCancelled ?? false {
                         Text("❌")
                             .font(.system(size: 12, weight: .semibold))
                             .frame(width: 50)
                     } else {
-                        Text(timerInterval: context.state.currentTime...context.state.endTime, countsDown: true)
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                            .foregroundColor(.green)
-                            .monospacedDigit()
-                            .frame(width: 50)
+                        // Dynamic short format for lesson/break/beforeSchool/newYearEve
+                        TimelineView(.periodic(from: context.state.currentTime, by: 60.0)) { timeline in
+                            let remaining = context.state.endTime.timeIntervalSince(timeline.date)
+                            let compactText = TimeFormatHelper.compactTime(remaining: remaining)
+
+                            Text(compactText)
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                .foregroundColor(.green)
+                                .frame(width: 50)
+                        }
                     }
                 } minimal: {
                     let season = context.state.season ?? ""
@@ -324,7 +329,7 @@ struct TimetableLiveActivityView: View {
                                     .foregroundColor(.white)
                                     .lineLimit(2)
                             } else {
-                                Text(context.state.labels?.title ?? SeasonalIconHelper.holidayTitle(for: context.state.season))
+                                Text(context.state.labels?.title ?? context.state.lessonName)
                                     .font(.system(size: 20, weight: .bold))
                                     .foregroundColor(.white)
                                     .lineLimit(1)

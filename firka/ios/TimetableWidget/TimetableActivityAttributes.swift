@@ -236,6 +236,10 @@ extension TimetableActivityAttributes.ContentState {
     }
     
     var seasonalRemainingText: String {
+        if let remainingLabel = labels?.remainingLabel, let message = message, !message.isEmpty {
+            return "\(remainingLabel): \(message)"
+        }
+
         let remaining = max(0, timeRemaining)
         let hours = Int(remaining) / 3600
         if hours >= 24 {
@@ -246,6 +250,10 @@ extension TimetableActivityAttributes.ContentState {
     }
     
     var seasonalDisplayValue: String {
+        if let message = message, !message.isEmpty {
+            return message
+        }
+
         let remaining = max(0, timeRemaining)
         let hours = Int(remaining) / 3600
         if hours >= 24 {
