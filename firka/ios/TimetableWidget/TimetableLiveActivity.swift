@@ -245,7 +245,10 @@ struct TimetableLiveActivity: Widget {
                 } compactTrailing: {
                     if mode == "seasonalBreak" {
                         // Seasonal break: static short format from backend message
-                        let compactText = TimeFormatHelper.compactSeasonalBreak(from: context.state.message ?? "")
+                        let compactText = TimeFormatHelper.compactSeasonalBreak(
+                            from: context.state.message ?? "",
+                            labels: context.state.labels
+                        )
 
                         Text(compactText)
                             .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -259,10 +262,12 @@ struct TimetableLiveActivity: Widget {
                             .font(.system(size: 12, weight: .semibold))
                             .frame(width: 50)
                     } else {
-                        // Dynamic short format for lesson/break/beforeSchool/newYearEve
                         TimelineView(.periodic(from: context.state.currentTime, by: 60.0)) { timeline in
                             let remaining = context.state.endTime.timeIntervalSince(timeline.date)
-                            let compactText = TimeFormatHelper.compactTime(remaining: remaining)
+                            let compactText = TimeFormatHelper.compactTime(
+                                remaining: remaining,
+                                labels: context.state.labels
+                            )
 
                             Text(compactText)
                                 .font(.system(size: 12, weight: .semibold, design: .rounded))
