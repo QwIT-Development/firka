@@ -28,6 +28,8 @@ struct SeasonalIconHelper {
                 return "leaf.fill"
             case "winter":
                 return "snowflake"
+            case "other":
+                return "calendar.badge.exclamationmark"
             default:
                 return "snowflake"
             }
@@ -56,25 +58,6 @@ struct SeasonalIconHelper {
             return false
         }
         return mode == "seasonalBreak" || mode == "xmas" || mode == "newYearEve" || mode == "newYearDay"
-    }
-
-    static func holidayTitle(for season: String?) -> String {
-        guard let season = season else {
-            return "Kellemes szünetet!"
-        }
-
-        switch season {
-        case "spring":
-            return "Kellemes tavaszi szünetet!"
-        case "summer":
-            return "Kellemes nyári szünetet!"
-        case "autumn":
-            return "Kellemes őszi szünetet!"
-        case "winter":
-            return "Kellemes téli szünetet!"
-        default:
-            return "Kellemes szünetet!"
-        }
     }
 }
 
