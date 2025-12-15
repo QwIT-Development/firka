@@ -1055,6 +1055,74 @@ class LiveActivityService {
               if (addedCount > 0) {
                 _logger.info('[Firka] [INFO] Added $addedCount $breakType break day(s) to timetable for backend processing');
               }
+
+              if (allBreakEventsOfType.isNotEmpty) {
+                allBreakEventsOfType.sort((a, b) => a.start.compareTo(b.start));
+                final lastBreakDay = allBreakEventsOfType.last.start;
+
+                _logger.info('Searching for first school day after $breakType break (after ${lastBreakDay.toIso8601String().split('T')[0]})...');
+
+                bool foundFirstSchoolDayAfterBreak = false;
+                for (int dayOffset = 1; dayOffset <= 14; dayOffset++) {
+                  final candidateDay = lastBreakDay.add(Duration(days: dayOffset));
+
+                  if (candidateDay.weekday == DateTime.saturday || candidateDay.weekday == DateTime.sunday) {
+                    continue;
+                  }
+
+                  try {
+                    final candidateDayEnd = candidateDay.add(const Duration(days: 1));
+                    final response = await client.getTimeTable(candidateDay, candidateDayEnd, forceCache: false);
+
+                    if (response.response != null && response.response!.isNotEmpty) {
+                      final schoolLessons = response.response!.where((lesson) {
+                        final uid = lesson.uid.toLowerCase();
+                        return uid.contains('orarendiora') || uid.contains('tanitasiora') || uid.contains('uresora');
+                      }).toList();
+
+                      if (schoolLessons.isNotEmpty) {
+                        schoolLessons.sort((a, b) => a.start.compareTo(b.start));
+                        final firstLesson = schoolLessons.first;
+
+                        final notificationLesson = Lesson(
+                          uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
+                          date: firstLesson.date,
+                          start: firstLesson.start,
+                          end: firstLesson.end,
+                          name: firstLesson.name,
+                          lessonNumber: firstLesson.lessonNumber,
+                          teacher: firstLesson.teacher,
+                          theme: firstLesson.theme,
+                          roomName: firstLesson.roomName,
+                          substituteTeacher: firstLesson.substituteTeacher,
+                          type: firstLesson.type,
+                          state: firstLesson.state,
+                          canStudentEditHomework: firstLesson.canStudentEditHomework,
+                          isHomeworkComplete: firstLesson.isHomeworkComplete,
+                          attachments: firstLesson.attachments,
+                          isDigitalLesson: firstLesson.isDigitalLesson,
+                          digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
+                          createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
+                          lastModifiedAt: firstLesson.lastModifiedAt,
+                        );
+
+                        allLessons.add(notificationLesson);
+
+                        _logger.info('Added first lesson after $breakType break: ${firstLesson.date.split('T')[0]} - ${firstLesson.name} (marked for notification scheduling only)');
+
+                        foundFirstSchoolDayAfterBreak = true;
+                        break;
+                      }
+                    }
+                  } catch (e) {
+                    _logger.warning('Could not fetch lessons after break for day offset $dayOffset: $e');
+                  }
+                }
+
+                if (!foundFirstSchoolDayAfterBreak) {
+                  _logger.warning('No school day found within 14 days after $breakType break');
+                }
+              }
             }
           } catch (e) {
             _logger.warning('Could not fetch extended break events: $e');

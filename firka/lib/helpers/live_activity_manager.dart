@@ -370,18 +370,25 @@ class LiveActivityManager {
     _logger.info("Checking for activity update at ${now.toIso8601String()}");
 
     final lessons = todayLessons.where((lesson) {
-      final type = lesson.type.name?.toLowerCase() ?? '';
-      return !(lesson.state.name?.toLowerCase().contains('törölt') ?? false) &&
-             !type.contains('tanevrendje');
+      return !(lesson.state.name?.toLowerCase().contains('törölt') ?? false);
     }).toList();
 
     if (lessons.isEmpty) {
-      _logger.info("No relevant lessons today. Ending activity if running.");
-      await endAllActivities();
+      _logger.info("No lessons today. Backend will control activity state.");
       return;
     }
 
-    final state = _findCurrentActivityState(lessons, now);
+    final schoolLessons = lessons.where((lesson) {
+      final type = lesson.type.name?.toLowerCase() ?? '';
+      return !type.contains('tanevrendje');
+    }).toList();
+
+    if (schoolLessons.isEmpty) {
+      _logger.info("No school lessons today (only break events). Backend will control activity state.");
+      return;
+    }
+
+    final state = _findCurrentActivityState(schoolLessons, now);
 
     _logger.info("Current state: lesson=${state.currentLesson?.name}, break=${state.isBreak}, mode=${state.mode}");
 
