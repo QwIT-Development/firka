@@ -73,7 +73,9 @@ class LiveActivityBackendClient {
 
       _logger.info('Registering device with backend. Sending ${lessonsData.length} lessons.');
       if (_logger.isLoggable(Level.FINE)) {
-        lessonsData.forEach((lesson) => _logger.fine('  Lesson data: ${lesson}'));
+        for (var lesson in lessonsData) {
+          _logger.fine('  Lesson data: $lesson');
+        }
       }
 
       final response = await _dio.post(
@@ -126,7 +128,9 @@ class LiveActivityBackendClient {
 
       _logger.info('Updating timetable with backend. Sending ${lessonsData.length} lessons.');
       if (_logger.isLoggable(Level.FINE)) {
-        lessonsData.forEach((lesson) => _logger.fine('  Lesson data: ${lesson}'));
+        for (var lesson in lessonsData) {
+          _logger.fine('  Lesson data: $lesson');
+        }
       }
 
       final requestData = {

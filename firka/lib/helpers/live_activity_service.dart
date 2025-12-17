@@ -44,7 +44,7 @@ class LiveActivityService {
   /// Get current bellDelay value from settings
   static double? _getCurrentBellDelay() {
     try {
-      if (!initDone || initData.settings == null) {
+      if (!initDone) {
         return null;
       }
       final bellDelaySetting = initData.settings.group("settings")
@@ -60,10 +60,10 @@ class LiveActivityService {
   /// If client is provided, use it directly instead of initData.client
   static String? _getCurrentStudentId({KretaClient? client}) {
     try {
-      if (client != null && client.model != null) {
+      if (client != null) {
         return client.model.studentId;
       }
-      if (!initDone || initData.client == null || initData.client.model == null) {
+      if (!initDone) {
         return null;
       }
       return initData.client.model.studentId;
@@ -149,7 +149,7 @@ class LiveActivityService {
   /// Get current language code from settings
   static String? _getCurrentLanguageCode() {
     try {
-      if (!initDone || initData.settings == null) {
+      if (!initDone) {
         return 'hu';
       }
 
@@ -281,7 +281,7 @@ class LiveActivityService {
   static bool _hasRemainingLessonsToday(List<Lesson> lessons) {
     final now = DateTime.now();
     final todayLessons = lessons.where((lesson) {
-      final uid = lesson.uid?.toLowerCase() ?? '';
+      final uid = lesson.uid.toLowerCase();
       return lesson.date == now.toIso8601String().split('T').first &&
              lesson.end.isAfter(now) &&
              (uid.contains('orarendiora') ||
@@ -302,10 +302,6 @@ class LiveActivityService {
 
     try {
       final client = initData.client;
-      if (client == null || client.model == null) {
-        _logger.warning('Background fetch skipped: no client available');
-        return false;
-      }
 
       final enabled = await isEnabled(initData.settings, client);
       if (!enabled) {
@@ -389,7 +385,7 @@ class LiveActivityService {
                 attachments: firstLesson.attachments,
                 isDigitalLesson: firstLesson.isDigitalLesson,
                 digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
-                createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
+                createdAt: firstLesson.createdAt,
                 lastModifiedAt: firstLesson.lastModifiedAt,
               );
 
@@ -695,69 +691,136 @@ class LiveActivityService {
         return;
       }
 
-      _logger.info('Searching for first school day of next week');
+      final nextWeekStart = endOfWeek.add(const Duration(days: 1));
+      final nextWeekEnd = nextWeekStart.add(const Duration(days: 6));
 
-      bool foundFirstSchoolDay = false;
-      for (int dayOffset = 1; dayOffset <= 5; dayOffset++) {
-        final candidateDay = endOfWeek.add(Duration(days: dayOffset));
+      _logger.info('[GlobalSearch] onUserLogin: Checking next week (${nextWeekStart.toString().split(' ')[0]} - ${nextWeekEnd.toString().split(' ')[0]}) for events');
 
-        if (candidateDay.weekday == DateTime.saturday || candidateDay.weekday == DateTime.sunday) {
-          continue;
-        }
+      List<Lesson> nextWeekBreakEvents = [];
+      try {
+        final nextWeekResponse = await client.getTimeTable(nextWeekStart, nextWeekEnd, forceCache: false);
 
-        try {
-          final candidateDayEnd = candidateDay.add(const Duration(days: 1));
-          final response = await client.getTimeTable(candidateDay, candidateDayEnd, forceCache: false);
+        if (nextWeekResponse.response != null) {
+          nextWeekBreakEvents = nextWeekResponse.response!.where((lesson) {
+            final uid = lesson.uid.toLowerCase();
+            final name = lesson.name.toLowerCase();
+            return uid.contains('tanevrendjeesemeny') &&
+                   !name.contains('tanítási nap') &&
+                   (name.contains('szünet') ||
+                    name.contains('pihenőnap') ||
+                    name.contains('munkaszüneti') ||
+                    name.contains('ünnepnap') ||
+                    name.contains('tanítás nélküli') ||
+                    name.contains('nem órarendi nap'));
+          }).toList();
 
-          if (response.response != null && response.response!.isNotEmpty) {
-            final schoolLessons = response.response!.where((lesson) {
-              final uid = lesson.uid.toLowerCase();
-              return uid.contains('orarendiora') || uid.contains('tanitasiora') || uid.contains('uresora');
-            }).toList();
-
-            if (schoolLessons.isNotEmpty) {
-              schoolLessons.sort((a, b) => a.start.compareTo(b.start));
-              final firstLesson = schoolLessons.first;
-
-              final notificationLesson = Lesson(
-                uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
-                date: firstLesson.date,
-                start: firstLesson.start,
-                end: firstLesson.end,
-                name: firstLesson.name,
-                lessonNumber: firstLesson.lessonNumber,
-                teacher: firstLesson.teacher,
-                theme: firstLesson.theme,
-                roomName: firstLesson.roomName,
-                substituteTeacher: firstLesson.substituteTeacher,
-                type: firstLesson.type,
-                state: firstLesson.state,
-                canStudentEditHomework: firstLesson.canStudentEditHomework,
-                isHomeworkComplete: firstLesson.isHomeworkComplete,
-                attachments: firstLesson.attachments,
-                isDigitalLesson: firstLesson.isDigitalLesson,
-                digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
-                createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
-                lastModifiedAt: firstLesson.lastModifiedAt,
-              );
-
-              allLessons.add(notificationLesson);
-
-              const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-              final dayName = dayNames[candidateDay.weekday - 1];
-              _logger.info('Added first lesson from next week $dayName (${firstLesson.name}) marked for notification scheduling only');
-
-              foundFirstSchoolDay = true;
-              break;
-            }
+          if (nextWeekBreakEvents.isNotEmpty) {
+            _logger.info('[GlobalSearch] onUserLogin: Found ${nextWeekBreakEvents.length} break event(s) in next week - triggering global searcher');
           }
-        } catch (e) {
-          _logger.warning('Failed to fetch lessons for day offset $dayOffset: $e');
         }
+      } catch (e) {
+        _logger.warning('[GlobalSearch] onUserLogin: Could not fetch next week: $e');
       }
 
-      if (!foundFirstSchoolDay) {
-        _logger.info('No school lessons found in next week for push notification scheduling');
+      if (nextWeekBreakEvents.isNotEmpty) {
+        nextWeekBreakEvents.sort((a, b) => a.start.compareTo(b.start));
+        final firstBreakEvent = nextWeekBreakEvents.first;
+
+        _logger.info('[GlobalSearch] onUserLogin: Triggering global break searcher from ${firstBreakEvent.date.split('T')[0]}');
+
+        final searchResult = await _globalBreakSearcher(
+          client: client,
+          searchStartDate: nextWeekStart,
+        );
+
+        allLessons.addAll(searchResult.allLessons);
+
+        _logger.info('[GlobalSearch] onUserLogin: Global searcher returned ${searchResult.allLessons.length} lessons');
+
+        if (searchResult.firstSchoolDayAfterBreak != null) {
+          final notificationLesson = Lesson(
+            uid: '${searchResult.firstSchoolDayAfterBreak!.uid}__FOR_NOTIFICATION_ONLY',
+            date: searchResult.firstSchoolDayAfterBreak!.date,
+            start: searchResult.firstSchoolDayAfterBreak!.start,
+            end: searchResult.firstSchoolDayAfterBreak!.end,
+            name: searchResult.firstSchoolDayAfterBreak!.name,
+            lessonNumber: searchResult.firstSchoolDayAfterBreak!.lessonNumber,
+            teacher: searchResult.firstSchoolDayAfterBreak!.teacher,
+            theme: searchResult.firstSchoolDayAfterBreak!.theme,
+            roomName: searchResult.firstSchoolDayAfterBreak!.roomName,
+            substituteTeacher: searchResult.firstSchoolDayAfterBreak!.substituteTeacher,
+            type: searchResult.firstSchoolDayAfterBreak!.type,
+            state: searchResult.firstSchoolDayAfterBreak!.state,
+            canStudentEditHomework: searchResult.firstSchoolDayAfterBreak!.canStudentEditHomework,
+            isHomeworkComplete: searchResult.firstSchoolDayAfterBreak!.isHomeworkComplete,
+            attachments: searchResult.firstSchoolDayAfterBreak!.attachments,
+            isDigitalLesson: searchResult.firstSchoolDayAfterBreak!.isDigitalLesson,
+            digitalSupportDeviceTypeList: searchResult.firstSchoolDayAfterBreak!.digitalSupportDeviceTypeList,
+            createdAt: searchResult.firstSchoolDayAfterBreak!.createdAt,
+            lastModifiedAt: searchResult.firstSchoolDayAfterBreak!.lastModifiedAt,
+          );
+
+          allLessons.add(notificationLesson);
+          _logger.info('[GlobalSearch] onUserLogin: Added first school day after break for push notification: ${notificationLesson.date.split('T')[0]}');
+        }
+      } else {
+        _logger.info('[GlobalSearch] onUserLogin: No break events in next week, searching for first school day...');
+
+        bool foundFirstSchoolDay = false;
+        for (int dayOffset = 1; dayOffset <= 14; dayOffset++) {
+          final candidateDay = endOfWeek.add(Duration(days: dayOffset));
+
+          try {
+            final candidateDayEnd = candidateDay.add(const Duration(days: 1));
+            final response = await client.getTimeTable(candidateDay, candidateDayEnd, forceCache: false);
+
+            if (response.response != null && response.response!.isNotEmpty) {
+              final schoolLessons = response.response!.where((lesson) {
+                final uid = lesson.uid.toLowerCase();
+                return uid.contains('orarendiora') || uid.contains('tanitasiora') || uid.contains('uresora');
+              }).toList();
+
+              if (schoolLessons.isNotEmpty) {
+                schoolLessons.sort((a, b) => a.start.compareTo(b.start));
+                final firstLesson = schoolLessons.first;
+
+                final markedLesson = Lesson(
+                  uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
+                  date: firstLesson.date,
+                  start: firstLesson.start,
+                  end: firstLesson.end,
+                  name: firstLesson.name,
+                  lessonNumber: firstLesson.lessonNumber,
+                  teacher: firstLesson.teacher,
+                  theme: firstLesson.theme,
+                  roomName: firstLesson.roomName,
+                  substituteTeacher: firstLesson.substituteTeacher,
+                  type: firstLesson.type,
+                  state: firstLesson.state,
+                  canStudentEditHomework: firstLesson.canStudentEditHomework,
+                  isHomeworkComplete: firstLesson.isHomeworkComplete,
+                  attachments: firstLesson.attachments,
+                  isDigitalLesson: firstLesson.isDigitalLesson,
+                  digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
+                  createdAt: firstLesson.createdAt,
+                  lastModifiedAt: firstLesson.lastModifiedAt,
+                );
+
+                allLessons.add(markedLesson);
+                _logger.info('[GlobalSearch] onUserLogin: Found first school day for push notification: ${candidateDay.toString().split(' ')[0]}');
+
+                foundFirstSchoolDay = true;
+                break;
+              }
+            }
+          } catch (e) {
+            _logger.warning('[GlobalSearch] onUserLogin: Could not fetch day offset $dayOffset: $e');
+          }
+        }
+
+        if (!foundFirstSchoolDay) {
+          _logger.info('[GlobalSearch] onUserLogin: No school lessons found in next 14 days for push notification scheduling');
+        }
       }
 
       final deviceToken = await _getOrWaitDeviceToken();
@@ -933,200 +996,135 @@ class LiveActivityService {
         }
       }
 
-      bool foundFirstSchoolDay = false;
-      for (int dayOffset = 1; dayOffset <= 5; dayOffset++) {
-        final candidateDay = endOfWeek.add(Duration(days: dayOffset));
+      final nextWeekStart = endOfWeek.add(const Duration(days: 1));
+      final nextWeekEnd = nextWeekStart.add(const Duration(days: 6));
 
-        if (candidateDay.weekday == DateTime.saturday || candidateDay.weekday == DateTime.sunday) {
-          continue;
-        }
+      _logger.info('[GlobalSearch] Checking next week (${nextWeekStart.toString().split(' ')[0]} - ${nextWeekEnd.toString().split(' ')[0]}) for events');
 
-        try {
-          final candidateDayEnd = candidateDay.add(const Duration(days: 1));
-          final response = await client.getTimeTable(candidateDay, candidateDayEnd, forceCache: false);
+      List<Lesson> nextWeekBreakEvents = [];
+      try {
+        final nextWeekResponse = await client.getTimeTable(nextWeekStart, nextWeekEnd, forceCache: false);
 
-          if (response.response != null && response.response!.isNotEmpty) {
-            final schoolLessons = response.response!.where((lesson) {
-              final uid = lesson.uid.toLowerCase();
-              return uid.contains('orarendiora') || uid.contains('tanitasiora') || uid.contains('uresora');
-            }).toList();
+        if (nextWeekResponse.response != null) {
+          nextWeekBreakEvents = nextWeekResponse.response!.where((lesson) {
+            final uid = lesson.uid.toLowerCase();
+            final name = lesson.name.toLowerCase();
+            return uid.contains('tanevrendjeesemeny') &&
+                   !name.contains('tanítási nap') &&
+                   (name.contains('szünet') ||
+                    name.contains('pihenőnap') ||
+                    name.contains('munkaszüneti') ||
+                    name.contains('ünnepnap') ||
+                    name.contains('tanítás nélküli') ||
+                    name.contains('nem órarendi nap'));
+          }).toList();
 
-            if (schoolLessons.isNotEmpty) {
-              schoolLessons.sort((a, b) => a.start.compareTo(b.start));
-              final firstLesson = schoolLessons.first;
-
-              final markedLesson = Lesson(
-                uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
-                date: firstLesson.date,
-                start: firstLesson.start,
-                end: firstLesson.end,
-                name: firstLesson.name,
-                lessonNumber: firstLesson.lessonNumber,
-                teacher: firstLesson.teacher,
-                theme: firstLesson.theme,
-                roomName: firstLesson.roomName,
-                substituteTeacher: firstLesson.substituteTeacher,
-                type: firstLesson.type,
-                state: firstLesson.state,
-                canStudentEditHomework: firstLesson.canStudentEditHomework,
-                isHomeworkComplete: firstLesson.isHomeworkComplete,
-                attachments: firstLesson.attachments,
-                isDigitalLesson: firstLesson.isDigitalLesson,
-                digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
-                createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
-                lastModifiedAt: firstLesson.lastModifiedAt,
-              );
-
-              allLessons.add(markedLesson);
-
-              const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-              final dayName = dayNames[candidateDay.weekday - 1];
-              _logger.info('Added first lesson from next week $dayName (${firstLesson.name}) marked for notification scheduling only');
-
-              foundFirstSchoolDay = true;
-              break;
-            }
+          if (nextWeekBreakEvents.isNotEmpty) {
+            _logger.info('[GlobalSearch] Found ${nextWeekBreakEvents.length} break event(s) in next week - triggering global searcher');
           }
-        } catch (e) {
-          _logger.warning('Could not fetch lessons for day offset $dayOffset: $e');
         }
+      } catch (e) {
+        _logger.warning('[GlobalSearch] Could not fetch next week: $e');
       }
 
-      if (!foundFirstSchoolDay) {
-        _logger.info('No school lessons found in next week for push notification scheduling');
-      }
+      if (nextWeekBreakEvents.isNotEmpty) {
+        nextWeekBreakEvents.sort((a, b) => a.start.compareTo(b.start));
+        final firstBreakEvent = nextWeekBreakEvents.first;
 
-      final breakEventsInWeek = allLessons.where((lesson) {
-        final uid = lesson.uid.toLowerCase();
-        final name = lesson.name.toLowerCase();
+        _logger.info('[GlobalSearch] Triggering global break searcher from ${firstBreakEvent.date.split('T')[0]}');
 
-        return uid.contains('tanevrendjeesemeny') &&
-               !name.contains('tanítási nap') &&
-               (name.contains('szünet') ||
-                name.contains('pihenőnap') ||
-                name.contains('munkaszüneti') ||
-                name.contains('ünnepnap') ||
-                name.contains('tanítás nélküli') ||
-                name.contains('nem órarendi nap'));
-      }).toList();
+        final searchResult = await _globalBreakSearcher(
+          client: client,
+          searchStartDate: nextWeekStart,
+        );
 
-      if (breakEventsInWeek.isNotEmpty) {
-        final firstBreak = breakEventsInWeek.first;
-        final breakName = firstBreak.name.toLowerCase();
+        allLessons.addAll(searchResult.allLessons);
 
-        String? breakType;
-        if (breakName.contains('őszi')) {
-          breakType = 'őszi';
-        } else if (breakName.contains('téli')) {
-          breakType = 'téli';
-        } else if (breakName.contains('tavaszi')) {
-          breakType = 'tavaszi';
-        } else if (breakName.contains('nyári')) {
-          breakType = 'nyári';
+        _logger.info('[GlobalSearch] Global searcher returned ${searchResult.allLessons.length} lessons');
+
+        if (searchResult.firstSchoolDayAfterBreak != null) {
+          final notificationLesson = Lesson(
+            uid: '${searchResult.firstSchoolDayAfterBreak!.uid}__FOR_NOTIFICATION_ONLY',
+            date: searchResult.firstSchoolDayAfterBreak!.date,
+            start: searchResult.firstSchoolDayAfterBreak!.start,
+            end: searchResult.firstSchoolDayAfterBreak!.end,
+            name: searchResult.firstSchoolDayAfterBreak!.name,
+            lessonNumber: searchResult.firstSchoolDayAfterBreak!.lessonNumber,
+            teacher: searchResult.firstSchoolDayAfterBreak!.teacher,
+            theme: searchResult.firstSchoolDayAfterBreak!.theme,
+            roomName: searchResult.firstSchoolDayAfterBreak!.roomName,
+            substituteTeacher: searchResult.firstSchoolDayAfterBreak!.substituteTeacher,
+            type: searchResult.firstSchoolDayAfterBreak!.type,
+            state: searchResult.firstSchoolDayAfterBreak!.state,
+            canStudentEditHomework: searchResult.firstSchoolDayAfterBreak!.canStudentEditHomework,
+            isHomeworkComplete: searchResult.firstSchoolDayAfterBreak!.isHomeworkComplete,
+            attachments: searchResult.firstSchoolDayAfterBreak!.attachments,
+            isDigitalLesson: searchResult.firstSchoolDayAfterBreak!.isDigitalLesson,
+            digitalSupportDeviceTypeList: searchResult.firstSchoolDayAfterBreak!.digitalSupportDeviceTypeList,
+            createdAt: searchResult.firstSchoolDayAfterBreak!.createdAt,
+            lastModifiedAt: searchResult.firstSchoolDayAfterBreak!.lastModifiedAt,
+          );
+
+          allLessons.add(notificationLesson);
+          _logger.info('[GlobalSearch] Added first school day after break for push notification: ${notificationLesson.date.split('T')[0]}');
         }
+      } else {
+        _logger.info('[GlobalSearch] No break events in next week, searching for first school day...');
 
-        if (breakType != null) {
-          _logger.info('Found $breakType break in current week, fetching all break days...');
-
-          final extendedStart = startOfWeek.subtract(const Duration(days: 28));
-          final extendedEnd = endOfWeek.add(const Duration(days: 28));
+        bool foundFirstSchoolDay = false;
+        for (int dayOffset = 1; dayOffset <= 14; dayOffset++) {
+          final candidateDay = endOfWeek.add(Duration(days: dayOffset));
 
           try {
-            final extendedResponse = await client.getTimeTable(extendedStart, extendedEnd);
-            if (extendedResponse.response != null) {
-              final allBreakEventsOfType = extendedResponse.response!.where((lesson) {
-                final uid = lesson.uid.toLowerCase();
-                final name = lesson.name.toLowerCase();
+            final candidateDayEnd = candidateDay.add(const Duration(days: 1));
+            final response = await client.getTimeTable(candidateDay, candidateDayEnd, forceCache: false);
 
-                return uid.contains('tanevrendjeesemeny') &&
-                       !name.contains('tanítási nap') &&
-                       name.contains(breakType!);
+            if (response.response != null && response.response!.isNotEmpty) {
+              final schoolLessons = response.response!.where((lesson) {
+                final uid = lesson.uid.toLowerCase();
+                return uid.contains('orarendiora') || uid.contains('tanitasiora') || uid.contains('uresora');
               }).toList();
 
-              int addedCount = 0;
-              for (final breakEvent in allBreakEventsOfType) {
-                if (!allLessons.any((l) => l.uid == breakEvent.uid && l.date == breakEvent.date)) {
-                  allLessons.add(breakEvent);
-                  addedCount++;
-                  _logger.info('[Firka] [INFO] Added break day: ${breakEvent.date} - ${breakEvent.name}');
-                }
-              }
+              if (schoolLessons.isNotEmpty) {
+                schoolLessons.sort((a, b) => a.start.compareTo(b.start));
+                final firstLesson = schoolLessons.first;
 
-              if (addedCount > 0) {
-                _logger.info('[Firka] [INFO] Added $addedCount $breakType break day(s) to timetable for backend processing');
-              }
+                final markedLesson = Lesson(
+                  uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
+                  date: firstLesson.date,
+                  start: firstLesson.start,
+                  end: firstLesson.end,
+                  name: firstLesson.name,
+                  lessonNumber: firstLesson.lessonNumber,
+                  teacher: firstLesson.teacher,
+                  theme: firstLesson.theme,
+                  roomName: firstLesson.roomName,
+                  substituteTeacher: firstLesson.substituteTeacher,
+                  type: firstLesson.type,
+                  state: firstLesson.state,
+                  canStudentEditHomework: firstLesson.canStudentEditHomework,
+                  isHomeworkComplete: firstLesson.isHomeworkComplete,
+                  attachments: firstLesson.attachments,
+                  isDigitalLesson: firstLesson.isDigitalLesson,
+                  digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
+                  createdAt: firstLesson.createdAt,
+                  lastModifiedAt: firstLesson.lastModifiedAt,
+                );
 
-              if (allBreakEventsOfType.isNotEmpty) {
-                allBreakEventsOfType.sort((a, b) => a.start.compareTo(b.start));
-                final lastBreakDay = allBreakEventsOfType.last.start;
+                allLessons.add(markedLesson);
+                _logger.info('[GlobalSearch] Found first school day for push notification: ${candidateDay.toString().split(' ')[0]}');
 
-                _logger.info('Searching for first school day after $breakType break (after ${lastBreakDay.toIso8601String().split('T')[0]})...');
-
-                bool foundFirstSchoolDayAfterBreak = false;
-                for (int dayOffset = 1; dayOffset <= 14; dayOffset++) {
-                  final candidateDay = lastBreakDay.add(Duration(days: dayOffset));
-
-                  if (candidateDay.weekday == DateTime.saturday || candidateDay.weekday == DateTime.sunday) {
-                    continue;
-                  }
-
-                  try {
-                    final candidateDayEnd = candidateDay.add(const Duration(days: 1));
-                    final response = await client.getTimeTable(candidateDay, candidateDayEnd, forceCache: false);
-
-                    if (response.response != null && response.response!.isNotEmpty) {
-                      final schoolLessons = response.response!.where((lesson) {
-                        final uid = lesson.uid.toLowerCase();
-                        return uid.contains('orarendiora') || uid.contains('tanitasiora') || uid.contains('uresora');
-                      }).toList();
-
-                      if (schoolLessons.isNotEmpty) {
-                        schoolLessons.sort((a, b) => a.start.compareTo(b.start));
-                        final firstLesson = schoolLessons.first;
-
-                        final notificationLesson = Lesson(
-                          uid: '${firstLesson.uid}__FOR_NOTIFICATION_ONLY',
-                          date: firstLesson.date,
-                          start: firstLesson.start,
-                          end: firstLesson.end,
-                          name: firstLesson.name,
-                          lessonNumber: firstLesson.lessonNumber,
-                          teacher: firstLesson.teacher,
-                          theme: firstLesson.theme,
-                          roomName: firstLesson.roomName,
-                          substituteTeacher: firstLesson.substituteTeacher,
-                          type: firstLesson.type,
-                          state: firstLesson.state,
-                          canStudentEditHomework: firstLesson.canStudentEditHomework,
-                          isHomeworkComplete: firstLesson.isHomeworkComplete,
-                          attachments: firstLesson.attachments,
-                          isDigitalLesson: firstLesson.isDigitalLesson,
-                          digitalSupportDeviceTypeList: firstLesson.digitalSupportDeviceTypeList,
-                          createdAt: firstLesson.createdAt ?? firstLesson.lastModifiedAt ?? DateTime.now(),
-                          lastModifiedAt: firstLesson.lastModifiedAt,
-                        );
-
-                        allLessons.add(notificationLesson);
-
-                        _logger.info('Added first lesson after $breakType break: ${firstLesson.date.split('T')[0]} - ${firstLesson.name} (marked for notification scheduling only)');
-
-                        foundFirstSchoolDayAfterBreak = true;
-                        break;
-                      }
-                    }
-                  } catch (e) {
-                    _logger.warning('Could not fetch lessons after break for day offset $dayOffset: $e');
-                  }
-                }
-
-                if (!foundFirstSchoolDayAfterBreak) {
-                  _logger.warning('No school day found within 14 days after $breakType break');
-                }
+                foundFirstSchoolDay = true;
+                break;
               }
             }
           } catch (e) {
-            _logger.warning('Could not fetch extended break events: $e');
+            _logger.warning('[GlobalSearch] Could not fetch day offset $dayOffset: $e');
           }
+        }
+
+        if (!foundFirstSchoolDay) {
+          _logger.info('[GlobalSearch] No school lessons found in next 14 days for push notification scheduling');
         }
       }
 
@@ -1523,20 +1521,16 @@ class LiveActivityService {
             final client = initData.client;
             final settingsStore = initData.settings;
 
-            if (client != null) {
-              final studentResp = await client.getStudent();
-              final studentName = studentResp.response?.name ?? client.model?.studentId ?? 'Student';
+            final studentResp = await client.getStudent();
+            final studentName = studentResp.response?.name ?? client.model.studentId ?? 'Student';
 
-              await checkAndUpdateTimetable(
-                client: client,
-                studentName: studentName,
-                settingsStore: settingsStore,
-                forceUpdate: true,
-              );
-              _logger.info('Timetable fetch completed after re-enabling notifications');
-            } else {
-              _logger.warning('Cannot fetch timetable: client is null');
-            }
+            await checkAndUpdateTimetable(
+              client: client,
+              studentName: studentName,
+              settingsStore: settingsStore,
+              forceUpdate: true,
+            );
+            _logger.info('Timetable fetch completed after re-enabling notifications');
           } catch (e) {
             _logger.severe('Error fetching timetable after re-enabling notifications: $e');
           }
@@ -1567,7 +1561,7 @@ class LiveActivityService {
   /// Get current morning notification enabled value from settings
   static bool? _getCurrentMorningNotificationEnabled() {
     try {
-      if (!initDone || initData.settings == null) {
+      if (!initDone) {
         return null;
       }
       final setting = initData.settings.group("settings")
@@ -1582,7 +1576,7 @@ class LiveActivityService {
   /// Get current morning notification time value from settings
   static double? _getCurrentMorningNotificationTime() {
     try {
-      if (!initDone || initData.settings == null) {
+      if (!initDone) {
         return null;
       }
       final setting = initData.settings.group("settings")
@@ -1593,4 +1587,103 @@ class LiveActivityService {
       return null;
     }
   }
+
+  /// Global break searcher result
+  static Future<_GlobalSearchResult> _globalBreakSearcher({
+    required KretaClient client,
+    required DateTime searchStartDate,
+  }) async {
+    List<Lesson> allLessons = [];
+    Lesson? lastBreakDay;
+    Lesson? firstSchoolDayAfterBreak;
+
+    DateTime currentSearchDate = searchStartDate;
+    int weeksSearched = 0;
+    const maxWeeks = 26;
+
+    _logger.info('[GlobalBreakSearcher] Starting search from ${currentSearchDate.toString().split(' ')[0]}');
+
+    while (weeksSearched < maxWeeks) {
+      final weekStart = currentSearchDate;
+      final weekEnd = weekStart.add(const Duration(days: 6));
+
+      _logger.info('[GlobalBreakSearcher] Fetching week ${weeksSearched + 1}: ${weekStart.toString().split(' ')[0]} - ${weekEnd.toString().split(' ')[0]}');
+
+      try {
+        final response = await client.getTimeTable(weekStart, weekEnd, forceCache: false);
+
+        if (response.response != null && response.response!.isNotEmpty) {
+          final weekLessons = response.response!;
+
+          final breakEvents = weekLessons.where((lesson) {
+            final uid = lesson.uid.toLowerCase();
+            final name = lesson.name.toLowerCase();
+            return uid.contains('tanevrendjeesemeny') &&
+                   !name.contains('tanítási nap') &&
+                   (name.contains('pihenőnap') ||
+                    name.contains('munkaszüneti') ||
+                    name.contains('ünnepnap') ||
+                    name.contains('tanítás nélküli') ||
+                    name.contains('nem órarendi nap'));
+          }).toList();
+
+          final schoolLessons = weekLessons.where((lesson) {
+            final uid = lesson.uid.toLowerCase();
+            return uid.contains('orarendiora') || uid.contains('tanitasiora') || uid.contains('uresora');
+          }).toList();
+
+          allLessons.addAll(weekLessons);
+
+          if (breakEvents.isNotEmpty) {
+            breakEvents.sort((a, b) => a.start.compareTo(b.start));
+            lastBreakDay = breakEvents.last;
+            _logger.info('[GlobalBreakSearcher] Found ${breakEvents.length} break event(s) in week ${weeksSearched + 1}, last: ${lastBreakDay.name} on ${lastBreakDay.date.split('T')[0]}');
+          } else if (schoolLessons.isNotEmpty) {
+            schoolLessons.sort((a, b) => a.start.compareTo(b.start));
+            firstSchoolDayAfterBreak = schoolLessons.first;
+            _logger.info('[GlobalBreakSearcher] Found first school day after break: ${firstSchoolDayAfterBreak.name} on ${firstSchoolDayAfterBreak.date.split('T')[0]}');
+            break;
+          } else {
+            _logger.info('[GlobalBreakSearcher] Week ${weeksSearched + 1} is empty, continuing search...');
+          }
+        } else {
+          _logger.info('[GlobalBreakSearcher] Week ${weeksSearched + 1} returned no data, continuing search...');
+        }
+      } catch (e) {
+        _logger.warning('[GlobalBreakSearcher] Error fetching week ${weeksSearched + 1}: $e');
+      }
+
+      currentSearchDate = currentSearchDate.add(const Duration(days: 7));
+      weeksSearched++;
+
+      if (lastBreakDay != null && firstSchoolDayAfterBreak != null) {
+        break;
+      }
+    }
+
+    if (weeksSearched >= maxWeeks) {
+      _logger.warning('[GlobalBreakSearcher] Reached maximum search limit ($maxWeeks weeks)');
+    }
+
+    _logger.info('[GlobalBreakSearcher] Search completed: ${allLessons.length} lessons found, last break: ${lastBreakDay?.date.split('T')[0] ?? 'none'}, first school day: ${firstSchoolDayAfterBreak?.date.split('T')[0] ?? 'none'}');
+
+    return _GlobalSearchResult(
+      allLessons: allLessons,
+      lastBreakDay: lastBreakDay,
+      firstSchoolDayAfterBreak: firstSchoolDayAfterBreak,
+    );
+  }
+}
+
+/// Result of global break searcher
+class _GlobalSearchResult {
+  final List<Lesson> allLessons;
+  final Lesson? lastBreakDay;
+  final Lesson? firstSchoolDayAfterBreak;
+
+  _GlobalSearchResult({
+    required this.allLessons,
+    this.lastBreakDay,
+    this.firstSchoolDayAfterBreak,
+  });
 }
