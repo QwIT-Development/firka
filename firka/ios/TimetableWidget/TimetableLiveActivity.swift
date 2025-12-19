@@ -45,9 +45,9 @@ struct TimetableLiveActivity: Widget {
                         VStack(spacing: 4) {
                             if mode == "beforeSchool" {
                                 HStack(alignment: .center, spacing: 6) {
-                                    Image(systemName: SeasonalIconHelper.iconName(for: mode, season: season))
+                                    Image(systemName: SeasonalIconHelper.iconName(for: mode, season: season, lessonIcon: context.state.lessonIcon))
                                         .font(.system(size: 18))
-                                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
+                                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
                                     Text(context.state.labels?.title ?? "Hamarosan suli")
                                         .font(.system(size: 18, weight: .bold))
                                         .foregroundColor(.white)
@@ -90,7 +90,7 @@ struct TimetableLiveActivity: Widget {
                                     HStack(alignment: .center, spacing: 6) {
                                         Image(systemName: SeasonalIconHelper.iconName(for: mode, season: season))
                                             .font(.system(size: 18))
-                                            .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
+                                            .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
                                         Text(context.state.message ?? "Szünet")
                                             .font(.system(size: 18, weight: .bold))
                                             .foregroundColor(.white)
@@ -100,7 +100,7 @@ struct TimetableLiveActivity: Widget {
                                     HStack(alignment: .center, spacing: 6) {
                                         Image(systemName: SeasonalIconHelper.iconName(for: mode, season: season))
                                             .font(.system(size: 18))
-                                            .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
+                                            .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
                                         Text(context.state.labels?.title ?? context.state.lessonName)
                                             .font(.system(size: 18, weight: .bold))
                                             .foregroundColor(.white)
@@ -111,7 +111,7 @@ struct TimetableLiveActivity: Widget {
                                 HStack(alignment: .center, spacing: 6) {
                                     Image(systemName: "cup.and.saucer.fill")
                                         .font(.system(size: 18))
-                                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
+                                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
                                     Text(context.state.labels?.title ?? "Szünet")
                                         .font(.system(size: 18, weight: .bold))
                                         .foregroundColor(.white)
@@ -173,6 +173,7 @@ struct TimetableLiveActivity: Widget {
                     }
                     
                     DynamicIslandExpandedRegion(.bottom) {
+                        let season = context.state.season ?? ""
                         VStack(spacing: 4) {
                             HStack {
                                 Spacer()
@@ -182,20 +183,20 @@ struct TimetableLiveActivity: Widget {
                                 if context.state.endTime > context.state.currentTime {
                                     Text(timerInterval: context.state.currentTime...context.state.endTime, countsDown: true)
                                         .font(.system(size: 24, weight: .bold, design: .rounded))
-                                        .foregroundColor(.green)
+                                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
                                         .multilineTextAlignment(.center)
                                         .monospacedDigit()
                                 } else {
                                     Text(context.state.formattedEndTime)
                                         .font(.system(size: 24, weight: .bold, design: .rounded))
-                                        .foregroundColor(.green)
+                                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
                                         .multilineTextAlignment(.center)
                                         .monospacedDigit()
                                 }
                             } else if mode == "seasonalBreak" {
                                 Text(context.state.seasonalRemainingText)
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                                    .foregroundColor(.green)
+                                    .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
                                     .multilineTextAlignment(.center)
                                     .monospacedDigit()
                             } else if context.state.isCancelled ?? false {
@@ -206,7 +207,7 @@ struct TimetableLiveActivity: Widget {
                             } else {
                                 Text(timerInterval: context.state.currentTime...context.state.endTime, countsDown: true)
                                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                                    .foregroundColor(.green)
+                                    .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
                                     .multilineTextAlignment(.center)
                                     .monospacedDigit()
                             }
@@ -234,59 +235,44 @@ struct TimetableLiveActivity: Widget {
                     let season = context.state.season ?? ""
                     let iconName: String = {
                         if SeasonalIconHelper.isSeasonalMode(mode) || mode == "beforeSchool" {
-                            return SeasonalIconHelper.iconName(for: mode, season: season)
+                            return SeasonalIconHelper.iconName(for: mode, season: season, lessonIcon: context.state.lessonIcon)
                         } else {
-                            return context.state.isBreak ? "cup.and.saucer.fill" : "book.fill"
+                            return context.state.isBreak ? "cup.and.saucer.fill" : (context.state.lessonIcon ?? "book.fill")
                         }
                     }()
                     Image(systemName: iconName)
                         .font(.system(size: 14))
-                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
+                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
                 } compactTrailing: {
-                    if mode == "seasonalBreak" {
-                        // Seasonal break: static short format from backend message
-                        let compactText = TimeFormatHelper.compactSeasonalBreak(
-                            from: context.state.message ?? "",
-                            labels: context.state.labels
-                        )
-
-                        Text(compactText)
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                            .foregroundColor(.green)
-                            .frame(width: 50)
-                    } else if mode == "xmas" || mode == "newYearDay" {
+                    let season = context.state.season ?? ""
+                    if mode == "xmas" || mode == "newYearDay" {
                         Text("")
                             .frame(width: 50)
                     } else if context.state.isCancelled ?? false {
                         Text("❌")
                             .font(.system(size: 12, weight: .semibold))
                             .frame(width: 50)
+                    } else if let compactText = context.state.compactTimerText {
+                        Text(compactText)
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
+                            .frame(width: 50)
                     } else {
-                        TimelineView(.periodic(from: context.state.currentTime, by: 60.0)) { timeline in
-                            let remaining = context.state.endTime.timeIntervalSince(timeline.date)
-                            let compactText = TimeFormatHelper.compactTime(
-                                remaining: remaining,
-                                labels: context.state.labels
-                            )
-
-                            Text(compactText)
-                                .font(.system(size: 12, weight: .semibold, design: .rounded))
-                                .foregroundColor(.green)
-                                .frame(width: 50)
-                        }
+                        Text("")
+                            .frame(width: 50)
                     }
                 } minimal: {
                     let season = context.state.season ?? ""
                     let iconName: String = {
                         if SeasonalIconHelper.isSeasonalMode(mode) || mode == "beforeSchool" {
-                            return SeasonalIconHelper.iconName(for: mode, season: season)
+                            return SeasonalIconHelper.iconName(for: mode, season: season, lessonIcon: context.state.lessonIcon)
                         } else {
-                            return context.state.isBreak ? "cup.and.saucer.fill" : "book.fill"
+                            return context.state.isBreak ? "cup.and.saucer.fill" : (context.state.lessonIcon ?? "book.fill")
                         }
                     }()
                     Image(systemName: iconName)
                         .font(.system(size: 12))
-                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
+                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
                 }
             }
         }
@@ -310,17 +296,17 @@ struct TimetableLiveActivityView: View {
                 }() : nil
                 let iconName: String = {
                     if SeasonalIconHelper.isSeasonalMode(mode) || mode == "beforeSchool" {
-                        return SeasonalIconHelper.iconName(for: mode, season: season)
+                        return SeasonalIconHelper.iconName(for: mode, season: season, lessonIcon: context.state.lessonIcon)
                     } else {
-                        return context.state.isBreak ? "cup.and.saucer.fill" : "book.fill"
+                        return context.state.isBreak ? "cup.and.saucer.fill" : (context.state.lessonIcon ?? "book.fill")
                     }
                 }()
-                
+
                 // Header
                 HStack {
                     Image(systemName: iconName)
                         .font(.system(size: 24))
-                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode))
+                        .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
 
                     VStack(alignment: .leading, spacing: 2) {
                         if mode == "beforeSchool" {
@@ -496,17 +482,17 @@ struct TimetableLiveActivityView: View {
                             Text(context.state.labels?.timerLabel ?? "Első óra kezdése")
                                 .font(.system(size: 10))
                                 .foregroundColor(.gray)
-                            
+
                             if context.state.endTime > context.state.currentTime {
                                 Text(timerInterval: context.state.currentTime...context.state.endTime, countsDown: true)
                                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                                    .foregroundColor(.green)
+                                    .foregroundColor(SeasonalIconHelper.iconColor(for: mode3, season: season))
                                     .multilineTextAlignment(.center)
                                     .monospacedDigit()
                             } else {
                                 Text(context.state.formattedEndTime)
                                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                                    .foregroundColor(.green)
+                                    .foregroundColor(SeasonalIconHelper.iconColor(for: mode3, season: season))
                                     .multilineTextAlignment(.center)
                                     .monospacedDigit()
                             }
@@ -516,7 +502,7 @@ struct TimetableLiveActivityView: View {
                                 .foregroundColor(.gray)
                             Text(context.state.seasonalDisplayValue)
                                 .font(.system(size: 32, weight: .bold, design: .rounded))
-                                .foregroundColor(.green)
+                                .foregroundColor(SeasonalIconHelper.iconColor(for: mode3, season: season))
                                 .multilineTextAlignment(.center)
                                 .monospacedDigit()
                         } else {
@@ -542,7 +528,7 @@ struct TimetableLiveActivityView: View {
                                     .foregroundColor(.gray)
                                 Text(timerInterval: context.state.currentTime...context.state.endTime, countsDown: true)
                                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                                    .foregroundColor(.green)
+                                    .foregroundColor(SeasonalIconHelper.iconColor(for: mode3, season: season))
                                     .multilineTextAlignment(.center)
                                     .monospacedDigit()
                             }

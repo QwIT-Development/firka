@@ -28,6 +28,8 @@ struct TimetableActivityAttributes: ActivityAttributes {
 
         var labels: Labels?
         var tokenExpirationWarning: String?
+        var compactTimerText: String?
+        var lessonIcon: String?
 
         struct Labels: Codable, Hashable {
             var title: String?
@@ -66,9 +68,11 @@ struct TimetableActivityAttributes: ActivityAttributes {
             case currentTime
             case labels
             case tokenExpirationWarning
+            case compactTimerText
+            case lessonIcon
         }
 
-        init(isBreak: Bool, lessonName: String, lessonTheme: String?, roomName: String?, teacherName: String?, startTime: Date, endTime: Date, lessonNumber: Int?, mode: String?, message: String?, season: String?, nextLessonName: String?, nextRoomName: String?, nextStartTime: Date?, isSubstitution: Bool, isCancelled: Bool, substituteTeacher: String?, currentTime: Date, labels: Labels? = nil, tokenExpirationWarning: String? = nil) {
+        init(isBreak: Bool, lessonName: String, lessonTheme: String?, roomName: String?, teacherName: String?, startTime: Date, endTime: Date, lessonNumber: Int?, mode: String?, message: String?, season: String?, nextLessonName: String?, nextRoomName: String?, nextStartTime: Date?, isSubstitution: Bool, isCancelled: Bool, substituteTeacher: String?, currentTime: Date, labels: Labels? = nil, tokenExpirationWarning: String? = nil, compactTimerText: String? = nil, lessonIcon: String? = nil) {
             self.isBreak = isBreak
             self.lessonName = lessonName
             self.lessonTheme = lessonTheme
@@ -89,50 +93,54 @@ struct TimetableActivityAttributes: ActivityAttributes {
             self.currentTime = currentTime
             self.labels = labels
             self.tokenExpirationWarning = tokenExpirationWarning
+            self.compactTimerText = compactTimerText
+            self.lessonIcon = lessonIcon
         }
-        
+
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            
+
             let isoFormatter = ISO8601DateFormatter()
             isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            
+
             isBreak = try container.decode(Bool.self, forKey: .isBreak)
             lessonName = try container.decode(String.self, forKey: .lessonName)
             lessonTheme = try container.decodeIfPresent(String.self, forKey: .lessonTheme)
             roomName = try container.decodeIfPresent(String.self, forKey: .roomName)
             teacherName = try container.decodeIfPresent(String.self, forKey: .teacherName)
-            
+
             let startTimeStr = try container.decode(String.self, forKey: .startTime)
             guard let startTimeDate = isoFormatter.date(from: startTimeStr) else {
                 throw DecodingError.dataCorruptedError(forKey: .startTime, in: container, debugDescription: "Invalid startTime format: \(startTimeStr)")
             }
             startTime = startTimeDate
-            
+
             let endTimeStr = try container.decode(String.self, forKey: .endTime)
             guard let endTimeDate = isoFormatter.date(from: endTimeStr) else {
                 throw DecodingError.dataCorruptedError(forKey: .endTime, in: container, debugDescription: "Invalid endTime format: \(endTimeStr)")
             }
             endTime = endTimeDate
-            
+
             lessonNumber = try container.decodeIfPresent(Int.self, forKey: .lessonNumber)
             mode = try container.decodeIfPresent(String.self, forKey: .mode)
             message = try container.decodeIfPresent(String.self, forKey: .message)
             season = try container.decodeIfPresent(String.self, forKey: .season)
             nextLessonName = try container.decodeIfPresent(String.self, forKey: .nextLessonName)
             nextRoomName = try container.decodeIfPresent(String.self, forKey: .nextRoomName)
-            
+
             if let nextStartTimeStr = try container.decodeIfPresent(String.self, forKey: .nextStartTime) {
                 nextStartTime = isoFormatter.date(from: nextStartTimeStr)
             } else {
                 nextStartTime = nil
             }
-            
+
             isSubstitution = try container.decode(Bool.self, forKey: .isSubstitution)
             isCancelled = try container.decode(Bool.self, forKey: .isCancelled)
             substituteTeacher = try container.decodeIfPresent(String.self, forKey: .substituteTeacher)
             labels = try container.decodeIfPresent(Labels.self, forKey: .labels)
             tokenExpirationWarning = try container.decodeIfPresent(String.self, forKey: .tokenExpirationWarning)
+            compactTimerText = try container.decodeIfPresent(String.self, forKey: .compactTimerText)
+            lessonIcon = try container.decodeIfPresent(String.self, forKey: .lessonIcon)
 
             let currentTimeStr = try container.decode(String.self, forKey: .currentTime)
             guard let currentTimeDate = isoFormatter.date(from: currentTimeStr) else {
@@ -140,43 +148,45 @@ struct TimetableActivityAttributes: ActivityAttributes {
             }
             currentTime = currentTimeDate
         }
-        
+
         func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
-            
+
             let isoFormatter = ISO8601DateFormatter()
             isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            
+
             try container.encode(isBreak, forKey: .isBreak)
             try container.encode(lessonName, forKey: .lessonName)
             try container.encodeIfPresent(lessonTheme, forKey: .lessonTheme)
             try container.encodeIfPresent(roomName, forKey: .roomName)
             try container.encodeIfPresent(teacherName, forKey: .teacherName)
-            
+
             try container.encode(isoFormatter.string(from: startTime), forKey: .startTime)
             try container.encode(isoFormatter.string(from: endTime), forKey: .endTime)
-            
+
             try container.encodeIfPresent(lessonNumber, forKey: .lessonNumber)
             try container.encodeIfPresent(mode, forKey: .mode)
             try container.encodeIfPresent(message, forKey: .message)
             try container.encodeIfPresent(season, forKey: .season)
             try container.encodeIfPresent(nextLessonName, forKey: .nextLessonName)
             try container.encodeIfPresent(nextRoomName, forKey: .nextRoomName)
-            
+
             if let nextStartTime = nextStartTime {
                 try container.encode(isoFormatter.string(from: nextStartTime), forKey: .nextStartTime)
             }
-            
+
             try container.encode(isSubstitution, forKey: .isSubstitution)
             try container.encode(isCancelled, forKey: .isCancelled)
             try container.encodeIfPresent(substituteTeacher, forKey: .substituteTeacher)
             try container.encodeIfPresent(labels, forKey: .labels)
             try container.encodeIfPresent(tokenExpirationWarning, forKey: .tokenExpirationWarning)
+            try container.encodeIfPresent(compactTimerText, forKey: .compactTimerText)
+            try container.encodeIfPresent(lessonIcon, forKey: .lessonIcon)
 
             try container.encode(isoFormatter.string(from: currentTime), forKey: .currentTime)
         }
     }
-    
+
     var studentName: String
     var schoolName: String
 }
@@ -185,11 +195,11 @@ extension TimetableActivityAttributes.ContentState {
     var timeRemaining: TimeInterval {
         return endTime.timeIntervalSince(currentTime)
     }
-    
+
     var isBeforeSchool: Bool {
         return currentTime < startTime && !isBreak
     }
-    
+
     var formattedStartTime: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
@@ -197,7 +207,7 @@ extension TimetableActivityAttributes.ContentState {
         let adjustedDate = Calendar.current.date(byAdding: .hour, value: 1, to: startTime) ?? startTime
         return formatter.string(from: adjustedDate)
     }
-    
+
     var formattedEndTime: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
@@ -205,7 +215,7 @@ extension TimetableActivityAttributes.ContentState {
         let adjustedDate = Calendar.current.date(byAdding: .hour, value: 1, to: endTime) ?? endTime
         return formatter.string(from: adjustedDate)
     }
-    
+
     var formattedNextStartTime: String {
         guard let nextStartTime = nextStartTime else { return "" }
         let formatter = DateFormatter()
@@ -214,18 +224,18 @@ extension TimetableActivityAttributes.ContentState {
         let adjustedDate = Calendar.current.date(byAdding: .hour, value: 1, to: nextStartTime) ?? nextStartTime
         return formatter.string(from: adjustedDate)
     }
-    
+
     var timeRemainingText: String {
         let remaining = timeRemaining
-        
+
         if remaining < 0 {
             return "0:00"
         }
-        
+
         let hours = Int(remaining) / 3600
         let minutes = (Int(remaining) % 3600) / 60
         let seconds = Int(remaining) % 60
-        
+
         if hours > 0 {
             return String(format: "%d:%02d:%02d", hours, minutes, seconds)
         } else if minutes > 0 {
@@ -234,7 +244,7 @@ extension TimetableActivityAttributes.ContentState {
             return String(format: "0:%02d", seconds)
         }
     }
-    
+
     var seasonalRemainingText: String {
         if let remainingLabel = labels?.remainingLabel, let message = message, !message.isEmpty {
             return "\(remainingLabel): \(message)"
@@ -248,7 +258,7 @@ extension TimetableActivityAttributes.ContentState {
         }
         return "Szünetből hátralévő idő: \(hours) óra"
     }
-    
+
     var seasonalDisplayValue: String {
         if let message = message, !message.isEmpty {
             return message
@@ -275,7 +285,7 @@ extension TimetableActivityAttributes.ContentState {
             "isCancelled": isCancelled,
             "currentTime": ISO8601DateFormatter().string(from: currentTime)
         ]
-        
+
         if let lessonTheme = lessonTheme {
             json["lessonTheme"] = lessonTheme
         }
@@ -312,10 +322,16 @@ extension TimetableActivityAttributes.ContentState {
         if let tokenExpirationWarning = tokenExpirationWarning {
             json["tokenExpirationWarning"] = tokenExpirationWarning
         }
+        if let compactTimerText = compactTimerText {
+            json["compactTimerText"] = compactTimerText
+        }
+        if let lessonIcon = lessonIcon {
+            json["lessonIcon"] = lessonIcon
+        }
 
         return json
     }
-    
+
     static func fromJSON(_ json: [String: Any]) -> TimetableActivityAttributes.ContentState? {
         let isoFormatter = ISO8601DateFormatter()
         isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -333,7 +349,7 @@ extension TimetableActivityAttributes.ContentState {
 
         let currentTimeStr = json["currentTime"] as? String
         let currentTime = currentTimeStr.flatMap { isoFormatter.date(from: $0) } ?? Date()
-        
+
         let nextStartTime: Date?
         if let nextStartTimeStr = json["nextStartTime"] as? String {
             nextStartTime = isoFormatter.date(from: nextStartTimeStr)
@@ -382,8 +398,9 @@ extension TimetableActivityAttributes.ContentState {
             substituteTeacher: json["substituteTeacher"] as? String,
             currentTime: currentTime,
             labels: labels,
-            tokenExpirationWarning: json["tokenExpirationWarning"] as? String
+            tokenExpirationWarning: json["tokenExpirationWarning"] as? String,
+            compactTimerText: json["compactTimerText"] as? String,
+            lessonIcon: json["lessonIcon"] as? String
         )
     }
 }
-

@@ -41,6 +41,17 @@ class LiveActivityService {
   static bool? _lastSentMorningNotificationEnabled;
   static const Duration _morningNotificationDebounceInterval = Duration(seconds: 3);
 
+  static bool _tokenExpired = false;
+
+  /// Check if token has expired (for UI notification)
+  static bool get isTokenExpired => _tokenExpired;
+
+  /// Clear token expiration flag (call after successful login)
+  static void clearTokenExpiration() {
+    _tokenExpired = false;
+    _logger.info('Token expiration flag cleared');
+  }
+
   /// Get current bellDelay value from settings
   static double? _getCurrentBellDelay() {
     try {
@@ -733,6 +744,11 @@ class LiveActivityService {
           searchStartDate: nextWeekStart,
         );
 
+        if (searchResult.tokenExpired) {
+          _tokenExpired = true;
+          _logger.warning('[GlobalSearch] onUserLogin: Token expired during global search');
+        }
+
         allLessons.addAll(searchResult.allLessons);
 
         _logger.info('[GlobalSearch] onUserLogin: Global searcher returned ${searchResult.allLessons.length} lessons');
@@ -1037,6 +1053,11 @@ class LiveActivityService {
           client: client,
           searchStartDate: nextWeekStart,
         );
+
+        if (searchResult.tokenExpired) {
+          _tokenExpired = true;
+          _logger.warning('[GlobalSearch] Token expired during global search');
+        }
 
         allLessons.addAll(searchResult.allLessons);
 
@@ -1596,6 +1617,7 @@ class LiveActivityService {
     List<Lesson> allLessons = [];
     Lesson? lastBreakDay;
     Lesson? firstSchoolDayAfterBreak;
+    bool tokenExpired = false;
 
     DateTime currentSearchDate = searchStartDate;
     int weeksSearched = 0;
@@ -1650,7 +1672,58 @@ class LiveActivityService {
           _logger.info('[GlobalBreakSearcher] Week ${weeksSearched + 1} returned no data, continuing search...');
         }
       } catch (e) {
-        _logger.warning('[GlobalBreakSearcher] Error fetching week ${weeksSearched + 1}: $e');
+        final isTokenError = e.toString().contains('TokenExpiredException') ||
+                            e.toString().contains('InvalidGrantException');
+
+        if (isTokenError) {
+          tokenExpired = true;
+          _logger.warning('[GlobalBreakSearcher] Token expired during week ${weeksSearched + 1}, falling back to cache');
+        } else {
+          _logger.warning('[GlobalBreakSearcher] Error fetching week ${weeksSearched + 1}: $e');
+        }
+
+        try {
+          final cachedResponse = await client.getTimeTable(weekStart, weekEnd, forceCache: true);
+
+          if (cachedResponse.response != null && cachedResponse.response!.isNotEmpty) {
+            final weekLessons = cachedResponse.response!;
+            _logger.info('[GlobalBreakSearcher] Loaded ${weekLessons.length} lessons from cache for week ${weeksSearched + 1}');
+
+            final breakEvents = weekLessons.where((lesson) {
+              final uid = lesson.uid.toLowerCase();
+              final name = lesson.name.toLowerCase();
+              return uid.contains('tanevrendjeesemeny') &&
+                     !name.contains('tanítási nap') &&
+                     (name.contains('pihenőnap') ||
+                      name.contains('munkaszüneti') ||
+                      name.contains('ünnepnap') ||
+                      name.contains('tanítás nélküli') ||
+                      name.contains('nem órarendi nap'));
+            }).toList();
+
+            final schoolLessons = weekLessons.where((lesson) {
+              final uid = lesson.uid.toLowerCase();
+              return uid.contains('orarendiora') || uid.contains('tanitasiora') || uid.contains('uresora');
+            }).toList();
+
+            allLessons.addAll(weekLessons);
+
+            if (breakEvents.isNotEmpty) {
+              breakEvents.sort((a, b) => a.start.compareTo(b.start));
+              lastBreakDay = breakEvents.last;
+              _logger.info('[GlobalBreakSearcher] Found ${breakEvents.length} break event(s) in cached week ${weeksSearched + 1}, last: ${lastBreakDay.name} on ${lastBreakDay.date.split('T')[0]}');
+            } else if (schoolLessons.isNotEmpty) {
+              schoolLessons.sort((a, b) => a.start.compareTo(b.start));
+              firstSchoolDayAfterBreak = schoolLessons.first;
+              _logger.info('[GlobalBreakSearcher] Found first school day after break in cache: ${firstSchoolDayAfterBreak.name} on ${firstSchoolDayAfterBreak.date.split('T')[0]}');
+              break;
+            }
+          } else {
+            _logger.info('[GlobalBreakSearcher] No cache available for week ${weeksSearched + 1}');
+          }
+        } catch (cacheError) {
+          _logger.warning('[GlobalBreakSearcher] Cache fallback also failed for week ${weeksSearched + 1}: $cacheError');
+        }
       }
 
       currentSearchDate = currentSearchDate.add(const Duration(days: 7));
@@ -1665,12 +1738,13 @@ class LiveActivityService {
       _logger.warning('[GlobalBreakSearcher] Reached maximum search limit ($maxWeeks weeks)');
     }
 
-    _logger.info('[GlobalBreakSearcher] Search completed: ${allLessons.length} lessons found, last break: ${lastBreakDay?.date.split('T')[0] ?? 'none'}, first school day: ${firstSchoolDayAfterBreak?.date.split('T')[0] ?? 'none'}');
+    _logger.info('[GlobalBreakSearcher] Search completed: ${allLessons.length} lessons found, last break: ${lastBreakDay?.date.split('T')[0] ?? 'none'}, first school day: ${firstSchoolDayAfterBreak?.date.split('T')[0] ?? 'none'}, tokenExpired: $tokenExpired');
 
     return _GlobalSearchResult(
       allLessons: allLessons,
       lastBreakDay: lastBreakDay,
       firstSchoolDayAfterBreak: firstSchoolDayAfterBreak,
+      tokenExpired: tokenExpired,
     );
   }
 }
@@ -1680,10 +1754,12 @@ class _GlobalSearchResult {
   final List<Lesson> allLessons;
   final Lesson? lastBreakDay;
   final Lesson? firstSchoolDayAfterBreak;
+  final bool tokenExpired;
 
   _GlobalSearchResult({
     required this.allLessons,
     this.lastBreakDay,
     this.firstSchoolDayAfterBreak,
+    this.tokenExpired = false,
   });
 }
