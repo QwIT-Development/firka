@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:firka/helpers/api/client/kreta_stream.dart';
+import 'package:firka/helpers/api/exceptions/token.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/live_activity_service.dart';
 import 'package:firka/helpers/settings.dart';
@@ -9,6 +10,8 @@ import 'package:firka/helpers/update_notifier.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/pages/extras/main_wear_pair.dart';
+import 'package:firka/ui/phone/pages/extras/main_reauth.dart';
+import 'package:firka/ui/phone/pages/extras/reauth_toast.dart';
 import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/phone/pages/home/home_main.dart';
 import 'package:firka/ui/phone/pages/home/home_subpage.dart';
@@ -133,7 +136,29 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
         await HomeWidget.updateWidget(
             qualifiedAndroidName: "app.firka.naplo.glance.TimetableWidget");
       }
+
+      if (Platform.isIOS && LiveActivityService.isTokenExpired && !_disposed) {
+        showReauthBottomSheet(context, widget.data, widget.data.l10n.reauth);
+      }
+
     } catch (e) {
+      if (e is TokenExpiredException || e is InvalidGrantException) {
+        activeToast = ActiveToastType.reauth;
+
+        if (_disposed) return;
+        setState(() {
+          toast = buildReauthToast(context, widget.data, () {
+            if (!_disposed) {
+              setState(() {
+                activeToast = ActiveToastType.none;
+                toast = null;
+              });
+            }
+          });
+        });
+        return;
+      }
+
       activeToast = ActiveToastType.error;
 
       var dismissDelay = 120;
@@ -167,7 +192,6 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  // Use min to prevent filling the width
                   children: [
                     Text(
                       widget.data.l10n.api_error,
