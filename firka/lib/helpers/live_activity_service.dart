@@ -126,7 +126,49 @@ class LiveActivityService {
     _logger.info('Saved privacy ever declined=$value for user $studentId');
   }
 
-  /// Sync global setting with current user's setting
+  /// Get user-specific morning notification enabled state from SharedPreferences
+  static Future<bool> _getUserMorningNotificationEnabled({KretaClient? client}) async {
+    final studentId = _getCurrentStudentId(client: client);
+    if (studentId == null) return true; // default true
+
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'morning_notification_enabled_$studentId';
+    return prefs.getBool(key) ?? true;
+  }
+
+  /// Set user-specific morning notification enabled state to SharedPreferences
+  static Future<void> _setUserMorningNotificationEnabled(bool value, {KretaClient? client}) async {
+    final studentId = _getCurrentStudentId(client: client);
+    if (studentId == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'morning_notification_enabled_$studentId';
+    await prefs.setBool(key, value);
+    _logger.info('Saved morning notification enabled=$value for user $studentId');
+  }
+
+  /// Get user-specific morning notification time from SharedPreferences
+  static Future<int> _getUserMorningNotificationTime({KretaClient? client}) async {
+    final studentId = _getCurrentStudentId(client: client);
+    if (studentId == null) return 120; // default 120 minutes
+
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'morning_notification_time_$studentId';
+    return prefs.getInt(key) ?? 120;
+  }
+
+  /// Set user-specific morning notification time to SharedPreferences
+  static Future<void> _setUserMorningNotificationTime(int value, {KretaClient? client}) async {
+    final studentId = _getCurrentStudentId(client: client);
+    if (studentId == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'morning_notification_time_$studentId';
+    await prefs.setInt(key, value);
+    _logger.info('Saved morning notification time=$value for user $studentId');
+  }
+
+  /// Sync global settings with current user's settings
   /// This ensures the Settings UI shows the correct state for the current user
   static Future<void> syncGlobalSettingWithCurrentUser({KretaClient? client}) async {
     if (!Platform.isIOS) return;
@@ -138,22 +180,48 @@ class LiveActivityService {
         return;
       }
 
-      final userEnabled = await _getUserLiveActivityEnabled(client: client);
-
-      final globalSetting = initData.settings
+      final userLiveActivityEnabled = await _getUserLiveActivityEnabled(client: client);
+      final globalLiveActivitySetting = initData.settings
           .group("settings")
           .subGroup("notifications")["live_activity_enabled"] as SettingsBoolean;
 
-      if (globalSetting.value != userEnabled) {
-        globalSetting.value = userEnabled;
+      if (globalLiveActivitySetting.value != userLiveActivityEnabled) {
+        globalLiveActivitySetting.value = userLiveActivityEnabled;
         await initData.isar.writeTxn(() async {
-          await globalSetting.save(initData.isar.appSettingsModels);
+          await globalLiveActivitySetting.save(initData.isar.appSettingsModels);
         });
-        globalUpdate.update();
-        _logger.info('Global LiveActivity setting synced with user setting: $userEnabled for user $studentId');
+        _logger.info('Global LiveActivity setting synced: $userLiveActivityEnabled for user $studentId');
       }
+
+      final userMorningEnabled = await _getUserMorningNotificationEnabled(client: client);
+      final globalMorningEnabledSetting = initData.settings
+          .group("settings")
+          .subGroup("notifications")["morning_notification_enabled"] as SettingsBoolean;
+
+      if (globalMorningEnabledSetting.value != userMorningEnabled) {
+        globalMorningEnabledSetting.value = userMorningEnabled;
+        await initData.isar.writeTxn(() async {
+          await globalMorningEnabledSetting.save(initData.isar.appSettingsModels);
+        });
+        _logger.info('Global morning notification enabled synced: $userMorningEnabled for user $studentId');
+      }
+
+      final userMorningTime = await _getUserMorningNotificationTime(client: client);
+      final globalMorningTimeSetting = initData.settings
+          .group("settings")
+          .subGroup("notifications")["morning_notification_time"] as SettingsDouble;
+
+      if (globalMorningTimeSetting.value.toInt() != userMorningTime) {
+        globalMorningTimeSetting.value = userMorningTime.toDouble();
+        await initData.isar.writeTxn(() async {
+          await globalMorningTimeSetting.save(initData.isar.appSettingsModels);
+        });
+        _logger.info('Global morning notification time synced: $userMorningTime for user $studentId');
+      }
+
+      globalUpdate.update();
     } catch (e) {
-      _logger.warning('Error syncing global setting: $e');
+      _logger.warning('Error syncing global settings: $e');
     }
   }
 
@@ -845,18 +913,20 @@ class LiveActivityService {
         return;
       }
 
-      /*final apnsTokenSuccess = await _backendClient.updateApnsToken(
-        deviceToken: deviceToken,
-        apnsPushToken: deviceToken,
-      );*/
-
       String? currentLanguage = _getCurrentLanguageCode();
+
+      final userMorningNotificationTime = await _getUserMorningNotificationTime();
+      final userMorningNotificationEnabled = await _getUserMorningNotificationEnabled();
+      final userLiveActivityEnabled = await _getUserLiveActivityEnabled();
 
       final success = await _backendClient.registerDevice(
         deviceToken: deviceToken,
         timetable: allLessons,
         language: currentLanguage,
         bellDelay: _getCurrentBellDelay(),
+        morningNotificationTime: userMorningNotificationTime,
+        morningNotificationEnabled: userMorningNotificationEnabled,
+        liveActivityEnabled: userLiveActivityEnabled,
       );
 
       if (success) {
@@ -1470,10 +1540,13 @@ class LiveActivityService {
 
   /// Handle morning notification enabled change with debounce
   /// Waits 3 seconds after the last change before sending update to backend
+  /// Also saves the setting per-user immediately
   static void onMorningNotificationEnabledChanged(bool newValue) {
     if (!Platform.isIOS || !_isInitialized) return;
 
     _logger.info('Morning notification enabled changed to $newValue, scheduling debounced update');
+
+    _setUserMorningNotificationEnabled(newValue);
 
     _morningNotificationDebounceTimer?.cancel();
 
@@ -1486,10 +1559,13 @@ class LiveActivityService {
 
   /// Handle morning notification time change with debounce
   /// Waits 3 seconds after the last change before sending update to backend
+  /// Also saves the setting per-user immediately
   static void onMorningNotificationTimeChanged(double newValue) {
     if (!Platform.isIOS || !_isInitialized) return;
 
     _logger.info('Morning notification time changed to $newValue minutes, scheduling debounced update');
+
+    _setUserMorningNotificationTime(newValue.toInt());
 
     _morningNotificationDebounceTimer?.cancel();
 

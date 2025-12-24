@@ -32,6 +32,9 @@ class LiveActivityBackendClient {
     required List<Lesson> timetable,
     String? language,
     double? bellDelay,
+    int? morningNotificationTime,
+    bool? morningNotificationEnabled,
+    bool? liveActivityEnabled,
   }) async {
     try {
       final lessonsData = timetable.map((lesson) {
@@ -69,6 +72,18 @@ class LiveActivityBackendClient {
 
       if (bellDelay != null) {
         requestData['bellDelay'] = bellDelay;
+      }
+
+      if (morningNotificationTime != null) {
+        requestData['morningNotificationTime'] = morningNotificationTime;
+      }
+
+      if (morningNotificationEnabled != null) {
+        requestData['morningNotificationEnabled'] = morningNotificationEnabled;
+      }
+
+      if (liveActivityEnabled != null) {
+        requestData['liveActivityEnabled'] = liveActivityEnabled;
       }
 
       _logger.info('Registering device with backend. Sending ${lessonsData.length} lessons.');
