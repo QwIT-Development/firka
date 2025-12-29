@@ -52,21 +52,6 @@ class LiveActivityService {
     _logger.info('Token expiration flag cleared');
   }
 
-  /// Get current bellDelay value from settings
-  static double? _getCurrentBellDelay() {
-    try {
-      if (!initDone) {
-        return null;
-      }
-      final bellDelaySetting = initData.settings.group("settings")
-          .subGroup("application")["bell_delay"] as SettingsDouble?;
-      return bellDelaySetting?.value;
-    } catch (e) {
-      _logger.warning('Error getting current bellDelay: $e');
-      return null;
-    }
-  }
-
   /// Get current user's studentId for user-specific settings
   /// If client is provided, use it directly instead of initData.client
   static String? _getCurrentStudentId({KretaClient? client}) {
@@ -129,7 +114,7 @@ class LiveActivityService {
   /// Get user-specific morning notification enabled state from SharedPreferences
   static Future<bool> _getUserMorningNotificationEnabled({KretaClient? client}) async {
     final studentId = _getCurrentStudentId(client: client);
-    if (studentId == null) return true; // default true
+    if (studentId == null) return true;
 
     final prefs = await SharedPreferences.getInstance();
     final key = 'morning_notification_enabled_$studentId';
@@ -150,7 +135,7 @@ class LiveActivityService {
   /// Get user-specific morning notification time from SharedPreferences
   static Future<int> _getUserMorningNotificationTime({KretaClient? client}) async {
     final studentId = _getCurrentStudentId(client: client);
-    if (studentId == null) return 120; // default 120 minutes
+    if (studentId == null) return 120;
 
     final prefs = await SharedPreferences.getInstance();
     final key = 'morning_notification_time_$studentId';
@@ -166,6 +151,27 @@ class LiveActivityService {
     final key = 'morning_notification_time_$studentId';
     await prefs.setInt(key, value);
     _logger.info('Saved morning notification time=$value for user $studentId');
+  }
+
+  /// Get user-specific bell delay from SharedPreferences
+  static Future<double> _getUserBellDelay({KretaClient? client}) async {
+    final studentId = _getCurrentStudentId(client: client);
+    if (studentId == null) return 0.0;
+
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'bell_delay_$studentId';
+    return prefs.getDouble(key) ?? 0.0;
+  }
+
+  /// Set user-specific bell delay to SharedPreferences
+  static Future<void> _setUserBellDelay(double value, {KretaClient? client}) async {
+    final studentId = _getCurrentStudentId(client: client);
+    if (studentId == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'bell_delay_$studentId';
+    await prefs.setDouble(key, value);
+    _logger.info('Saved bell delay=$value for user $studentId');
   }
 
   /// Sync global settings with current user's settings
@@ -217,6 +223,19 @@ class LiveActivityService {
           await globalMorningTimeSetting.save(initData.isar.appSettingsModels);
         });
         _logger.info('Global morning notification time synced: $userMorningTime for user $studentId');
+      }
+
+      final userBellDelay = await _getUserBellDelay(client: client);
+      final globalBellDelaySetting = initData.settings
+          .group("settings")
+          .subGroup("application")["bell_delay"] as SettingsDouble;
+
+      if (globalBellDelaySetting.value != userBellDelay) {
+        globalBellDelaySetting.value = userBellDelay;
+        await initData.isar.writeTxn(() async {
+          await globalBellDelaySetting.save(initData.isar.appSettingsModels);
+        });
+        _logger.info('Global bell delay synced: $userBellDelay for user $studentId');
       }
 
       globalUpdate.update();
@@ -498,11 +517,12 @@ class LiveActivityService {
         return false;
       }
 
+      final userBellDelay = await _getUserBellDelay();
       _logger.info('Background fetch: sending ${allLessons.length} lessons to backend');
       final success = await _backendClient.updateTimetable(
         deviceToken: deviceToken,
         timetable: allLessons,
-        bellDelay: _getCurrentBellDelay(),
+        bellDelay: userBellDelay,
       );
 
       if (success) {
@@ -918,12 +938,13 @@ class LiveActivityService {
       final userMorningNotificationTime = await _getUserMorningNotificationTime();
       final userMorningNotificationEnabled = await _getUserMorningNotificationEnabled();
       final userLiveActivityEnabled = await _getUserLiveActivityEnabled();
+      final userBellDelay = await _getUserBellDelay();
 
       final success = await _backendClient.registerDevice(
         deviceToken: deviceToken,
         timetable: allLessons,
         language: currentLanguage,
-        bellDelay: _getCurrentBellDelay(),
+        bellDelay: userBellDelay,
         morningNotificationTime: userMorningNotificationTime,
         morningNotificationEnabled: userMorningNotificationEnabled,
         liveActivityEnabled: userLiveActivityEnabled,
@@ -1245,10 +1266,11 @@ class LiveActivityService {
           _logger.info('Timetable changes detected, sending to backend...');
         }
 
+        final userBellDelay = await _getUserBellDelay();
         final success = await _backendClient.updateTimetable(
           deviceToken: deviceToken,
           timetable: allLessons,
-          bellDelay: _getCurrentBellDelay(),
+          bellDelay: userBellDelay,
         );
 
         if (success) {
@@ -1477,10 +1499,13 @@ class LiveActivityService {
   /// Handle bellDelay change with debounce
   /// Waits 3 seconds after the last change before sending update to backend
   /// If value changes during the wait, reschedules the update with the new value
+  /// Also saves the setting per-user immediately
   static void onBellDelayChanged(double newValue) {
     if (!Platform.isIOS || !_isInitialized) return;
 
     _logger.info('BellDelay changed to $newValue minutes, scheduling debounced update');
+
+    _setUserBellDelay(newValue);
 
     _bellDelayDebounceTimer?.cancel();
 
