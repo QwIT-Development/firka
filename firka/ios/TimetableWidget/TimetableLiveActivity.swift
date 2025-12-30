@@ -218,13 +218,17 @@ struct TimetableLiveActivity: Widget {
                             let mode3 = context.state.mode ?? (context.state.isBreak ? "break" : "lesson")
                             let showWarningModes = ["newYearEve", "lesson", "break", "seasonalBreak"]
                             if let warning = context.state.tokenExpirationWarning, !warning.isEmpty, showWarningModes.contains(mode3) {
+                                let isExpired = context.state.tokenExpired ?? false
+                                let warningColor: Color = isExpired ? .red : .orange
+                                let warningIcon = isExpired ? "exclamationmark.circle.fill" : "exclamationmark.triangle.fill"
+
                                 HStack(spacing: 3) {
-                                    Image(systemName: "exclamationmark.triangle.fill")
+                                    Image(systemName: warningIcon)
                                         .font(.system(size: 8))
-                                        .foregroundColor(.orange)
+                                        .foregroundColor(warningColor)
                                     Text(warning)
                                         .font(.system(size: 8, weight: .semibold))
-                                        .foregroundColor(.orange)
+                                        .foregroundColor(warningColor)
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.6)
                                 }
@@ -540,13 +544,17 @@ struct TimetableLiveActivityView: View {
                 // Token expiration warning (only for specific modes)
                 let showWarningModes = ["newYearEve", "lesson", "break", "seasonalBreak"]
                 if let warning = context.state.tokenExpirationWarning, !warning.isEmpty, showWarningModes.contains(mode) {
+                    let isExpired = context.state.tokenExpired ?? false
+                    let warningColor: Color = isExpired ? .red : .orange
+                    let warningIcon = isExpired ? "exclamationmark.circle.fill" : "exclamationmark.triangle.fill"
+
                     HStack(spacing: 4) {
-                        Image(systemName: "exclamationmark.triangle.fill")
+                        Image(systemName: warningIcon)
                             .font(.system(size: 10))
-                            .foregroundColor(.orange)
+                            .foregroundColor(warningColor)
                         Text(warning)
                             .font(.system(size: 10, weight: .semibold))
-                            .foregroundColor(.orange)
+                            .foregroundColor(warningColor)
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
                     }
