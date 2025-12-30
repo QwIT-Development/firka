@@ -28,6 +28,7 @@ struct TimetableActivityAttributes: ActivityAttributes {
 
         var labels: Labels?
         var tokenExpirationWarning: String?
+        var tokenExpired: Bool?
         var compactTimerText: String?
         var lessonIcon: String?
 
@@ -68,11 +69,12 @@ struct TimetableActivityAttributes: ActivityAttributes {
             case currentTime
             case labels
             case tokenExpirationWarning
+            case tokenExpired
             case compactTimerText
             case lessonIcon
         }
 
-        init(isBreak: Bool, lessonName: String, lessonTheme: String?, roomName: String?, teacherName: String?, startTime: Date, endTime: Date, lessonNumber: Int?, mode: String?, message: String?, season: String?, nextLessonName: String?, nextRoomName: String?, nextStartTime: Date?, isSubstitution: Bool, isCancelled: Bool, substituteTeacher: String?, currentTime: Date, labels: Labels? = nil, tokenExpirationWarning: String? = nil, compactTimerText: String? = nil, lessonIcon: String? = nil) {
+        init(isBreak: Bool, lessonName: String, lessonTheme: String?, roomName: String?, teacherName: String?, startTime: Date, endTime: Date, lessonNumber: Int?, mode: String?, message: String?, season: String?, nextLessonName: String?, nextRoomName: String?, nextStartTime: Date?, isSubstitution: Bool, isCancelled: Bool, substituteTeacher: String?, currentTime: Date, labels: Labels? = nil, tokenExpirationWarning: String? = nil, tokenExpired: Bool? = nil, compactTimerText: String? = nil, lessonIcon: String? = nil) {
             self.isBreak = isBreak
             self.lessonName = lessonName
             self.lessonTheme = lessonTheme
@@ -93,6 +95,7 @@ struct TimetableActivityAttributes: ActivityAttributes {
             self.currentTime = currentTime
             self.labels = labels
             self.tokenExpirationWarning = tokenExpirationWarning
+            self.tokenExpired = tokenExpired
             self.compactTimerText = compactTimerText
             self.lessonIcon = lessonIcon
         }
@@ -139,6 +142,7 @@ struct TimetableActivityAttributes: ActivityAttributes {
             substituteTeacher = try container.decodeIfPresent(String.self, forKey: .substituteTeacher)
             labels = try container.decodeIfPresent(Labels.self, forKey: .labels)
             tokenExpirationWarning = try container.decodeIfPresent(String.self, forKey: .tokenExpirationWarning)
+            tokenExpired = try container.decodeIfPresent(Bool.self, forKey: .tokenExpired)
             compactTimerText = try container.decodeIfPresent(String.self, forKey: .compactTimerText)
             lessonIcon = try container.decodeIfPresent(String.self, forKey: .lessonIcon)
 
@@ -180,6 +184,7 @@ struct TimetableActivityAttributes: ActivityAttributes {
             try container.encodeIfPresent(substituteTeacher, forKey: .substituteTeacher)
             try container.encodeIfPresent(labels, forKey: .labels)
             try container.encodeIfPresent(tokenExpirationWarning, forKey: .tokenExpirationWarning)
+            try container.encodeIfPresent(tokenExpired, forKey: .tokenExpired)
             try container.encodeIfPresent(compactTimerText, forKey: .compactTimerText)
             try container.encodeIfPresent(lessonIcon, forKey: .lessonIcon)
 
@@ -322,6 +327,9 @@ extension TimetableActivityAttributes.ContentState {
         if let tokenExpirationWarning = tokenExpirationWarning {
             json["tokenExpirationWarning"] = tokenExpirationWarning
         }
+        if let tokenExpired = tokenExpired {
+            json["tokenExpired"] = tokenExpired
+        }
         if let compactTimerText = compactTimerText {
             json["compactTimerText"] = compactTimerText
         }
@@ -399,6 +407,7 @@ extension TimetableActivityAttributes.ContentState {
             currentTime: currentTime,
             labels: labels,
             tokenExpirationWarning: json["tokenExpirationWarning"] as? String,
+            tokenExpired: json["tokenExpired"] as? Bool,
             compactTimerText: json["compactTimerText"] as? String,
             lessonIcon: json["lessonIcon"] as? String
         )
