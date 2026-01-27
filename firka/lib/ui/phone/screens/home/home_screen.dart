@@ -137,6 +137,10 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
             qualifiedAndroidName: "app.firka.naplo.glance.TimetableWidget");
       }
 
+      if (Platform.isIOS) {
+        await WidgetCacheHelper.refreshIOSWidgets(widget.data.client, widget.data.settings);
+      }
+
       if (Platform.isIOS && LiveActivityService.isTokenExpired && !_disposed) {
         showReauthBottomSheet(context, widget.data, widget.data.l10n.reauth);
       }

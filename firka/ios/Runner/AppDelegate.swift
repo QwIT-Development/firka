@@ -22,6 +22,8 @@ import BackgroundTasks
 
     let controller = window?.rootViewController as! FlutterViewController
 
+    HomeWidgetMethodChannel.register(with: controller.binaryMessenger)
+
     backgroundFetchChannel = FlutterMethodChannel(name: "firka.app/background_fetch", binaryMessenger: controller.binaryMessenger)
 
     backgroundFetchChannel?.setMethodCallHandler { [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) in

@@ -20,6 +20,7 @@ import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../../../../helpers/db/widget.dart';
 import '../../../../helpers/firka_bundle.dart';
 import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/settings.dart';
@@ -705,6 +706,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           onTap: () async {
             if (Platform.isIOS) {
               await LiveActivityService.onUserLogout();
+              await WidgetCacheHelper.clearIOSWidgets();
             }
 
             final active = widget.data.client.model.studentIdNorm!;

@@ -1,0 +1,28 @@
+/* Widget Titles */
+"widget_timetable_title" = "Órarend";
+"widget_grades_title" = "Legutóbbi jegyek";
+"widget_averages_title" = "Átlagok";
+
+/* Widget Descriptions */
+"widget_timetable_description" = "A napi órarendet mutatja";
+"widget_grades_description" = "A legutóbbi jegyeidet mutatja";
+"widget_averages_description" = "A tantárgyi átlagokat mutatja";
+
+/* Parameter Titles */
+"param_style" = "Stílus";
+"param_display_mode_small" = "Megjelenítés (kis widget)";
+"param_subjects" = "Tantárgyak";
+
+/* Style Options */
+"style_type" = "Stílus";
+"style_liquid_glass" = "Liquid Glass";
+"style_app_theme" = "Alkalmazás témája";
+
+/* Display Mode Options */
+"display_mode_type" = "Megjelenítési mód";
+"display_mode_current" = "Jelenlegi óra";
+"display_mode_next" = "Következő óra";
+
+/* Subject Selection */
+"subjects_type" = "Tantárgyak";
+"no_subjects_available" = "Nincsenek tantárgyak";

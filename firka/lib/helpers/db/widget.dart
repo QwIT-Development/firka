@@ -2,8 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:firka/helpers/api/client/kreta_client.dart';
+import 'package:firka/helpers/api/model/grade.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
+import 'package:firka/helpers/db/ios_widget_helper.dart';
 import 'package:firka/helpers/debug_helper.dart';
+import 'package:firka/helpers/settings.dart';
+import 'package:firka/main.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -67,5 +72,173 @@ class WidgetCacheHelper {
       widgetFile.writeAsString(
           jsonEncode(WidgetCacheHelper.toJson(style, lessons.response!)));
     }
+  }
+
+  static Future<void> updateIOSWidgets({
+    required String locale,
+    required String theme,
+    required List<Lesson> todayLessons,
+    required List<Lesson> tomorrowLessons,
+    required List<Grade> grades,
+    required Map<String, double> subjectAverages,
+    required double? overallAverage,
+    WidgetBreakInfo? currentBreak,
+  }) async {
+    await IOSWidgetHelper.updateWidgetData(
+      locale: locale,
+      theme: theme,
+      todayLessons: todayLessons,
+      tomorrowLessons: tomorrowLessons,
+      grades: grades,
+      subjectAverages: subjectAverages,
+      overallAverage: overallAverage,
+      currentBreak: currentBreak,
+    );
+  }
+
+  /// Comprehensive iOS widget refresh that collects all necessary data
+  /// Call this on: app open, user switch, data refresh
+  static Future<void> refreshIOSWidgets(KretaClient client, SettingsStore settings) async {
+    if (!Platform.isIOS) return;
+
+    try {
+      // Get locale
+      final langIndex = (settings.group("settings").subGroup("application")["language"]
+              as SettingsItemsRadio)
+          .activeIndex;
+      String locale;
+      switch (langIndex) {
+        case 1:
+          locale = 'hu';
+          break;
+        case 2:
+          locale = 'en';
+          break;
+        case 3:
+          locale = 'de';
+          break;
+        default:
+          locale = 'hu'; // Default to Hungarian
+      }
+
+      // Get theme
+      final themeIndex = (settings.group("settings").subGroup("customization")["theme"]
+              as SettingsItemsRadio)
+          .activeIndex;
+      String theme;
+      switch (themeIndex) {
+        case 1:
+          theme = 'light';
+          break;
+        case 2:
+          theme = 'dark';
+          break;
+        default:
+          theme = isLightMode.value ? 'light' : 'dark';
+      }
+
+      // Get today's and tomorrow's lessons
+      final now = timeNow();
+      final todayMidnight = DateTime(now.year, now.month, now.day);
+      final tomorrowMidnight = todayMidnight.add(Duration(days: 1));
+
+      final todayResponse = await client.getTimeTable(
+        todayMidnight,
+        todayMidnight.add(Duration(hours: 23, minutes: 59)),
+      );
+      final tomorrowResponse = await client.getTimeTable(
+        tomorrowMidnight,
+        tomorrowMidnight.add(Duration(hours: 23, minutes: 59)),
+      );
+
+      final todayLessons = todayResponse.response ?? [];
+      final tomorrowLessons = tomorrowResponse.response ?? [];
+
+      // Get grades
+      final gradesResponse = await client.getGrades();
+      final grades = gradesResponse.response ?? [];
+
+      // Calculate subject averages
+      final Map<String, double> subjectAverages = {};
+      final Set<String> subjectUids = {};
+
+      for (var grade in grades) {
+        subjectUids.add(grade.subject.uid);
+      }
+
+      double overallSum = 0;
+      int validSubjectCount = 0;
+
+      for (var uid in subjectUids) {
+        final subjectGrades = grades.where((g) => g.subject.uid == uid).toList();
+        final avg = _calculateWeightedAverage(subjectGrades);
+        if (!avg.isNaN && avg > 0) {
+          subjectAverages[uid] = avg;
+          overallSum += avg;
+          validSubjectCount++;
+        }
+      }
+
+      final double? overallAverage = validSubjectCount > 0
+          ? overallSum / validSubjectCount
+          : null;
+
+      // Check for break (simplified - you might want to enhance this)
+      WidgetBreakInfo? currentBreak;
+      // TODO: Add break detection if needed
+
+      await updateIOSWidgets(
+        locale: locale,
+        theme: theme,
+        todayLessons: todayLessons,
+        tomorrowLessons: tomorrowLessons,
+        grades: grades,
+        subjectAverages: subjectAverages,
+        overallAverage: overallAverage,
+        currentBreak: currentBreak,
+      );
+
+      debugPrint('iOS widgets refreshed successfully');
+    } catch (e) {
+      debugPrint('Error refreshing iOS widgets: $e');
+    }
+  }
+
+  /// Clear iOS widget data (call on logout)
+  static Future<void> clearIOSWidgets() async {
+    if (!Platform.isIOS) return;
+
+    try {
+      await updateIOSWidgets(
+        locale: 'hu',
+        theme: 'light',
+        todayLessons: [],
+        tomorrowLessons: [],
+        grades: [],
+        subjectAverages: {},
+        overallAverage: null,
+        currentBreak: null,
+      );
+      debugPrint('iOS widgets cleared');
+    } catch (e) {
+      debugPrint('Error clearing iOS widgets: $e');
+    }
+  }
+
+  /// Calculate weighted average for a list of grades
+  static double _calculateWeightedAverage(List<Grade> grades) {
+    var weightTotal = 0.0;
+    var sum = 0.0;
+
+    for (var grade in grades) {
+      if (grade.numericValue != null) {
+        var weight = (grade.weightPercentage ?? 100) / 100.0;
+        weightTotal += weight;
+        sum += grade.numericValue! * weight;
+      }
+    }
+
+    if (weightTotal == 0) return double.nan;
+    return sum / weightTotal;
   }
 }
