@@ -1,0 +1,28 @@
+/* Widget Titles */
+"widget_timetable_title" = "Stundenplan";
+"widget_grades_title" = "Letzte Noten";
+"widget_averages_title" = "Durchschnitte";
+
+/* Widget Descriptions */
+"widget_timetable_description" = "Zeigt deinen täglichen Stundenplan";
+"widget_grades_description" = "Zeigt deine letzten Noten";
+"widget_averages_description" = "Zeigt Fachdurchschnitte";
+
+/* Parameter Titles */
+"param_style" = "Stil";
+"param_display_mode_small" = "Anzeige (kleines Widget)";
+"param_subjects" = "Fächer";
+
+/* Style Options */
+"style_type" = "Stil";
+"style_liquid_glass" = "Liquid Glass";
+"style_app_theme" = "App-Design";
+
+/* Display Mode Options */
+"display_mode_type" = "Anzeigemodus";
+"display_mode_current" = "Aktuelle Stunde";
+"display_mode_next" = "Nächste Stunde";
+
+/* Subject Selection */
+"subjects_type" = "Fächer";
+"no_subjects_available" = "Keine Fächer verfügbar";

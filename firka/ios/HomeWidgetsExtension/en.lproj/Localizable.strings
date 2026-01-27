@@ -1,0 +1,28 @@
+/* Widget Titles */
+"widget_timetable_title" = "Timetable";
+"widget_grades_title" = "Recent Grades";
+"widget_averages_title" = "Averages";
+
+/* Widget Descriptions */
+"widget_timetable_description" = "Shows your daily timetable";
+"widget_grades_description" = "Shows your recent grades";
+"widget_averages_description" = "Shows subject averages";
+
+/* Parameter Titles */
+"param_style" = "Style";
+"param_display_mode_small" = "Display (small widget)";
+"param_subjects" = "Subjects";
+
+/* Style Options */
+"style_type" = "Style";
+"style_liquid_glass" = "Liquid Glass";
+"style_app_theme" = "App Theme";
+
+/* Display Mode Options */
+"display_mode_type" = "Display Mode";
+"display_mode_current" = "Current Lesson";
+"display_mode_next" = "Next Lesson";
+
+/* Subject Selection */
+"subjects_type" = "Subjects";
+"no_subjects_available" = "No subjects available";

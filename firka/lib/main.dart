@@ -210,6 +210,10 @@ Future<void> _initData(AppInitialization init) async {
     await WidgetCacheHelper.updateWidgetCache(appStyle, init.client);
 
     if (Platform.isIOS) {
+      await WidgetCacheHelper.refreshIOSWidgets(init.client, init.settings);
+    }
+
+    if (Platform.isIOS) {
       final studentName = token.studentId ?? "Student";
 
       LiveActivityService.onUserLogin(
