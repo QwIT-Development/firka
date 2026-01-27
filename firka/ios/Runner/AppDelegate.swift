@@ -11,6 +11,8 @@ import BackgroundTasks
   private var deviceTokenString: String?
   private var notificationChannel: FlutterMethodChannel?
   private var backgroundFetchChannel: FlutterMethodChannel?
+  private var widgetDeepLinkChannel: FlutterMethodChannel?
+  private var pendingWidgetDeepLink: String?
 
   private let backgroundTaskIdentifier = "app.firka.timetable.refresh"
   
@@ -23,6 +25,20 @@ import BackgroundTasks
     let controller = window?.rootViewController as! FlutterViewController
 
     HomeWidgetMethodChannel.register(with: controller.binaryMessenger)
+
+    widgetDeepLinkChannel = FlutterMethodChannel(name: "firka.app/widget_deep_link", binaryMessenger: controller.binaryMessenger)
+    widgetDeepLinkChannel?.setMethodCallHandler { [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) in
+      if call.method == "getPendingDeepLink" {
+        if let link = self?.pendingWidgetDeepLink {
+          self?.pendingWidgetDeepLink = nil
+          result(link)
+        } else {
+          result(nil)
+        }
+      } else {
+        result(FlutterMethodNotImplemented)
+      }
+    }
 
     backgroundFetchChannel = FlutterMethodChannel(name: "firka.app/background_fetch", binaryMessenger: controller.binaryMessenger)
 
@@ -207,5 +223,15 @@ import BackgroundTasks
   override func applicationDidEnterBackground(_ application: UIApplication) {
     // Background fetch will be scheduled from Flutter side when needed
     // No automatic scheduling here to give Flutter full control
+  }
+
+  override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    if url.scheme == "firka" && url.host == "widget" {
+      let path = url.path.replacingOccurrences(of: "/", with: "")
+      pendingWidgetDeepLink = path
+      widgetDeepLinkChannel?.invokeMethod("onWidgetDeepLink", arguments: path)
+      return true
+    }
+    return super.application(app, open: url, options: options)
   }
 }

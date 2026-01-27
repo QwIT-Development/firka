@@ -32,26 +32,29 @@ struct TimetableWidgetView: View {
     }
 
     var body: some View {
-        switch entry.state {
-        case .onBreak:
-            if let breakInfo = entry.breakInfo {
-                BreakView(breakInfo: breakInfo, localization: localization, style: style)
-            }
-        case .loginRequired:
-            EmptyStateView(message: localization.string("login_required"), style: style)
-        case .unavailable:
-            EmptyStateView(message: localization.string("timetable_unavailable"), style: style)
-        case .noMoreLessons, .normal:
-            switch family {
-            case .systemSmall:
-                TimetableSmallView(entry: entry, localization: localization)
-            case .systemMedium:
-                TimetableMediumView(entry: entry, localization: localization)
-            case .systemLarge:
-                TimetableLargeView(entry: entry, localization: localization)
-            default:
-                TimetableMediumView(entry: entry, localization: localization)
+        Group {
+            switch entry.state {
+            case .onBreak:
+                if let breakInfo = entry.breakInfo {
+                    BreakView(breakInfo: breakInfo, localization: localization, style: style)
+                }
+            case .loginRequired:
+                EmptyStateView(message: localization.string("login_required"), style: style)
+            case .unavailable:
+                EmptyStateView(message: localization.string("timetable_unavailable"), style: style)
+            case .noMoreLessons, .normal:
+                switch family {
+                case .systemSmall:
+                    TimetableSmallView(entry: entry, localization: localization)
+                case .systemMedium:
+                    TimetableMediumView(entry: entry, localization: localization)
+                case .systemLarge:
+                    TimetableLargeView(entry: entry, localization: localization)
+                default:
+                    TimetableMediumView(entry: entry, localization: localization)
+                }
             }
         }
+        .widgetURL(URL(string: "firka://widget/timetable"))
     }
 }

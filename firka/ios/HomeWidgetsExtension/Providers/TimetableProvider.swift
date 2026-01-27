@@ -90,6 +90,7 @@ struct TimetableProvider: AppIntentTimelineProvider {
 
     private func createEntry(for configuration: TimetableWidgetIntent, date: Date) -> TimetableEntry {
         let data = WidgetData.load()
+        let calendar = Calendar.current
 
         guard let data = data else {
             return TimetableEntry(
@@ -121,13 +122,32 @@ struct TimetableProvider: AppIntentTimelineProvider {
             )
         }
 
+        let entryDay = calendar.startOfDay(for: date)
+
         var lessons = data.timetable.today
         var isNextDay = false
 
-        let lastLesson = lessons.last
-        if let last = lastLesson, date > last.end {
+        if let firstTodayLesson = lessons.first {
+            let todayLessonDay = calendar.startOfDay(for: firstTodayLesson.start)
+
+            if entryDay > todayLessonDay {
+                lessons = data.timetable.tomorrow
+                if let firstTomorrowLesson = lessons.first {
+                    let tomorrowLessonDay = calendar.startOfDay(for: firstTomorrowLesson.start)
+                    isNextDay = entryDay < tomorrowLessonDay
+                }
+            } else {
+                let lastLesson = lessons.last
+                if let last = lastLesson, date > last.end {
+                    lessons = data.timetable.tomorrow
+                    isNextDay = true
+                }
+            }
+        } else {
             lessons = data.timetable.tomorrow
-            isNextDay = true
+            if !lessons.isEmpty {
+                isNextDay = true
+            }
         }
 
         if lessons.isEmpty {
