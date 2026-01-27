@@ -28,15 +28,18 @@ struct AveragesWidgetView: View {
     }
 
     var body: some View {
-        switch family {
-        case .systemSmall:
-            AveragesSmallView(entry: entry, localization: localization)
-        case .systemMedium:
-            AveragesMediumView(entry: entry, localization: localization)
-        case .systemLarge:
-            AveragesLargeView(entry: entry, localization: localization)
-        default:
-            AveragesMediumView(entry: entry, localization: localization)
+        Group {
+            switch family {
+            case .systemSmall:
+                AveragesSmallView(entry: entry, localization: localization)
+            case .systemMedium:
+                AveragesMediumView(entry: entry, localization: localization)
+            case .systemLarge:
+                AveragesLargeView(entry: entry, localization: localization)
+            default:
+                AveragesMediumView(entry: entry, localization: localization)
+            }
         }
+        .widgetURL(URL(string: "firka://widget/grades"))
     }
 }

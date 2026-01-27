@@ -4,6 +4,7 @@ import WidgetKit
 struct TimetableSmallView: View {
     let entry: TimetableEntry
     let localization: WidgetLocalization
+    @Environment(\.colorScheme) var colorScheme
 
     var style: WidgetStyleType {
         (entry.configuration.style ?? .appTheme) == .liquidGlass ? .liquidGlass : .appTheme
@@ -11,6 +12,14 @@ struct TimetableSmallView: View {
 
     var displayLesson: WidgetLesson? {
         (entry.configuration.displayMode ?? .current) == .current ? entry.currentLesson : entry.nextLesson
+    }
+
+    var liquidGlassPrimary: Color {
+        colorScheme == .dark ? .white : .black
+    }
+
+    var liquidGlassSecondary: Color {
+        colorScheme == .dark ? .white.opacity(0.7) : .black.opacity(0.6)
     }
 
     var body: some View {
@@ -31,14 +40,14 @@ struct TimetableSmallView: View {
                         .strikethrough(lesson.isCancelled, color: .red)
                         .foregroundColor(lesson.isCancelled ? .red :
                                         lesson.isSubstitution ? .orange :
-                                        (style == .liquidGlass ? .white : .primary))
+                                        (style == .liquidGlass ? liquidGlassPrimary : .primary))
                         .lineLimit(2)
 
                     Text(lesson.timeString)
                         .font(.subheadline)
                         .foregroundColor(lesson.isCancelled ? .red.opacity(0.8) :
                                         lesson.isSubstitution ? .orange.opacity(0.8) :
-                                        (style == .liquidGlass ? .white.opacity(0.7) : .secondary))
+                                        (style == .liquidGlass ? liquidGlassSecondary : .secondary))
 
                     if let room = lesson.roomName {
                         Text(room)
@@ -47,7 +56,7 @@ struct TimetableSmallView: View {
                             .minimumScaleFactor(0.8)
                             .foregroundColor(lesson.isCancelled ? .red.opacity(0.7) :
                                             lesson.isSubstitution ? .orange.opacity(0.7) :
-                                            (style == .liquidGlass ? .white.opacity(0.6) : .secondary))
+                                            (style == .liquidGlass ? liquidGlassSecondary : .secondary))
                     }
                 } else {
                     Text(localization.string("no_lessons"))
@@ -133,6 +142,7 @@ struct LessonRow: View {
     let isActive: Bool
     let style: WidgetStyleType
     var showRoom: Bool = false
+    @Environment(\.colorScheme) var colorScheme
 
     var lessonTextColor: Color? {
         if lesson.isCancelled {
@@ -141,6 +151,14 @@ struct LessonRow: View {
             return .orange
         }
         return nil
+    }
+
+    var liquidGlassPrimary: Color {
+        colorScheme == .dark ? .white : .black
+    }
+
+    var liquidGlassSecondary: Color {
+        colorScheme == .dark ? .white.opacity(0.7) : .black.opacity(0.6)
     }
 
     var numberBackgroundColor: Color {
@@ -165,21 +183,21 @@ struct LessonRow: View {
                         Circle()
                             .fill(numberBackgroundColor)
                     )
-                    .foregroundColor(lessonTextColor ?? (style == .liquidGlass ? .white : .primary))
+                    .foregroundColor(lessonTextColor ?? (style == .liquidGlass ? liquidGlassPrimary : .primary))
             }
 
             Text(lesson.displayName)
                 .font(.subheadline)
                 .fontWeight(isActive ? .semibold : .regular)
                 .strikethrough(lesson.isCancelled, color: .red)
-                .foregroundColor(lessonTextColor ?? (style == .liquidGlass ? .white : .primary))
+                .foregroundColor(lessonTextColor ?? (style == .liquidGlass ? liquidGlassPrimary : .primary))
                 .lineLimit(1)
 
             Spacer()
 
             Text(lesson.timeString)
                 .font(.caption)
-                .foregroundColor(lessonTextColor?.opacity(0.8) ?? (style == .liquidGlass ? .white.opacity(0.7) : .secondary))
+                .foregroundColor(lessonTextColor?.opacity(0.8) ?? (style == .liquidGlass ? liquidGlassSecondary : .secondary))
 
             if showRoom, let room = lesson.roomName {
                 Text(room)
@@ -192,7 +210,7 @@ struct LessonRow: View {
                                   lesson.isSubstitution ? Color.orange.opacity(0.2) :
                                   Color.secondary.opacity(0.2))
                     )
-                    .foregroundColor(lessonTextColor?.opacity(0.8) ?? (style == .liquidGlass ? .white.opacity(0.7) : .secondary))
+                    .foregroundColor(lessonTextColor?.opacity(0.8) ?? (style == .liquidGlass ? liquidGlassSecondary : .secondary))
             }
         }
         .padding(.vertical, 4)

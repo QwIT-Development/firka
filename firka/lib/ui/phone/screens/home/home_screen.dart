@@ -79,6 +79,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
   _HomeScreenState();
 
   final PageController _pageController = PageController();
+  HomePage? _pendingNavigation;
 
   Widget? toast;
   bool pairingDone = false;
@@ -114,13 +115,86 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
 
         if (action != null || route != null) {
           logger.info('Navigating to timetable from notification');
-          setState(() {
-            homeScreenPage = HomePage.timetable;
-            _pageController.jumpToPage(HomePage.timetable.index);
-          });
+          _navigateToPage(HomePage.timetable);
         }
       }
     });
+  }
+
+  void _setupWidgetDeepLinkListener() {
+    if (!Platform.isIOS) return;
+
+    final widgetChannel = MethodChannel('firka.app/widget_deep_link');
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widgetChannel.invokeMethod<String>('getPendingDeepLink').then((link) {
+        if (link != null) {
+          _handleWidgetDeepLink(link);
+        }
+      });
+    });
+
+    widgetChannel.setMethodCallHandler((call) async {
+      if (call.method == 'onWidgetDeepLink') {
+        final link = call.arguments as String?;
+        if (link != null) {
+          _handleWidgetDeepLink(link);
+        }
+      }
+    });
+  }
+
+  void _handleWidgetDeepLink(String link) {
+    logger.info('Widget deep link received: $link');
+
+    HomePage targetPage;
+    switch (link) {
+      case 'timetable':
+        targetPage = HomePage.timetable;
+        break;
+      case 'grades':
+        targetPage = HomePage.grades;
+        break;
+      default:
+        logger.warning('Unknown widget deep link: $link');
+        return;
+    }
+
+    _navigateToPage(targetPage);
+  }
+
+  void _navigateToPage(HomePage targetPage) {
+    if (_disposed) return;
+
+    homeScreenPage = targetPage;
+
+    if (_pageController.hasClients) {
+      setState(() {
+        _pageController.jumpToPage(targetPage.index);
+      });
+    } else {
+      _pendingNavigation = targetPage;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _applyPendingNavigation();
+      });
+    }
+  }
+
+  void _applyPendingNavigation() {
+    if (_disposed || _pendingNavigation == null) return;
+
+    if (_pageController.hasClients) {
+      final target = _pendingNavigation!;
+      _pendingNavigation = null;
+      setState(() {
+        homeScreenPage = target;
+        _pageController.jumpToPage(target.index);
+      });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _applyPendingNavigation();
+      });
+    }
   }
 
   void prefetch() async {
@@ -298,6 +372,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     });
 
     _setupNotificationListener();
+    _setupWidgetDeepLinkListener();
 
     prefetch();
     _preloadImages();

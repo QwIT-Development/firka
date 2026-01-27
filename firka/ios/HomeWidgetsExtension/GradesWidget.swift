@@ -28,15 +28,18 @@ struct GradesWidgetView: View {
     }
 
     var body: some View {
-        switch family {
-        case .systemSmall:
-            GradesSmallView(entry: entry, localization: localization)
-        case .systemMedium:
-            GradesMediumView(entry: entry, localization: localization)
-        case .systemLarge:
-            GradesLargeView(entry: entry, localization: localization)
-        default:
-            GradesMediumView(entry: entry, localization: localization)
+        Group {
+            switch family {
+            case .systemSmall:
+                GradesSmallView(entry: entry, localization: localization)
+            case .systemMedium:
+                GradesMediumView(entry: entry, localization: localization)
+            case .systemLarge:
+                GradesLargeView(entry: entry, localization: localization)
+            default:
+                GradesMediumView(entry: entry, localization: localization)
+            }
         }
+        .widgetURL(URL(string: "firka://widget/grades"))
     }
 }
