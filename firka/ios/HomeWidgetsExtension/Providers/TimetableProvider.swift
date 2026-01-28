@@ -73,17 +73,25 @@ struct TimetableProvider: AppIntentTimelineProvider {
 
         entries.append(createEntry(for: configuration, date: now))
 
+        var transitionTimes: Set<Date> = []
+
         for lesson in todayLessons {
             if lesson.start > now {
-                entries.append(createEntry(for: configuration, date: lesson.start))
+                transitionTimes.insert(lesson.start)
             }
             if lesson.end > now {
-                entries.append(createEntry(for: configuration, date: lesson.end.addingTimeInterval(1)))
+                transitionTimes.insert(lesson.end.addingTimeInterval(1))
             }
         }
 
         let midnight = Calendar.current.startOfDay(for: now.addingTimeInterval(86400))
-        entries.append(createEntry(for: configuration, date: midnight))
+        transitionTimes.insert(midnight)
+
+        for time in transitionTimes {
+            entries.append(createEntry(for: configuration, date: time))
+        }
+
+        entries.sort { $0.date < $1.date }
 
         return Timeline(entries: entries, policy: .atEnd)
     }
@@ -166,8 +174,7 @@ struct TimetableProvider: AppIntentTimelineProvider {
         }
 
         let currentLesson = lessons.first { lesson in
-            let now = Date()
-            return now >= lesson.start && now <= lesson.end
+            return date >= lesson.start && date <= lesson.end
         }
         let nextLesson = lessons.first { $0.start > date }
 

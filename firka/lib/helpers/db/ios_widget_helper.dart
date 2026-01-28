@@ -108,10 +108,10 @@ class IOSWidgetHelper {
       'subject': subject != null ? {
         'uid': subject.uid,
         'name': subject.name,
-        'category': subject.category != null ? {
-          'uid': subject.category!.uid,
-          'name': subject.category!.name,
-          'description': subject.category!.description,
+        'category': subject.category, {
+          'uid': subject.category.uid,
+          'name': subject.category.name,
+          'description': subject.category.description,
         } : null,
         'sortIndex': subject.sortIndex,
         'teacherName': subject.teacherName,
@@ -132,17 +132,18 @@ class IOSWidgetHelper {
   static Map<String, dynamic> _gradeToJson(Grade grade) {
     return {
       'uid': grade.uid,
-      'recordDate': _formatDateTimeWithOffset(grade.recordDate),
+      'recordDate': _formatDateTimeWithOffset(grade.creationDate),
       'subject': {
         'uid': grade.subject.uid,
         'name': grade.subject.name,
-        'category': grade.subject.category != null ? {
-          'uid': grade.subject.category!.uid,
-          'name': grade.subject.category!.name,
-          'description': grade.subject.category!.description,
+        'category': grade.subject.category, {
+          'uid': grade.subject.category.uid,
+          'name': grade.subject.category.name,
+          'description': grade.subject.category.description,
         } : null,
         'sortIndex': grade.subject.sortIndex,
-        'teacherName': grade.subject.teacherName,
+        // Use the grade's teacher field, not subject.teacherName (which is usually null for grades)
+        'teacherName': grade.teacher,
       },
       'topic': grade.topic,
       'type': {
