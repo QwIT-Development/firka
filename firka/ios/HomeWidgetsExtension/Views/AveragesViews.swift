@@ -47,9 +47,18 @@ struct AveragesSmallView: View {
 struct AveragesMediumView: View {
     let entry: AveragesEntry
     let localization: WidgetLocalization
+    private let maxVisible = 4
 
     var style: WidgetStyleType {
         (entry.configuration.style ?? .appTheme) == .liquidGlass ? .liquidGlass : .appTheme
+    }
+
+    var totalCount: Int {
+        entry.subjectAverages.count
+    }
+
+    var showingCount: Int {
+        min(totalCount, maxVisible)
     }
 
     var body: some View {
@@ -57,10 +66,27 @@ struct AveragesMediumView: View {
             WidgetBackground(style: style, colors: nil)
 
             VStack(alignment: .leading, spacing: 8) {
-                Text(localization.string("subject_averages"))
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .widgetTextStyle(style, colors: nil, isPrimary: false)
+                HStack {
+                    Text(localization.string("subject_averages"))
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .widgetTextStyle(style, colors: nil, isPrimary: false)
+
+                    Spacer()
+
+                    if entry.isFiltered && totalCount > maxVisible {
+                        Text("\(showingCount)/\(totalCount)")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(
+                                Capsule()
+                                    .fill(Color.secondary.opacity(0.2))
+                            )
+                            .widgetTextStyle(style, colors: nil, isPrimary: false)
+                    }
+                }
 
                 if entry.subjectAverages.isEmpty {
                     Spacer()
@@ -69,7 +95,7 @@ struct AveragesMediumView: View {
                         .widgetTextStyle(style, colors: nil, isPrimary: false)
                     Spacer()
                 } else {
-                    ForEach(entry.subjectAverages.prefix(4)) { subject in
+                    ForEach(entry.subjectAverages.prefix(maxVisible)) { subject in
                         AverageRow(subject: subject, style: style)
                     }
                     Spacer()
@@ -83,9 +109,18 @@ struct AveragesMediumView: View {
 struct AveragesLargeView: View {
     let entry: AveragesEntry
     let localization: WidgetLocalization
+    private let maxVisible = 9
 
     var style: WidgetStyleType {
         (entry.configuration.style ?? .appTheme) == .liquidGlass ? .liquidGlass : .appTheme
+    }
+
+    var totalCount: Int {
+        entry.subjectAverages.count
+    }
+
+    var showingCount: Int {
+        min(totalCount, maxVisible)
     }
 
     var body: some View {
@@ -100,6 +135,19 @@ struct AveragesLargeView: View {
                         .widgetTextStyle(style, colors: nil)
 
                     Spacer()
+
+                    if entry.isFiltered && totalCount > maxVisible {
+                        Text("\(showingCount)/\(totalCount)")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(
+                                Capsule()
+                                    .fill(Color.secondary.opacity(0.2))
+                            )
+                            .widgetTextStyle(style, colors: nil, isPrimary: false)
+                    }
 
                     if let overall = entry.overallAverage {
                         Text(String(format: "%.2f", overall))
@@ -116,7 +164,7 @@ struct AveragesLargeView: View {
                         .widgetTextStyle(style, colors: nil, isPrimary: false)
                     Spacer()
                 } else {
-                    ForEach(entry.subjectAverages.prefix(8)) { subject in
+                    ForEach(entry.subjectAverages.prefix(maxVisible)) { subject in
                         AverageRow(subject: subject, style: style, showGradeCount: true)
                     }
                     Spacer()

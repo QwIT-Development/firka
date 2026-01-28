@@ -29,7 +29,7 @@ struct GradesSmallView: View {
                         Spacer()
                     }
 
-                    Text(grade.subject.name)
+                    Text(grade.subjectNameWithWeight)
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .widgetTextStyle(style, colors: nil)
@@ -78,7 +78,7 @@ struct GradesMediumView: View {
                     Spacer()
                 } else {
                     ForEach(entry.grades.prefix(3)) { grade in
-                        GradeRow(grade: grade, style: style, showType: true)
+                        GradeRow(grade: grade, style: style, showTeacher: true)
                     }
                 }
             }
@@ -114,7 +114,7 @@ struct GradesLargeView: View {
                     Spacer()
                 } else {
                     ForEach(entry.grades.prefix(6)) { grade in
-                        GradeRow(grade: grade, style: style, showType: true, showTopic: true)
+                        GradeRow(grade: grade, style: style, showTeacher: true, showTopic: true)
                     }
                 }
             }
@@ -127,7 +127,7 @@ struct GradesLargeView: View {
 struct GradeRow: View {
     let grade: WidgetGrade
     let style: WidgetStyleType
-    var showType: Bool = false
+    var showTeacher: Bool = false
     var showTopic: Bool = false
 
     var body: some View {
@@ -139,22 +139,23 @@ struct GradeRow: View {
                 .frame(width: 32)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(grade.subject.name)
+                Text(grade.subjectNameWithWeight)
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .widgetTextStyle(style, colors: nil)
                     .lineLimit(1)
 
                 HStack(spacing: 4) {
-                    if showType {
-                        Text(grade.type.name)
+                    if showTeacher, let teacher = grade.teacherName {
+                        Text(teacher)
+                            .font(.caption)
+                            .widgetTextStyle(style, colors: nil, isPrimary: false)
+                            .lineLimit(1)
+
+                        Text("•")
                             .font(.caption)
                             .widgetTextStyle(style, colors: nil, isPrimary: false)
                     }
-
-                    Text("•")
-                        .font(.caption)
-                        .widgetTextStyle(style, colors: nil, isPrimary: false)
 
                     Text(grade.dateString)
                         .font(.caption)

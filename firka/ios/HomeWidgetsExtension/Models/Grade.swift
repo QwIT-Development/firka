@@ -37,4 +37,15 @@ struct WidgetGrade: Codable, Identifiable {
         default: return .gray
         }
     }
+
+    var subjectNameWithWeight: String {
+        if let weight = weightPercentage, weight != 100 {
+            return "\(subject.name) (\(weight)%)"
+        }
+        return subject.name
+    }
+
+    var teacherName: String? {
+        subject.teacherName
+    }
 }

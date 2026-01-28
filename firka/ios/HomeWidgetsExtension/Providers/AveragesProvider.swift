@@ -7,6 +7,7 @@ struct AveragesEntry: TimelineEntry {
     let overallAverage: Double?
     let subjectAverages: [SubjectAverage]
     let locale: String
+    let isFiltered: Bool
 }
 
 struct AveragesProvider: AppIntentTimelineProvider {
@@ -19,7 +20,8 @@ struct AveragesProvider: AppIntentTimelineProvider {
             configuration: AveragesWidgetIntent(),
             overallAverage: nil,
             subjectAverages: [],
-            locale: "hu"
+            locale: "hu",
+            isFiltered: false
         )
     }
 
@@ -39,9 +41,10 @@ struct AveragesProvider: AppIntentTimelineProvider {
         let data = WidgetData.load()
 
         var subjectAverages = data?.averages.subjects ?? []
+        let isFiltered = configuration.selectedSubjects?.isEmpty == false
 
-        if let selectedSubjects = configuration.selectedSubjects, !selectedSubjects.isEmpty {
-            let selectedIds = Set(selectedSubjects.map { $0.id })
+        if isFiltered {
+            let selectedIds = Set(configuration.selectedSubjects!.map { $0.id })
             subjectAverages = subjectAverages.filter { selectedIds.contains($0.uid) }
         }
 
@@ -50,7 +53,8 @@ struct AveragesProvider: AppIntentTimelineProvider {
             configuration: configuration,
             overallAverage: data?.averages.overall,
             subjectAverages: subjectAverages,
-            locale: data?.locale ?? "hu"
+            locale: data?.locale ?? "hu",
+            isFiltered: isFiltered
         )
     }
 }

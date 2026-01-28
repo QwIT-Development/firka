@@ -79,9 +79,36 @@ struct TimetableMediumView: View {
         (entry.configuration.style ?? .appTheme) == .liquidGlass ? .liquidGlass : .appTheme
     }
 
-    var remainingLessons: [WidgetLesson] {
-        let now = Date()
-        return entry.lessons.filter { $0.end > now }
+    func isLessonActive(_ lesson: WidgetLesson) -> Bool {
+        let checkDate = entry.date
+        return checkDate >= lesson.start && checkDate <= lesson.end
+    }
+
+    var currentLessonIndex: Int {
+        let checkDate = entry.date
+        if let index = entry.lessons.firstIndex(where: { checkDate >= $0.start && checkDate <= $0.end }) {
+            return index
+        }
+        if let index = entry.lessons.firstIndex(where: { $0.start > checkDate }) {
+            return index
+        }
+        return max(0, entry.lessons.count - 1)
+    }
+
+    var visibleLessons: [WidgetLesson] {
+        let totalLessons = entry.lessons.count
+        let maxVisible = 4
+
+        if totalLessons <= maxVisible {
+            return Array(entry.lessons)
+        }
+
+        var startIndex = max(0, currentLessonIndex - 1)
+
+        startIndex = min(startIndex, totalLessons - maxVisible)
+
+        let endIndex = min(startIndex + maxVisible, totalLessons)
+        return Array(entry.lessons[startIndex..<endIndex])
     }
 
     var body: some View {
@@ -94,8 +121,8 @@ struct TimetableMediumView: View {
                     .fontWeight(.medium)
                     .widgetTextStyle(style, colors: nil, isPrimary: false)
 
-                ForEach(remainingLessons.prefix(4)) { lesson in
-                    LessonRow(lesson: lesson, isActive: lesson.isCurrentlyActive, style: style)
+                ForEach(visibleLessons) { lesson in
+                    LessonRow(lesson: lesson, isActive: isLessonActive(lesson), style: style)
                 }
             }
             .padding()
@@ -112,9 +139,9 @@ struct TimetableLargeView: View {
         (entry.configuration.style ?? .appTheme) == .liquidGlass ? .liquidGlass : .appTheme
     }
 
-    var remainingLessons: [WidgetLesson] {
-        let now = Date()
-        return entry.lessons.filter { $0.end > now }
+    func isLessonActive(_ lesson: WidgetLesson) -> Bool {
+        let checkDate = entry.date
+        return checkDate >= lesson.start && checkDate <= lesson.end
     }
 
     var body: some View {
@@ -127,8 +154,8 @@ struct TimetableLargeView: View {
                     .fontWeight(.semibold)
                     .widgetTextStyle(style, colors: nil)
 
-                ForEach(remainingLessons.prefix(7)) { lesson in
-                    LessonRow(lesson: lesson, isActive: lesson.isCurrentlyActive, style: style, showRoom: true)
+                ForEach(entry.lessons.prefix(7)) { lesson in
+                    LessonRow(lesson: lesson, isActive: isLessonActive(lesson), style: style, showRoom: true)
                 }
             }
             .padding()
