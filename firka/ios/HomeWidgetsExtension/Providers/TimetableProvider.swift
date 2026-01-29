@@ -94,10 +94,19 @@ struct TimetableProvider: AppIntentTimelineProvider {
             }
 
             if let next = nextLesson {
-                var time = currentLesson?.end.addingTimeInterval(60) ?? now.addingTimeInterval(60)
-                while time < next.start && minuteEntries.count < 120 {
-                    minuteEntries.append(time)
-                    time = time.addingTimeInterval(60)
+                let minutesUntilNext = next.start.timeIntervalSince(now) / 60
+
+                if minutesUntilNext <= 60 {
+                    var time = currentLesson?.end.addingTimeInterval(60) ?? now.addingTimeInterval(60)
+                    while time < next.start && minuteEntries.count < 120 {
+                        minuteEntries.append(time)
+                        time = time.addingTimeInterval(60)
+                    }
+                } else {
+                    let sixtyMinutesBefore = next.start.addingTimeInterval(-60 * 60)
+                    if sixtyMinutesBefore > now {
+                        minuteEntries.append(sixtyMinutesBefore)
+                    }
                 }
                 minuteEntries.append(next.start)
             }

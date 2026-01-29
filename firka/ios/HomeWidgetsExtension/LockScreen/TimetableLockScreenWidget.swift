@@ -59,18 +59,22 @@ struct TimetableInlineView: View {
         } else if let current = entry.currentLesson {
             let remaining = minutesRemaining(until: current.end)
             Text("\(current.subject.name) - \(remaining) \(localization.string("minutes_short"))")
+        } else if entry.isNextDay {
+            if let first = entry.lessons.first {
+                let lessonNum = first.lessonNumber ?? 1
+                Text("\(localization.string("tomorrow")): \(lessonNum). \(first.subject.name)")
+            } else {
+                Text(localization.string("no_lessons"))
+            }
         } else if let next = entry.nextLesson {
             let until = minutesRemaining(until: next.start)
             if until <= 0 {
                 Text("\(localization.string("next")): \(next.subject.name)")
+            } else if until > 60 {
+                let hours = until / 60
+                Text("\(next.subject.name) \(localization.string("in_hours", hours))")
             } else {
                 Text("\(next.subject.name) \(localization.string("in_minutes", until))")
-            }
-        } else if entry.isNextDay {
-            if let first = entry.lessons.first {
-                Text("\(localization.string("tomorrow")): \(first.subject.name)")
-            } else {
-                Text(localization.string("no_lessons"))
             }
         } else {
             Text(localization.string("no_lessons"))
@@ -105,16 +109,45 @@ struct TimetableCircularView: View {
                     .font(.system(.title2, design: .rounded, weight: .bold))
             }
             .gaugeStyle(.accessoryCircularCapacity)
+        } else if entry.isNextDay {
+            let lessonCount = entry.lessons.count
+            if lessonCount > 0 {
+                ZStack {
+                    AccessoryWidgetBackground()
+                    VStack(spacing: 0) {
+                        Text("\(lessonCount)")
+                            .font(.system(.title2, design: .rounded, weight: .bold))
+                        Text(localization.string("lesson_short"))
+                            .font(.system(.caption2))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            } else {
+                ZStack {
+                    AccessoryWidgetBackground()
+                    Image(systemName: "calendar.badge.checkmark")
+                        .font(.title2)
+                }
+            }
         } else if let next = entry.nextLesson {
             let until = minutesRemaining(until: next.start)
             ZStack {
                 AccessoryWidgetBackground()
                 VStack(spacing: 0) {
-                    Text("\(until)")
-                        .font(.system(.title2, design: .rounded, weight: .bold))
-                    Text(localization.string("minutes_short"))
-                        .font(.system(.caption2))
-                        .foregroundStyle(.secondary)
+                    if until > 60 {
+                        let hours = until / 60
+                        Text("\(hours)")
+                            .font(.system(.title2, design: .rounded, weight: .bold))
+                        Text(localization.string("hours_abbrev"))
+                            .font(.system(.caption2))
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("\(until)")
+                            .font(.system(.title2, design: .rounded, weight: .bold))
+                        Text(localization.string("minutes_abbrev"))
+                            .font(.system(.caption2))
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
         } else if let lesson = entry.lessons.first, let lessonNum = lesson.lessonNumber {
@@ -194,9 +227,15 @@ struct TimetableRectangularView: View {
                         .foregroundStyle(.secondary)
                     Spacer()
                     if until > 0 && !entry.isNextDay {
-                        Text(localization.string("in_minutes", until))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        if until > 60 {
+                            Text(localization.string("in_hours", until / 60))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text(localization.string("in_minutes", until))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
                 Text("\(next.lessonNumber ?? 0). \(next.subject.name)")

@@ -48,13 +48,14 @@ struct TimetableSmallView: View {
 
                 if let lesson = displayLesson {
                     Text(lesson.displayName)
-                        .font(.headline)
+                        .font(.subheadline)
                         .fontWeight(.semibold)
                         .strikethrough(lesson.isCancelled, color: .red)
                         .foregroundColor(lesson.isCancelled ? .red :
                                         lesson.isSubstitution ? .orange :
                                         (style == .liquidGlass ? liquidGlassPrimary : .primary))
                         .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     Text(lesson.timeString)
                         .font(.subheadline)
@@ -131,12 +132,14 @@ struct TimetableMediumView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(entry.isNextDay ? localization.string("tomorrow_timetable") : localization.string("today_timetable"))
                     .font(.caption)
-                    .fontWeight(.medium)
+                    .fontWeight(.semibold)
                     .widgetTextStyle(style, colors: nil, isPrimary: false)
 
+                Spacer(minLength: 0)
                 ForEach(visibleLessons) { lesson in
-                    LessonRow(lesson: lesson, isActive: isLessonActive(lesson), style: style)
+                    LessonRow(lesson: lesson, isActive: isLessonActive(lesson), style: style, compact: true)
                 }
+                Spacer(minLength: 0)
             }
             .padding()
         }
@@ -182,6 +185,7 @@ struct LessonRow: View {
     let isActive: Bool
     let style: WidgetStyleType
     var showRoom: Bool = false
+    var compact: Bool = false
     @Environment(\.colorScheme) var colorScheme
 
     var lessonTextColor: Color? {
@@ -253,7 +257,7 @@ struct LessonRow: View {
                     .foregroundColor(lessonTextColor?.opacity(0.8) ?? (style == .liquidGlass ? liquidGlassSecondary : .secondary))
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, compact ? 2 : 4)
         .padding(.horizontal, 8)
         .currentLessonGlow(isActive: isActive && !lesson.isCancelled)
     }

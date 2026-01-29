@@ -65,11 +65,11 @@ struct AveragesMediumView: View {
         ZStack {
             WidgetBackground(style: style, colors: nil)
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text(localization.string("subject_averages"))
                         .font(.caption)
-                        .fontWeight(.medium)
+                        .fontWeight(.semibold)
                         .widgetTextStyle(style, colors: nil, isPrimary: false)
 
                     Spacer()
@@ -86,6 +86,13 @@ struct AveragesMediumView: View {
                             )
                             .widgetTextStyle(style, colors: nil, isPrimary: false)
                     }
+
+                    if let overall = entry.overallAverage {
+                        Text(String(format: "%.2f", overall))
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .foregroundStyle(averageColor(for: overall))
+                    }
                 }
 
                 if entry.subjectAverages.isEmpty {
@@ -95,13 +102,24 @@ struct AveragesMediumView: View {
                         .widgetTextStyle(style, colors: nil, isPrimary: false)
                     Spacer()
                 } else {
+                    Spacer(minLength: 0)
                     ForEach(entry.subjectAverages.prefix(maxVisible)) { subject in
-                        AverageRow(subject: subject, style: style)
+                        AverageRow(subject: subject, style: style, compact: true)
                     }
-                    Spacer()
+                    Spacer(minLength: 0)
                 }
             }
             .padding()
+        }
+    }
+
+    func averageColor(for value: Double) -> Color {
+        switch value {
+        case 4.5...: return .green
+        case 3.5..<4.5: return .blue
+        case 2.5..<3.5: return .yellow
+        case 1.5..<2.5: return .orange
+        default: return .red
         }
     }
 }
@@ -127,11 +145,11 @@ struct AveragesLargeView: View {
         ZStack {
             WidgetBackground(style: style, colors: nil)
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(localization.string("subject_averages"))
                         .font(.headline)
-                        .fontWeight(.semibold)
+                        .fontWeight(.bold)
                         .widgetTextStyle(style, colors: nil)
 
                     Spacer()
@@ -189,11 +207,12 @@ struct AverageRow: View {
     let subject: SubjectAverage
     let style: WidgetStyleType
     var showGradeCount: Bool = false
+    var compact: Bool = false
 
     var body: some View {
         HStack(spacing: 12) {
             Text(subject.name)
-                .font(.subheadline)
+                .font(compact ? .footnote : .subheadline)
                 .widgetTextStyle(style, colors: nil)
                 .lineLimit(1)
 
@@ -201,15 +220,15 @@ struct AverageRow: View {
 
             if showGradeCount {
                 Text("(\(subject.gradeCount))")
-                    .font(.caption)
+                    .font(.caption2)
                     .widgetTextStyle(style, colors: nil, isPrimary: false)
             }
 
             Text(subject.formattedAverage)
-                .font(.subheadline)
+                .font(compact ? .footnote : .subheadline)
                 .fontWeight(.bold)
                 .foregroundStyle(subject.averageColor)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, compact ? 2 : 4)
     }
 }

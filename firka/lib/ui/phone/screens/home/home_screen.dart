@@ -149,6 +149,9 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
 
     HomePage targetPage;
     switch (link) {
+      case 'home':
+        targetPage = HomePage.home;
+        break;
       case 'timetable':
         targetPage = HomePage.timetable;
         break;
