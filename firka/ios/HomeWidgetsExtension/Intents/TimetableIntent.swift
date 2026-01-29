@@ -37,7 +37,7 @@ struct TimetableWidgetIntent: WidgetConfigurationIntent {
     static var title: LocalizedStringResource = LocalizedStringResource("widget_timetable_title", defaultValue: "Timetable")
     static var description: IntentDescription = IntentDescription(LocalizedStringResource("widget_timetable_description", defaultValue: "Shows your daily timetable"))
 
-    @Parameter(title: LocalizedStringResource("param_style", defaultValue: "Style"), default: .appTheme)
+    @Parameter(title: LocalizedStringResource("param_style", defaultValue: "Style"), default: .liquidGlass)
     var style: WidgetStyle?
 
     @Parameter(title: LocalizedStringResource("param_display_mode_small", defaultValue: "Small Widget Display"), default: .current)
