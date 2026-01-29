@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -15,11 +15,11 @@
 		4F30C7592E8FBF26008BB46C /* LiveActivityMethodChannelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F30C7582E8FBF26008BB46C /* LiveActivityMethodChannelManager.swift */; };
 		4F30C7672E8FBF9D008BB46C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F30C7662E8FBF9D008BB46C /* WidgetKit.framework */; };
 		4F30C7692E8FBF9D008BB46C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F30C7682E8FBF9D008BB46C /* SwiftUI.framework */; };
-		4F30C7782E8FBF9F008BB46C /* TimetableWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4F30C7652E8FBF9D008BB46C /* TimetableWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4F30C7782E8FBF9F008BB46C /* LiveActivityWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4F30C7652E8FBF9D008BB46C /* LiveActivityWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4F45A1752F27FA3C0020E6F1 /* HomeWidgetMethodChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F45A1732F27FA3C0020E6F1 /* HomeWidgetMethodChannel.swift */; };
 		4FE64E342F27B07A006F9205 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F30C7662E8FBF9D008BB46C /* WidgetKit.framework */; };
 		4FE64E352F27B07A006F9205 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F30C7682E8FBF9D008BB46C /* SwiftUI.framework */; };
-		4FE64E422F27B07B006F9205 /* HomeWidgetsExtensionExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4FE64E332F27B079006F9205 /* HomeWidgetsExtensionExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4FE64E422F27B07B006F9205 /* HomeWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4FE64E332F27B079006F9205 /* HomeWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
@@ -57,8 +57,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				4F30C7782E8FBF9F008BB46C /* TimetableWidgetExtension.appex in Embed Foundation Extensions */,
-				4FE64E422F27B07B006F9205 /* HomeWidgetsExtensionExtension.appex in Embed Foundation Extensions */,
+				4F30C7782E8FBF9F008BB46C /* LiveActivityWidget.appex in Embed Foundation Extensions */,
+				4FE64E422F27B07B006F9205 /* HomeWidgetsExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -87,18 +87,19 @@
 		485F3791F25A288C749509B2 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		4F25FCBD2EB1790E0060DAAA /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		4F30C7582E8FBF26008BB46C /* LiveActivityMethodChannelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityMethodChannelManager.swift; sourceTree = "<group>"; };
-		4F30C7652E8FBF9D008BB46C /* TimetableWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TimetableWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F30C7652E8FBF9D008BB46C /* LiveActivityWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LiveActivityWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F30C7662E8FBF9D008BB46C /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		4F30C7682E8FBF9D008BB46C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		4F45A1732F27FA3C0020E6F1 /* HomeWidgetMethodChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeWidgetMethodChannel.swift; sourceTree = "<group>"; };
-		4F959B792F289CA600FF7F03 /* TimetableWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TimetableWidgetExtension.entitlements; sourceTree = "<group>"; };
-		4F959B9C2F289CA600FF7F03 /* HomeWidgetsExtensionExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HomeWidgetsExtensionExtension.entitlements; sourceTree = "<group>"; };
-		4FE64E332F27B079006F9205 /* HomeWidgetsExtensionExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HomeWidgetsExtensionExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F959B792F289CA600FF7F03 /* LiveActivityWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LiveActivityWidget.entitlements; sourceTree = "<group>"; };
+		4F959B9C2F289CA600FF7F03 /* HomeWidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HomeWidgetsExtension.entitlements; sourceTree = "<group>"; };
+		4FE64E332F27B079006F9205 /* HomeWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HomeWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
+		9740EEB41CF90195004384FC /* WidgetExtension.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = WidgetExtension.xcconfig; path = Flutter/WidgetExtension.xcconfig; sourceTree = "<group>"; };
 		97C146EE1CF9000F007C117D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		97C146FB1CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -111,55 +112,32 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		4F4E70D02EF565FF00C90AD1 /* Exceptions for "TimetableWidget" folder in "Runner" target */ = {
+		4F4E70D02EF565FF00C90AD1 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				TimetableActivityAttributes.swift,
+				ActivityAttributes.swift,
 			);
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 		};
-		4F6C1D3E2ECD3FBD00F819D7 /* Exceptions for "TimetableWidget" folder in "TimetableWidgetExtension" target */ = {
+		4F6C1D3E2ECD3FBD00F819D7 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 4F30C7642E8FBF9D008BB46C /* TimetableWidgetExtension */;
+			target = 4F30C7642E8FBF9D008BB46C /* LiveActivityWidget */;
 		};
-		4FE64E472F27B07B006F9205 /* Exceptions for "HomeWidgetsExtension" folder in "HomeWidgetsExtensionExtension" target */ = {
+		4FE64E472F27B07B006F9205 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 4FE64E322F27B079006F9205 /* HomeWidgetsExtensionExtension */;
+			target = 4FE64E322F27B079006F9205 /* HomeWidgetsExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		4F30C76A2E8FBF9D008BB46C /* TimetableWidget */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				4F4E70D02EF565FF00C90AD1 /* Exceptions for "TimetableWidget" folder in "Runner" target */,
-				4F6C1D3E2ECD3FBD00F819D7 /* Exceptions for "TimetableWidget" folder in "TimetableWidgetExtension" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = TimetableWidget;
-			sourceTree = "<group>";
-		};
-		4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				4FE64E472F27B07B006F9205 /* Exceptions for "HomeWidgetsExtension" folder in "HomeWidgetsExtensionExtension" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = HomeWidgetsExtension;
-			sourceTree = "<group>";
-		};
+		4F30C76A2E8FBF9D008BB46C /* LiveActivityWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (4F4E70D02EF565FF00C90AD1 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 4F6C1D3E2ECD3FBD00F819D7 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = LiveActivityWidget; sourceTree = "<group>"; };
+		4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (4FE64E472F27B07B006F9205 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = HomeWidgetsExtension; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -239,6 +217,7 @@
 				9740EEB21CF90195004384FC /* Debug.xcconfig */,
 				7AFA3C8E1D35360C0083082E /* Release.xcconfig */,
 				9740EEB31CF90195004384FC /* Generated.xcconfig */,
+				9740EEB41CF90195004384FC /* WidgetExtension.xcconfig */,
 			);
 			name = Flutter;
 			sourceTree = "<group>";
@@ -246,11 +225,11 @@
 		97C146E51CF9000F007C117D = {
 			isa = PBXGroup;
 			children = (
-				4F959B792F289CA600FF7F03 /* TimetableWidgetExtension.entitlements */,
-				4F959B9C2F289CA600FF7F03 /* HomeWidgetsExtensionExtension.entitlements */,
+				4F959B792F289CA600FF7F03 /* LiveActivityWidget.entitlements */,
+				4F959B9C2F289CA600FF7F03 /* HomeWidgetsExtension.entitlements */,
 				9740EEB11CF90186004384FC /* Flutter */,
 				97C146F01CF9000F007C117D /* Runner */,
-				4F30C76A2E8FBF9D008BB46C /* TimetableWidget */,
+				4F30C76A2E8FBF9D008BB46C /* LiveActivityWidget */,
 				4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
@@ -264,8 +243,8 @@
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
-				4F30C7652E8FBF9D008BB46C /* TimetableWidgetExtension.appex */,
-				4FE64E332F27B079006F9205 /* HomeWidgetsExtensionExtension.appex */,
+				4F30C7652E8FBF9D008BB46C /* LiveActivityWidget.appex */,
+				4FE64E332F27B079006F9205 /* HomeWidgetsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -310,9 +289,9 @@
 			productReference = 331C8081294A63A400263BE5 /* RunnerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		4F30C7642E8FBF9D008BB46C /* TimetableWidgetExtension */ = {
+		4F30C7642E8FBF9D008BB46C /* LiveActivityWidget */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4F30C77A2E8FBF9F008BB46C /* Build configuration list for PBXNativeTarget "TimetableWidgetExtension" */;
+			buildConfigurationList = 4F30C77A2E8FBF9F008BB46C /* Build configuration list for PBXNativeTarget "LiveActivityWidget" */;
 			buildPhases = (
 				4F30C7612E8FBF9D008BB46C /* Sources */,
 				4F30C7622E8FBF9D008BB46C /* Frameworks */,
@@ -323,16 +302,16 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				4F30C76A2E8FBF9D008BB46C /* TimetableWidget */,
+				4F30C76A2E8FBF9D008BB46C /* LiveActivityWidget */,
 			);
-			name = TimetableWidgetExtension;
+			name = LiveActivityWidget;
 			productName = TimetableWidgetExtension;
-			productReference = 4F30C7652E8FBF9D008BB46C /* TimetableWidgetExtension.appex */;
+			productReference = 4F30C7652E8FBF9D008BB46C /* LiveActivityWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		4FE64E322F27B079006F9205 /* HomeWidgetsExtensionExtension */ = {
+		4FE64E322F27B079006F9205 /* HomeWidgetsExtension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4FE64E462F27B07B006F9205 /* Build configuration list for PBXNativeTarget "HomeWidgetsExtensionExtension" */;
+			buildConfigurationList = 4FE64E462F27B07B006F9205 /* Build configuration list for PBXNativeTarget "HomeWidgetsExtension" */;
 			buildPhases = (
 				4FE64E2F2F27B079006F9205 /* Sources */,
 				4FE64E302F27B079006F9205 /* Frameworks */,
@@ -345,9 +324,9 @@
 			fileSystemSynchronizedGroups = (
 				4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */,
 			);
-			name = HomeWidgetsExtensionExtension;
+			name = HomeWidgetsExtension;
 			productName = HomeWidgetsExtensionExtension;
-			productReference = 4FE64E332F27B079006F9205 /* HomeWidgetsExtensionExtension.appex */;
+			productReference = 4FE64E332F27B079006F9205 /* HomeWidgetsExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 		97C146ED1CF9000F007C117D /* Runner */ = {
@@ -410,6 +389,8 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
+				hu,
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
 			productRefGroup = 97C146EF1CF9000F007C117D /* Products */;
@@ -418,8 +399,8 @@
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
-				4F30C7642E8FBF9D008BB46C /* TimetableWidgetExtension */,
-				4FE64E322F27B079006F9205 /* HomeWidgetsExtensionExtension */,
+				4F30C7642E8FBF9D008BB46C /* LiveActivityWidget */,
+				4FE64E322F27B079006F9205 /* HomeWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -468,9 +449,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -560,9 +545,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -615,12 +604,12 @@
 		};
 		4F30C7772E8FBF9F008BB46C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 4F30C7642E8FBF9D008BB46C /* TimetableWidgetExtension */;
+			target = 4F30C7642E8FBF9D008BB46C /* LiveActivityWidget */;
 			targetProxy = 4F30C7762E8FBF9F008BB46C /* PBXContainerItemProxy */;
 		};
 		4FE64E412F27B07B006F9205 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 4FE64E322F27B079006F9205 /* HomeWidgetsExtensionExtension */;
+			target = 4FE64E322F27B079006F9205 /* HomeWidgetsExtension */;
 			targetProxy = 4FE64E402F27B07B006F9205 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -718,7 +707,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.9.1;
+				MARKETING_VERSION = 1.0.9;
 				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -789,6 +778,7 @@
 		};
 		4F30C77B2E8FBF9F008BB46C /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB41CF90195004384FC /* WidgetExtension.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -799,16 +789,16 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = TimetableWidgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = LiveActivityWidget.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = TimetableWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = TimetableWidget;
+				INFOPLIST_FILE = LiveActivityWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = LiveActivityWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
@@ -818,10 +808,10 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0.9.1;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.TimetableWidget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.LiveActivityWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -839,6 +829,7 @@
 		};
 		4F30C77C2E8FBF9F008BB46C /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB41CF90195004384FC /* WidgetExtension.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -849,16 +840,16 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = TimetableWidgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = LiveActivityWidget.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = TimetableWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = TimetableWidget;
+				INFOPLIST_FILE = LiveActivityWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = LiveActivityWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
@@ -868,9 +859,9 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0.9.1;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.TimetableWidget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.LiveActivityWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -886,6 +877,7 @@
 		};
 		4F30C77D2E8FBF9F008BB46C /* Profile */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB41CF90195004384FC /* WidgetExtension.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -896,16 +888,16 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = TimetableWidgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = LiveActivityWidget.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = TimetableWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = TimetableWidget;
+				INFOPLIST_FILE = LiveActivityWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = LiveActivityWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
@@ -915,9 +907,9 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0.9.1;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.TimetableWidget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.LiveActivityWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -933,6 +925,7 @@
 		};
 		4FE64E432F27B07B006F9205 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB41CF90195004384FC /* WidgetExtension.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -943,10 +936,10 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = HomeWidgetsExtensionExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HomeWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -954,19 +947,21 @@
 				INFOPLIST_FILE = HomeWidgetsExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = HomeWidgetsExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				INFOPLIST_KEY_NSSupportsLiveActivities = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.HomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -981,6 +976,7 @@
 		};
 		4FE64E442F27B07B006F9205 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB41CF90195004384FC /* WidgetExtension.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -991,10 +987,10 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = HomeWidgetsExtensionExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HomeWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -1002,17 +998,19 @@
 				INFOPLIST_FILE = HomeWidgetsExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = HomeWidgetsExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				INFOPLIST_KEY_NSSupportsLiveActivities = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.HomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -1025,6 +1023,7 @@
 		};
 		4FE64E452F27B07B006F9205 /* Profile */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB41CF90195004384FC /* WidgetExtension.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1035,10 +1034,10 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = HomeWidgetsExtensionExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HomeWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -1046,17 +1045,19 @@
 				INFOPLIST_FILE = HomeWidgetsExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = HomeWidgetsExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				INFOPLIST_KEY_NSSupportsLiveActivities = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.HomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -1201,7 +1202,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.9.1;
+				MARKETING_VERSION = 1.0.9;
 				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1237,7 +1238,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.9.1;
+				MARKETING_VERSION = 1.0.9;
 				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1266,7 +1267,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4F30C77A2E8FBF9F008BB46C /* Build configuration list for PBXNativeTarget "TimetableWidgetExtension" */ = {
+		4F30C77A2E8FBF9F008BB46C /* Build configuration list for PBXNativeTarget "LiveActivityWidget" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4F30C77B2E8FBF9F008BB46C /* Debug */,
@@ -1276,7 +1277,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4FE64E462F27B07B006F9205 /* Build configuration list for PBXNativeTarget "HomeWidgetsExtensionExtension" */ = {
+		4FE64E462F27B07B006F9205 /* Build configuration list for PBXNativeTarget "HomeWidgetsExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4FE64E432F27B07B006F9205 /* Debug */,

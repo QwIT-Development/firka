@@ -108,10 +108,10 @@ class IOSWidgetHelper {
       'subject': subject != null ? {
         'uid': subject.uid,
         'name': subject.name,
-        'category': subject.category, {
-          'uid': subject.category.uid,
-          'name': subject.category.name,
-          'description': subject.category.description,
+        'category': subject.category != null ? {
+          'uid': subject.category!.uid,
+          'name': subject.category!.name,
+          'description': subject.category!.description,
         } : null,
         'sortIndex': subject.sortIndex,
         'teacherName': subject.teacherName,
@@ -136,10 +136,10 @@ class IOSWidgetHelper {
       'subject': {
         'uid': grade.subject.uid,
         'name': grade.subject.name,
-        'category': grade.subject.category, {
-          'uid': grade.subject.category.uid,
-          'name': grade.subject.category.name,
-          'description': grade.subject.category.description,
+        'category': grade.subject.category != null ? {
+          'uid': grade.subject.category!.uid,
+          'name': grade.subject.category!.name,
+          'description': grade.subject.category!.description,
         } : null,
         'sortIndex': grade.subject.sortIndex,
         // Use the grade's teacher field, not subject.teacherName (which is usually null for grades)
