@@ -29,7 +29,10 @@ import BackgroundTasks
     widgetDeepLinkChannel = FlutterMethodChannel(name: "firka.app/widget_deep_link", binaryMessenger: controller.binaryMessenger)
     widgetDeepLinkChannel?.setMethodCallHandler { [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) in
       if call.method == "getPendingDeepLink" {
-        if let link = self?.pendingWidgetDeepLink {
+        if let controlNav = UserDefaults(suiteName: "group.app.firka.firkaa")?.string(forKey: "controlNavigation") {
+          UserDefaults(suiteName: "group.app.firka.firkaa")?.removeObject(forKey: "controlNavigation")
+          result(controlNav)
+        } else if let link = self?.pendingWidgetDeepLink {
           self?.pendingWidgetDeepLink = nil
           result(link)
         } else {

@@ -64,10 +64,10 @@ struct GradesMediumView: View {
         ZStack {
             WidgetBackground(style: style, colors: nil)
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(localization.string("recent_grades"))
                     .font(.caption)
-                    .fontWeight(.medium)
+                    .fontWeight(.semibold)
                     .widgetTextStyle(style, colors: nil, isPrimary: false)
 
                 if entry.grades.isEmpty {
@@ -77,9 +77,11 @@ struct GradesMediumView: View {
                         .widgetTextStyle(style, colors: nil, isPrimary: false)
                     Spacer()
                 } else {
+                    Spacer(minLength: 0)
                     ForEach(entry.grades.prefix(3)) { grade in
-                        GradeRow(grade: grade, style: style, showTeacher: true)
+                        GradeRow(grade: grade, style: style, showTeacher: true, compact: true)
                     }
+                    Spacer(minLength: 0)
                 }
             }
             .padding()
@@ -129,18 +131,19 @@ struct GradeRow: View {
     let style: WidgetStyleType
     var showTeacher: Bool = false
     var showTopic: Bool = false
+    var compact: Bool = false
 
     var body: some View {
         HStack(spacing: 12) {
             Text(grade.displayValue)
-                .font(.title2)
+                .font(compact ? .title3 : .title2)
                 .fontWeight(.bold)
                 .foregroundStyle(grade.gradeColor)
                 .frame(width: 32)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: compact ? 1 : 2) {
                 Text(grade.subjectNameWithWeight)
-                    .font(.subheadline)
+                    .font(compact ? .footnote : .subheadline)
                     .fontWeight(.medium)
                     .widgetTextStyle(style, colors: nil)
                     .lineLimit(1)
@@ -148,23 +151,23 @@ struct GradeRow: View {
                 HStack(spacing: 4) {
                     if showTeacher, let teacher = grade.teacherName {
                         Text(teacher)
-                            .font(.caption)
+                            .font(.caption2)
                             .widgetTextStyle(style, colors: nil, isPrimary: false)
                             .lineLimit(1)
 
                         Text("•")
-                            .font(.caption)
+                            .font(.caption2)
                             .widgetTextStyle(style, colors: nil, isPrimary: false)
                     }
 
                     Text(grade.dateString)
-                        .font(.caption)
+                        .font(.caption2)
                         .widgetTextStyle(style, colors: nil, isPrimary: false)
                 }
             }
 
             Spacer()
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, compact ? 2 : 4)
     }
 }

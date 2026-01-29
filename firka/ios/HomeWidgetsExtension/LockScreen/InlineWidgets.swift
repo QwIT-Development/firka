@@ -34,18 +34,22 @@ struct TimetableInlineWidgetView: View {
         } else if let current = entry.currentLesson {
             let remaining = minutesRemaining(until: current.end)
             Text("\(current.subject.name) · \(remaining) \(localization.string("minutes_abbrev"))")
+        } else if entry.isNextDay {
+            if let first = entry.lessons.first {
+                let lessonNum = first.lessonNumber ?? 1
+                Text("\(localization.string("tomorrow")): \(lessonNum). \(first.subject.name)")
+            } else {
+                Text(localization.string("no_lessons"))
+            }
         } else if let next = entry.nextLesson {
             let until = minutesRemaining(until: next.start)
             if until <= 0 {
                 Text("→ \(next.subject.name)")
+            } else if until > 60 {
+                let hours = until / 60
+                Text("→ \(next.subject.name) · \(hours) \(localization.string("hours_abbrev"))")
             } else {
                 Text("→ \(next.subject.name) · \(until) \(localization.string("minutes_abbrev"))")
-            }
-        } else if entry.isNextDay {
-            if let first = entry.lessons.first {
-                Text("\(localization.string("tomorrow")): \(first.subject.name)")
-            } else {
-                Text(localization.string("no_lessons"))
             }
         } else {
             Text(localization.string("no_lessons"))

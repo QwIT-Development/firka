@@ -119,6 +119,11 @@ struct WidgetLocalization {
                 "en": "Tomorrow",
                 "de": "Morgen"
             ],
+            "tomorrow_short": [
+                "hu": "holnap",
+                "en": "tmrw",
+                "de": "morgen"
+            ],
             "next": [
                 "hu": "Következő",
                 "en": "Next",
@@ -193,6 +198,16 @@ struct WidgetLocalization {
                 "hu": "p",
                 "en": "min",
                 "de": "Min"
+            ],
+            "hours_abbrev": [
+                "hu": "ó",
+                "en": "h",
+                "de": "Std"
+            ],
+            "in_hours": [
+                "hu": "%d óra múlva",
+                "en": "in %d h",
+                "de": "in %d Std"
             ]
         ]
     }

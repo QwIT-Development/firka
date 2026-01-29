@@ -112,6 +112,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4F0EA0512F2BD2A2003CC89E /* Exceptions for "HomeWidgetsExtension" folder in "Runner" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Controls/AppControls.swift,
+			);
+			target = 97C146ED1CF9000F007C117D /* Runner */;
+		};
 		4F4E70D02EF565FF00C90AD1 /* Exceptions for "LiveActivityWidget" folder in "Runner" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -152,6 +159,7 @@
 		4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				4F0EA0512F2BD2A2003CC89E /* Exceptions for "HomeWidgetsExtension" folder in "Runner" target */,
 				4FE64E472F27B07B006F9205 /* Exceptions for "HomeWidgetsExtension" folder in "HomeWidgetsExtension" target */,
 			);
 			explicitFileTypes = {

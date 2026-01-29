@@ -18,5 +18,12 @@ struct HomeWidgetsBundle: WidgetBundle {
         TimetableInlineWidget()
         GradesInlineWidget()
         AveragesInlineWidget()
+
+        // Control Widgets (iOS 18+ Control Center & Lock Screen buttons)
+        if #available(iOS 18.0, *) {
+            HomeControl()
+            GradesControl()
+            TimetableControl()
+        }
     }
 }
