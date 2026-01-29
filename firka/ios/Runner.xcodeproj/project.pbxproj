@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -112,21 +112,21 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		4F4E70D02EF565FF00C90AD1 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		4F4E70D02EF565FF00C90AD1 /* Exceptions for "LiveActivityWidget" folder in "Runner" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				ActivityAttributes.swift,
 			);
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 		};
-		4F6C1D3E2ECD3FBD00F819D7 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		4F6C1D3E2ECD3FBD00F819D7 /* Exceptions for "LiveActivityWidget" folder in "LiveActivityWidget" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 4F30C7642E8FBF9D008BB46C /* LiveActivityWidget */;
 		};
-		4FE64E472F27B07B006F9205 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		4FE64E472F27B07B006F9205 /* Exceptions for "HomeWidgetsExtension" folder in "HomeWidgetsExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -136,8 +136,31 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		4F30C76A2E8FBF9D008BB46C /* LiveActivityWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (4F4E70D02EF565FF00C90AD1 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 4F6C1D3E2ECD3FBD00F819D7 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = LiveActivityWidget; sourceTree = "<group>"; };
-		4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (4FE64E472F27B07B006F9205 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = HomeWidgetsExtension; sourceTree = "<group>"; };
+		4F30C76A2E8FBF9D008BB46C /* LiveActivityWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4F4E70D02EF565FF00C90AD1 /* Exceptions for "LiveActivityWidget" folder in "Runner" target */,
+				4F6C1D3E2ECD3FBD00F819D7 /* Exceptions for "LiveActivityWidget" folder in "LiveActivityWidget" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = LiveActivityWidget;
+			sourceTree = "<group>";
+		};
+		4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4FE64E472F27B07B006F9205 /* Exceptions for "HomeWidgetsExtension" folder in "HomeWidgetsExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = HomeWidgetsExtension;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -449,13 +472,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -545,13 +564,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

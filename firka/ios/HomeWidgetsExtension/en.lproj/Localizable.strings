@@ -8,6 +8,11 @@
 "widget_grades_description" = "Shows your recent grades";
 "widget_averages_description" = "Shows subject averages";
 
+/* Lock Screen Widget Descriptions */
+"widget_timetable_lockscreen_description" = "Timetable on lock screen";
+"widget_grades_lockscreen_description" = "Grades on lock screen";
+"widget_averages_lockscreen_description" = "Averages on lock screen";
+
 /* Parameter Titles */
 "param_style" = "Style";
 "param_display_mode_small" = "Display (small widget)";

@@ -8,6 +8,11 @@
 "widget_grades_description" = "Zeigt deine letzten Noten";
 "widget_averages_description" = "Zeigt Fachdurchschnitte";
 
+/* Lock Screen Widget Descriptions */
+"widget_timetable_lockscreen_description" = "Stundenplan auf dem Sperrbildschirm";
+"widget_grades_lockscreen_description" = "Noten auf dem Sperrbildschirm";
+"widget_averages_lockscreen_description" = "Durchschnitte auf dem Sperrbildschirm";
+
 /* Parameter Titles */
 "param_style" = "Stil";
 "param_display_mode_small" = "Anzeige (kleines Widget)";

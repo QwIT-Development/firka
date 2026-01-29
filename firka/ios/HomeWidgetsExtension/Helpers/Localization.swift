@@ -103,6 +103,96 @@ struct WidgetLocalization {
                 "hu": "Terem",
                 "en": "Room",
                 "de": "Raum"
+            ],
+            "until": [
+                "hu": "eddig:",
+                "en": "until",
+                "de": "bis"
+            ],
+            "no_more_lessons_today": [
+                "hu": "Ma már nincs több óra",
+                "en": "No more lessons today",
+                "de": "Keine Stunden mehr heute"
+            ],
+            "tomorrow": [
+                "hu": "Holnap",
+                "en": "Tomorrow",
+                "de": "Morgen"
+            ],
+            "next": [
+                "hu": "Következő",
+                "en": "Next",
+                "de": "Nächste"
+            ],
+            "minutes_short": [
+                "hu": "perc",
+                "en": "min",
+                "de": "Min"
+            ],
+            "lesson_short": [
+                "hu": "óra",
+                "en": "lesson",
+                "de": "Std"
+            ],
+            "in_minutes": [
+                "hu": "%d perc múlva",
+                "en": "in %d min",
+                "de": "in %d Min"
+            ],
+            "today_new_grades": [
+                "hu": "Ma: %d új jegy",
+                "en": "Today: %d new",
+                "de": "Heute: %d neue"
+            ],
+            "latest": [
+                "hu": "Legutóbbi",
+                "en": "Latest",
+                "de": "Letzte"
+            ],
+            "today_grades": [
+                "hu": "Mai jegyek",
+                "en": "Today's grades",
+                "de": "Heutige Noten"
+            ],
+            "pieces": [
+                "hu": "%d db",
+                "en": "%d pcs",
+                "de": "%d Stk"
+            ],
+            "latest_grade": [
+                "hu": "Legutóbbi jegy",
+                "en": "Latest grade",
+                "de": "Letzte Note"
+            ],
+            "average_short": [
+                "hu": "Átlag",
+                "en": "Avg",
+                "de": "Durchschn."
+            ],
+            "overall_average_title": [
+                "hu": "Összesített átlag",
+                "en": "Overall average",
+                "de": "Gesamtdurchschnitt"
+            ],
+            "subjects_count": [
+                "hu": "%d tárgy",
+                "en": "%d subjects",
+                "de": "%d Fächer"
+            ],
+            "subject_averages_title": [
+                "hu": "Tantárgy átlagok",
+                "en": "Subject averages",
+                "de": "Fachdurchschnitte"
+            ],
+            "subject_short": [
+                "hu": "tárgy",
+                "en": "subj",
+                "de": "Fächer"
+            ],
+            "minutes_abbrev": [
+                "hu": "p",
+                "en": "min",
+                "de": "Min"
             ]
         ]
     }

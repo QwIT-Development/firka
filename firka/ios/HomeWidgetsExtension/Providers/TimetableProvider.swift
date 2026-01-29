@@ -48,6 +48,7 @@ struct TimetableProvider: AppIntentTimelineProvider {
     func timeline(for configuration: TimetableWidgetIntent, in context: Context) async -> Timeline<TimetableEntry> {
         var entries: [TimetableEntry] = []
         let now = Date()
+        let calendar = Calendar.current
 
         let data = WidgetData.load()
 
@@ -66,31 +67,64 @@ struct TimetableProvider: AppIntentTimelineProvider {
                 debugInfo: WidgetData.lastError
             )
             entries.append(entry)
-            return Timeline(entries: entries, policy: .after(Calendar.current.startOfDay(for: now.addingTimeInterval(86400))))
+            return Timeline(entries: entries, policy: .after(calendar.startOfDay(for: now.addingTimeInterval(86400))))
         }
 
         let todayLessons = data?.timetable.today ?? []
 
         entries.append(createEntry(for: configuration, date: now))
 
-        var transitionTimes: Set<Date> = []
+        let currentLesson = todayLessons.first { now >= $0.start && now <= $0.end }
+        let nextLesson = todayLessons.first { $0.start > now }
+
+        let isLockScreenWidget = context.family == .accessoryInline ||
+                                  context.family == .accessoryCircular ||
+                                  context.family == .accessoryRectangular
+
+        if isLockScreenWidget {
+            var minuteEntries: [Date] = []
+
+            if let current = currentLesson {
+                var time = now.addingTimeInterval(60)
+                while time <= current.end && minuteEntries.count < 60 {
+                    minuteEntries.append(time)
+                    time = time.addingTimeInterval(60)
+                }
+                minuteEntries.append(current.end.addingTimeInterval(1))
+            }
+
+            if let next = nextLesson {
+                var time = currentLesson?.end.addingTimeInterval(60) ?? now.addingTimeInterval(60)
+                while time < next.start && minuteEntries.count < 120 {
+                    minuteEntries.append(time)
+                    time = time.addingTimeInterval(60)
+                }
+                minuteEntries.append(next.start)
+            }
+
+            for time in minuteEntries {
+                if time > now {
+                    entries.append(createEntry(for: configuration, date: time))
+                }
+            }
+        }
 
         for lesson in todayLessons {
             if lesson.start > now {
-                transitionTimes.insert(lesson.start)
+                entries.append(createEntry(for: configuration, date: lesson.start))
             }
             if lesson.end > now {
-                transitionTimes.insert(lesson.end.addingTimeInterval(1))
+                entries.append(createEntry(for: configuration, date: lesson.end.addingTimeInterval(1)))
             }
         }
 
-        let midnight = Calendar.current.startOfDay(for: now.addingTimeInterval(86400))
-        transitionTimes.insert(midnight)
+        let midnight = calendar.startOfDay(for: now.addingTimeInterval(86400))
+        entries.append(createEntry(for: configuration, date: midnight))
 
-        for time in transitionTimes {
-            entries.append(createEntry(for: configuration, date: time))
+        let uniqueDates = Set(entries.map { $0.date })
+        entries = uniqueDates.map { date in
+            entries.first { $0.date == date }!
         }
-
         entries.sort { $0.date < $1.date }
 
         return Timeline(entries: entries, policy: .atEnd)
