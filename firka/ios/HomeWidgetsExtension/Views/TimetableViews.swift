@@ -11,7 +11,20 @@ struct TimetableSmallView: View {
     }
 
     var displayLesson: WidgetLesson? {
-        (entry.configuration.displayMode ?? .current) == .current ? entry.currentLesson : entry.nextLesson
+        let mode = entry.configuration.displayMode ?? .current
+        if mode == .current {
+            return entry.currentLesson ?? entry.nextLesson
+        } else {
+            return entry.nextLesson
+        }
+    }
+
+    var isShowingNextLesson: Bool {
+        let mode = entry.configuration.displayMode ?? .current
+        if mode == .current {
+            return entry.currentLesson == nil && entry.nextLesson != nil
+        }
+        return true
     }
 
     var liquidGlassPrimary: Color {
@@ -27,9 +40,9 @@ struct TimetableSmallView: View {
             WidgetBackground(style: style, colors: nil)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text((entry.configuration.displayMode ?? .current) == .current ?
-                     localization.string("current_lesson") :
-                     localization.string("next_lesson"))
+                Text(isShowingNextLesson ?
+                     localization.string("next_lesson") :
+                     localization.string("current_lesson"))
                     .font(.caption)
                     .widgetTextStyle(style, colors: nil, isPrimary: false)
 

@@ -8,6 +8,11 @@
 "widget_grades_description" = "A legutóbbi jegyeidet mutatja";
 "widget_averages_description" = "A tantárgyi átlagokat mutatja";
 
+/* Lock Screen Widget Descriptions */
+"widget_timetable_lockscreen_description" = "Órarend a zárolt képernyőn";
+"widget_grades_lockscreen_description" = "Jegyek a zárolt képernyőn";
+"widget_averages_lockscreen_description" = "Átlagok a zárolt képernyőn";
+
 /* Parameter Titles */
 "param_style" = "Stílus";
 "param_display_mode_small" = "Megjelenítés (kis widget)";
