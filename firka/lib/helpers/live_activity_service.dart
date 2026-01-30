@@ -5,6 +5,7 @@ import 'package:firka/helpers/api/client/live_activity_backend_client.dart';
 import 'package:firka/helpers/api/model/generic.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/db/models/app_settings_model.dart';
+import 'package:firka/helpers/db/widget.dart';
 import 'package:firka/helpers/live_activity_manager.dart';
 import 'package:firka/helpers/settings.dart';
 import 'package:firka/ui/phone/screens/live_activity/live_activity_consent_screen.dart';
@@ -441,6 +442,14 @@ class LiveActivityService {
           _logger.severe('Background fetch: cache fallback also failed: $cacheError');
           return false;
         }
+      }
+
+      try {
+        _logger.info('Background fetch: refreshing iOS widgets...');
+        await WidgetCacheHelper.refreshIOSWidgets(client, initData.settings);
+        _logger.info('Background fetch: iOS widgets refreshed successfully');
+      } catch (e) {
+        _logger.warning('Background fetch: failed to refresh iOS widgets: $e');
       }
 
       bool foundFirstSchoolDay = false;

@@ -66,7 +66,7 @@ class KretaClient {
     }
     _tokenMutex = true;
     try {
-      return callback();
+      return await callback();
     } finally {
       _tokenMutex = false;
     }
@@ -78,7 +78,7 @@ class KretaClient {
 
       if (now.millisecondsSinceEpoch >=
           model.expiryDate!.millisecondsSinceEpoch) {
-        logger.finest("Token expired, refreshing: $model");
+        logger.info("Token expired at ${model.expiryDate}, refreshing for user: ${model.studentId}");
         var extended = await extendToken(model);
         var tokenModel = TokenModel.fromResp(extended);
 
@@ -86,7 +86,7 @@ class KretaClient {
           await isar.tokenModels.put(tokenModel);
         });
 
-        logger.finest("Token refreshed and saved: $model");
+        logger.info("Token refreshed successfully. New expiry: ${tokenModel.expiryDate}");
 
         model = tokenModel;
       }
@@ -115,6 +115,15 @@ class KretaClient {
       resp = await _authReq(method, url, data);
       if (!url.endsWith("TanuloAdatlap")) {
         logger.finest("Response: ${resp.statusCode} ${resp.data}");
+      }
+
+      if (resp.statusCode == 200 || resp.statusCode == 201) {
+        final responseData = resp.data;
+        if (responseData == null ||
+            (responseData is List && responseData.isEmpty) ||
+            (responseData is Map && responseData.isEmpty)) {
+          logger.warning("API returned ${resp.statusCode} with empty data for: $url - possible stale session");
+        }
       }
     } catch (ex) {
       if (ex is Error) {
