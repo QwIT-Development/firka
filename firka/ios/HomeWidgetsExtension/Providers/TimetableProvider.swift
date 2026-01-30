@@ -9,6 +9,8 @@ struct TimetableEntry: TimelineEntry {
     let currentLesson: WidgetLesson?
     let nextLesson: WidgetLesson?
     let isNextDay: Bool
+    let isNextSchoolDay: Bool
+    let nextSchoolDayDateString: String?
     let breakInfo: BreakInfo?
     let state: TimetableState
     let debugInfo: String
@@ -35,6 +37,8 @@ struct TimetableProvider: AppIntentTimelineProvider {
             currentLesson: nil,
             nextLesson: nil,
             isNextDay: false,
+            isNextSchoolDay: false,
+            nextSchoolDayDateString: nil,
             breakInfo: nil,
             state: .normal,
             debugInfo: "placeholder"
@@ -62,6 +66,8 @@ struct TimetableProvider: AppIntentTimelineProvider {
                 currentLesson: nil,
                 nextLesson: nil,
                 isNextDay: false,
+                isNextSchoolDay: false,
+                nextSchoolDayDateString: nil,
                 breakInfo: breakInfo,
                 state: .onBreak,
                 debugInfo: WidgetData.lastError
@@ -152,6 +158,8 @@ struct TimetableProvider: AppIntentTimelineProvider {
                 currentLesson: nil,
                 nextLesson: nil,
                 isNextDay: false,
+                isNextSchoolDay: false,
+                nextSchoolDayDateString: nil,
                 breakInfo: nil,
                 state: .loginRequired,
                 debugInfo: WidgetData.lastError
@@ -167,6 +175,8 @@ struct TimetableProvider: AppIntentTimelineProvider {
                 currentLesson: nil,
                 nextLesson: nil,
                 isNextDay: false,
+                isNextSchoolDay: false,
+                nextSchoolDayDateString: nil,
                 breakInfo: breakInfo,
                 state: .onBreak,
                 debugInfo: WidgetData.lastError
@@ -202,6 +212,23 @@ struct TimetableProvider: AppIntentTimelineProvider {
         }
 
         if lessons.isEmpty {
+            if let nextSchoolDayLessons = data.timetable.nextSchoolDay, !nextSchoolDayLessons.isEmpty {
+                return TimetableEntry(
+                    date: date,
+                    configuration: configuration,
+                    data: data,
+                    lessons: nextSchoolDayLessons,
+                    currentLesson: nil,
+                    nextLesson: nextSchoolDayLessons.first,
+                    isNextDay: false,
+                    isNextSchoolDay: true,
+                    nextSchoolDayDateString: data.timetable.nextSchoolDayDate,
+                    breakInfo: nil,
+                    state: .normal,
+                    debugInfo: WidgetData.lastError
+                )
+            }
+
             return TimetableEntry(
                 date: date,
                 configuration: configuration,
@@ -210,6 +237,8 @@ struct TimetableProvider: AppIntentTimelineProvider {
                 currentLesson: nil,
                 nextLesson: nil,
                 isNextDay: isNextDay,
+                isNextSchoolDay: false,
+                nextSchoolDayDateString: nil,
                 breakInfo: nil,
                 state: isNextDay ? .noMoreLessons : .unavailable,
                 debugInfo: WidgetData.lastError
@@ -229,6 +258,8 @@ struct TimetableProvider: AppIntentTimelineProvider {
             currentLesson: currentLesson,
             nextLesson: nextLesson,
             isNextDay: isNextDay,
+            isNextSchoolDay: false,
+            nextSchoolDayDateString: nil,
             breakInfo: nil,
             state: .normal,
             debugInfo: WidgetData.lastError

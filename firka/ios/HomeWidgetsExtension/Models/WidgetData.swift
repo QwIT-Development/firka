@@ -95,7 +95,7 @@ struct WidgetData: Codable {
             lastUpdated: nil,
             locale: "hu",
             theme: "dark",
-            timetable: TimetableData(today: [], tomorrow: [], currentBreak: nil),
+            timetable: TimetableData(today: [], tomorrow: [], nextSchoolDay: nil, nextSchoolDayDate: nil, currentBreak: nil),
             grades: [],
             averages: AveragesData(overall: nil, subjects: [])
         )
@@ -105,6 +105,8 @@ struct WidgetData: Codable {
 struct TimetableData: Codable {
     let today: [WidgetLesson]
     let tomorrow: [WidgetLesson]
+    let nextSchoolDay: [WidgetLesson]?
+    let nextSchoolDayDate: String?
     let currentBreak: BreakInfo?
 }
 

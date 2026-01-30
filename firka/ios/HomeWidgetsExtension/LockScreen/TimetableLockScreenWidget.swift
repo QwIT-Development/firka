@@ -59,12 +59,20 @@ struct TimetableInlineView: View {
         } else if let current = entry.currentLesson {
             let remaining = minutesRemaining(until: current.end)
             Text("\(current.subject.name) - \(remaining) \(localization.string("minutes_short"))")
+        } else if entry.isNextSchoolDay {
+            if let first = entry.lessons.first {
+                let dateStr = WidgetLocalization.formatShortDate(entry.nextSchoolDayDateString, locale: localization.locale)
+                let lessonNum = first.lessonNumber ?? 1
+                Text("\(dateStr): \(lessonNum). \(first.subject.name)")
+            } else {
+                Text(localization.string("no_lessons_ahead"))
+            }
         } else if entry.isNextDay {
             if let first = entry.lessons.first {
                 let lessonNum = first.lessonNumber ?? 1
                 Text("\(localization.string("tomorrow")): \(lessonNum). \(first.subject.name)")
             } else {
-                Text(localization.string("no_lessons"))
+                Text(localization.string("no_lessons_ahead"))
             }
         } else if let next = entry.nextLesson {
             let until = minutesRemaining(until: next.start)
@@ -77,7 +85,7 @@ struct TimetableInlineView: View {
                 Text("\(next.subject.name) \(localization.string("in_minutes", until))")
             }
         } else {
-            Text(localization.string("no_lessons"))
+            Text(localization.string("no_lessons_ahead"))
         }
     }
 
@@ -109,7 +117,7 @@ struct TimetableCircularView: View {
                     .font(.system(.title2, design: .rounded, weight: .bold))
             }
             .gaugeStyle(.accessoryCircularCapacity)
-        } else if entry.isNextDay {
+        } else if entry.isNextSchoolDay || entry.isNextDay {
             let lessonCount = entry.lessons.count
             if lessonCount > 0 {
                 ZStack {
@@ -220,13 +228,21 @@ struct TimetableRectangularView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         } else if let next = entry.nextLesson {
             let until = minutesRemaining(until: next.start)
+            let isFutureDay = entry.isNextDay || entry.isNextSchoolDay
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
-                    Text(entry.isNextDay ? localization.string("tomorrow") : localization.string("next"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    if entry.isNextSchoolDay {
+                        let dateStr = WidgetLocalization.formatShortDate(entry.nextSchoolDayDateString, locale: localization.locale)
+                        Text(dateStr)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text(entry.isNextDay ? localization.string("tomorrow") : localization.string("next"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                     Spacer()
-                    if until > 0 && !entry.isNextDay {
+                    if until > 0 && !isFutureDay {
                         if until > 60 {
                             Text(localization.string("in_hours", until / 60))
                                 .font(.caption)

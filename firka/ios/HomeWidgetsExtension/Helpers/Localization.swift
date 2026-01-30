@@ -19,6 +19,16 @@ struct WidgetLocalization {
                 "en": "Tomorrow's timetable",
                 "de": "Stundenplan morgen"
             ],
+            "next_school_day_timetable": [
+                "hu": "Következő órarend (%@)",
+                "en": "Next timetable (%@)",
+                "de": "Nächster Stundenplan (%@)"
+            ],
+            "no_lessons_ahead": [
+                "hu": "Nincs óra a héten",
+                "en": "No lessons this week",
+                "de": "Kein Unterricht diese Woche"
+            ],
             "current_lesson": [
                 "hu": "Jelenlegi óra",
                 "en": "Current lesson",
@@ -200,7 +210,7 @@ struct WidgetLocalization {
                 "de": "Min"
             ],
             "hours_abbrev": [
-                "hu": "ó",
+                "hu": "óra",
                 "en": "h",
                 "de": "Std"
             ],
@@ -224,5 +234,35 @@ struct WidgetLocalization {
     func string(_ key: String, _ arg: Int) -> String {
         let template = string(key)
         return template.replacingOccurrences(of: "%d", with: "\(arg)")
+    }
+
+    static func formatShortDate(_ isoString: String?, locale: String = "hu") -> String {
+        guard let isoString = isoString else { return "" }
+
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime]
+
+        let shortFormatter = DateFormatter()
+        shortFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+        shortFormatter.locale = Locale(identifier: "en_US_POSIX")
+
+        let date: Date?
+        if let d = isoFormatter.date(from: isoString) {
+            date = d
+        } else if let d = shortFormatter.date(from: isoString) {
+            date = d
+        } else {
+            let simple = DateFormatter()
+            simple.dateFormat = "yyyy-MM-dd"
+            simple.locale = Locale(identifier: "en_US_POSIX")
+            date = simple.date(from: String(isoString.prefix(10)))
+        }
+
+        guard let date = date else { return "" }
+
+        let displayFormatter = DateFormatter()
+        displayFormatter.locale = Locale(identifier: locale == "de" ? "de_DE" : locale == "en" ? "en_US" : "hu_HU")
+        displayFormatter.dateFormat = locale == "hu" ? "MMM d." : "MMM d"
+        return displayFormatter.string(from: date)
     }
 }

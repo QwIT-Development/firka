@@ -82,6 +82,8 @@ class WidgetCacheHelper {
     required String theme,
     required List<Lesson> todayLessons,
     required List<Lesson> tomorrowLessons,
+    List<Lesson> nextSchoolDayLessons = const [],
+    DateTime? nextSchoolDayDate,
     required List<Grade> grades,
     required Map<String, double> subjectAverages,
     required double? overallAverage,
@@ -92,6 +94,8 @@ class WidgetCacheHelper {
       theme: theme,
       todayLessons: todayLessons,
       tomorrowLessons: tomorrowLessons,
+      nextSchoolDayLessons: nextSchoolDayLessons,
+      nextSchoolDayDate: nextSchoolDayDate,
       grades: grades,
       subjectAverages: subjectAverages,
       overallAverage: overallAverage,
@@ -160,6 +164,26 @@ class WidgetCacheHelper {
 
       debugPrint('iOS widget refresh: ${todayLessons.length} today lessons, ${tomorrowLessons.length} tomorrow lessons');
 
+      List<Lesson> nextSchoolDayLessons = [];
+      DateTime? nextSchoolDayDate;
+      if (tomorrowLessons.isEmpty) {
+        for (int i = 2; i <= 7; i++) {
+          final dayMidnight = todayMidnight.add(Duration(days: i));
+          final dayResponse = await client.getTimeTable(
+            dayMidnight,
+            dayMidnight.add(Duration(hours: 23, minutes: 59)),
+            forceCache: false,
+          );
+          final dayLessons = dayResponse.response ?? [];
+          if (dayLessons.isNotEmpty) {
+            nextSchoolDayLessons = dayLessons;
+            nextSchoolDayDate = dayMidnight;
+            debugPrint('iOS widget: Next school day found ${i} days ahead with ${dayLessons.length} lessons');
+            break;
+          }
+        }
+      }
+
       final gradesResponse = await client.getGrades(forceCache: false);
       final grades = gradesResponse.response ?? [];
 
@@ -199,6 +223,8 @@ class WidgetCacheHelper {
         theme: theme,
         todayLessons: todayLessons,
         tomorrowLessons: tomorrowLessons,
+        nextSchoolDayLessons: nextSchoolDayLessons,
+        nextSchoolDayDate: nextSchoolDayDate,
         grades: grades,
         subjectAverages: subjectAverages,
         overallAverage: overallAverage,
