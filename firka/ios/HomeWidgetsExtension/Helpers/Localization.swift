@@ -149,6 +149,11 @@ struct WidgetLocalization {
                 "en": "lesson",
                 "de": "Std"
             ],
+            "break_between": [
+                "hu": "Szünet",
+                "en": "Break",
+                "de": "Pause"
+            ],
             "in_minutes": [
                 "hu": "%d perc múlva",
                 "en": "in %d min",

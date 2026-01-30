@@ -109,7 +109,6 @@ class WidgetCacheHelper {
     if (!Platform.isIOS) return;
 
     try {
-      // Get locale
       final langIndex = (settings.group("settings").subGroup("application")["language"]
               as SettingsItemsRadio)
           .activeIndex;
@@ -125,10 +124,9 @@ class WidgetCacheHelper {
           locale = 'de';
           break;
         default:
-          locale = 'hu'; // Default to Hungarian
+          locale = 'hu';
       }
 
-      // Get theme
       final themeIndex = (settings.group("settings").subGroup("customization")["theme"]
               as SettingsItemsRadio)
           .activeIndex;
@@ -189,7 +187,6 @@ class WidgetCacheHelper {
 
       debugPrint('iOS widget refresh: ${grades.length} grades fetched (cached: ${gradesResponse.cached})');
 
-      // Calculate subject averages
       final Map<String, double> subjectAverages = {};
       final Set<String> subjectUids = {};
 
@@ -214,9 +211,7 @@ class WidgetCacheHelper {
           ? overallSum / validSubjectCount
           : null;
 
-      // Check for break (simplified - you might want to enhance this)
       WidgetBreakInfo? currentBreak;
-      // TODO: Add break detection if needed
 
       await updateIOSWidgets(
         locale: locale,

@@ -116,9 +116,19 @@ struct TimetableMediumView: View {
         return max(0, entry.lessons.count - 1)
     }
 
+    var hasActiveBreak: Bool {
+        let checkDate = entry.date
+        for i in 0..<entry.lessons.count - 1 {
+            if checkDate > entry.lessons[i].end && checkDate < entry.lessons[i + 1].start {
+                return true
+            }
+        }
+        return false
+    }
+
     var visibleLessons: [WidgetLesson] {
         let totalLessons = entry.lessons.count
-        let maxVisible = 4
+        let maxVisible = hasActiveBreak ? 3 : 4
 
         if totalLessons <= maxVisible {
             return Array(entry.lessons)
@@ -154,8 +164,17 @@ struct TimetableMediumView: View {
                     .widgetTextStyle(style, colors: nil, isPrimary: false)
 
                 Spacer(minLength: 0)
-                ForEach(visibleLessons) { lesson in
+                ForEach(Array(visibleLessons.enumerated()), id: \.element.id) { index, lesson in
                     LessonRow(lesson: lesson, isActive: isLessonActive(lesson), style: style, compact: true)
+
+                    if index < visibleLessons.count - 1 {
+                        let nextLesson = visibleLessons[index + 1]
+                        let isInBreak = entry.date > lesson.end && entry.date < nextLesson.start
+                        if isInBreak {
+                            let breakMinutes = Int(ceil(nextLesson.start.timeIntervalSince(entry.date) / 60))
+                            BreakIndicatorRow(minutesLeft: breakMinutes, localization: localization, style: style, compact: true)
+                        }
+                    }
                 }
                 Spacer(minLength: 0)
             }
@@ -176,6 +195,16 @@ struct TimetableLargeView: View {
     func isLessonActive(_ lesson: WidgetLesson) -> Bool {
         let checkDate = entry.date
         return checkDate >= lesson.start && checkDate <= lesson.end
+    }
+
+    var hasActiveBreak: Bool {
+        let checkDate = entry.date
+        for i in 0..<entry.lessons.count - 1 {
+            if checkDate > entry.lessons[i].end && checkDate < entry.lessons[i + 1].start {
+                return true
+            }
+        }
+        return false
     }
 
     var headerText: String {
@@ -199,13 +228,68 @@ struct TimetableLargeView: View {
                     .fontWeight(.semibold)
                     .widgetTextStyle(style, colors: nil)
 
-                ForEach(entry.lessons.prefix(7)) { lesson in
+                let maxLessons = hasActiveBreak ? 6 : 7
+                let lessonsToShow = Array(entry.lessons.prefix(maxLessons))
+                ForEach(Array(lessonsToShow.enumerated()), id: \.element.id) { index, lesson in
                     LessonRow(lesson: lesson, isActive: isLessonActive(lesson), style: style, showRoom: true)
+
+                    if index < lessonsToShow.count - 1 {
+                        let nextLesson = lessonsToShow[index + 1]
+                        let isInBreak = entry.date > lesson.end && entry.date < nextLesson.start
+                        if isInBreak {
+                            let breakMinutes = Int(ceil(nextLesson.start.timeIntervalSince(entry.date) / 60))
+                            BreakIndicatorRow(minutesLeft: breakMinutes, localization: localization, style: style)
+                        }
+                    }
                 }
             }
             .padding()
         }
         .clipped()
+    }
+}
+
+struct BreakIndicatorRow: View {
+    let minutesLeft: Int
+    let localization: WidgetLocalization
+    let style: WidgetStyleType
+    var compact: Bool = false
+    @Environment(\.colorScheme) var colorScheme
+
+    var liquidGlassPrimary: Color {
+        colorScheme == .dark ? .white : .black
+    }
+
+    var liquidGlassSecondary: Color {
+        colorScheme == .dark ? .white.opacity(0.7) : .black.opacity(0.6)
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text("–")
+                .font(.caption)
+                .fontWeight(.bold)
+                .frame(width: 24, height: 24)
+                .background(
+                    Circle()
+                        .fill(Color.green.opacity(0.3))
+                )
+                .foregroundColor(style == .liquidGlass ? liquidGlassPrimary : .primary)
+
+            Text(localization.string("break_between"))
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(style == .liquidGlass ? liquidGlassPrimary : .primary)
+
+            Spacer()
+
+            Text("\(minutesLeft) \(localization.string("minutes_abbrev"))")
+                .font(.caption)
+                .foregroundColor(style == .liquidGlass ? liquidGlassSecondary : .secondary)
+        }
+        .padding(.vertical, compact ? 2 : 4)
+        .padding(.horizontal, 8)
+        .currentLessonGlow(isActive: true)
     }
 }
 
