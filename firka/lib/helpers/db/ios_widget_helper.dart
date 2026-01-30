@@ -28,6 +28,8 @@ class IOSWidgetHelper {
     required String theme,
     required List<Lesson> todayLessons,
     required List<Lesson> tomorrowLessons,
+    List<Lesson> nextSchoolDayLessons = const [],
+    DateTime? nextSchoolDayDate,
     required List<Grade> grades,
     required Map<String, double> subjectAverages,
     required double? overallAverage,
@@ -53,6 +55,8 @@ class IOSWidgetHelper {
       'timetable': {
         'today': todayLessons.map((l) => _lessonToJson(l)).toList(),
         'tomorrow': tomorrowLessons.map((l) => _lessonToJson(l)).toList(),
+        'nextSchoolDay': nextSchoolDayLessons.map((l) => _lessonToJson(l)).toList(),
+        'nextSchoolDayDate': nextSchoolDayDate?.toIso8601String(),
         'currentBreak': currentBreak != null ? {
           'name': currentBreak.name,
           'nameKey': currentBreak.nameKey,

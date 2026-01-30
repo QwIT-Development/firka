@@ -34,12 +34,20 @@ struct TimetableInlineWidgetView: View {
         } else if let current = entry.currentLesson {
             let remaining = minutesRemaining(until: current.end)
             Text("\(current.subject.name) · \(remaining) \(localization.string("minutes_abbrev"))")
+        } else if entry.isNextSchoolDay {
+            if let first = entry.lessons.first {
+                let dateStr = WidgetLocalization.formatShortDate(entry.nextSchoolDayDateString, locale: localization.locale)
+                let lessonNum = first.lessonNumber ?? 1
+                Text("\(dateStr): \(lessonNum). \(first.subject.name)")
+            } else {
+                Text(localization.string("no_lessons_ahead"))
+            }
         } else if entry.isNextDay {
             if let first = entry.lessons.first {
                 let lessonNum = first.lessonNumber ?? 1
                 Text("\(localization.string("tomorrow")): \(lessonNum). \(first.subject.name)")
             } else {
-                Text(localization.string("no_lessons"))
+                Text(localization.string("no_lessons_ahead"))
             }
         } else if let next = entry.nextLesson {
             let until = minutesRemaining(until: next.start)
@@ -52,7 +60,7 @@ struct TimetableInlineWidgetView: View {
                 Text("→ \(next.subject.name) · \(until) \(localization.string("minutes_abbrev"))")
             }
         } else {
-            Text(localization.string("no_lessons"))
+            Text(localization.string("no_lessons_ahead"))
         }
     }
 

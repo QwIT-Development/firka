@@ -47,6 +47,13 @@ struct TimetableSmallView: View {
                     .widgetTextStyle(style, colors: nil, isPrimary: false)
 
                 if let lesson = displayLesson {
+                    if entry.isNextSchoolDay {
+                        let dateStr = WidgetLocalization.formatShortDate(entry.nextSchoolDayDateString, locale: localization.locale)
+                        Text(dateStr)
+                            .font(.caption2)
+                            .widgetTextStyle(style, colors: nil, isPrimary: false)
+                    }
+
                     Text(lesson.displayName)
                         .font(.subheadline)
                         .fontWeight(.semibold)
@@ -73,7 +80,7 @@ struct TimetableSmallView: View {
                                             (style == .liquidGlass ? liquidGlassSecondary : .secondary))
                     }
                 } else {
-                    Text(localization.string("no_lessons"))
+                    Text(localization.string("no_lessons_ahead"))
                         .font(.subheadline)
                         .widgetTextStyle(style, colors: nil, isPrimary: false)
                 }
@@ -125,12 +132,23 @@ struct TimetableMediumView: View {
         return Array(entry.lessons[startIndex..<endIndex])
     }
 
+    var headerText: String {
+        if entry.isNextSchoolDay {
+            let dateStr = WidgetLocalization.formatShortDate(entry.nextSchoolDayDateString, locale: localization.locale)
+            return localization.string("next_school_day_timetable", dateStr)
+        } else if entry.isNextDay {
+            return localization.string("tomorrow_timetable")
+        } else {
+            return localization.string("today_timetable")
+        }
+    }
+
     var body: some View {
         ZStack {
             WidgetBackground(style: style, colors: nil)
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(entry.isNextDay ? localization.string("tomorrow_timetable") : localization.string("today_timetable"))
+                Text(headerText)
                     .font(.caption)
                     .fontWeight(.semibold)
                     .widgetTextStyle(style, colors: nil, isPrimary: false)
@@ -160,12 +178,23 @@ struct TimetableLargeView: View {
         return checkDate >= lesson.start && checkDate <= lesson.end
     }
 
+    var headerText: String {
+        if entry.isNextSchoolDay {
+            let dateStr = WidgetLocalization.formatShortDate(entry.nextSchoolDayDateString, locale: localization.locale)
+            return localization.string("next_school_day_timetable", dateStr)
+        } else if entry.isNextDay {
+            return localization.string("tomorrow_timetable")
+        } else {
+            return localization.string("today_timetable")
+        }
+    }
+
     var body: some View {
         ZStack {
             WidgetBackground(style: style, colors: nil)
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(entry.isNextDay ? localization.string("tomorrow_timetable") : localization.string("today_timetable"))
+                Text(headerText)
                     .font(.headline)
                     .fontWeight(.semibold)
                     .widgetTextStyle(style, colors: nil)
