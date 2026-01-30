@@ -64,13 +64,16 @@ class WidgetCacheHelper {
 
     final start = now.subtract(Duration(days: 7));
     final end = now.add(Duration(days: 14));
-    final lessons = await client.getTimeTable(start, end);
+    final lessons = await client.getTimeTable(start, end, forceCache: false);
 
     final widgetFile = File(p.join(dataDir.path, "widget_state.json"));
 
     if (lessons.response != null) {
+      debugPrint('Android widget cache: ${lessons.response!.length} lessons (cached: ${lessons.cached})');
       widgetFile.writeAsString(
           jsonEncode(WidgetCacheHelper.toJson(style, lessons.response!)));
+    } else {
+      debugPrint('Android widget cache: No lessons to cache');
     }
   }
 
@@ -137,7 +140,6 @@ class WidgetCacheHelper {
           theme = isLightMode.value ? 'light' : 'dark';
       }
 
-      // Get today's and tomorrow's lessons
       final now = timeNow();
       final todayMidnight = DateTime(now.year, now.month, now.day);
       final tomorrowMidnight = todayMidnight.add(Duration(days: 1));
@@ -145,18 +147,23 @@ class WidgetCacheHelper {
       final todayResponse = await client.getTimeTable(
         todayMidnight,
         todayMidnight.add(Duration(hours: 23, minutes: 59)),
+        forceCache: false,
       );
       final tomorrowResponse = await client.getTimeTable(
         tomorrowMidnight,
         tomorrowMidnight.add(Duration(hours: 23, minutes: 59)),
+        forceCache: false,
       );
 
       final todayLessons = todayResponse.response ?? [];
       final tomorrowLessons = tomorrowResponse.response ?? [];
 
-      // Get grades
-      final gradesResponse = await client.getGrades();
+      debugPrint('iOS widget refresh: ${todayLessons.length} today lessons, ${tomorrowLessons.length} tomorrow lessons');
+
+      final gradesResponse = await client.getGrades(forceCache: false);
       final grades = gradesResponse.response ?? [];
+
+      debugPrint('iOS widget refresh: ${grades.length} grades fetched (cached: ${gradesResponse.cached})');
 
       // Calculate subject averages
       final Map<String, double> subjectAverages = {};

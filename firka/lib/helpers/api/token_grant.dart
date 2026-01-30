@@ -41,6 +41,8 @@ Future<TokenGrantResponse> getAccessToken(String code) async {
 }
 
 Future<TokenGrantResponse> extendToken(TokenModel model) async {
+  logger.info("Extending token for user: ${model.studentId}, institute: ${model.iss}");
+
   final headers = <String, String>{
     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
     "accept": "*/*",
@@ -60,16 +62,21 @@ Future<TokenGrantResponse> extendToken(TokenModel model) async {
 
     switch (response.statusCode) {
       case 200:
+        logger.info("Token extended successfully for user: ${model.studentId}");
         return TokenGrantResponse.fromJson(response.data);
       case 400:
+        logger.warning("Token refresh failed (400) - refresh token expired for user: ${model.studentId}");
         throw TokenExpiredException();
       case 401:
+        logger.warning("Token refresh failed (401) - invalid grant for user: ${model.studentId}");
         throw InvalidGrantException();
       default:
+        logger.severe("Token refresh failed with unexpected status: ${response.statusCode} for user: ${model.studentId}");
         throw Exception(
             "Failed to get access token, response code: ${response.statusCode}");
     }
   } catch (e) {
+    logger.severe("Token refresh exception for user: ${model.studentId}: $e");
     rethrow;
   }
 }
