@@ -1,0 +1,11 @@
+/* Siri Phrases - German */
+"Next lesson ${applicationName}" = "Nächste Stunde ${applicationName}";
+"What is my next lesson ${applicationName}" = "Was ist meine nächste Stunde ${applicationName}";
+"Closest lesson ${applicationName}" = "Nächste anstehende Stunde ${applicationName}";
+"When is my next lesson ${applicationName}" = "Wann ist meine nächste Stunde ${applicationName}";
+"Today's timetable ${applicationName}" = "Stundenplan heute ${applicationName}";
+"What lessons do I have today ${applicationName}" = "Welche Stunden habe ich heute ${applicationName}";
+"Closest timetable ${applicationName}" = "Nächster Stundenplan ${applicationName}";
+"When are my next lessons ${applicationName}" = "Wann sind meine nächsten Stunden ${applicationName}";
+"My average ${applicationName}" = "Mein Durchschnitt ${applicationName}";
+"What is my average ${applicationName}" = "Wie ist mein Durchschnitt ${applicationName}";

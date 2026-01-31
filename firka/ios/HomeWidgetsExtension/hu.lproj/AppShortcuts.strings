@@ -1,0 +1,11 @@
+/* Siri Phrases - Hungarian */
+"Next lesson ${applicationName}" = "Következő óra ${applicationName}";
+"What is my next lesson ${applicationName}" = "Mi a következő órám ${applicationName}";
+"Closest lesson ${applicationName}" = "Legközelebbi óra ${applicationName}";
+"When is my next lesson ${applicationName}" = "Mikor lesz órám ${applicationName}";
+"Today's timetable ${applicationName}" = "Mai órarend ${applicationName}";
+"What lessons do I have today ${applicationName}" = "Milyen óráim vannak ma ${applicationName}";
+"Closest timetable ${applicationName}" = "Legközelebbi órarend ${applicationName}";
+"When are my next lessons ${applicationName}" = "Mikor lesznek óráim ${applicationName}";
+"My average ${applicationName}" = "Átlagom ${applicationName}";
+"What is my average ${applicationName}" = "Mennyi az átlagom ${applicationName}";

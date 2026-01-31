@@ -142,6 +142,18 @@ struct TimetableProvider: AppIntentTimelineProvider {
         }
         entries.sort { $0.date < $1.date }
 
+        if isLockScreenWidget {
+            var refreshDate: Date
+            if let next = nextLesson {
+                refreshDate = next.start
+            } else if let current = currentLesson {
+                refreshDate = current.end.addingTimeInterval(1)
+            } else {
+                refreshDate = midnight
+            }
+            return Timeline(entries: entries, policy: .after(refreshDate))
+        }
+
         return Timeline(entries: entries, policy: .atEnd)
     }
 

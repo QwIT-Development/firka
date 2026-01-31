@@ -1,0 +1,7 @@
+/* Navigation Intent Titles (shared with HomeWidgetsExtension) */
+"control_home_title" = "Firka Home";
+"control_home_description" = "Open Firka home screen";
+"control_grades_title" = "Firka Grades";
+"control_grades_description" = "Open Firka grades";
+"control_timetable_title" = "Firka Timetable";
+"control_timetable_description" = "Open Firka timetable";

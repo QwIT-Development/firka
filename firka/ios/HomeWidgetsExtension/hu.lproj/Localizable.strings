@@ -31,3 +31,90 @@
 /* Subject Selection */
 "subjects_type" = "Tantárgyak";
 "no_subjects_available" = "Nincsenek tantárgyak";
+
+/* Control Widget Titles */
+"control_home_title" = "Firka Főoldal";
+"control_home_label" = "Főoldal";
+"control_home_display" = "Firka - Főoldal";
+"control_home_description" = "Firka app főoldal megnyitása";
+"control_grades_title" = "Firka Jegyek";
+"control_grades_label" = "Jegyek";
+"control_grades_display" = "Firka - Jegyek";
+"control_grades_description" = "Firka app jegyek megnyitása";
+"control_timetable_title" = "Firka Órarend";
+"control_timetable_label" = "Órarend";
+"control_timetable_display" = "Firka - Órarend";
+"control_timetable_description" = "Firka app órarend megnyitása";
+
+/* Shortcut Intent Titles & Descriptions */
+"shortcut_next_lesson_title" = "Következő óra";
+"shortcut_next_lesson_description" = "A következő óra adatai";
+"shortcut_closest_lesson_title" = "Legközelebbi óra";
+"shortcut_closest_lesson_description" = "A legközelebbi óra adatai (ma, holnap, vagy a következő tanítási nap)";
+"shortcut_today_timetable_title" = "Mai órarend";
+"shortcut_today_timetable_description" = "A mai nap teljes órarendje";
+"shortcut_tomorrow_timetable_title" = "Holnapi órarend";
+"shortcut_tomorrow_timetable_description" = "A holnapi nap órarendje";
+"shortcut_closest_timetable_title" = "Legközelebbi órarend";
+"shortcut_closest_timetable_description" = "A legközelebbi tanítási nap órarendje (ma, holnap, vagy a következő tanítási nap)";
+"shortcut_recent_grades_title" = "Legutóbbi jegyek";
+"shortcut_recent_grades_description" = "A legutóbbi jegyek listája";
+"shortcut_subject_average_title" = "Tantárgyi átlag";
+"shortcut_subject_average_description" = "Egy tantárgy átlaga";
+"shortcut_overall_average_title" = "Összesített átlag";
+"shortcut_overall_average_description" = "Az összesített tanulmányi átlag";
+
+/* Shortcut Parameters */
+"shortcut_param_count" = "Darabszám";
+"shortcut_param_subject" = "Tantárgy";
+
+/* Shortcut Phrases */
+"shortcut_phrase_next_lesson" = "Következő óra";
+"shortcut_phrase_next_lesson_question" = "Mi a következő órám";
+"shortcut_phrase_closest_lesson" = "Legközelebbi óra";
+"shortcut_phrase_closest_lesson_question" = "Mikor lesz órám";
+"shortcut_phrase_today_timetable" = "Mai órarend";
+"shortcut_phrase_today_timetable_question" = "Milyen óráim vannak ma";
+"shortcut_phrase_closest_timetable" = "Legközelebbi órarend";
+"shortcut_phrase_closest_timetable_question" = "Mikor lesznek óráim";
+"shortcut_phrase_overall_average" = "Átlagom";
+"shortcut_phrase_overall_average_question" = "Mennyi az átlagom";
+
+/* Shortcut Short Titles */
+"shortcut_short_next_lesson" = "Következő óra";
+"shortcut_short_closest_lesson" = "Legközelebbi óra";
+"shortcut_short_today_timetable" = "Mai órarend";
+"shortcut_short_closest_timetable" = "Legközelebbi órarend";
+"shortcut_short_overall_average" = "Átlagom";
+
+/* Shortcut Errors */
+"shortcut_error_no_data" = "Nincs elérhető adat. Nyisd meg a Firka appot az adatok frissítéséhez.";
+"shortcut_error_no_upcoming_lesson" = "Ma nincs több órád.";
+"shortcut_error_no_lessons_today" = "Ma nincs órád.";
+"shortcut_error_no_lessons_tomorrow" = "Holnap nincs órád.";
+"shortcut_error_subject_not_found" = "A tantárgy nem található.";
+
+/* Entity Type Names */
+"entity_lesson" = "Óra";
+"entity_grade" = "Jegy";
+"entity_average" = "Átlag";
+
+/* Entity Property Names */
+"entity_prop_name" = "Név";
+"entity_prop_teacher" = "Tanár";
+"entity_prop_room" = "Terem";
+"entity_prop_start_time" = "Kezdés";
+"entity_prop_end_time" = "Vége";
+"entity_prop_lesson_number" = "Óraszám";
+"entity_prop_cancelled" = "Elmarad";
+"entity_prop_substitution" = "Helyettesítés";
+"entity_prop_theme" = "Téma";
+"entity_prop_subject" = "Tantárgy";
+"entity_prop_value" = "Érték";
+"entity_prop_grade" = "Jegy";
+"entity_prop_topic" = "Téma";
+"entity_prop_type" = "Típus";
+"entity_prop_date" = "Dátum";
+"entity_prop_weight" = "Súly";
+"entity_prop_average" = "Átlag";
+"entity_prop_grade_count" = "Jegyek száma";
