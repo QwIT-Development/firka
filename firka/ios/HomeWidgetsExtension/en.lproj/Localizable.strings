@@ -31,3 +31,90 @@
 /* Subject Selection */
 "subjects_type" = "Subjects";
 "no_subjects_available" = "No subjects available";
+
+/* Control Widget Titles */
+"control_home_title" = "Firka Home";
+"control_home_label" = "Home";
+"control_home_display" = "Firka - Home";
+"control_home_description" = "Open Firka home screen";
+"control_grades_title" = "Firka Grades";
+"control_grades_label" = "Grades";
+"control_grades_display" = "Firka - Grades";
+"control_grades_description" = "Open Firka grades";
+"control_timetable_title" = "Firka Timetable";
+"control_timetable_label" = "Timetable";
+"control_timetable_display" = "Firka - Timetable";
+"control_timetable_description" = "Open Firka timetable";
+
+/* Shortcut Intent Titles & Descriptions */
+"shortcut_next_lesson_title" = "Next lesson";
+"shortcut_next_lesson_description" = "Get the next lesson details";
+"shortcut_closest_lesson_title" = "Closest lesson";
+"shortcut_closest_lesson_description" = "Get the closest lesson (today, tomorrow, or next school day)";
+"shortcut_today_timetable_title" = "Today's timetable";
+"shortcut_today_timetable_description" = "Get today's full timetable";
+"shortcut_tomorrow_timetable_title" = "Tomorrow's timetable";
+"shortcut_tomorrow_timetable_description" = "Get tomorrow's timetable";
+"shortcut_closest_timetable_title" = "Closest timetable";
+"shortcut_closest_timetable_description" = "Get the closest school day's timetable (today, tomorrow, or next school day)";
+"shortcut_recent_grades_title" = "Recent grades";
+"shortcut_recent_grades_description" = "Get the most recent grades";
+"shortcut_subject_average_title" = "Subject average";
+"shortcut_subject_average_description" = "Get the average for a subject";
+"shortcut_overall_average_title" = "Overall average";
+"shortcut_overall_average_description" = "Get the overall academic average";
+
+/* Shortcut Parameters */
+"shortcut_param_count" = "Count";
+"shortcut_param_subject" = "Subject";
+
+/* Shortcut Phrases */
+"shortcut_phrase_next_lesson" = "Next lesson";
+"shortcut_phrase_next_lesson_question" = "What is my next lesson";
+"shortcut_phrase_closest_lesson" = "Closest lesson";
+"shortcut_phrase_closest_lesson_question" = "When is my next lesson";
+"shortcut_phrase_today_timetable" = "Today's timetable";
+"shortcut_phrase_today_timetable_question" = "What lessons do I have today";
+"shortcut_phrase_closest_timetable" = "Closest timetable";
+"shortcut_phrase_closest_timetable_question" = "When are my next lessons";
+"shortcut_phrase_overall_average" = "My average";
+"shortcut_phrase_overall_average_question" = "What is my average";
+
+/* Shortcut Short Titles */
+"shortcut_short_next_lesson" = "Next lesson";
+"shortcut_short_closest_lesson" = "Closest lesson";
+"shortcut_short_today_timetable" = "Today's timetable";
+"shortcut_short_closest_timetable" = "Closest timetable";
+"shortcut_short_overall_average" = "My average";
+
+/* Shortcut Errors */
+"shortcut_error_no_data" = "No data available. Open the Firka app to refresh.";
+"shortcut_error_no_upcoming_lesson" = "No more lessons today.";
+"shortcut_error_no_lessons_today" = "No lessons today.";
+"shortcut_error_no_lessons_tomorrow" = "No lessons tomorrow.";
+"shortcut_error_subject_not_found" = "Subject not found.";
+
+/* Entity Type Names */
+"entity_lesson" = "Lesson";
+"entity_grade" = "Grade";
+"entity_average" = "Average";
+
+/* Entity Property Names */
+"entity_prop_name" = "Name";
+"entity_prop_teacher" = "Teacher";
+"entity_prop_room" = "Room";
+"entity_prop_start_time" = "Start time";
+"entity_prop_end_time" = "End time";
+"entity_prop_lesson_number" = "Lesson number";
+"entity_prop_cancelled" = "Cancelled";
+"entity_prop_substitution" = "Substitution";
+"entity_prop_theme" = "Theme";
+"entity_prop_subject" = "Subject";
+"entity_prop_value" = "Value";
+"entity_prop_grade" = "Grade";
+"entity_prop_topic" = "Topic";
+"entity_prop_type" = "Type";
+"entity_prop_date" = "Date";
+"entity_prop_weight" = "Weight";
+"entity_prop_average" = "Average";
+"entity_prop_grade_count" = "Grade count";

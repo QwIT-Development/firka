@@ -31,3 +31,90 @@
 /* Subject Selection */
 "subjects_type" = "Fächer";
 "no_subjects_available" = "Keine Fächer verfügbar";
+
+/* Control Widget Titles */
+"control_home_title" = "Firka Startseite";
+"control_home_label" = "Startseite";
+"control_home_display" = "Firka - Startseite";
+"control_home_description" = "Firka Startseite öffnen";
+"control_grades_title" = "Firka Noten";
+"control_grades_label" = "Noten";
+"control_grades_display" = "Firka - Noten";
+"control_grades_description" = "Firka Noten öffnen";
+"control_timetable_title" = "Firka Stundenplan";
+"control_timetable_label" = "Stundenplan";
+"control_timetable_display" = "Firka - Stundenplan";
+"control_timetable_description" = "Firka Stundenplan öffnen";
+
+/* Shortcut Intent Titles & Descriptions */
+"shortcut_next_lesson_title" = "Nächste Stunde";
+"shortcut_next_lesson_description" = "Details zur nächsten Stunde";
+"shortcut_closest_lesson_title" = "Nächste anstehende Stunde";
+"shortcut_closest_lesson_description" = "Nächste anstehende Stunde (heute, morgen oder nächster Schultag)";
+"shortcut_today_timetable_title" = "Stundenplan heute";
+"shortcut_today_timetable_description" = "Der vollständige Stundenplan für heute";
+"shortcut_tomorrow_timetable_title" = "Stundenplan morgen";
+"shortcut_tomorrow_timetable_description" = "Der Stundenplan für morgen";
+"shortcut_closest_timetable_title" = "Nächster Stundenplan";
+"shortcut_closest_timetable_description" = "Stundenplan des nächsten Schultags (heute, morgen oder nächster Schultag)";
+"shortcut_recent_grades_title" = "Letzte Noten";
+"shortcut_recent_grades_description" = "Die letzten Noten";
+"shortcut_subject_average_title" = "Fachdurchschnitt";
+"shortcut_subject_average_description" = "Durchschnitt eines Fachs";
+"shortcut_overall_average_title" = "Gesamtdurchschnitt";
+"shortcut_overall_average_description" = "Der Gesamtdurchschnitt";
+
+/* Shortcut Parameters */
+"shortcut_param_count" = "Anzahl";
+"shortcut_param_subject" = "Fach";
+
+/* Shortcut Phrases */
+"shortcut_phrase_next_lesson" = "Nächste Stunde";
+"shortcut_phrase_next_lesson_question" = "Was ist meine nächste Stunde";
+"shortcut_phrase_closest_lesson" = "Nächste anstehende Stunde";
+"shortcut_phrase_closest_lesson_question" = "Wann ist meine nächste Stunde";
+"shortcut_phrase_today_timetable" = "Stundenplan heute";
+"shortcut_phrase_today_timetable_question" = "Welche Stunden habe ich heute";
+"shortcut_phrase_closest_timetable" = "Nächster Stundenplan";
+"shortcut_phrase_closest_timetable_question" = "Wann sind meine nächsten Stunden";
+"shortcut_phrase_overall_average" = "Mein Durchschnitt";
+"shortcut_phrase_overall_average_question" = "Wie ist mein Durchschnitt";
+
+/* Shortcut Short Titles */
+"shortcut_short_next_lesson" = "Nächste Stunde";
+"shortcut_short_closest_lesson" = "Nächste anstehende";
+"shortcut_short_today_timetable" = "Stundenplan heute";
+"shortcut_short_closest_timetable" = "Nächster Stundenplan";
+"shortcut_short_overall_average" = "Mein Durchschnitt";
+
+/* Shortcut Errors */
+"shortcut_error_no_data" = "Keine Daten verfügbar. Öffne die Firka App zum Aktualisieren.";
+"shortcut_error_no_upcoming_lesson" = "Heute keine weiteren Stunden.";
+"shortcut_error_no_lessons_today" = "Heute keine Stunden.";
+"shortcut_error_no_lessons_tomorrow" = "Morgen keine Stunden.";
+"shortcut_error_subject_not_found" = "Fach nicht gefunden.";
+
+/* Entity Type Names */
+"entity_lesson" = "Stunde";
+"entity_grade" = "Note";
+"entity_average" = "Durchschnitt";
+
+/* Entity Property Names */
+"entity_prop_name" = "Name";
+"entity_prop_teacher" = "Lehrer";
+"entity_prop_room" = "Raum";
+"entity_prop_start_time" = "Startzeit";
+"entity_prop_end_time" = "Endzeit";
+"entity_prop_lesson_number" = "Stundennummer";
+"entity_prop_cancelled" = "Entfällt";
+"entity_prop_substitution" = "Vertretung";
+"entity_prop_theme" = "Thema";
+"entity_prop_subject" = "Fach";
+"entity_prop_value" = "Wert";
+"entity_prop_grade" = "Note";
+"entity_prop_topic" = "Thema";
+"entity_prop_type" = "Typ";
+"entity_prop_date" = "Datum";
+"entity_prop_weight" = "Gewicht";
+"entity_prop_average" = "Durchschnitt";
+"entity_prop_grade_count" = "Notenanzahl";
