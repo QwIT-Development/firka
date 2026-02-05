@@ -182,16 +182,16 @@ struct ReauthRequiredView: View {
         }
 
         if TokenManager.shared.isTokenExpired() {
-            print("[Watch] Watch token is expired - attempting to refresh...")
+            print("[Watch] Watch token is expired - attempting to refresh with retries...")
             Task {
                 do {
-                    _ = try await TokenManager.shared.refreshToken()
+                    _ = try await KretaAPIClient.shared.getValidToken()
                     print("[Watch] Token refresh succeeded! Now sending to iPhone...")
                     await MainActor.run {
                         self.sendRefreshedTokenToiPhone()
                     }
                 } catch {
-                    print("[Watch] Token refresh failed: \(error) - both devices need reauth")
+                    print("[Watch] Token refresh failed after all retries: \(error)")
                     await MainActor.run {
                         self.syncStatus = .failed
                     }
