@@ -16,6 +16,7 @@ import '../../../main.dart';
 import '../../db/models/token_model.dart';
 import '../../db/util.dart';
 import '../../debug_helper.dart';
+import '../../watch_sync_helper.dart';
 import '../consts.dart';
 import '../exceptions/token.dart';
 import '../model/grade.dart';
@@ -74,9 +75,47 @@ class KretaClient {
     debugPrint('[KretaClient] Reauth flag cleared');
   }
 
-  static void _setReauthFlag() {
+  static Future<void> _setReauthFlag() async {
+    if (Platform.isIOS && !needsReauth) {
+      debugPrint('[KretaClient] Token expired, trying to recover from Watch first...');
+      final recovered = await _tryRecoverFromWatch();
+      if (recovered) {
+        debugPrint('[KretaClient] Successfully recovered token from Watch, reauth not needed');
+        return;
+      }
+      debugPrint('[KretaClient] Could not recover from Watch, setting reauth flag');
+    }
+
     needsReauth = true;
     reauthStateNotifier.value = true;
+  }
+
+  static Future<bool> _tryRecoverFromWatch() async {
+    if (!Platform.isIOS || !initDone) return false;
+
+    try {
+      await WatchSyncHelper.syncTokenFromWatch(
+        isar: initData.isar,
+        tokens: initData.tokens,
+        client: initData.client,
+      );
+
+      final tokens = await initData.isar.tokenModels.where().findAll();
+      if (tokens.isEmpty) return false;
+
+      final token = tokens.first;
+      if (token.expiryDate == null) return false;
+
+      if (token.expiryDate!.isAfter(DateTime.now().add(const Duration(minutes: 1)))) {
+        debugPrint('[KretaClient] Watch provided fresh token, expiry: ${token.expiryDate}');
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      debugPrint('[KretaClient] Failed to recover from Watch: $e');
+      return false;
+    }
   }
 
   KretaClient(this.model, this.isar);
@@ -120,8 +159,8 @@ class KretaClient {
       } catch (e) {
         logger.warning("[Proactive] Token refresh failed: $e");
         if (_isTokenExpired(e)) {
-          _setReauthFlag();
-          if (Platform.isIOS) {
+          await _setReauthFlag();
+          if (Platform.isIOS && needsReauth) {
             try {
               _watchChannel.invokeMethod('notifyReauthRequired');
             } catch (e) {
@@ -281,10 +320,10 @@ class KretaClient {
       }
     } catch (ex) {
       if (_isTokenExpired(ex)) {
-        _setReauthFlag();
+        await _setReauthFlag();
         logger.warning("Token expired, setting needsReauth flag");
 
-        if (Platform.isIOS) {
+        if (Platform.isIOS && needsReauth) {
           try {
             _watchChannel.invokeMethod('notifyReauthRequired');
           } catch (e) {
@@ -573,7 +612,7 @@ class KretaClient {
       }
     } catch (ex) {
       if (_isTokenExpired(ex)) {
-        _setReauthFlag();
+        await _setReauthFlag();
         logger.warning("Token expired in timed request, setting needsReauth flag");
       }
 
