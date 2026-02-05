@@ -1,4 +1,4 @@
-mport SwiftUI
+import SwiftUI
 
 struct LessonCard: View {
     let lesson: WidgetLesson
