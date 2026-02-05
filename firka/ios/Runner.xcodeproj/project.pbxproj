@@ -3,11 +3,10 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AA00000100000005AABBCC05 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA00000100000004AABBCC04 /* Localizable.strings */; };
 		14578EED4EA309B337AB389E /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A749415A687CBFC3F46FA876 /* Pods_RunnerTests.framework */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		213F8C0F6B5418B02DE14204 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 035E9CCBCC6585D0F5639031 /* Pods_Runner.framework */; };
@@ -18,13 +17,50 @@
 		4F30C7692E8FBF9D008BB46C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F30C7682E8FBF9D008BB46C /* SwiftUI.framework */; };
 		4F30C7782E8FBF9F008BB46C /* LiveActivityWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4F30C7652E8FBF9D008BB46C /* LiveActivityWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4F45A1752F27FA3C0020E6F1 /* HomeWidgetMethodChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F45A1732F27FA3C0020E6F1 /* HomeWidgetMethodChannel.swift */; };
+		4F5965F82F2F0C1600A3DB03 /* WatchSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5965F72F2F0C1600A3DB03 /* WatchSessionManager.swift */; };
+		4F5965FE2F2F0EAF00A3DB03 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F30C7662E8FBF9D008BB46C /* WidgetKit.framework */; };
+		4F5965FF2F2F0EAF00A3DB03 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F30C7682E8FBF9D008BB46C /* SwiftUI.framework */; };
+		4F59660F2F2F0F3B00A3DB03 /* SeasonalIconHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701CE2F2EC1AA00B79171 /* SeasonalIconHelper.swift */; };
+		4F5966102F2F0F4100A3DB03 /* Average.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D02F2EC1AA00B79171 /* Average.swift */; };
+		4F5966112F2F0F4500A3DB03 /* Grade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D12F2EC1AA00B79171 /* Grade.swift */; };
+		4F5966122F2F0F4900A3DB03 /* Lesson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D22F2EC1AA00B79171 /* Lesson.swift */; };
+		4F5966132F2F0F4C00A3DB03 /* Subject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D32F2EC1AA00B79171 /* Subject.swift */; };
+		4F5966142F2F0F5100A3DB03 /* WidgetColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D42F2EC1AA00B79171 /* WidgetColors.swift */; };
+		4F5966152F2F0F5500A3DB03 /* WidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D52F2EC1AA00B79171 /* WidgetData.swift */; };
+		4F5966172F2F1BBF00A3DB03 /* FirkaWatchComplicationsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4F5965FD2F2F0EAF00A3DB03 /* FirkaWatchComplicationsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4F7701D82F2EC1AA00B79171 /* Grade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D12F2EC1AA00B79171 /* Grade.swift */; };
+		4F7701D92F2EC1AA00B79171 /* WidgetColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D42F2EC1AA00B79171 /* WidgetColors.swift */; };
+		4F7701DA2F2EC1AA00B79171 /* Average.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D02F2EC1AA00B79171 /* Average.swift */; };
+		4F7701DB2F2EC1AA00B79171 /* SeasonalIconHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701CE2F2EC1AA00B79171 /* SeasonalIconHelper.swift */; };
+		4F7701DC2F2EC1AA00B79171 /* Lesson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D22F2EC1AA00B79171 /* Lesson.swift */; };
+		4F7701DD2F2EC1AA00B79171 /* Subject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D32F2EC1AA00B79171 /* Subject.swift */; };
+		4F7701DE2F2EC1AA00B79171 /* WidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D52F2EC1AA00B79171 /* WidgetData.swift */; };
+		4F7701DF2F2EC1AA00B79171 /* Grade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D12F2EC1AA00B79171 /* Grade.swift */; };
+		4F7701E02F2EC1AA00B79171 /* WidgetColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D42F2EC1AA00B79171 /* WidgetColors.swift */; };
+		4F7701E12F2EC1AA00B79171 /* Average.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D02F2EC1AA00B79171 /* Average.swift */; };
+		4F7701E22F2EC1AA00B79171 /* SeasonalIconHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701CE2F2EC1AA00B79171 /* SeasonalIconHelper.swift */; };
+		4F7701E32F2EC1AA00B79171 /* Lesson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D22F2EC1AA00B79171 /* Lesson.swift */; };
+		4F7701E42F2EC1AA00B79171 /* Subject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D32F2EC1AA00B79171 /* Subject.swift */; };
+		4F7701E52F2EC1AA00B79171 /* WidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D52F2EC1AA00B79171 /* WidgetData.swift */; };
+		4F7701E62F2EC1AA00B79171 /* Grade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D12F2EC1AA00B79171 /* Grade.swift */; };
+		4F7701E72F2EC1AA00B79171 /* WidgetColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D42F2EC1AA00B79171 /* WidgetColors.swift */; };
+		4F7701E82F2EC1AA00B79171 /* Average.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D02F2EC1AA00B79171 /* Average.swift */; };
+		4F7701E92F2EC1AA00B79171 /* SeasonalIconHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701CE2F2EC1AA00B79171 /* SeasonalIconHelper.swift */; };
+		4F7701EA2F2EC1AA00B79171 /* Lesson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D22F2EC1AA00B79171 /* Lesson.swift */; };
+		4F7701EB2F2EC1AA00B79171 /* Subject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D32F2EC1AA00B79171 /* Subject.swift */; };
+		4F7701EC2F2EC1AA00B79171 /* WidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701D52F2EC1AA00B79171 /* WidgetData.swift */; };
+		4F7701EF2F2EC2F500B79171 /* TokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701EE2F2EC2F500B79171 /* TokenManager.swift */; };
+		4F7701F02F2EC2F500B79171 /* KretaAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7701ED2F2EC2F500B79171 /* KretaAPIClient.swift */; };
+		4FCB030D2F330F3B00418E63 /* KretaAPIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCB030C2F330F3B00418E63 /* KretaAPIModels.swift */; };
 		4FE64E342F27B07A006F9205 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F30C7662E8FBF9D008BB46C /* WidgetKit.framework */; };
 		4FE64E352F27B07A006F9205 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F30C7682E8FBF9D008BB46C /* SwiftUI.framework */; };
 		4FE64E422F27B07B006F9205 /* HomeWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4FE64E332F27B079006F9205 /* HomeWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4FF81B9A2F2EB4C300E95BA0 /* FirkaWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 4FF81B7A2F2EB4C100E95BA0 /* FirkaWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		AA00000100000005AABBCC05 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA00000100000004AABBCC04 /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,12 +78,40 @@
 			remoteGlobalIDString = 4F30C7642E8FBF9D008BB46C;
 			remoteInfo = TimetableWidgetExtension;
 		};
+		4F5966182F2F1BBF00A3DB03 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4F5965FC2F2F0EAF00A3DB03;
+			remoteInfo = FirkaWatchComplicationsExtension;
+		};
+		4F59661B2F2F1BD900A3DB03 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4F5965FC2F2F0EAF00A3DB03;
+			remoteInfo = FirkaWatchComplicationsExtension;
+		};
+		4F59661D2F2F1BE700A3DB03 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4F5965FC2F2F0EAF00A3DB03;
+			remoteInfo = FirkaWatchComplicationsExtension;
+		};
 		4FE64E402F27B07B006F9205 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 4FE64E322F27B079006F9205;
 			remoteInfo = HomeWidgetsExtensionExtension;
+		};
+		4FF81B982F2EB4C300E95BA0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4FF81B792F2EB4C100E95BA0;
+			remoteInfo = "FirkaWatch Watch App";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -62,6 +126,28 @@
 				4FE64E422F27B07B006F9205 /* HomeWidgetsExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F59661A2F2F1BBF00A3DB03 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4F5966172F2F1BBF00A3DB03 /* FirkaWatchComplicationsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4FF81B9B2F2EB4C300E95BA0 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				4FF81B9A2F2EB4C300E95BA0 /* FirkaWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
@@ -92,9 +178,23 @@
 		4F30C7662E8FBF9D008BB46C /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		4F30C7682E8FBF9D008BB46C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		4F45A1732F27FA3C0020E6F1 /* HomeWidgetMethodChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeWidgetMethodChannel.swift; sourceTree = "<group>"; };
+		4F5965F72F2F0C1600A3DB03 /* WatchSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSessionManager.swift; sourceTree = "<group>"; };
+		4F5965FD2F2F0EAF00A3DB03 /* FirkaWatchComplicationsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FirkaWatchComplicationsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F5966162F2F0F6500A3DB03 /* FirkaWatchComplicationsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FirkaWatchComplicationsExtension.entitlements; sourceTree = "<group>"; };
+		4F7701CE2F2EC1AA00B79171 /* SeasonalIconHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonalIconHelper.swift; sourceTree = "<group>"; };
+		4F7701D02F2EC1AA00B79171 /* Average.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Average.swift; sourceTree = "<group>"; };
+		4F7701D12F2EC1AA00B79171 /* Grade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grade.swift; sourceTree = "<group>"; };
+		4F7701D22F2EC1AA00B79171 /* Lesson.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lesson.swift; sourceTree = "<group>"; };
+		4F7701D32F2EC1AA00B79171 /* Subject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Subject.swift; sourceTree = "<group>"; };
+		4F7701D42F2EC1AA00B79171 /* WidgetColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetColors.swift; sourceTree = "<group>"; };
+		4F7701D52F2EC1AA00B79171 /* WidgetData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetData.swift; sourceTree = "<group>"; };
+		4F7701ED2F2EC2F500B79171 /* KretaAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KretaAPIClient.swift; sourceTree = "<group>"; };
+		4F7701EE2F2EC2F500B79171 /* TokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenManager.swift; sourceTree = "<group>"; };
 		4F959B792F289CA600FF7F03 /* LiveActivityWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LiveActivityWidget.entitlements; sourceTree = "<group>"; };
 		4F959B9C2F289CA600FF7F03 /* HomeWidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HomeWidgetsExtension.entitlements; sourceTree = "<group>"; };
+		4FCB030C2F330F3B00418E63 /* KretaAPIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KretaAPIModels.swift; sourceTree = "<group>"; };
 		4FE64E332F27B079006F9205 /* HomeWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HomeWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4FF81B7A2F2EB4C100E95BA0 /* FirkaWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "FirkaWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
@@ -107,37 +207,44 @@
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A749415A687CBFC3F46FA876 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		AB2E15171B6907C52E8C2B42 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
-		AE756C46C544099A30412EAF /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
-		EBD040A65B2746AF6A3D5C40 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		AA00000100000001AABBCC01 /* hu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hu; path = hu.lproj/Localizable.strings; sourceTree = "<group>"; };
 		AA00000100000002AABBCC02 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		AA00000100000003AABBCC03 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AB2E15171B6907C52E8C2B42 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
+		AE756C46C544099A30412EAF /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
+		EBD040A65B2746AF6A3D5C40 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		4F0EA0512F2BD2A2003CC89E /* Exceptions for "HomeWidgetsExtension" folder in "Runner" target */ = {
+		4F0EA0512F2BD2A2003CC89E /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Controls/AppControls.swift,
 			);
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 		};
-		4F4E70D02EF565FF00C90AD1 /* Exceptions for "LiveActivityWidget" folder in "Runner" target */ = {
+		4F4E70D02EF565FF00C90AD1 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				ActivityAttributes.swift,
 			);
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 		};
-		4F6C1D3E2ECD3FBD00F819D7 /* Exceptions for "LiveActivityWidget" folder in "LiveActivityWidget" target */ = {
+		4F5966082F2F0EB100A3DB03 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 4F5965FC2F2F0EAF00A3DB03 /* FirkaWatchComplicationsExtension */;
+		};
+		4F6C1D3E2ECD3FBD00F819D7 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 4F30C7642E8FBF9D008BB46C /* LiveActivityWidget */;
 		};
-		4FE64E472F27B07B006F9205 /* Exceptions for "HomeWidgetsExtension" folder in "HomeWidgetsExtension" target */ = {
+		4FE64E472F27B07B006F9205 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -147,32 +254,10 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		4F30C76A2E8FBF9D008BB46C /* LiveActivityWidget */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				4F4E70D02EF565FF00C90AD1 /* Exceptions for "LiveActivityWidget" folder in "Runner" target */,
-				4F6C1D3E2ECD3FBD00F819D7 /* Exceptions for "LiveActivityWidget" folder in "LiveActivityWidget" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = LiveActivityWidget;
-			sourceTree = "<group>";
-		};
-		4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				4F0EA0512F2BD2A2003CC89E /* Exceptions for "HomeWidgetsExtension" folder in "Runner" target */,
-				4FE64E472F27B07B006F9205 /* Exceptions for "HomeWidgetsExtension" folder in "HomeWidgetsExtension" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = HomeWidgetsExtension;
-			sourceTree = "<group>";
-		};
+		4F30C76A2E8FBF9D008BB46C /* LiveActivityWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (4F4E70D02EF565FF00C90AD1 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 4F6C1D3E2ECD3FBD00F819D7 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = LiveActivityWidget; sourceTree = "<group>"; };
+		4F5966002F2F0EAF00A3DB03 /* FirkaWatchComplications */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (4F5966082F2F0EB100A3DB03 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = FirkaWatchComplications; sourceTree = "<group>"; };
+		4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (4F0EA0512F2BD2A2003CC89E /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 4FE64E472F27B07B006F9205 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = HomeWidgetsExtension; sourceTree = "<group>"; };
+		4FF81B7B2F2EB4C100E95BA0 /* FirkaWatch Watch App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "FirkaWatch Watch App"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -185,12 +270,28 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4F5965FA2F2F0EAF00A3DB03 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F5965FF2F2F0EAF00A3DB03 /* SwiftUI.framework in Frameworks */,
+				4F5965FE2F2F0EAF00A3DB03 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4FE64E302F27B079006F9205 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				4FE64E352F27B07A006F9205 /* SwiftUI.framework in Frameworks */,
 				4FE64E342F27B07A006F9205 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4FF81B772F2EB4C100E95BA0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,6 +333,47 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		4F7701CD2F2EC1AA00B79171 /* API */ = {
+			isa = PBXGroup;
+			children = (
+				4F7701ED2F2EC2F500B79171 /* KretaAPIClient.swift */,
+				4F7701EE2F2EC2F500B79171 /* TokenManager.swift */,
+				4FCB030C2F330F3B00418E63 /* KretaAPIModels.swift */,
+			);
+			path = API;
+			sourceTree = "<group>";
+		};
+		4F7701CF2F2EC1AA00B79171 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				4F7701CE2F2EC1AA00B79171 /* SeasonalIconHelper.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		4F7701D62F2EC1AA00B79171 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				4F7701D02F2EC1AA00B79171 /* Average.swift */,
+				4F7701D12F2EC1AA00B79171 /* Grade.swift */,
+				4F7701D22F2EC1AA00B79171 /* Lesson.swift */,
+				4F7701D32F2EC1AA00B79171 /* Subject.swift */,
+				4F7701D42F2EC1AA00B79171 /* WidgetColors.swift */,
+				4F7701D52F2EC1AA00B79171 /* WidgetData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		4F7701D72F2EC1AA00B79171 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				4F7701CD2F2EC1AA00B79171 /* API */,
+				4F7701CF2F2EC1AA00B79171 /* Helpers */,
+				4F7701D62F2EC1AA00B79171 /* Models */,
+			);
+			path = Shared;
+			sourceTree = SOURCE_ROOT;
+		};
 		52B477EA0F4B63DC7CE4BA83 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -260,12 +402,15 @@
 		97C146E51CF9000F007C117D = {
 			isa = PBXGroup;
 			children = (
+				4F5966162F2F0F6500A3DB03 /* FirkaWatchComplicationsExtension.entitlements */,
 				4F959B792F289CA600FF7F03 /* LiveActivityWidget.entitlements */,
 				4F959B9C2F289CA600FF7F03 /* HomeWidgetsExtension.entitlements */,
 				9740EEB11CF90186004384FC /* Flutter */,
 				97C146F01CF9000F007C117D /* Runner */,
 				4F30C76A2E8FBF9D008BB46C /* LiveActivityWidget */,
 				4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */,
+				4FF81B7B2F2EB4C100E95BA0 /* FirkaWatch Watch App */,
+				4F5966002F2F0EAF00A3DB03 /* FirkaWatchComplications */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
 				52B477EA0F4B63DC7CE4BA83 /* Pods */,
@@ -280,6 +425,8 @@
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
 				4F30C7652E8FBF9D008BB46C /* LiveActivityWidget.appex */,
 				4FE64E332F27B079006F9205 /* HomeWidgetsExtension.appex */,
+				4FF81B7A2F2EB4C100E95BA0 /* FirkaWatch Watch App.app */,
+				4F5965FD2F2F0EAF00A3DB03 /* FirkaWatchComplicationsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -287,6 +434,8 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				4F5965F72F2F0C1600A3DB03 /* WatchSessionManager.swift */,
+				4F7701D72F2EC1AA00B79171 /* Shared */,
 				4F25FCBD2EB1790E0060DAAA /* Runner.entitlements */,
 				AA00000100000004AABBCC04 /* Localizable.strings */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
@@ -345,6 +494,26 @@
 			productReference = 4F30C7652E8FBF9D008BB46C /* LiveActivityWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		4F5965FC2F2F0EAF00A3DB03 /* FirkaWatchComplicationsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4F5966092F2F0EB100A3DB03 /* Build configuration list for PBXNativeTarget "FirkaWatchComplicationsExtension" */;
+			buildPhases = (
+				4F5965F92F2F0EAF00A3DB03 /* Sources */,
+				4F5965FA2F2F0EAF00A3DB03 /* Frameworks */,
+				4F5965FB2F2F0EAF00A3DB03 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4F5966002F2F0EAF00A3DB03 /* FirkaWatchComplications */,
+			);
+			name = FirkaWatchComplicationsExtension;
+			productName = FirkaWatchComplicationsExtension;
+			productReference = 4F5965FD2F2F0EAF00A3DB03 /* FirkaWatchComplicationsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		4FE64E322F27B079006F9205 /* HomeWidgetsExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4FE64E462F27B07B006F9205 /* Build configuration list for PBXNativeTarget "HomeWidgetsExtension" */;
@@ -365,6 +534,30 @@
 			productReference = 4FE64E332F27B079006F9205 /* HomeWidgetsExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		4FF81B792F2EB4C100E95BA0 /* FirkaWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4FF81BA52F2EB4C300E95BA0 /* Build configuration list for PBXNativeTarget "FirkaWatch Watch App" */;
+			buildPhases = (
+				4FF81B762F2EB4C100E95BA0 /* Sources */,
+				4FF81B772F2EB4C100E95BA0 /* Frameworks */,
+				4FF81B782F2EB4C100E95BA0 /* Resources */,
+				4F59661A2F2F1BBF00A3DB03 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4F5966192F2F1BBF00A3DB03 /* PBXTargetDependency */,
+				4F59661C2F2F1BD900A3DB03 /* PBXTargetDependency */,
+				4F59661E2F2F1BE700A3DB03 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				4FF81B7B2F2EB4C100E95BA0 /* FirkaWatch Watch App */,
+			);
+			name = "FirkaWatch Watch App";
+			productName = "FirkaWatch Watch App";
+			productReference = 4FF81B7A2F2EB4C100E95BA0 /* FirkaWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
 		97C146ED1CF9000F007C117D /* Runner */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
@@ -375,6 +568,7 @@
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
 				4F30C77E2E8FBF9F008BB46C /* Embed Foundation Extensions */,
+				4FF81B9B2F2EB4C300E95BA0 /* Embed Watch Content */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				EAA586B3BBC26BBE7306869D /* [CP] Embed Pods Frameworks */,
@@ -385,6 +579,7 @@
 			dependencies = (
 				4F30C7772E8FBF9F008BB46C /* PBXTargetDependency */,
 				4FE64E412F27B07B006F9205 /* PBXTargetDependency */,
+				4FF81B992F2EB4C300E95BA0 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			productName = Runner;
@@ -409,7 +604,13 @@
 					4F30C7642E8FBF9D008BB46C = {
 						CreatedOnToolsVersion = 26.0;
 					};
+					4F5965FC2F2F0EAF00A3DB03 = {
+						CreatedOnToolsVersion = 26.2;
+					};
 					4FE64E322F27B079006F9205 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					4FF81B792F2EB4C100E95BA0 = {
 						CreatedOnToolsVersion = 26.2;
 					};
 					97C146ED1CF9000F007C117D = {
@@ -437,6 +638,8 @@
 				331C8080294A63A400263BE5 /* RunnerTests */,
 				4F30C7642E8FBF9D008BB46C /* LiveActivityWidget */,
 				4FE64E322F27B079006F9205 /* HomeWidgetsExtension */,
+				4FF81B792F2EB4C100E95BA0 /* FirkaWatch Watch App */,
+				4F5965FC2F2F0EAF00A3DB03 /* FirkaWatchComplicationsExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -456,7 +659,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4F5965FB2F2F0EAF00A3DB03 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4FE64E312F27B079006F9205 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4FF81B782F2EB4C100E95BA0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -486,9 +703,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -578,9 +799,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -602,6 +827,27 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4F7701DF2F2EC1AA00B79171 /* Grade.swift in Sources */,
+				4F7701E02F2EC1AA00B79171 /* WidgetColors.swift in Sources */,
+				4F7701E12F2EC1AA00B79171 /* Average.swift in Sources */,
+				4F7701E22F2EC1AA00B79171 /* SeasonalIconHelper.swift in Sources */,
+				4F7701E32F2EC1AA00B79171 /* Lesson.swift in Sources */,
+				4F7701E42F2EC1AA00B79171 /* Subject.swift in Sources */,
+				4F7701E52F2EC1AA00B79171 /* WidgetData.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F5965F92F2F0EAF00A3DB03 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F5966152F2F0F5500A3DB03 /* WidgetData.swift in Sources */,
+				4F5966132F2F0F4C00A3DB03 /* Subject.swift in Sources */,
+				4F5966142F2F0F5100A3DB03 /* WidgetColors.swift in Sources */,
+				4F59660F2F2F0F3B00A3DB03 /* SeasonalIconHelper.swift in Sources */,
+				4F5966122F2F0F4900A3DB03 /* Lesson.swift in Sources */,
+				4F5966112F2F0F4500A3DB03 /* Grade.swift in Sources */,
+				4F5966102F2F0F4100A3DB03 /* Average.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -609,6 +855,30 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4F7701D82F2EC1AA00B79171 /* Grade.swift in Sources */,
+				4F7701D92F2EC1AA00B79171 /* WidgetColors.swift in Sources */,
+				4F7701DA2F2EC1AA00B79171 /* Average.swift in Sources */,
+				4F7701DB2F2EC1AA00B79171 /* SeasonalIconHelper.swift in Sources */,
+				4F7701DC2F2EC1AA00B79171 /* Lesson.swift in Sources */,
+				4F7701DD2F2EC1AA00B79171 /* Subject.swift in Sources */,
+				4F7701DE2F2EC1AA00B79171 /* WidgetData.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4FF81B762F2EB4C100E95BA0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F7701E62F2EC1AA00B79171 /* Grade.swift in Sources */,
+				4F7701E72F2EC1AA00B79171 /* WidgetColors.swift in Sources */,
+				4F7701E82F2EC1AA00B79171 /* Average.swift in Sources */,
+				4FCB030D2F330F3B00418E63 /* KretaAPIModels.swift in Sources */,
+				4F7701E92F2EC1AA00B79171 /* SeasonalIconHelper.swift in Sources */,
+				4F7701EA2F2EC1AA00B79171 /* Lesson.swift in Sources */,
+				4F7701EB2F2EC1AA00B79171 /* Subject.swift in Sources */,
+				4F7701EC2F2EC1AA00B79171 /* WidgetData.swift in Sources */,
+				4F7701EF2F2EC2F500B79171 /* TokenManager.swift in Sources */,
+				4F7701F02F2EC2F500B79171 /* KretaAPIClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -620,6 +890,7 @@
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				4F30C7592E8FBF26008BB46C /* LiveActivityMethodChannelManager.swift in Sources */,
 				4F45A1752F27FA3C0020E6F1 /* HomeWidgetMethodChannel.swift in Sources */,
+				4F5965F82F2F0C1600A3DB03 /* WatchSessionManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -636,10 +907,30 @@
 			target = 4F30C7642E8FBF9D008BB46C /* LiveActivityWidget */;
 			targetProxy = 4F30C7762E8FBF9F008BB46C /* PBXContainerItemProxy */;
 		};
+		4F5966192F2F1BBF00A3DB03 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4F5965FC2F2F0EAF00A3DB03 /* FirkaWatchComplicationsExtension */;
+			targetProxy = 4F5966182F2F1BBF00A3DB03 /* PBXContainerItemProxy */;
+		};
+		4F59661C2F2F1BD900A3DB03 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4F5965FC2F2F0EAF00A3DB03 /* FirkaWatchComplicationsExtension */;
+			targetProxy = 4F59661B2F2F1BD900A3DB03 /* PBXContainerItemProxy */;
+		};
+		4F59661E2F2F1BE700A3DB03 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4F5965FC2F2F0EAF00A3DB03 /* FirkaWatchComplicationsExtension */;
+			targetProxy = 4F59661D2F2F1BE700A3DB03 /* PBXContainerItemProxy */;
+		};
 		4FE64E412F27B07B006F9205 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 4FE64E322F27B079006F9205 /* HomeWidgetsExtension */;
 			targetProxy = 4FE64E402F27B07B006F9205 /* PBXContainerItemProxy */;
+		};
+		4FF81B992F2EB4C300E95BA0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4FF81B792F2EB4C100E95BA0 /* FirkaWatch Watch App */;
+			targetProxy = 4FF81B982F2EB4C300E95BA0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -962,6 +1253,159 @@
 			};
 			name = Profile;
 		};
+		4F59660A2F2F0EB100A3DB03 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = FirkaWatchComplicationsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FirkaWatchComplications/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FirkaWatchComplications;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.watchkitapp.complications;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		4F59660B2F2F0EB100A3DB03 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = FirkaWatchComplicationsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FirkaWatchComplications/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FirkaWatchComplications;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.watchkitapp.complications;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		4F59660C2F2F0EB100A3DB03 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = FirkaWatchComplicationsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FirkaWatchComplications/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FirkaWatchComplications;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.watchkitapp.complications;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Profile;
+		};
 		4FE64E432F27B07B006F9205 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9740EEB41CF90195004384FC /* WidgetExtension.xcconfig */;
@@ -1104,6 +1548,159 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Profile;
+		};
+		4FF81B9C2F2EB4C300E95BA0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = "FirkaWatch Watch App/FirkaWatch Watch App.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FirkaWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = app.firka.firkaa;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		4FF81B9D2F2EB4C300E95BA0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = "FirkaWatch Watch App/FirkaWatch Watch App.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FirkaWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = app.firka.firkaa;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		4FF81B9E2F2EB4C300E95BA0 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = "FirkaWatch Watch App/FirkaWatch Watch App.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FirkaWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = app.firka.firkaa;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
 			};
 			name = Profile;
 		};
@@ -1316,12 +1913,32 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		4F5966092F2F0EB100A3DB03 /* Build configuration list for PBXNativeTarget "FirkaWatchComplicationsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F59660A2F2F0EB100A3DB03 /* Debug */,
+				4F59660B2F2F0EB100A3DB03 /* Release */,
+				4F59660C2F2F0EB100A3DB03 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		4FE64E462F27B07B006F9205 /* Build configuration list for PBXNativeTarget "HomeWidgetsExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4FE64E432F27B07B006F9205 /* Debug */,
 				4FE64E442F27B07B006F9205 /* Release */,
 				4FE64E452F27B07B006F9205 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4FF81BA52F2EB4C300E95BA0 /* Build configuration list for PBXNativeTarget "FirkaWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4FF81B9C2F2EB4C300E95BA0 /* Debug */,
+				4FF81B9D2F2EB4C300E95BA0 /* Release */,
+				4FF81B9E2F2EB4C300E95BA0 /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

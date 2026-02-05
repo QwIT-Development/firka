@@ -28,6 +28,19 @@ struct TimetableProvider: AppIntentTimelineProvider {
     typealias Entry = TimetableEntry
     typealias Intent = TimetableWidgetIntent
 
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone.current
+        return formatter
+    }()
+
+    private func parseNextSchoolDayDate(_ dateString: String?) -> Date? {
+        guard let dateString = dateString else { return nil }
+        return Self.dateFormatter.date(from: dateString)
+    }
+
     func placeholder(in context: Context) -> TimetableEntry {
         TimetableEntry(
             date: Date(),
@@ -115,6 +128,13 @@ struct TimetableProvider: AppIntentTimelineProvider {
                     }
                 }
                 minuteEntries.append(next.start)
+
+                var nextLessonTime = next.start.addingTimeInterval(60)
+                while nextLessonTime <= next.end && minuteEntries.count < 180 {
+                    minuteEntries.append(nextLessonTime)
+                    nextLessonTime = nextLessonTime.addingTimeInterval(60)
+                }
+                minuteEntries.append(next.end.addingTimeInterval(1))
             }
 
             for time in minuteEntries {
@@ -133,8 +153,42 @@ struct TimetableProvider: AppIntentTimelineProvider {
             }
         }
 
+        let tomorrowLessons = data?.timetable.tomorrow ?? []
+        for lesson in tomorrowLessons {
+            if lesson.start > now {
+                entries.append(createEntry(for: configuration, date: lesson.start))
+            }
+            if lesson.end > now {
+                entries.append(createEntry(for: configuration, date: lesson.end.addingTimeInterval(1)))
+            }
+        }
+
+        let nextSchoolDayLessons = data?.timetable.nextSchoolDay ?? []
+        for lesson in nextSchoolDayLessons {
+            if lesson.start > now {
+                entries.append(createEntry(for: configuration, date: lesson.start))
+            }
+            if lesson.end > now {
+                entries.append(createEntry(for: configuration, date: lesson.end.addingTimeInterval(1)))
+            }
+        }
+
         let midnight = calendar.startOfDay(for: now.addingTimeInterval(86400))
         entries.append(createEntry(for: configuration, date: midnight))
+
+        if let nextSchoolDayDateString = data?.timetable.nextSchoolDayDate,
+           let nextSchoolDayDate = parseNextSchoolDayDate(nextSchoolDayDateString) {
+            let nextSchoolDay = calendar.startOfDay(for: nextSchoolDayDate)
+            let dayBeforeNextSchoolDay = calendar.date(byAdding: .day, value: -1, to: nextSchoolDay)!
+
+            if dayBeforeNextSchoolDay > now {
+                entries.append(createEntry(for: configuration, date: dayBeforeNextSchoolDay))
+            }
+
+            if nextSchoolDay > now {
+                entries.append(createEntry(for: configuration, date: nextSchoolDay))
+            }
+        }
 
         let uniqueDates = Set(entries.map { $0.date })
         entries = uniqueDates.map { date in
@@ -144,10 +198,10 @@ struct TimetableProvider: AppIntentTimelineProvider {
 
         if isLockScreenWidget {
             var refreshDate: Date
-            if let next = nextLesson {
-                refreshDate = next.start
-            } else if let current = currentLesson {
+            if let current = currentLesson {
                 refreshDate = current.end.addingTimeInterval(1)
+            } else if let next = nextLesson {
+                refreshDate = next.end.addingTimeInterval(1)
             } else {
                 refreshDate = midnight
             }
@@ -225,6 +279,50 @@ struct TimetableProvider: AppIntentTimelineProvider {
 
         if lessons.isEmpty {
             if let nextSchoolDayLessons = data.timetable.nextSchoolDay, !nextSchoolDayLessons.isEmpty {
+                if let nextSchoolDayDate = parseNextSchoolDayDate(data.timetable.nextSchoolDayDate) {
+                    let nextSchoolDay = calendar.startOfDay(for: nextSchoolDayDate)
+                    let dayBeforeNextSchoolDay = calendar.date(byAdding: .day, value: -1, to: nextSchoolDay)!
+
+                    if entryDay == nextSchoolDay {
+                        let currentLesson = nextSchoolDayLessons.first { lesson in
+                            return date >= lesson.start && date <= lesson.end
+                        }
+                        let nextLesson = nextSchoolDayLessons.first { $0.start > date }
+
+                        return TimetableEntry(
+                            date: date,
+                            configuration: configuration,
+                            data: data,
+                            lessons: nextSchoolDayLessons,
+                            currentLesson: currentLesson,
+                            nextLesson: nextLesson,
+                            isNextDay: false,
+                            isNextSchoolDay: false,
+                            nextSchoolDayDateString: nil,
+                            breakInfo: nil,
+                            state: .normal,
+                            debugInfo: WidgetData.lastError
+                        )
+                    }
+
+                    if entryDay == dayBeforeNextSchoolDay {
+                        return TimetableEntry(
+                            date: date,
+                            configuration: configuration,
+                            data: data,
+                            lessons: nextSchoolDayLessons,
+                            currentLesson: nil,
+                            nextLesson: nextSchoolDayLessons.first,
+                            isNextDay: true,
+                            isNextSchoolDay: false,
+                            nextSchoolDayDateString: nil,
+                            breakInfo: nil,
+                            state: .normal,
+                            debugInfo: WidgetData.lastError
+                        )
+                    }
+                }
+
                 return TimetableEntry(
                     date: date,
                     configuration: configuration,

@@ -36,6 +36,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'helpers/db/models/homework_cache_model.dart';
 import 'helpers/update_notifier.dart';
 import 'helpers/live_activity_service.dart';
+import 'helpers/watch_sync_helper.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/app_localizations_de.dart';
 import 'l10n/app_localizations_en.dart';
@@ -153,6 +154,12 @@ Future<void> initLang(AppInitialization data) async {
     } catch (e) {
       logger.warning('Failed to update language preference on backend: $e');
     }
+
+    try {
+      await WatchSyncHelper.sendLanguageToWatch();
+    } catch (e) {
+      logger.warning('Failed to send language to Watch: $e');
+    }
   }
 }
 
@@ -206,6 +213,23 @@ Future<void> _initData(AppInitialization init) async {
     final token = (await init.isar.tokenModels.where().findAll())[i];
     logger.fine("Initializing kréta client as: ${token.studentId}");
     init.client = KretaClient(token, init.isar);
+
+    // Sync token from Watch first (Watch might have fresher token)
+    if (Platform.isIOS) {
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      await WatchSyncHelper.syncTokenFromWatch(
+        isar: init.isar,
+        tokens: init.tokens,
+        client: init.client,
+      );
+      init.tokens = await init.isar.tokenModels.where().findAll();
+      if (init.tokens.isNotEmpty) {
+        init.client.model = init.tokens.first;
+      }
+    }
+
+    await init.client.refreshTokenProactively();
 
     await WidgetCacheHelper.updateWidgetCache(appStyle, init.client);
 
@@ -461,6 +485,9 @@ class InitializationScreen extends StatelessWidget {
           assert(snapshot.data != null);
           initData = snapshot.data!;
           initDone = true;
+
+          WatchSyncHelper.initialize();
+
           var watch = WatchConnectivity();
 
           if (!initData.hasWatchListener) {

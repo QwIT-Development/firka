@@ -34,3 +34,6 @@ Runner/GeneratedPluginRegistrant.*
 !default.perspectivev3
 
 /.DerivedData
+
+# Developer-specific configuration
+.dev_config

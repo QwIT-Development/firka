@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 
 class IOSWidgetHelper {
   static const _channel = MethodChannel('app.firka/home_widgets');
+  static const _watchChannel = MethodChannel('app.firka/watch_sync');
 
   static Future<Directory?> _getAppGroupDirectory() async {
     if (!Platform.isIOS) return null;
@@ -87,6 +88,14 @@ class IOSWidgetHelper {
 
     await reloadAllWidgets();
     debugPrint('[IOSWidget] Widget reload triggered');
+
+    // Send data to Watch
+    try {
+      await _watchChannel.invokeMethod('sendWidgetDataToWatch', jsonString);
+      debugPrint('[IOSWidget] Watch data sent');
+    } catch (e) {
+      debugPrint('[IOSWidget] Watch sync skipped: $e');
+    }
   }
 
   /// Format DateTime with explicit timezone offset for proper Swift parsing

@@ -13,6 +13,18 @@ struct WidgetGrade: Codable, Identifiable {
 
     var id: String { uid }
 
+    init(uid: String, recordDate: Date, subject: WidgetSubject, topic: String?,
+         type: NameUidDesc, numericValue: Int?, strValue: String?, weightPercentage: Int?) {
+        self.uid = uid
+        self.recordDate = recordDate
+        self.subject = subject
+        self.topic = topic
+        self.type = type
+        self.numericValue = numericValue
+        self.strValue = strValue
+        self.weightPercentage = weightPercentage
+    }
+
     var displayValue: String {
         if let numeric = numericValue {
             return "\(numeric)"
@@ -47,5 +59,22 @@ struct WidgetGrade: Codable, Identifiable {
 
     var teacherName: String? {
         subject.teacherName
+    }
+}
+
+extension WidgetGrade {
+    var displayType: String {
+        let typeMap: [String: String] = [
+            "evkozi_jegy_ertekeles": "Órai munka",
+            "felevi_jegy_ertekeles": "Félévi jegy",
+            "evvegi_jegy_ertekeles": "Év végi jegy",
+            "dolgozat": "Dolgozat",
+            "ropdolgozat": "Röpdolgozat",
+            "hazi_feladat": "Házi feladat",
+            "osztalyzat": "Osztályzat",
+            "szorgalom": "Szorgalom",
+            "magatartas": "Magatartás"
+        ]
+        return typeMap[type.name.lowercased()] ?? type.name.replacingOccurrences(of: "_", with: " ").capitalized
     }
 }
