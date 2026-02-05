@@ -8,6 +8,7 @@ struct WidgetLesson: Codable, Identifiable {
     let name: String
     let lessonNumber: Int?
     let teacher: String?
+    let substituteTeacher: String?
     let subject: WidgetSubject
     let theme: String?
     let roomName: String?
@@ -15,6 +16,24 @@ struct WidgetLesson: Codable, Identifiable {
     let isSubstitution: Bool
 
     var id: String { uid }
+
+    init(uid: String, date: String, start: Date, end: Date, name: String,
+         lessonNumber: Int?, teacher: String?, substituteTeacher: String?, subject: WidgetSubject,
+         theme: String?, roomName: String?, isCancelled: Bool, isSubstitution: Bool) {
+        self.uid = uid
+        self.date = date
+        self.start = start
+        self.end = end
+        self.name = name
+        self.lessonNumber = lessonNumber
+        self.teacher = teacher
+        self.substituteTeacher = substituteTeacher
+        self.subject = subject
+        self.theme = theme
+        self.roomName = roomName
+        self.isCancelled = isCancelled
+        self.isSubstitution = isSubstitution
+    }
 
     var displayName: String {
         subject.name

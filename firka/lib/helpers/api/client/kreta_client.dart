@@ -25,6 +25,12 @@ import '../model/student.dart';
 import '../model/test.dart';
 import '../token_grant.dart';
 
+import 'dart:io';
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+
+const _watchChannel = MethodChannel('app.firka/watch_sync');
+
 const backoffCount = 4;
 const backoffMin = 100;
 const backoffStep = 500;
@@ -58,7 +64,78 @@ class KretaClient {
   TokenModel model;
   Isar isar;
 
+  static bool needsReauth = false;
+
+  static final ValueNotifier<bool> reauthStateNotifier = ValueNotifier(false);
+
+  static void clearReauthFlag() {
+    needsReauth = false;
+    reauthStateNotifier.value = false;
+    debugPrint('[KretaClient] Reauth flag cleared');
+  }
+
+  static void _setReauthFlag() {
+    _setReauthFlag();
+    reauthStateNotifier.value = true;
+  }
+
   KretaClient(this.model, this.isar);
+
+
+  Future<bool> refreshTokenProactively() async {
+    final now = timeNow();
+    final fiveMinutesFromNow = now.add(const Duration(minutes: 5));
+
+    if (model.expiryDate == null || model.expiryDate!.isBefore(fiveMinutesFromNow)) {
+      logger.info("[Proactive] Token expired or expiring soon, refreshing proactively...");
+
+      try {
+        var extended = await extendToken(model);
+        var tokenModel = TokenModel.fromResp(extended);
+
+        await isar.writeTxn(() async {
+          await isar.tokenModels.put(tokenModel);
+        });
+
+        logger.info("[Proactive] Token refreshed successfully. New expiry: ${tokenModel.expiryDate}");
+        model = tokenModel;
+
+        if (Platform.isIOS) {
+          try {
+            await _watchChannel.invokeMethod('sendTokenToWatch', {
+              'studentId': model.studentId,
+              'studentIdNorm': model.studentIdNorm,
+              'iss': model.iss,
+              'idToken': model.idToken,
+              'accessToken': model.accessToken,
+              'refreshToken': model.refreshToken,
+              'expiryDate': model.expiryDate!.millisecondsSinceEpoch,
+            });
+          } catch (e) {
+            debugPrint('[KretaClient] Watch token sync skipped: $e');
+          }
+        }
+
+        return true;
+      } catch (e) {
+        logger.warning("[Proactive] Token refresh failed: $e");
+        if (_isTokenExpired(e)) {
+          _setReauthFlag();
+          if (Platform.isIOS) {
+            try {
+              _watchChannel.invokeMethod('notifyReauthRequired');
+            } catch (e) {
+              debugPrint('[KretaClient] Watch reauth notification skipped: $e');
+            }
+          }
+        }
+        return false;
+      }
+    }
+
+    logger.fine("[Proactive] Token still valid until ${model.expiryDate}, no refresh needed");
+    return true;
+  }
 
   Future<T> _mutexCallback<T>(Future<T> Function() callback) async {
     while (_tokenMutex) {
@@ -89,6 +166,22 @@ class KretaClient {
         logger.info("Token refreshed successfully. New expiry: ${tokenModel.expiryDate}");
 
         model = tokenModel;
+
+        if (Platform.isIOS) {
+          try {
+            await _watchChannel.invokeMethod('sendTokenToWatch', {
+              'studentId': model.studentId,
+              'studentIdNorm': model.studentIdNorm,
+              'iss': model.iss,
+              'idToken': model.idToken,
+              'accessToken': model.accessToken,
+              'refreshToken': model.refreshToken,
+              'expiryDate': model.expiryDate!.millisecondsSinceEpoch,
+            });
+          } catch (e) {
+            debugPrint('[KretaClient] Watch token sync skipped: $e');
+          }
+        }
       }
 
       return model.accessToken!;
@@ -187,6 +280,19 @@ class KretaClient {
         return _cachingGet(id, url, forceCache, counter + 1);
       }
     } catch (ex) {
+      if (_isTokenExpired(ex)) {
+        _setReauthFlag();
+        logger.warning("Token expired, setting needsReauth flag");
+
+        if (Platform.isIOS) {
+          try {
+            _watchChannel.invokeMethod('notifyReauthRequired');
+          } catch (e) {
+            debugPrint('[KretaClient] Watch reauth notification skipped: $e');
+          }
+        }
+      }
+
       if (cache != null) {
         logger.finest("request failed, using cache for: $url");
         return (jsonDecode(cache.cacheData!), 0, ex, true);
@@ -466,6 +572,11 @@ class KretaClient {
             counter + 1, storeCache);
       }
     } catch (ex) {
+      if (_isTokenExpired(ex)) {
+        _setReauthFlag();
+        logger.warning("Token expired in timed request, setting needsReauth flag");
+      }
+
       if (cache != null) {
         var items = List<dynamic>.empty(growable: true);
         for (var item in (cache as dynamic).values) {

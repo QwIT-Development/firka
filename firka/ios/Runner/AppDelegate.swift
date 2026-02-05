@@ -25,6 +25,7 @@ import BackgroundTasks
     let controller = window?.rootViewController as! FlutterViewController
 
     HomeWidgetMethodChannel.register(with: controller.binaryMessenger)
+    WatchSessionManager.shared.setup(with: controller.binaryMessenger)
 
     widgetDeepLinkChannel = FlutterMethodChannel(name: "firka.app/widget_deep_link", binaryMessenger: controller.binaryMessenger)
     widgetDeepLinkChannel?.setMethodCallHandler { [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) in

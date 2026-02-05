@@ -57,7 +57,6 @@ struct TimetableSmallView: View {
                     Text(lesson.displayName)
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .strikethrough(lesson.isCancelled, color: .red)
                         .foregroundColor(lesson.isCancelled ? .red :
                                         lesson.isSubstitution ? .orange :
                                         (style == .liquidGlass ? liquidGlassPrimary : .primary))
@@ -171,8 +170,8 @@ struct TimetableMediumView: View {
                         let nextLesson = visibleLessons[index + 1]
                         let isInBreak = entry.date > lesson.end && entry.date < nextLesson.start
                         if isInBreak {
-                            let breakMinutes = Int(ceil(nextLesson.start.timeIntervalSince(entry.date) / 60))
-                            BreakIndicatorRow(minutesLeft: breakMinutes, localization: localization, style: style, compact: true)
+                            let totalBreakMinutes = Int(ceil(nextLesson.start.timeIntervalSince(lesson.end) / 60))
+                            BreakIndicatorRow(minutesLeft: totalBreakMinutes, localization: localization, style: style, compact: true)
                         }
                     }
                 }
@@ -197,6 +196,17 @@ struct TimetableLargeView: View {
         return checkDate >= lesson.start && checkDate <= lesson.end
     }
 
+    var currentLessonIndex: Int {
+        let checkDate = entry.date
+        if let index = entry.lessons.firstIndex(where: { checkDate >= $0.start && checkDate <= $0.end }) {
+            return index
+        }
+        if let index = entry.lessons.firstIndex(where: { $0.start > checkDate }) {
+            return index
+        }
+        return max(0, entry.lessons.count - 1)
+    }
+
     var hasActiveBreak: Bool {
         let checkDate = entry.date
         for i in 0..<entry.lessons.count - 1 {
@@ -205,6 +215,21 @@ struct TimetableLargeView: View {
             }
         }
         return false
+    }
+
+    var visibleLessons: [WidgetLesson] {
+        let totalLessons = entry.lessons.count
+        let maxVisible = hasActiveBreak ? 6 : 7
+
+        if totalLessons <= maxVisible {
+            return Array(entry.lessons)
+        }
+
+        var startIndex = max(0, currentLessonIndex - 1)
+        startIndex = min(startIndex, totalLessons - maxVisible)
+
+        let endIndex = min(startIndex + maxVisible, totalLessons)
+        return Array(entry.lessons[startIndex..<endIndex])
     }
 
     var headerText: String {
@@ -228,17 +253,15 @@ struct TimetableLargeView: View {
                     .fontWeight(.semibold)
                     .widgetTextStyle(style, colors: nil)
 
-                let maxLessons = hasActiveBreak ? 6 : 7
-                let lessonsToShow = Array(entry.lessons.prefix(maxLessons))
-                ForEach(Array(lessonsToShow.enumerated()), id: \.element.id) { index, lesson in
+                ForEach(Array(visibleLessons.enumerated()), id: \.element.id) { index, lesson in
                     LessonRow(lesson: lesson, isActive: isLessonActive(lesson), style: style, showRoom: true)
 
-                    if index < lessonsToShow.count - 1 {
-                        let nextLesson = lessonsToShow[index + 1]
+                    if index < visibleLessons.count - 1 {
+                        let nextLesson = visibleLessons[index + 1]
                         let isInBreak = entry.date > lesson.end && entry.date < nextLesson.start
                         if isInBreak {
-                            let breakMinutes = Int(ceil(nextLesson.start.timeIntervalSince(entry.date) / 60))
-                            BreakIndicatorRow(minutesLeft: breakMinutes, localization: localization, style: style)
+                            let totalBreakMinutes = Int(ceil(nextLesson.start.timeIntervalSince(lesson.end) / 60))
+                            BreakIndicatorRow(minutesLeft: totalBreakMinutes, localization: localization, style: style)
                         }
                     }
                 }
@@ -346,7 +369,6 @@ struct LessonRow: View {
             Text(lesson.displayName)
                 .font(.subheadline)
                 .fontWeight(isActive ? .semibold : .regular)
-                .strikethrough(lesson.isCancelled, color: .red)
                 .foregroundColor(lessonTextColor ?? (style == .liquidGlass ? liquidGlassPrimary : .primary))
                 .lineLimit(1)
 
@@ -372,7 +394,7 @@ struct LessonRow: View {
         }
         .padding(.vertical, compact ? 2 : 4)
         .padding(.horizontal, 8)
-        .currentLessonGlow(isActive: isActive && !lesson.isCancelled)
+        .currentLessonGlow(isActive: isActive)
     }
 }
 

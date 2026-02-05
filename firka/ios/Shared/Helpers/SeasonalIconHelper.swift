@@ -53,7 +53,7 @@ struct SeasonalIconHelper {
         case "newYearEve":
             return .purple
         case "newYearDay":
-            return .mint
+            return Color(red: 0.4, green: 0.9, blue: 0.8)
         case "seasonalBreak":
             return seasonColor(for: season)
         default:
@@ -74,7 +74,7 @@ struct SeasonalIconHelper {
         case "autumn":
             return .orange
         case "winter":
-            return .cyan
+            return Color(red: 0.4, green: 0.8, blue: 1.0)
         case "other":
             return .blue
         default:

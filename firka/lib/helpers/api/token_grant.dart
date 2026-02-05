@@ -40,6 +40,8 @@ Future<TokenGrantResponse> getAccessToken(String code) async {
   }
 }
 
+const _tokenRefreshRetryDelays = [1000, 3000, 5000];
+
 Future<TokenGrantResponse> extendToken(TokenModel model) async {
   logger.info("Extending token for user: ${model.studentId}, institute: ${model.iss}");
 
@@ -56,27 +58,50 @@ Future<TokenGrantResponse> extendToken(TokenModel model) async {
     "client_id": Constants.clientId,
   };
 
-  try {
-    final response = await dio.post(KretaEndpoints.tokenGrantUrl,
-        options: Options(headers: headers), data: formData);
+  Exception? lastError;
 
-    switch (response.statusCode) {
-      case 200:
-        logger.info("Token extended successfully for user: ${model.studentId}");
-        return TokenGrantResponse.fromJson(response.data);
-      case 400:
-        logger.warning("Token refresh failed (400) - refresh token expired for user: ${model.studentId}");
-        throw TokenExpiredException();
-      case 401:
-        logger.warning("Token refresh failed (401) - invalid grant for user: ${model.studentId}");
-        throw InvalidGrantException();
-      default:
-        logger.severe("Token refresh failed with unexpected status: ${response.statusCode} for user: ${model.studentId}");
-        throw Exception(
-            "Failed to get access token, response code: ${response.statusCode}");
+  for (int attempt = 0; attempt <= _tokenRefreshRetryDelays.length; attempt++) {
+    try {
+      if (attempt > 0) {
+        final delay = _tokenRefreshRetryDelays[attempt - 1];
+        logger.info("Token refresh attempt ${attempt + 1}, waiting ${delay}ms...");
+        await Future.delayed(Duration(milliseconds: delay));
+      }
+
+      final response = await dio.post(KretaEndpoints.tokenGrantUrl,
+          options: Options(headers: headers), data: formData);
+
+      switch (response.statusCode) {
+        case 200:
+          logger.info("Token extended successfully for user: ${model.studentId}");
+          return TokenGrantResponse.fromJson(response.data);
+        case 400:
+          logger.warning("Token refresh failed (400) - refresh token expired for user: ${model.studentId}");
+          throw TokenExpiredException();
+        case 401:
+          logger.warning("Token refresh failed (401) - invalid grant for user: ${model.studentId}");
+          throw InvalidGrantException();
+        default:
+          logger.warning("Token refresh failed (${response.statusCode}) for user: ${model.studentId}, attempt ${attempt + 1}");
+          lastError = Exception("Failed to get access token, response code: ${response.statusCode}");
+          // Continue to retry for network errors
+          continue;
+      }
+    } on TokenExpiredException {
+      rethrow;
+    } on InvalidGrantException {
+      rethrow;
+    } on DioException catch (e) {
+      logger.warning("Token refresh network error for user: ${model.studentId}, attempt ${attempt + 1}: $e");
+      lastError = e;
+      continue;
+    } catch (e) {
+      logger.severe("Token refresh exception for user: ${model.studentId}: $e");
+      lastError = e is Exception ? e : Exception(e.toString());
+      continue;
     }
-  } catch (e) {
-    logger.severe("Token refresh exception for user: ${model.studentId}: $e");
-    rethrow;
   }
+
+  logger.severe("All token refresh attempts failed for user: ${model.studentId}");
+  throw lastError ?? Exception("Token refresh failed after all retries");
 }

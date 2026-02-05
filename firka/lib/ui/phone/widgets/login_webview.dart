@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:firka/helpers/db/models/app_settings_model.dart';
+import 'package:firka/helpers/live_activity_service.dart';
 import 'package:firka/main.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:isar/isar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../../helpers/api/client/kreta_client.dart';
 import '../../../helpers/api/consts.dart';
 import '../../../helpers/api/token_grant.dart';
 import '../../../helpers/db/models/token_model.dart';
@@ -83,7 +88,29 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
 
             await accountPicker.postUpdate();
 
+            if (Platform.isIOS) {
+              const watchChannel = MethodChannel('app.firka/watch_sync');
+              try {
+                await watchChannel.invokeMethod('sendTokenToWatch', {
+                  'studentId': tokenModel.studentId,
+                  'studentIdNorm': tokenModel.studentIdNorm,
+                  'iss': tokenModel.iss,
+                  'idToken': tokenModel.idToken,
+                  'accessToken': tokenModel.accessToken,
+                  'refreshToken': tokenModel.refreshToken,
+                  'expiryDate': tokenModel.expiryDate!.millisecondsSinceEpoch,
+                });
+              } catch (e) {
+                // Watch may not be available, ignore
+              }
+            }
+
             if (!mounted) return NavigationDecision.prevent;
+
+            KretaClient.clearReauthFlag();
+            if (Platform.isIOS) {
+              LiveActivityService.clearTokenExpiration();
+            }
 
             runApp(InitializationScreen());
           } catch (ex) {

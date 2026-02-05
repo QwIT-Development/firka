@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/helpers/api/client/kreta_stream.dart';
 import 'package:firka/helpers/api/exceptions/token.dart';
 import 'package:firka/helpers/extensions.dart';
@@ -218,8 +219,19 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
         await WidgetCacheHelper.refreshIOSWidgets(widget.data.client, widget.data.settings);
       }
 
-      if (Platform.isIOS && LiveActivityService.isTokenExpired && !_disposed) {
-        showReauthBottomSheet(context, widget.data, widget.data.l10n.reauth);
+      if (!_disposed && (LiveActivityService.isTokenExpired || KretaClient.needsReauth)) {
+        activeToast = ActiveToastType.reauth;
+        setState(() {
+          toast = buildReauthToast(context, widget.data, () {
+            if (!_disposed) {
+              setState(() {
+                activeToast = ActiveToastType.none;
+                toast = null;
+              });
+            }
+          });
+        });
+        return;
       }
 
     } catch (e) {
@@ -374,6 +386,9 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
       if (mounted) setState(() {});
     });
 
+    // Listen for reauth state changes (e.g., when Watch sends a valid token)
+    KretaClient.reauthStateNotifier.addListener(_onReauthStateChanged);
+
     _setupNotificationListener();
     _setupWidgetDeepLinkListener();
 
@@ -383,6 +398,18 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     if (Platform.isIOS && widget.data.settings.group("settings").boolean("beta_warning")) {
       Future.delayed(Duration(seconds: 5), () async {
         await LiveActivityService.showConsentScreenIfNeeded();
+      });
+    }
+  }
+
+  void _onReauthStateChanged() {
+    if (!mounted || _disposed) return;
+    // If reauth is no longer needed, dismiss the reauth toast
+    if (!KretaClient.needsReauth && activeToast == ActiveToastType.reauth) {
+      debugPrint('[HomeScreen] Reauth flag cleared, dismissing toast');
+      setState(() {
+        activeToast = ActiveToastType.none;
+        toast = null;
       });
     }
   }
@@ -748,6 +775,9 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     widget.data.profilePictureUpdateNotifier.removeListener(() {
       if (mounted) setState(() {});
     });
+
+    // Remove reauth state listener
+    KretaClient.reauthStateNotifier.removeListener(_onReauthStateChanged);
 
     _disposed = true;
     _fetching = false;
