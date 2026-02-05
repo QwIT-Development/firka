@@ -75,7 +75,7 @@ class KretaClient {
   }
 
   static void _setReauthFlag() {
-    _setReauthFlag();
+    needsReauth = true;
     reauthStateNotifier.value = true;
   }
 

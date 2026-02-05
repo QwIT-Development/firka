@@ -214,13 +214,31 @@ class WatchSyncHelper {
       debugPrint('[WatchSync] Requesting token from Watch...');
       final result = await _watchChannel.invokeMethod('requestTokenFromWatch');
       if (result == null) {
-        debugPrint('[WatchSync] No token from Watch');
+        debugPrint('[WatchSync] No response from Watch');
+        final currentToken = effectiveTokens.isNotEmpty ? effectiveTokens.first : null;
+        if (currentToken != null &&
+            currentToken.accessToken != null &&
+            currentToken.refreshToken != null &&
+            currentToken.expiryDate != null &&
+            !KretaClient.needsReauth) {
+          debugPrint('[WatchSync] Sending iPhone token to Watch (no response)');
+          await _sendTokenToWatchInternal(currentToken);
+        }
         return;
       }
 
       final tokenData = result as Map<dynamic, dynamic>;
       if (tokenData.containsKey('error')) {
         debugPrint('[WatchSync] Watch returned error: ${tokenData['error']}');
+        final currentToken = effectiveTokens.isNotEmpty ? effectiveTokens.first : null;
+        if (currentToken != null &&
+            currentToken.accessToken != null &&
+            currentToken.refreshToken != null &&
+            currentToken.expiryDate != null &&
+            !KretaClient.needsReauth) {
+          debugPrint('[WatchSync] Sending iPhone token to Watch (Watch has no token)');
+          await _sendTokenToWatchInternal(currentToken);
+        }
         return;
       }
 
