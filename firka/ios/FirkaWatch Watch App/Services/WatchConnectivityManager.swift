@@ -79,8 +79,39 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
     }
 
     private func handleGetTokenRequest(replyHandler: @escaping ([String: Any]) -> Void) {
-        guard let token = TokenManager.shared.loadToken() else {
+        guard TokenManager.shared.loadToken() != nil else {
             print("[Watch] No token to send to iPhone")
+            replyHandler(["error": "no_token"])
+            return
+        }
+
+        if TokenManager.shared.isTokenExpired() {
+            print("[Watch] Token expired, attempting refresh before sending to iPhone...")
+            Task {
+                do {
+                    let freshToken = try await KretaAPIClient.shared.getValidToken()
+                    print("[Watch] Token refresh succeeded, sending fresh token to iPhone")
+
+                    let tokenData: [String: Any] = [
+                        "studentId": freshToken.studentId,
+                        "studentIdNorm": freshToken.studentIdNorm,
+                        "iss": freshToken.iss,
+                        "idToken": freshToken.idToken,
+                        "accessToken": freshToken.accessToken,
+                        "refreshToken": freshToken.refreshToken,
+                        "expiryDate": Int64(freshToken.expiryDate.timeIntervalSince1970 * 1000)
+                    ]
+
+                    replyHandler(["token": tokenData])
+                } catch {
+                    print("[Watch] Token refresh failed after all retries: \(error)")
+                    replyHandler(["error": "refresh_failed"])
+                }
+            }
+            return
+        }
+
+        guard let token = TokenManager.shared.loadToken() else {
             replyHandler(["error": "no_token"])
             return
         }

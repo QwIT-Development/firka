@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,6 +17,10 @@
 		4F30C7692E8FBF9D008BB46C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F30C7682E8FBF9D008BB46C /* SwiftUI.framework */; };
 		4F30C7782E8FBF9F008BB46C /* LiveActivityWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4F30C7652E8FBF9D008BB46C /* LiveActivityWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4F45A1752F27FA3C0020E6F1 /* HomeWidgetMethodChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F45A1732F27FA3C0020E6F1 /* HomeWidgetMethodChannel.swift */; };
+		4F5824802F35468E00B92EA7 /* iCloudTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F58247F2F35468D00B92EA7 /* iCloudTokenManager.swift */; };
+		4F5824812F35468E00B92EA7 /* iCloudTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F58247F2F35468D00B92EA7 /* iCloudTokenManager.swift */; };
+		4F5824832F3548B800B92EA7 /* WatchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5824822F3548B800B92EA7 /* WatchToken.swift */; };
+		4F5824842F3548B800B92EA7 /* WatchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5824822F3548B800B92EA7 /* WatchToken.swift */; };
 		4F5965F82F2F0C1600A3DB03 /* WatchSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5965F72F2F0C1600A3DB03 /* WatchSessionManager.swift */; };
 		4F5965FE2F2F0EAF00A3DB03 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F30C7662E8FBF9D008BB46C /* WidgetKit.framework */; };
 		4F5965FF2F2F0EAF00A3DB03 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F30C7682E8FBF9D008BB46C /* SwiftUI.framework */; };
@@ -178,6 +182,8 @@
 		4F30C7662E8FBF9D008BB46C /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		4F30C7682E8FBF9D008BB46C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		4F45A1732F27FA3C0020E6F1 /* HomeWidgetMethodChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeWidgetMethodChannel.swift; sourceTree = "<group>"; };
+		4F58247F2F35468D00B92EA7 /* iCloudTokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudTokenManager.swift; sourceTree = "<group>"; };
+		4F5824822F3548B800B92EA7 /* WatchToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchToken.swift; sourceTree = "<group>"; };
 		4F5965F72F2F0C1600A3DB03 /* WatchSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSessionManager.swift; sourceTree = "<group>"; };
 		4F5965FD2F2F0EAF00A3DB03 /* FirkaWatchComplicationsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FirkaWatchComplicationsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F5966162F2F0F6500A3DB03 /* FirkaWatchComplicationsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FirkaWatchComplicationsExtension.entitlements; sourceTree = "<group>"; };
@@ -216,35 +222,35 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		4F0EA0512F2BD2A2003CC89E /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		4F0EA0512F2BD2A2003CC89E /* Exceptions for "HomeWidgetsExtension" folder in "Runner" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Controls/AppControls.swift,
 			);
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 		};
-		4F4E70D02EF565FF00C90AD1 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		4F4E70D02EF565FF00C90AD1 /* Exceptions for "LiveActivityWidget" folder in "Runner" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				ActivityAttributes.swift,
 			);
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 		};
-		4F5966082F2F0EB100A3DB03 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		4F5966082F2F0EB100A3DB03 /* Exceptions for "FirkaWatchComplications" folder in "FirkaWatchComplicationsExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 4F5965FC2F2F0EAF00A3DB03 /* FirkaWatchComplicationsExtension */;
 		};
-		4F6C1D3E2ECD3FBD00F819D7 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		4F6C1D3E2ECD3FBD00F819D7 /* Exceptions for "LiveActivityWidget" folder in "LiveActivityWidget" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 4F30C7642E8FBF9D008BB46C /* LiveActivityWidget */;
 		};
-		4FE64E472F27B07B006F9205 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		4FE64E472F27B07B006F9205 /* Exceptions for "HomeWidgetsExtension" folder in "HomeWidgetsExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -254,10 +260,55 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		4F30C76A2E8FBF9D008BB46C /* LiveActivityWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (4F4E70D02EF565FF00C90AD1 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 4F6C1D3E2ECD3FBD00F819D7 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = LiveActivityWidget; sourceTree = "<group>"; };
-		4F5966002F2F0EAF00A3DB03 /* FirkaWatchComplications */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (4F5966082F2F0EB100A3DB03 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = FirkaWatchComplications; sourceTree = "<group>"; };
-		4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (4F0EA0512F2BD2A2003CC89E /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 4FE64E472F27B07B006F9205 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = HomeWidgetsExtension; sourceTree = "<group>"; };
-		4FF81B7B2F2EB4C100E95BA0 /* FirkaWatch Watch App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "FirkaWatch Watch App"; sourceTree = "<group>"; };
+		4F30C76A2E8FBF9D008BB46C /* LiveActivityWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4F4E70D02EF565FF00C90AD1 /* Exceptions for "LiveActivityWidget" folder in "Runner" target */,
+				4F6C1D3E2ECD3FBD00F819D7 /* Exceptions for "LiveActivityWidget" folder in "LiveActivityWidget" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = LiveActivityWidget;
+			sourceTree = "<group>";
+		};
+		4F5966002F2F0EAF00A3DB03 /* FirkaWatchComplications */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4F5966082F2F0EB100A3DB03 /* Exceptions for "FirkaWatchComplications" folder in "FirkaWatchComplicationsExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = FirkaWatchComplications;
+			sourceTree = "<group>";
+		};
+		4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4F0EA0512F2BD2A2003CC89E /* Exceptions for "HomeWidgetsExtension" folder in "Runner" target */,
+				4FE64E472F27B07B006F9205 /* Exceptions for "HomeWidgetsExtension" folder in "HomeWidgetsExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = HomeWidgetsExtension;
+			sourceTree = "<group>";
+		};
+		4FF81B7B2F2EB4C100E95BA0 /* FirkaWatch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "FirkaWatch Watch App";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -339,6 +390,7 @@
 				4F7701ED2F2EC2F500B79171 /* KretaAPIClient.swift */,
 				4F7701EE2F2EC2F500B79171 /* TokenManager.swift */,
 				4FCB030C2F330F3B00418E63 /* KretaAPIModels.swift */,
+				4F58247F2F35468D00B92EA7 /* iCloudTokenManager.swift */,
 			);
 			path = API;
 			sourceTree = "<group>";
@@ -360,6 +412,7 @@
 				4F7701D32F2EC1AA00B79171 /* Subject.swift */,
 				4F7701D42F2EC1AA00B79171 /* WidgetColors.swift */,
 				4F7701D52F2EC1AA00B79171 /* WidgetData.swift */,
+				4F5824822F3548B800B92EA7 /* WatchToken.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -367,9 +420,9 @@
 		4F7701D72F2EC1AA00B79171 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				4F7701D62F2EC1AA00B79171 /* Models */,
 				4F7701CD2F2EC1AA00B79171 /* API */,
 				4F7701CF2F2EC1AA00B79171 /* Helpers */,
-				4F7701D62F2EC1AA00B79171 /* Models */,
 			);
 			path = Shared;
 			sourceTree = SOURCE_ROOT;
@@ -703,13 +756,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -767,7 +816,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
 		};
 		D576F90540C8E625A9A12317 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -799,13 +848,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -872,9 +917,11 @@
 				4F7701E62F2EC1AA00B79171 /* Grade.swift in Sources */,
 				4F7701E72F2EC1AA00B79171 /* WidgetColors.swift in Sources */,
 				4F7701E82F2EC1AA00B79171 /* Average.swift in Sources */,
+				4F5824842F3548B800B92EA7 /* WatchToken.swift in Sources */,
 				4FCB030D2F330F3B00418E63 /* KretaAPIModels.swift in Sources */,
 				4F7701E92F2EC1AA00B79171 /* SeasonalIconHelper.swift in Sources */,
 				4F7701EA2F2EC1AA00B79171 /* Lesson.swift in Sources */,
+				4F5824802F35468E00B92EA7 /* iCloudTokenManager.swift in Sources */,
 				4F7701EB2F2EC1AA00B79171 /* Subject.swift in Sources */,
 				4F7701EC2F2EC1AA00B79171 /* WidgetData.swift in Sources */,
 				4F7701EF2F2EC2F500B79171 /* TokenManager.swift in Sources */,
@@ -891,6 +938,8 @@
 				4F30C7592E8FBF26008BB46C /* LiveActivityMethodChannelManager.swift in Sources */,
 				4F45A1752F27FA3C0020E6F1 /* HomeWidgetMethodChannel.swift in Sources */,
 				4F5965F82F2F0C1600A3DB03 /* WatchSessionManager.swift in Sources */,
+				4F5824832F3548B800B92EA7 /* WatchToken.swift in Sources */,
+				4F5824812F35468E00B92EA7 /* iCloudTokenManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1027,7 +1076,7 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1021;
+				CURRENT_PROJECT_VERSION = 1062;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -1059,7 +1108,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1062;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.RunnerTests;
@@ -1078,7 +1127,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1062;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.RunnerTests;
@@ -1095,7 +1144,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1062;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.RunnerTests;
@@ -1122,7 +1171,7 @@
 				CODE_SIGN_ENTITLEMENTS = LiveActivityWidget.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				CURRENT_PROJECT_VERSION = 1062;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -1173,7 +1222,7 @@
 				CODE_SIGN_ENTITLEMENTS = LiveActivityWidget.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				CURRENT_PROJECT_VERSION = 1062;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -1221,7 +1270,7 @@
 				CODE_SIGN_ENTITLEMENTS = LiveActivityWidget.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				CURRENT_PROJECT_VERSION = 1062;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -1268,7 +1317,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_ENTITLEMENTS = FirkaWatchComplicationsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1062;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -1321,7 +1370,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_ENTITLEMENTS = FirkaWatchComplicationsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1062;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -1371,7 +1420,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_ENTITLEMENTS = FirkaWatchComplicationsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1062;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -1422,7 +1471,7 @@
 				CODE_SIGN_ENTITLEMENTS = HomeWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				CURRENT_PROJECT_VERSION = 1062;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -1473,7 +1522,7 @@
 				CODE_SIGN_ENTITLEMENTS = HomeWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				CURRENT_PROJECT_VERSION = 1062;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -1520,7 +1569,7 @@
 				CODE_SIGN_ENTITLEMENTS = HomeWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				CURRENT_PROJECT_VERSION = 1062;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -1567,7 +1616,6 @@
 				CODE_SIGN_ENTITLEMENTS = "FirkaWatch Watch App/FirkaWatch Watch App.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1620,7 +1668,6 @@
 				CODE_SIGN_ENTITLEMENTS = "FirkaWatch Watch App/FirkaWatch Watch App.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1670,7 +1717,6 @@
 				CODE_SIGN_ENTITLEMENTS = "FirkaWatch Watch App/FirkaWatch Watch App.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1828,7 +1874,7 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1021;
+				CURRENT_PROJECT_VERSION = 1062;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -1864,7 +1910,7 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1021;
+				CURRENT_PROJECT_VERSION = 1062;
 				DEVELOPMENT_TEAM = UT7MSP4GWZ;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;

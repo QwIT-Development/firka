@@ -8,8 +8,20 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if dataStore.needsReauth && dataStore.hasToken {
+            if dataStore.isRecoveringToken {
+                VStack(spacing: 16) {
+                    ProgressView()
+                        .scaleEffect(1.2)
+                    Text("recovering_token".localized)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
+            }
+            else if dataStore.needsReauth && dataStore.hasToken {
                 ReauthRequiredView(onTokenReceived: {
+                    dataStore.resetRecoveryState()
                     dataStore.checkTokenState()
                     Task {
                         await dataStore.refreshAll()
@@ -30,7 +42,15 @@ struct ContentView: View {
             dataStore.loadFromCache()
             if dataStore.hasToken {
                 await dataStore.refreshTokenProactively()
+
                 await dataStore.refreshAll()
+
+                if (dataStore.error == "token_expired" || dataStore.error == "no_token") && !dataStore.recoveryAttempted {
+                    let recovered = await dataStore.attemptTokenRecovery()
+                    if recovered {
+                        await dataStore.refreshAll()
+                    }
+                }
             } else {
                 requestToken()
             }

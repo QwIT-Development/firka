@@ -147,6 +147,7 @@ class WatchL10n {
         // Settings
         "settings": "Beállítások",
         "refresh_interval": "Frissítési időköz",
+        "auto": "Automatikus",
         "15_minutes": "15 perc",
         "30_minutes": "30 perc",
         "1_hour": "1 óra",
@@ -183,6 +184,7 @@ class WatchL10n {
         "sync_failed": "Sikertelen",
         "phone_not_reachable": "iPhone nem elérhető",
         "connecting": "Kapcsolódás...",
+        "recovering_token": "Token helyreállítása...",
     ]
 
     private static let englishStrings: [String: String] = [
@@ -230,6 +232,7 @@ class WatchL10n {
         // Settings
         "settings": "Settings",
         "refresh_interval": "Refresh Interval",
+        "auto": "Auto",
         "15_minutes": "15 minutes",
         "30_minutes": "30 minutes",
         "1_hour": "1 hour",
@@ -266,6 +269,7 @@ class WatchL10n {
         "sync_failed": "Failed",
         "phone_not_reachable": "iPhone not reachable",
         "connecting": "Connecting...",
+        "recovering_token": "Recovering session...",
     ]
 
     private static let germanStrings: [String: String] = [
@@ -313,6 +317,7 @@ class WatchL10n {
         // Settings
         "settings": "Einstellungen",
         "refresh_interval": "Aktualisierungsintervall",
+        "auto": "Automatisch",
         "15_minutes": "15 Minuten",
         "30_minutes": "30 Minuten",
         "1_hour": "1 Stunde",
@@ -349,6 +354,7 @@ class WatchL10n {
         "sync_failed": "Fehlgeschlagen",
         "phone_not_reachable": "iPhone nicht erreichbar",
         "connecting": "Verbindung...",
+        "recovering_token": "Sitzung wiederherstellen...",
     ]
 }
 

@@ -1,27 +1,6 @@
 import Foundation
 import Security
 
-// MARK: - Token Structure
-struct WatchToken: Codable {
-    let accessToken: String
-    let refreshToken: String
-    let idToken: String
-    let iss: String
-    let studentId: String
-    let studentIdNorm: Int64
-    let expiryDate: Date
-
-    enum CodingKeys: String, CodingKey {
-        case accessToken
-        case refreshToken
-        case idToken
-        case iss
-        case studentId
-        case studentIdNorm
-        case expiryDate
-    }
-}
-
 // MARK: - Token Response Structure
 private struct TokenRefreshResponse: Decodable {
     let accessToken: String
@@ -59,7 +38,40 @@ class TokenManager {
     private let clientID = "kreta-ellenorzo-student-mobile-ios"
     private let userAgent = "eKretaStudent/264745 CFNetwork/1494.0.7 Darwin/23.4.0"
 
-    private init() {}
+    #if os(iOS)
+    private let deviceName = "iPhone"
+    #elseif os(watchOS)
+    private let deviceName = "Watch"
+    #endif
+
+    private init() {
+        iCloudTokenManager.shared.observeChanges { [weak self] iCloudToken in
+            guard let self = self else { return }
+
+            if let localToken = self.loadTokenFromKeychain() {
+                if iCloudToken.expiryDate > localToken.expiryDate {
+                    print("[TokenManager] iCloud token is fresher (\(iCloudToken.expiryDate) > \(localToken.expiryDate)), updating local cache")
+                    try? self.saveTokenToKeychain(iCloudToken)
+                    try? self.saveTokenToFile(iCloudToken)
+
+                    #if os(watchOS)
+                    DataStore.shared.checkTokenState()
+                    #endif
+                } else {
+                    print("[TokenManager] Local token is fresher or equal, ignoring iCloud update and pushing local to iCloud")
+                    iCloudTokenManager.shared.saveToken(localToken, deviceName: self.deviceName)
+                }
+            } else {
+                print("[TokenManager] No local token, using iCloud token")
+                try? self.saveTokenToKeychain(iCloudToken)
+                try? self.saveTokenToFile(iCloudToken)
+
+                #if os(watchOS)
+                DataStore.shared.checkTokenState()
+                #endif
+            }
+        }
+    }
 
     // MARK: - File Management
     private func getTokenFilePath() -> URL? {
@@ -69,12 +81,48 @@ class TokenManager {
         return containerURL.appendingPathComponent(tokenFileName)
     }
 
-    // MARK: - Load Token
+    // MARK: - Load Token (fresher-wins strategy)
     func loadToken() -> WatchToken? {
-        if let token = loadTokenFromKeychain() {
-            return token
+        let iCloudToken = iCloudTokenManager.shared.loadToken()
+        let keychainToken = loadTokenFromKeychain()
+        let fileToken = loadTokenFromFile()
+
+        var candidates: [(token: WatchToken, source: String)] = []
+        if let t = iCloudToken { candidates.append((t, "iCloud")) }
+        if let t = keychainToken { candidates.append((t, "keychain")) }
+        if let t = fileToken { candidates.append((t, "file")) }
+
+        guard !candidates.isEmpty else {
+            print("[TokenManager] No token found anywhere")
+            return nil
         }
 
+        let freshest = candidates.max(by: { $0.token.expiryDate < $1.token.expiryDate })!
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+        formatter.timeZone = TimeZone.current
+
+        print("[TokenManager] Token sources found: \(candidates.map { "\($0.source): \(formatter.string(from: $0.token.expiryDate))" }.joined(separator: ", "))")
+        print("[TokenManager] Using freshest token from \(freshest.source) (expiry: \(formatter.string(from: freshest.token.expiryDate)))")
+
+        if iCloudToken == nil || iCloudToken!.expiryDate < freshest.token.expiryDate {
+            print("[TokenManager] Syncing fresher token to iCloud")
+            iCloudTokenManager.shared.saveToken(freshest.token, deviceName: deviceName)
+        }
+        if keychainToken == nil || keychainToken!.expiryDate < freshest.token.expiryDate {
+            print("[TokenManager] Syncing fresher token to keychain")
+            try? saveTokenToKeychain(freshest.token)
+        }
+        if fileToken == nil || fileToken!.expiryDate < freshest.token.expiryDate {
+            print("[TokenManager] Syncing fresher token to file")
+            try? saveTokenToFile(freshest.token)
+        }
+
+        return freshest.token
+    }
+
+    private func loadTokenFromFile() -> WatchToken? {
         guard let filePath = getTokenFilePath() else {
             return nil
         }
@@ -83,11 +131,7 @@ class TokenManager {
             let data = try Data(contentsOf: filePath)
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
-            let token = try decoder.decode(WatchToken.self, from: data)
-
-            try? saveTokenToKeychain(token)
-
-            return token
+            return try decoder.decode(WatchToken.self, from: data)
         } catch {
             return nil
         }
@@ -95,16 +139,33 @@ class TokenManager {
 
     // MARK: - Delete Token
     func deleteToken() {
+        print("[TokenManager] Deleting token from all storage locations")
         deleteTokenFromKeychain()
+        iCloudTokenManager.shared.deleteToken()
 
         guard let filePath = getTokenFilePath() else { return }
         try? FileManager.default.removeItem(at: filePath)
     }
 
-    // MARK: - Save Token
+    // MARK: - Save Token (to all storage locations)
     func saveToken(_ token: WatchToken) throws {
+        print("[TokenManager] Saving token to all storage locations")
+
         try saveTokenToKeychain(token)
 
+        iCloudTokenManager.shared.saveToken(token, deviceName: deviceName)
+
+        guard let filePath = getTokenFilePath() else {
+            throw TokenError.networkError
+        }
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(token)
+        try data.write(to: filePath)
+    }
+
+    private func saveTokenToFile(_ token: WatchToken) throws {
         guard let filePath = getTokenFilePath() else {
             throw TokenError.networkError
         }
