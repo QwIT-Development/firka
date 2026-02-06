@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
@@ -328,7 +329,8 @@ void main() async {
 
   runZonedGuarded(() async {
     logger.finest("Initializing app");
-    WidgetsFlutterBinding.ensureInitialized();
+    WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
     await dotenv.load(fileName: ".env");
     logger.info("Environment variables loaded");
@@ -486,6 +488,8 @@ class InitializationScreen extends StatelessWidget {
           initData = snapshot.data!;
           initDone = true;
 
+          FlutterNativeSplash.remove();
+
           WatchSyncHelper.initialize();
 
           var watch = WatchConnectivity();
@@ -597,16 +601,8 @@ class InitializationScreen extends StatelessWidget {
           home: DefaultAssetBundle(
             bundle: FirkaBundle(),
             child: Scaffold(
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      color: const Color(0xFF7CA021),
-                    )
-                  ],
-                ),
-              ),
+              backgroundColor: const Color(0xFF7CA120),
+              body: Container(), // Covered by native splash
             ),
           ),
         );

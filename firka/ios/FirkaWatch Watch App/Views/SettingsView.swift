@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @AppStorage("refreshInterval") private var refreshInterval: Int = 15
+    @AppStorage("refreshInterval") private var refreshInterval: Int = 0
     @State private var l10n = WatchL10n.shared
 
     var body: some View {
@@ -30,6 +30,7 @@ struct SettingsView: View {
 
             Section("refresh".localized) {
                 Picker("refresh_interval".localized, selection: $refreshInterval) {
+                    Text("auto".localized).tag(0)
                     Text("15_minutes".localized).tag(15)
                     Text("30_minutes".localized).tag(30)
                     Text("1_hour".localized).tag(60)

@@ -963,7 +963,9 @@ class LiveActivityService {
         await _markAsRegistered();
         await _saveLastUpdate();
 
-        await _startPlaceholderActivity(allLessons, studentName);
+        if (liveActivityEnabled) {
+          await _startPlaceholderActivity(allLessons, studentName);
+        }
 
         await _startTimetableMonitoring(
           client: client,
