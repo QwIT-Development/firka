@@ -29,6 +29,10 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                 self?.handleNotifyReauthRequired(result: result)
             case "requestTokenFromWatch":
                 self?.handleRequestTokenFromWatch(result: result)
+            case "checkiCloudToken":
+                self?.handleCheckiCloudToken(result: result)
+            case "saveTokeToniCloud":
+                self?.handleSaveTokenToiCloud(arguments: call.arguments, result: result)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -149,6 +153,70 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                 result(["error": error.localizedDescription])
             }
         )
+    }
+
+    private func handleCheckiCloudToken(result: @escaping FlutterResult) {
+        print("[WatchSessionManager] Checking iCloud for token...")
+
+        guard let token = iCloudTokenManager.shared.loadToken() else {
+            print("[WatchSessionManager] No token in iCloud")
+            result(["error": "no_token"])
+            return
+        }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+        print("[WatchSessionManager] Found iCloud token, expiry: \(formatter.string(from: token.expiryDate))")
+
+        let tokenData: [String: Any] = [
+            "studentId": token.studentId,
+            "studentIdNorm": token.studentIdNorm,
+            "iss": token.iss,
+            "idToken": token.idToken,
+            "accessToken": token.accessToken,
+            "refreshToken": token.refreshToken,
+            "expiryDate": Int64(token.expiryDate.timeIntervalSince1970 * 1000)
+        ]
+
+        result(tokenData)
+    }
+
+    private func handleSaveTokenToiCloud(arguments: Any?, result: @escaping FlutterResult) {
+        guard let tokenData = arguments as? [String: Any] else {
+            result(FlutterError(code: "INVALID_ARGS", message: "Arguments must be a dictionary", details: nil))
+            return
+        }
+
+        guard let accessToken = tokenData["accessToken"] as? String,
+              let refreshToken = tokenData["refreshToken"] as? String,
+              let idToken = tokenData["idToken"] as? String,
+              let iss = tokenData["iss"] as? String,
+              let studentId = tokenData["studentId"] as? String,
+              let expiryMs = tokenData["expiryDate"] as? Int64 else {
+            result(FlutterError(code: "INVALID_ARGS", message: "Missing required token fields", details: nil))
+            return
+        }
+
+        let studentIdNorm = tokenData["studentIdNorm"] as? Int64 ?? 0
+        let expiryDate = Date(timeIntervalSince1970: Double(expiryMs) / 1000.0)
+
+        let token = WatchToken(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            idToken: idToken,
+            iss: iss,
+            studentId: studentId,
+            studentIdNorm: studentIdNorm,
+            expiryDate: expiryDate
+        )
+
+        iCloudTokenManager.shared.saveToken(token, deviceName: "iPhone")
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+        print("[WatchSessionManager] Token saved to iCloud, expiry: \(formatter.string(from: expiryDate))")
+
+        result(nil)
     }
 
     func session(

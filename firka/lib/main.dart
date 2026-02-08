@@ -215,10 +215,21 @@ Future<void> _initData(AppInitialization init) async {
     logger.fine("Initializing kréta client as: ${token.studentId}");
     init.client = KretaClient(token, init.isar);
 
-    // Sync token from Watch first (Watch might have fresher token)
     if (Platform.isIOS) {
-      await Future.delayed(const Duration(milliseconds: 300));
+      final recoveredFromiCloud = await WatchSyncHelper.checkAndRecoverFromiCloud(
+        isar: init.isar,
+        tokens: init.tokens,
+        client: init.client,
+      );
+      if (recoveredFromiCloud) {
+        init.tokens = await init.isar.tokenModels.where().findAll();
+        if (init.tokens.isNotEmpty) {
+          init.client.model = init.tokens.first;
+        }
+        logger.info('[Init] Recovered fresher token from iCloud');
+      }
 
+      await Future.delayed(const Duration(milliseconds: 300));
       await WatchSyncHelper.syncTokenFromWatch(
         isar: init.isar,
         tokens: init.tokens,

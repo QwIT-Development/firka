@@ -194,6 +194,126 @@ class WatchSyncHelper {
     }
   }
 
+  /// Check iCloud for a fresher token and update local storage if found.
+  /// This should be called on app startup BEFORE any API calls.
+  /// Returns true if a fresher token was found and applied.
+  static Future<bool> checkAndRecoverFromiCloud({
+    Isar? isar,
+    List<TokenModel>? tokens,
+    KretaClient? client,
+  }) async {
+    if (!Platform.isIOS) return false;
+
+    final effectiveIsar = isar ?? (initDone ? initData.isar : null);
+    final effectiveTokens = tokens ?? (initDone ? initData.tokens : null);
+    final effectiveClient = client ?? (initDone ? initData.client : null);
+
+    if (effectiveIsar == null) {
+      debugPrint('[WatchSync] Cannot check iCloud: no isar available');
+      return false;
+    }
+
+    try {
+      debugPrint('[WatchSync] Checking iCloud for fresher token...');
+      final result = await _watchChannel.invokeMethod('checkiCloudToken');
+
+      if (result == null) {
+        debugPrint('[WatchSync] No response from native');
+        return false;
+      }
+
+      final tokenData = result as Map<dynamic, dynamic>;
+      if (tokenData.containsKey('error')) {
+        debugPrint('[WatchSync] iCloud check returned: ${tokenData['error']}');
+        return false;
+      }
+
+      final iCloudExpiry = tokenData['expiryDate'] as int?;
+      if (iCloudExpiry == null) {
+        debugPrint('[WatchSync] iCloud token has no expiry');
+        return false;
+      }
+
+      final iCloudExpiryDate = DateTime.fromMillisecondsSinceEpoch(iCloudExpiry);
+
+      if (iCloudExpiryDate.isBefore(DateTime.now())) {
+        debugPrint('[WatchSync] iCloud token is expired');
+        return false;
+      }
+
+      final currentToken = effectiveTokens?.isNotEmpty == true ? effectiveTokens!.first : null;
+      final localExpiry = currentToken?.expiryDate;
+
+      if (localExpiry == null || iCloudExpiryDate.isAfter(localExpiry)) {
+        debugPrint('[WatchSync] iCloud has fresher token! iCloud: $iCloudExpiryDate, Local: $localExpiry');
+
+        final newToken = TokenModel.fromValues(
+          (tokenData['studentIdNorm'] as int?) ?? 0,
+          tokenData['studentId'] as String,
+          tokenData['iss'] as String,
+          tokenData['idToken'] as String,
+          tokenData['accessToken'] as String,
+          tokenData['refreshToken'] as String,
+          iCloudExpiry,
+        );
+
+        await effectiveIsar.writeTxn(() async {
+          await effectiveIsar.tokenModels.put(newToken);
+        });
+
+        final updatedTokens = await effectiveIsar.tokenModels.where().findAll();
+
+        if (initDone) {
+          initData.tokens = updatedTokens;
+        }
+
+        if (effectiveClient != null) {
+          effectiveClient.model = newToken;
+        }
+
+        KretaClient.clearReauthFlag();
+
+        debugPrint('[WatchSync] Token recovered from iCloud! New expiry: $iCloudExpiryDate');
+        return true;
+      } else {
+        debugPrint('[WatchSync] Local token is same or fresher. Local: $localExpiry, iCloud: $iCloudExpiryDate');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('[WatchSync] Failed to check iCloud: $e');
+      return false;
+    }
+  }
+
+  /// Save token to iCloud. Call this after refreshing token on iPhone.
+  static Future<void> saveTokenToiCloud(TokenModel token) async {
+    if (!Platform.isIOS) return;
+
+    if (token.accessToken == null ||
+        token.refreshToken == null ||
+        token.expiryDate == null) {
+      debugPrint('[WatchSync] Token incomplete, not saving to iCloud');
+      return;
+    }
+
+    final tokenData = {
+      'studentId': token.studentId,
+      'studentIdNorm': token.studentIdNorm,
+      'iss': token.iss,
+      'idToken': token.idToken,
+      'accessToken': token.accessToken,
+      'refreshToken': token.refreshToken,
+      'expiryDate': token.expiryDate!.millisecondsSinceEpoch,
+    };
+
+    try {
+      await _watchChannel.invokeMethod('saveTokeToniCloud', tokenData);
+      debugPrint('[WatchSync] Token saved to iCloud');
+    } catch (e) {
+      debugPrint('[WatchSync] Failed to save token to iCloud: $e');
+    }
+  }
+
   static Future<void> syncTokenFromWatch({
     Isar? isar,
     List<TokenModel>? tokens,

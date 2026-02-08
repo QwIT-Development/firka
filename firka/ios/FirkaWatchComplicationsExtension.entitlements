@@ -7,6 +7,6 @@
 		<string>group.app.firka.firkaa</string>
 	</array>
 	<key>com.apple.developer.ubiquity-kvstore-identifier</key>
-	<string>$(TeamIdentifierPrefix)$(CFBundleIdentifier)</string>
+	<string>$(TeamIdentifierPrefix)app.firka.firkaa</string>
 </dict>
 </plist>
