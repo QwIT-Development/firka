@@ -174,13 +174,27 @@ class DataStore {
         }
 
         print("[Watch] Recovery Step 2: Attempting API token refresh...")
+        var isNetworkError = false
+        var isTokenPermanentlyInvalid = false
+
         do {
             _ = try await TokenManager.shared.refreshToken()
             print("[Watch] Recovery: Token refresh succeeded!")
             checkTokenState()
             return true
+        } catch let tokenError as TokenError {
+            print("[Watch] Recovery: API token refresh failed: \(tokenError)")
+            switch tokenError {
+            case .networkError:
+                isNetworkError = true
+            case .refreshExpired, .invalidGrant:
+                isTokenPermanentlyInvalid = true
+            default:
+                break
+            }
         } catch {
-            print("[Watch] Recovery: API token refresh failed: \(error)")
+            print("[Watch] Recovery: API token refresh failed with unknown error: \(error)")
+            isNetworkError = true // Assume network issue for unknown errors
         }
 
         print("[Watch] Recovery Step 3: Checking if iPhone is reachable...")
@@ -190,9 +204,19 @@ class DataStore {
             return true
         }
 
-        print("[Watch] Recovery: All attempts failed, will show reauth screen")
-        recoveryAttempted = true
-        self.error = "token_expired"
+        if isTokenPermanentlyInvalid {
+            print("[Watch] Recovery: Token permanently invalid, showing reauth screen")
+            recoveryAttempted = true
+            self.error = "token_expired"
+        } else if isNetworkError {
+            print("[Watch] Recovery: Network error - not showing reauth, user can retry")
+            self.error = "network"
+        } else {
+            print("[Watch] Recovery: Unknown failure, showing reauth screen")
+            recoveryAttempted = true
+            self.error = "token_expired"
+        }
+
         return false
     }
 

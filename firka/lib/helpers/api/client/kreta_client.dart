@@ -94,6 +94,16 @@ class KretaClient {
     if (!Platform.isIOS || !initDone) return false;
 
     try {
+      final recoveredFromiCloud = await WatchSyncHelper.checkAndRecoverFromiCloud(
+        isar: initData.isar,
+        tokens: initData.tokens,
+        client: initData.client,
+      );
+      if (recoveredFromiCloud) {
+        debugPrint('[KretaClient] Recovered fresh token from iCloud');
+        return true;
+      }
+
       await WatchSyncHelper.syncTokenFromWatch(
         isar: initData.isar,
         tokens: initData.tokens,
@@ -113,7 +123,7 @@ class KretaClient {
 
       return false;
     } catch (e) {
-      debugPrint('[KretaClient] Failed to recover from Watch: $e');
+      debugPrint('[KretaClient] Failed to recover from Watch/iCloud: $e');
       return false;
     }
   }
@@ -126,7 +136,25 @@ class KretaClient {
     final fiveMinutesFromNow = now.add(const Duration(minutes: 5));
 
     if (model.expiryDate == null || model.expiryDate!.isBefore(fiveMinutesFromNow)) {
-      logger.info("[Proactive] Token expired or expiring soon, refreshing proactively...");
+      logger.info("[Proactive] Token expired or expiring soon...");
+
+      if (Platform.isIOS && initDone) {
+        final recoveredFromiCloud = await WatchSyncHelper.checkAndRecoverFromiCloud(
+          isar: isar,
+          tokens: initData.tokens,
+          client: this,
+        );
+        if (recoveredFromiCloud) {
+          logger.info("[Proactive] Found fresh token in iCloud, no refresh needed");
+          initData.tokens = await isar.tokenModels.where().findAll();
+          if (initData.tokens.isNotEmpty) {
+            model = initData.tokens.first;
+          }
+          return true;
+        }
+      }
+
+      logger.info("[Proactive] No fresh token in iCloud, refreshing...");
 
       try {
         var extended = await extendToken(model);
@@ -140,6 +168,12 @@ class KretaClient {
         model = tokenModel;
 
         if (Platform.isIOS) {
+          try {
+            await WatchSyncHelper.saveTokenToiCloud(tokenModel);
+          } catch (e) {
+            debugPrint('[KretaClient] iCloud token sync skipped: $e');
+          }
+
           try {
             await _watchChannel.invokeMethod('sendTokenToWatch', {
               'studentId': model.studentId,
@@ -207,6 +241,12 @@ class KretaClient {
         model = tokenModel;
 
         if (Platform.isIOS) {
+          try {
+            await WatchSyncHelper.saveTokenToiCloud(tokenModel);
+          } catch (e) {
+            debugPrint('[KretaClient] iCloud token sync skipped: $e');
+          }
+
           try {
             await _watchChannel.invokeMethod('sendTokenToWatch', {
               'studentId': model.studentId,
