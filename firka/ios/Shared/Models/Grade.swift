@@ -7,6 +7,7 @@ struct WidgetGrade: Codable, Identifiable {
     let subject: WidgetSubject
     let topic: String?
     let type: NameUidDesc
+    let valueType: NameUidDesc?
     let numericValue: Int?
     let strValue: String?
     let weightPercentage: Int?
@@ -14,15 +15,36 @@ struct WidgetGrade: Codable, Identifiable {
     var id: String { uid }
 
     init(uid: String, recordDate: Date, subject: WidgetSubject, topic: String?,
-         type: NameUidDesc, numericValue: Int?, strValue: String?, weightPercentage: Int?) {
+         type: NameUidDesc, valueType: NameUidDesc?, numericValue: Int?, strValue: String?, weightPercentage: Int?) {
         self.uid = uid
         self.recordDate = recordDate
         self.subject = subject
         self.topic = topic
         self.type = type
+        self.valueType = valueType
         self.numericValue = numericValue
         self.strValue = strValue
         self.weightPercentage = weightPercentage
+    }
+
+    var isPercentageGrade: Bool {
+        valueType?.name.lowercased().contains("szazalekos") ?? false
+    }
+
+    static func percentageToGrade(_ percentage: Int) -> Int {
+        if percentage < 50 { return 1 }
+        if percentage < 60 { return 2 }
+        if percentage < 70 { return 3 }
+        if percentage < 80 { return 4 }
+        return 5
+    }
+
+    var normalizedNumericValue: Int? {
+        guard let numeric = numericValue else { return nil }
+        if isPercentageGrade {
+            return WidgetGrade.percentageToGrade(numeric)
+        }
+        return numeric
     }
 
     var displayValue: String {
@@ -39,7 +61,7 @@ struct WidgetGrade: Codable, Identifiable {
     }
 
     var gradeColor: Color {
-        guard let value = numericValue else { return .gray }
+        guard let value = normalizedNumericValue else { return .gray }
         switch value {
         case 5: return .green
         case 4: return .blue
@@ -76,5 +98,22 @@ extension WidgetGrade {
             "magatartas": "Magatartás"
         ]
         return typeMap[type.name.lowercased()] ?? type.name.replacingOccurrences(of: "_", with: " ").capitalized
+    }
+
+    var displayTypeWithWeight: String {
+        if let weight = weightPercentage, weight != 100 {
+            return "\(displayType) (\(weight)%)"
+        }
+        return displayType
+    }
+
+    var displayGradeValue: String {
+        if isPercentageGrade, let numeric = numericValue {
+            return "\(numeric)%"
+        }
+        if let numeric = numericValue {
+            return "\(numeric)"
+        }
+        return strValue ?? ""
     }
 }

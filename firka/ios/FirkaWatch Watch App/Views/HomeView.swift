@@ -42,6 +42,8 @@ struct HomeView: View {
     // MARK: - Refresh Button
 
     @State private var refreshStatus: RefreshStatus = .idle
+    @State private var wasLoadingFromBackground: Bool = false
+    @State private var lastUpdateTime: Date? = nil
 
     enum RefreshStatus {
         case idle, loading, success, failure
@@ -49,6 +51,7 @@ struct HomeView: View {
 
     private var refreshButton: some View {
         Button(action: {
+            guard !dataStore.isLoading else { return }
             Task {
                 refreshStatus = .loading
                 await dataStore.refreshAll()
@@ -62,18 +65,23 @@ struct HomeView: View {
             }
         }) {
             HStack(spacing: 6) {
-                switch refreshStatus {
-                case .idle:
-                    Image(systemName: "arrow.clockwise")
-                case .loading:
+                if dataStore.isLoading && refreshStatus != .loading {
                     ProgressView()
                         .scaleEffect(0.8)
-                case .success:
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                case .failure:
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.red)
+                } else {
+                    switch refreshStatus {
+                    case .idle:
+                        Image(systemName: "arrow.clockwise")
+                    case .loading:
+                        ProgressView()
+                            .scaleEffect(0.8)
+                    case .success:
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                    case .failure:
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.red)
+                    }
                 }
                 Text(refreshStatusText)
             }
@@ -81,11 +89,34 @@ struct HomeView: View {
             .foregroundColor(.blue)
         }
         .buttonStyle(.plain)
-        .disabled(refreshStatus == .loading)
+        .disabled(dataStore.isLoading || refreshStatus == .loading)
         .padding(.top, 8)
+        .onChange(of: dataStore.isLoading) { oldValue, newValue in
+            if newValue && refreshStatus == .idle {
+                wasLoadingFromBackground = true
+            }
+            if !newValue && wasLoadingFromBackground && refreshStatus == .idle {
+                wasLoadingFromBackground = false
+                if dataStore.error == nil && dataStore.data != nil {
+                    refreshStatus = .success
+                } else if dataStore.error != nil {
+                    refreshStatus = .failure
+                }
+                Task {
+                    try? await Task.sleep(nanoseconds: 2_000_000_000)
+                    if refreshStatus == .success || refreshStatus == .failure {
+                        refreshStatus = .idle
+                    }
+                }
+            }
+        }
     }
 
     private var refreshStatusText: String {
+        if dataStore.isLoading && refreshStatus != .loading {
+            return "refreshing".localized
+        }
+
         switch refreshStatus {
         case .idle: return "refresh".localized
         case .loading: return "refreshing".localized

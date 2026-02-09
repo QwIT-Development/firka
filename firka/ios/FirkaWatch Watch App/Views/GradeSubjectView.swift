@@ -51,8 +51,19 @@ struct GradeSubjectView: View {
     private func gradeRow(_ grade: WidgetGrade) -> some View {
         FirkaCard {
             HStack(alignment: .top, spacing: 10) {
-                if let numeric = grade.numericValue {
-                    GradeBadge(grade: numeric)
+                if let normalizedValue = grade.normalizedNumericValue {
+                    if grade.isPercentageGrade, let rawValue = grade.numericValue {
+                        ZStack {
+                            Circle()
+                                .fill(gradeColor(normalizedValue))
+                                .frame(width: 32, height: 32)
+                            Text("\(rawValue)%")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.white)
+                        }
+                    } else {
+                        GradeBadge(grade: normalizedValue)
+                    }
                 } else {
                     Text(grade.displayValue)
                         .font(.caption)
@@ -63,7 +74,7 @@ struct GradeSubjectView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(grade.displayType)
+                    Text(grade.displayTypeWithWeight)
                         .font(.subheadline)
                         .fontWeight(.medium)
 
@@ -77,6 +88,16 @@ struct GradeSubjectView: View {
 
                 Spacer()
             }
+        }
+    }
+
+    private func gradeColor(_ value: Int) -> Color {
+        switch value {
+        case 5: return .green
+        case 4: return .blue
+        case 3: return .yellow
+        case 2: return .orange
+        default: return .red
         }
     }
 
