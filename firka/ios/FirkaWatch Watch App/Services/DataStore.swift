@@ -425,7 +425,7 @@ class DataStore {
         var subjectGradesMap: [String: [(value: Int, weight: Double)]] = [:]
 
         for grade in grades {
-            if let numeric = grade.numericValue {
+            if let numeric = grade.normalizedNumericValue {
                 let key = grade.subject.uid
                 let weight = Double(grade.weightPercentage ?? 100) / 100.0
                 subjectGradesMap[key, default: []].append((value: numeric, weight: weight))

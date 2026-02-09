@@ -112,6 +112,7 @@ struct KretaGrade: Decodable {
     let subject: KretaSubject
     let topic: String?
     let type: KretaNameUidDesc
+    let valueType: KretaNameUidDesc?
     let numericValue: Int?
     let strValue: String?
     let weightPercentage: Int?
@@ -122,6 +123,7 @@ struct KretaGrade: Decodable {
         case subject = "Tantargy"
         case topic = "Tema"
         case type = "Tipus"
+        case valueType = "ErtekFajta"
         case numericValue = "SzamErtek"
         case strValue = "SzovegesErtek"
         case weightPercentage = "SulySzazalekErteke"
@@ -144,12 +146,17 @@ struct KretaGrade: Decodable {
             description: type.description
         )
 
+        let widgetValueType = valueType.map { vt in
+            NameUidDesc(uid: vt.uid, name: vt.name, description: vt.description)
+        }
+
         return WidgetGrade(
             uid: uid,
             recordDate: recordDate,
             subject: widgetSubject,
             topic: topic,
             type: widgetType,
+            valueType: widgetValueType,
             numericValue: numericValue,
             strValue: strValue,
             weightPercentage: weightPercentage

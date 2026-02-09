@@ -77,13 +77,24 @@ class KretaClient {
 
   static Future<void> _setReauthFlag() async {
     if (Platform.isIOS && !needsReauth) {
-      debugPrint('[KretaClient] Token expired, trying to recover from Watch first...');
-      final recovered = await _tryRecoverFromWatch();
+      debugPrint('[KretaClient] Token expired, trying to recover from Watch/iCloud first...');
+
+      var recovered = await _tryRecoverFromWatch();
       if (recovered) {
-        debugPrint('[KretaClient] Successfully recovered token from Watch, reauth not needed');
+        debugPrint('[KretaClient] Successfully recovered token (attempt 1), reauth not needed');
         return;
       }
-      debugPrint('[KretaClient] Could not recover from Watch, setting reauth flag');
+
+      debugPrint('[KretaClient] First recovery failed, waiting for iCloud sync...');
+      await Future.delayed(const Duration(milliseconds: 1500));
+
+      recovered = await _tryRecoverFromWatch();
+      if (recovered) {
+        debugPrint('[KretaClient] Successfully recovered token (attempt 2), reauth not needed');
+        return;
+      }
+
+      debugPrint('[KretaClient] Could not recover from Watch/iCloud, setting reauth flag');
     }
 
     needsReauth = true;

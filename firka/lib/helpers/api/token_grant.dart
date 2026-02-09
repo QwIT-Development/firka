@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:firka/helpers/api/exceptions/token.dart';
 import 'package:firka/helpers/api/resp/token_grant.dart';
 import 'package:firka/helpers/db/models/token_model.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../main.dart';
+import '../watch_sync_helper.dart';
 import 'consts.dart';
 
 Future<TokenGrantResponse> getAccessToken(String code) async {
@@ -76,11 +80,30 @@ Future<TokenGrantResponse> extendToken(TokenModel model) async {
           logger.info("Token extended successfully for user: ${model.studentId}");
           return TokenGrantResponse.fromJson(response.data);
         case 400:
-          logger.warning("Token refresh failed (400) - refresh token expired for user: ${model.studentId}");
-          throw TokenExpiredException();
         case 401:
-          logger.warning("Token refresh failed (401) - invalid grant for user: ${model.studentId}");
-          throw InvalidGrantException();
+          if (Platform.isIOS && initDone) {
+            debugPrint('[TokenGrant] Got ${response.statusCode}, checking iCloud for fresher token...');
+            final recovered = await WatchSyncHelper.checkAndRecoverFromiCloud(
+              isar: initData.isar,
+              tokens: initData.tokens,
+              client: initData.client,
+            );
+            if (recovered) {
+              debugPrint('[TokenGrant] Found fresher token in iCloud! Using it instead of failing.');
+              final freshToken = initData.tokens.first;
+              return TokenGrantResponse(
+                accessToken: freshToken.accessToken!,
+                refreshToken: freshToken.refreshToken!,
+                idToken: freshToken.idToken ?? '',
+                expiresIn: freshToken.expiryDate!.difference(DateTime.now()).inSeconds,
+                tokenType: 'Bearer',
+                scope: 'openid',
+              );
+            }
+            debugPrint('[TokenGrant] No fresher token in iCloud, token truly expired');
+          }
+          logger.warning("Token refresh failed (${response.statusCode}) - refresh token invalid for user: ${model.studentId}");
+          throw response.statusCode == 400 ? TokenExpiredException() : InvalidGrantException();
         default:
           logger.warning("Token refresh failed (${response.statusCode}) for user: ${model.studentId}, attempt ${attempt + 1}");
           lastError = Exception("Failed to get access token, response code: ${response.statusCode}");
