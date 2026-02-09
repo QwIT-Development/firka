@@ -48,6 +48,8 @@ class TokenManager {
         iCloudTokenManager.shared.observeChanges { [weak self] iCloudToken in
             guard let self = self else { return }
 
+            let isValidToken = iCloudToken.expiryDate > Date().addingTimeInterval(60)
+
             if let localToken = self.loadTokenFromKeychain() {
                 if iCloudToken.expiryDate > localToken.expiryDate {
                     print("[TokenManager] iCloud token is fresher (\(iCloudToken.expiryDate) > \(localToken.expiryDate)), updating local cache")
@@ -56,6 +58,12 @@ class TokenManager {
 
                     #if os(watchOS)
                     DataStore.shared.checkTokenState()
+                    #endif
+
+                    #if os(iOS)
+                    if isValidToken {
+                        self.notifyiOSTokenRecovered()
+                    }
                     #endif
                 } else {
                     print("[TokenManager] Local token is fresher or equal, ignoring iCloud update and pushing local to iCloud")
@@ -69,9 +77,27 @@ class TokenManager {
                 #if os(watchOS)
                 DataStore.shared.checkTokenState()
                 #endif
+
+                #if os(iOS)
+                if isValidToken {
+                    self.notifyiOSTokenRecovered()
+                }
+                #endif
             }
         }
     }
+
+    #if os(iOS)
+    private func notifyiOSTokenRecovered() {
+        print("[TokenManager] Valid token received from iCloud, notifying Flutter to clear reauth flag")
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(
+                name: Notification.Name("TokenRecoveredFromiCloud"),
+                object: nil
+            )
+        }
+    }
+    #endif
 
     // MARK: - File Management
     private func getTokenFilePath() -> URL? {

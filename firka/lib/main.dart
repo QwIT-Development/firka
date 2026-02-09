@@ -226,7 +226,7 @@ Future<void> _initData(AppInitialization init) async {
         if (init.tokens.isNotEmpty) {
           init.client.model = init.tokens.first;
         }
-        logger.info('[Init] Recovered fresher token from iCloud');
+        logger.info('[Init] Recovered fresher token from iCloud (immediate)');
       }
 
       await Future.delayed(const Duration(milliseconds: 300));

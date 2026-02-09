@@ -45,6 +45,18 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         } else {
             print("[WatchSessionManager] WCSession not supported on this device")
         }
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleTokenRecoveredFromiCloud),
+            name: Notification.Name("TokenRecoveredFromiCloud"),
+            object: nil
+        )
+    }
+
+    @objc private func handleTokenRecoveredFromiCloud() {
+        print("[WatchSessionManager] Token recovered from iCloud, notifying Flutter to clear reauth flag")
+        flutterChannel?.invokeMethod("onTokenRecoveredFromiCloud", arguments: nil)
     }
 
     private func handleSendTokenToWatch(arguments: Any?, result: @escaping FlutterResult) {
