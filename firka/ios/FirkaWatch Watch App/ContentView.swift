@@ -1,10 +1,16 @@
 import SwiftUI
 import WatchConnectivity
+internal import Combine
 
 struct ContentView: View {
     var dataStore = DataStore.shared
     @State private var selectedTab = 0
     @State private var isRequestingToken = false
+    @Environment(\.scenePhase) private var scenePhase
+
+    private let staleCheckTimer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
+
+    private let autoRefreshThreshold: TimeInterval = 10 * 60
 
     var body: some View {
         Group {
@@ -41,8 +47,6 @@ struct ContentView: View {
             dataStore.checkTokenState()
             dataStore.loadFromCache()
             if dataStore.hasToken {
-                await dataStore.refreshTokenProactively()
-
                 await dataStore.refreshAll()
 
                 if (dataStore.error == "token_expired" || dataStore.error == "no_token") && !dataStore.recoveryAttempted {
@@ -55,6 +59,33 @@ struct ContentView: View {
                 requestToken()
             }
         }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if newPhase == .active && oldPhase != .active {
+                if shouldAutoRefresh {
+                    print("[Watch] App came to foreground, data is stale (>10 min), refreshing...")
+                    Task {
+                        await dataStore.refreshAll()
+                    }
+                } else {
+                    print("[Watch] App came to foreground, data is fresh (<10 min), skipping refresh")
+                }
+            }
+        }
+        .onReceive(staleCheckTimer) { _ in
+            if scenePhase == .active && shouldAutoRefresh && !dataStore.isLoading {
+                print("[Watch] Data became stale (>10 min), auto-refreshing...")
+                Task {
+                    await dataStore.refreshAll()
+                }
+            }
+        }
+    }
+
+    private var shouldAutoRefresh: Bool {
+        guard dataStore.hasToken else { return false }
+        guard let lastUpdated = dataStore.lastUpdated else { return true }
+        let elapsed = Date().timeIntervalSince(lastUpdated)
+        return elapsed >= autoRefreshThreshold
     }
 
     private func requestToken() {
