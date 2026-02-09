@@ -34,8 +34,43 @@ class WatchSyncHelper {
       case 'onTokenFromWatch':
         debugPrint('[WatchSync] Token received from Watch');
         return await _processTokenFromWatch(call.arguments);
+      case 'onTokenRecoveredFromiCloud':
+        debugPrint('[WatchSync] Token recovered from iCloud notification received');
+        await _handleTokenRecoveredFromiCloud();
+        return null;
       default:
         return null;
+    }
+  }
+
+  /// Called when iOS receives a fresh token from iCloud (e.g., Watch refreshed)
+  /// This clears the reauth flag if it was set, since we now have a valid token
+  static Future<void> _handleTokenRecoveredFromiCloud() async {
+    if (!initDone) {
+      debugPrint('[WatchSync] Cannot handle iCloud recovery: app not initialized');
+      return;
+    }
+
+    try {
+      final recovered = await checkAndRecoverFromiCloud(
+        isar: initData.isar,
+        tokens: initData.tokens,
+        client: initData.client,
+      );
+
+      if (recovered) {
+        debugPrint('[WatchSync] Token recovered from iCloud, reauth flag cleared');
+      } else {
+        if (initData.tokens.isNotEmpty) {
+          final token = initData.tokens.first;
+          if (token.expiryDate != null && token.expiryDate!.isAfter(DateTime.now())) {
+            KretaClient.clearReauthFlag();
+            debugPrint('[WatchSync] Cleared reauth flag after iCloud notification (token is valid)');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('[WatchSync] Failed to handle iCloud recovery: $e');
     }
   }
 

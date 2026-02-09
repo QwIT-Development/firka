@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:isar/isar.dart';
+
 import 'package:firka/helpers/api/client/kreta_client.dart';
+import 'package:firka/helpers/db/models/token_model.dart';
 import 'package:firka/helpers/api/client/kreta_stream.dart';
 import 'package:firka/helpers/api/exceptions/token.dart';
 import 'package:firka/helpers/extensions.dart';
@@ -31,6 +34,7 @@ import '../../../../helpers/debug_helper.dart';
 import '../../../../helpers/firka_bundle.dart';
 import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/image_preloader.dart';
+import '../../../../helpers/watch_sync_helper.dart';
 import '../../../widget/delayed_spinner.dart';
 import '../../../widget/firka_icon.dart';
 import '../../pages/extras/extras.dart';
@@ -206,6 +210,41 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
 
     try {
       _prefetched = true;
+
+      if (Platform.isIOS) {
+        final token = widget.data.tokens.isNotEmpty ? widget.data.tokens.first : null;
+        final tokenExpiry = token?.expiryDate;
+        final isTokenExpiredOrExpiring = tokenExpiry == null ||
+            tokenExpiry.isBefore(DateTime.now().add(const Duration(minutes: 5)));
+
+        if (isTokenExpiredOrExpiring || KretaClient.needsReauth) {
+          logger.info('[Home] Token expired/expiring or needsReauth, trying iCloud recovery...');
+
+          const delays = [1, 5, 10, 30, 60];
+
+          for (int attempt = 0; attempt < delays.length; attempt++) {
+            await Future.delayed(Duration(seconds: delays[attempt]));
+
+            final recovered = await WatchSyncHelper.checkAndRecoverFromiCloud(
+              isar: widget.data.isar,
+              tokens: widget.data.tokens,
+              client: widget.data.client,
+            );
+
+            if (recovered) {
+              widget.data.tokens = await widget.data.isar.tokenModels.where().findAll();
+              if (widget.data.tokens.isNotEmpty) {
+                widget.data.client.model = widget.data.tokens.first;
+              }
+              KretaClient.clearReauthFlag();
+              logger.info('[Home] Recovered token from iCloud (attempt ${attempt + 1}, after ${delays[attempt]}s)');
+              break;
+            }
+
+            logger.fine('[Home] iCloud check attempt ${attempt + 1} (after ${delays[attempt]}s): no fresher token yet');
+          }
+        }
+      }
 
       await fetchData();
 
