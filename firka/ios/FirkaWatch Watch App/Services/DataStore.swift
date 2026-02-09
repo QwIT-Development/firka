@@ -292,6 +292,11 @@ class DataStore {
     // MARK: - Data Refresh
 
     func refreshAll() async {
+        guard !isLoading else {
+            print("[Watch] DataStore.refreshAll() already in progress, skipping duplicate call")
+            return
+        }
+
         print("[Watch] DataStore.refreshAll() called")
         isLoading = true
         error = nil
