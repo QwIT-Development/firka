@@ -154,6 +154,7 @@ class DataStore {
         }
 
         isRecoveringToken = true
+        recoveryAttempted = false
         error = nil
         print("[Watch] Starting background token recovery...")
 
@@ -161,47 +162,59 @@ class DataStore {
             isRecoveringToken = false
         }
 
-        print("[Watch] Recovery Step 1: Checking iCloud for updated token...")
-        if let iCloudToken = iCloudTokenManager.shared.loadToken() {
-            if !isTokenExpired(iCloudToken) {
-                print("[Watch] Recovery: Found valid token in iCloud!")
-                try? TokenManager.shared.saveToken(iCloudToken)
-                checkTokenState()
-                return true
-            } else {
-                print("[Watch] Recovery: iCloud token is expired, trying refresh...")
-            }
-        }
-
-        print("[Watch] Recovery Step 2: Attempting API token refresh...")
+        let retryDelays: [UInt64] = [0, 2, 5]
         var isNetworkError = false
         var isTokenPermanentlyInvalid = false
 
-        do {
-            _ = try await TokenManager.shared.refreshToken()
-            print("[Watch] Recovery: Token refresh succeeded!")
-            checkTokenState()
-            return true
-        } catch let tokenError as TokenError {
-            print("[Watch] Recovery: API token refresh failed: \(tokenError)")
-            switch tokenError {
-            case .networkError:
-                isNetworkError = true
-            case .refreshExpired, .invalidGrant:
-                isTokenPermanentlyInvalid = true
-            default:
-                break
+        for (attemptIndex, delaySeconds) in retryDelays.enumerated() {
+            if delaySeconds > 0 {
+                print("[Watch] Recovery attempt \(attemptIndex + 1): waiting \(delaySeconds)s before retry...")
+                try? await Task.sleep(nanoseconds: delaySeconds * 1_000_000_000)
             }
-        } catch {
-            print("[Watch] Recovery: API token refresh failed with unknown error: \(error)")
-            isNetworkError = true // Assume network issue for unknown errors
-        }
 
-        print("[Watch] Recovery Step 3: Checking if iPhone is reachable...")
-        if await requestTokenFromiPhoneAsync() {
-            print("[Watch] Recovery: Got token from iPhone!")
-            checkTokenState()
-            return true
+            print("[Watch] Recovery attempt \(attemptIndex + 1)/\(retryDelays.count) - Step 1: Checking iCloud for updated token...")
+            if let iCloudToken = iCloudTokenManager.shared.loadToken() {
+                if !isTokenExpired(iCloudToken) {
+                    print("[Watch] Recovery: Found valid token in iCloud!")
+                    try? TokenManager.shared.saveToken(iCloudToken)
+                    checkTokenState()
+                    return true
+                } else {
+                    print("[Watch] Recovery: iCloud token is expired, trying refresh...")
+                }
+            }
+
+            print("[Watch] Recovery attempt \(attemptIndex + 1)/\(retryDelays.count) - Step 2: Attempting API token refresh...")
+            do {
+                _ = try await TokenManager.shared.refreshToken()
+                print("[Watch] Recovery: Token refresh succeeded!")
+                checkTokenState()
+                return true
+            } catch let tokenError as TokenError {
+                print("[Watch] Recovery: API token refresh failed: \(tokenError)")
+                switch tokenError {
+                case .networkError:
+                    isNetworkError = true
+                case .refreshExpired, .invalidGrant:
+                    isTokenPermanentlyInvalid = true
+                default:
+                    break
+                }
+            } catch {
+                print("[Watch] Recovery: API token refresh failed with unknown error: \(error)")
+                isNetworkError = true
+            }
+
+            print("[Watch] Recovery attempt \(attemptIndex + 1)/\(retryDelays.count) - Step 3: Checking if iPhone is reachable...")
+            if await requestTokenFromiPhoneAsync() {
+                print("[Watch] Recovery: Got token from iPhone!")
+                checkTokenState()
+                return true
+            }
+
+            if attemptIndex < retryDelays.count - 1 {
+                print("[Watch] Recovery attempt \(attemptIndex + 1) failed, retrying...")
+            }
         }
 
         if isTokenPermanentlyInvalid {
@@ -212,9 +225,8 @@ class DataStore {
             print("[Watch] Recovery: Network error - not showing reauth, user can retry")
             self.error = "network"
         } else {
-            print("[Watch] Recovery: Unknown failure, showing reauth screen")
-            recoveryAttempted = true
-            self.error = "token_expired"
+            print("[Watch] Recovery: All retries failed, treating as transient/network issue")
+            self.error = "network"
         }
 
         return false
@@ -348,6 +360,20 @@ class DataStore {
         } catch {
             print("[Watch] refreshAll() network error: \(error)")
             self.error = "network"
+        }
+    }
+
+    func refreshAllWithRecovery() async {
+        await refreshAll()
+
+        guard error == "token_expired" || error == "no_token" else {
+            return
+        }
+
+        print("[Watch] Token issue after refreshAll(), starting auto-recovery flow...")
+        let recovered = await attemptTokenRecovery()
+        if recovered {
+            await refreshAll()
         }
     }
 

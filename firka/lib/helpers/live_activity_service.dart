@@ -7,6 +7,7 @@ import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/helpers/db/widget.dart';
 import 'package:firka/helpers/live_activity_manager.dart';
+import 'package:firka/helpers/active_account_helper.dart';
 import 'package:firka/helpers/settings.dart';
 import 'package:firka/ui/phone/screens/live_activity/live_activity_consent_screen.dart';
 import 'package:flutter/material.dart';
@@ -623,7 +624,12 @@ class LiveActivityService {
           }
 
           final studentResp = await effectiveClient.getStudent();
-          final studentName = studentResp.response?.name ?? initData.tokens.first.studentId ?? "Student";
+          final activeToken = pickActiveToken(
+            tokens: initData.tokens,
+            settings: initData.settings,
+            preferredStudentIdNorm: effectiveClient.model.studentIdNorm,
+          );
+          final studentName = studentResp.response?.name ?? activeToken?.studentId ?? "Student";
 
           await onUserLogin(
             client: effectiveClient,

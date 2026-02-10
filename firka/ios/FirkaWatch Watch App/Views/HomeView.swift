@@ -54,7 +54,7 @@ struct HomeView: View {
             guard !dataStore.isLoading else { return }
             Task {
                 refreshStatus = .loading
-                await dataStore.refreshAll()
+                await dataStore.refreshAllWithRecovery()
                 if dataStore.error == nil && dataStore.data != nil {
                     refreshStatus = .success
                 } else {

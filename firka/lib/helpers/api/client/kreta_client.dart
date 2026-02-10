@@ -7,7 +7,6 @@ import 'package:firka/helpers/api/model/class_group.dart';
 import 'package:firka/helpers/api/model/homework.dart';
 import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:firka/helpers/db/models/generic_cache_model.dart';
-import 'package:firka/helpers/db/models/homework_cache_model.dart';
 import 'package:firka/helpers/db/models/timetable_cache_model.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart';
@@ -16,6 +15,7 @@ import '../../../main.dart';
 import '../../db/models/token_model.dart';
 import '../../db/util.dart';
 import '../../debug_helper.dart';
+import '../../active_account_helper.dart';
 import '../../watch_sync_helper.dart';
 import '../consts.dart';
 import '../exceptions/token.dart';
@@ -122,9 +122,12 @@ class KretaClient {
       );
 
       final tokens = await initData.isar.tokenModels.where().findAll();
-      if (tokens.isEmpty) return false;
-
-      final token = tokens.first;
+      final token = pickActiveToken(
+        tokens: tokens,
+        settings: initData.settings,
+        preferredStudentIdNorm: initData.client.model.studentIdNorm,
+      );
+      if (token == null) return false;
       if (token.expiryDate == null) return false;
 
       if (token.expiryDate!.isAfter(DateTime.now().add(const Duration(minutes: 1)))) {
@@ -158,8 +161,13 @@ class KretaClient {
         if (recoveredFromiCloud) {
           logger.info("[Proactive] Found fresh token in iCloud, no refresh needed");
           initData.tokens = await isar.tokenModels.where().findAll();
-          if (initData.tokens.isNotEmpty) {
-            model = initData.tokens.first;
+          final activeToken = pickActiveToken(
+            tokens: initData.tokens,
+            settings: initData.settings,
+            preferredStudentIdNorm: model.studentIdNorm,
+          );
+          if (activeToken != null) {
+            model = activeToken;
           }
           return true;
         }

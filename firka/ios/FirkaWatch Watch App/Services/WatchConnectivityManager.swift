@@ -289,7 +289,7 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
             DataStore.shared.checkTokenState()
 
             Task {
-                await DataStore.shared.refreshAll()
+                await DataStore.shared.refreshAllWithRecovery()
                 print("[Watch] Data refresh completed")
             }
         } catch {

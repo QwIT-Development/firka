@@ -111,7 +111,7 @@ class BackgroundRefreshManager {
     }
 
     func handleBackgroundRefresh() async {
-        await DataStore.shared.refreshAll()
+        await DataStore.shared.refreshAllWithRecovery()
 
         WidgetCenter.shared.reloadAllTimelines()
 

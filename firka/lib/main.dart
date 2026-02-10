@@ -37,6 +37,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'helpers/db/models/homework_cache_model.dart';
 import 'helpers/update_notifier.dart';
 import 'helpers/live_activity_service.dart';
+import 'helpers/active_account_helper.dart';
 import 'helpers/watch_sync_helper.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/app_localizations_de.dart';
@@ -208,10 +209,13 @@ Future<void> _initData(AppInitialization init) async {
   resetOldHomeworkCache(init.isar);
 
   if (init.tokens.isNotEmpty) {
-    final i = (init.settings.group("profile_settings")["e_kreta_account_picker"]
-            as SettingsKretenAccountPicker)
-        .accountIndex;
-    final token = (await init.isar.tokenModels.where().findAll())[i];
+    final allTokens = await init.isar.tokenModels.where().findAll();
+    init.tokens = allTokens;
+    final token = pickActiveToken(tokens: allTokens, settings: init.settings);
+    if (token == null) {
+      logger.warning("[Init] Tokens disappeared during initialization; skipping client setup");
+      return;
+    }
     logger.fine("Initializing kréta client as: ${token.studentId}");
     init.client = KretaClient(token, init.isar);
 
@@ -223,8 +227,13 @@ Future<void> _initData(AppInitialization init) async {
       );
       if (recoveredFromiCloud) {
         init.tokens = await init.isar.tokenModels.where().findAll();
-        if (init.tokens.isNotEmpty) {
-          init.client.model = init.tokens.first;
+        final activeToken = pickActiveToken(
+          tokens: init.tokens,
+          settings: init.settings,
+          preferredStudentIdNorm: init.client.model.studentIdNorm,
+        );
+        if (activeToken != null) {
+          init.client.model = activeToken;
         }
         logger.info('[Init] Recovered fresher token from iCloud (immediate)');
       }
@@ -236,12 +245,37 @@ Future<void> _initData(AppInitialization init) async {
         client: init.client,
       );
       init.tokens = await init.isar.tokenModels.where().findAll();
-      if (init.tokens.isNotEmpty) {
-        init.client.model = init.tokens.first;
+      final activeToken = pickActiveToken(
+        tokens: init.tokens,
+        settings: init.settings,
+        preferredStudentIdNorm: init.client.model.studentIdNorm,
+      );
+      if (activeToken != null) {
+        init.client.model = activeToken;
       }
     }
 
     await init.client.refreshTokenProactively();
+
+    if (Platform.isIOS) {
+      final selectedToken = pickActiveToken(
+        tokens: init.tokens,
+        settings: init.settings,
+        preferredStudentIdNorm: init.client.model.studentIdNorm,
+      );
+      if (selectedToken != null) {
+        try {
+          await WatchSyncHelper.saveTokenToiCloud(selectedToken);
+        } catch (e) {
+          logger.warning('[Init] Failed to push active token to iCloud: $e');
+        }
+      }
+      try {
+        await WatchSyncHelper.sendTokenToWatch();
+      } catch (e) {
+        logger.warning('[Init] Failed to push active token to Watch: $e');
+      }
+    }
 
     await WidgetCacheHelper.updateWidgetCache(appStyle, init.client);
 
