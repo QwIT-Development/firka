@@ -30,7 +30,7 @@ struct ContentView: View {
                     dataStore.resetRecoveryState()
                     dataStore.checkTokenState()
                     Task {
-                        await dataStore.refreshAll()
+                        await dataStore.refreshAllWithRecovery()
                     }
                 })
             } else if !dataStore.hasToken && dataStore.data == nil {
@@ -47,14 +47,7 @@ struct ContentView: View {
             dataStore.checkTokenState()
             dataStore.loadFromCache()
             if dataStore.hasToken {
-                await dataStore.refreshAll()
-
-                if (dataStore.error == "token_expired" || dataStore.error == "no_token") && !dataStore.recoveryAttempted {
-                    let recovered = await dataStore.attemptTokenRecovery()
-                    if recovered {
-                        await dataStore.refreshAll()
-                    }
-                }
+                await dataStore.refreshAllWithRecovery()
             } else {
                 requestToken()
             }
@@ -64,7 +57,7 @@ struct ContentView: View {
                 if shouldAutoRefresh {
                     print("[Watch] App came to foreground, data is stale (>10 min), refreshing...")
                     Task {
-                        await dataStore.refreshAll()
+                        await dataStore.refreshAllWithRecovery()
                     }
                 } else {
                     print("[Watch] App came to foreground, data is fresh (<10 min), skipping refresh")
@@ -75,7 +68,7 @@ struct ContentView: View {
             if scenePhase == .active && shouldAutoRefresh && !dataStore.isLoading {
                 print("[Watch] Data became stale (>10 min), auto-refreshing...")
                 Task {
-                    await dataStore.refreshAll()
+                    await dataStore.refreshAllWithRecovery()
                 }
             }
         }

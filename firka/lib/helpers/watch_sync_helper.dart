@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:isar/isar.dart';
 
 import '../main.dart';
+import 'active_account_helper.dart';
 import 'api/client/kreta_client.dart';
 import 'db/models/token_model.dart';
 
@@ -12,6 +13,42 @@ import 'db/models/token_model.dart';
 class WatchSyncHelper {
   static const _watchChannel = MethodChannel('app.firka/watch_sync');
   static bool _initialized = false;
+
+  static TokenModel? _resolveCurrentToken({
+    List<TokenModel>? tokens,
+    KretaClient? client,
+  }) {
+    final effectiveTokens = tokens ?? (initDone ? initData.tokens : null);
+    if (effectiveTokens == null || effectiveTokens.isEmpty) return null;
+
+    final preferredStudentIdNorm = client?.model.studentIdNorm;
+    if (preferredStudentIdNorm != null) {
+      for (final token in effectiveTokens) {
+        if (token.studentIdNorm == preferredStudentIdNorm) {
+          return token;
+        }
+      }
+    }
+
+    if (initDone) {
+      return pickActiveToken(
+        tokens: effectiveTokens,
+        settings: initData.settings,
+        preferredStudentIdNorm: preferredStudentIdNorm,
+      );
+    }
+
+    return effectiveTokens.first;
+  }
+
+  static int? _resolveExpectedStudentIdNorm({
+    List<TokenModel>? tokens,
+    KretaClient? client,
+  }) {
+    final fromClient = client?.model.studentIdNorm;
+    if (fromClient != null) return fromClient;
+    return _resolveCurrentToken(tokens: tokens, client: client)?.studentIdNorm;
+  }
 
   static void initialize() {
     if (!Platform.isIOS) return;
@@ -61,12 +98,14 @@ class WatchSyncHelper {
       if (recovered) {
         debugPrint('[WatchSync] Token recovered from iCloud, reauth flag cleared');
       } else {
-        if (initData.tokens.isNotEmpty) {
-          final token = initData.tokens.first;
-          if (token.expiryDate != null && token.expiryDate!.isAfter(DateTime.now())) {
-            KretaClient.clearReauthFlag();
-            debugPrint('[WatchSync] Cleared reauth flag after iCloud notification (token is valid)');
-          }
+        final token = pickActiveToken(
+          tokens: initData.tokens,
+          settings: initData.settings,
+        );
+        final expiryDate = token?.expiryDate;
+        if (expiryDate != null && expiryDate.isAfter(DateTime.now())) {
+          KretaClient.clearReauthFlag();
+          debugPrint('[WatchSync] Cleared reauth flag after iCloud notification (token is valid)');
         }
       }
     } catch (e) {
@@ -80,7 +119,14 @@ class WatchSyncHelper {
       return {'error': 'no_token'};
     }
 
-    final token = initData.tokens.first;
+    final token = pickActiveToken(
+      tokens: initData.tokens,
+      settings: initData.settings,
+    );
+    if (token == null) {
+      debugPrint('[WatchSync] No active token available');
+      return {'error': 'no_token'};
+    }
 
     if (token.accessToken == null ||
         token.refreshToken == null ||
@@ -137,6 +183,17 @@ class WatchSyncHelper {
         return {'success': false, 'error': 'no_expiry'};
       }
 
+      final watchStudentIdNorm = tokenData['studentIdNorm'] as int?;
+      if (watchStudentIdNorm == null) {
+        debugPrint('[WatchSync] Watch token has no studentIdNorm');
+        return {'success': false, 'error': 'no_student_id_norm'};
+      }
+
+      final expectedStudentIdNorm = _resolveExpectedStudentIdNorm(
+        tokens: initData.tokens,
+        client: initData.client,
+      );
+
       final watchExpiryDate = DateTime.fromMillisecondsSinceEpoch(watchExpiry);
 
       if (watchExpiryDate.isBefore(DateTime.now())) {
@@ -147,7 +204,7 @@ class WatchSyncHelper {
       debugPrint('[WatchSync] Accepting token from Watch, expiry: $watchExpiryDate');
 
       final newToken = TokenModel.fromValues(
-        tokenData['studentIdNorm'] as int,
+        watchStudentIdNorm,
         tokenData['studentId'] as String,
         tokenData['iss'] as String,
         tokenData['idToken'] as String,
@@ -161,12 +218,15 @@ class WatchSyncHelper {
       });
 
       initData.tokens = await initData.isar.tokenModels.where().findAll();
-
-      if (initData.client != null) {
-        initData.client!.model = newToken;
+      final isForActiveAccount = expectedStudentIdNorm == null ||
+          watchStudentIdNorm == expectedStudentIdNorm;
+      if (isForActiveAccount) {
+        initData.client.model = newToken;
+        KretaClient.clearReauthFlag();
+      } else {
+        debugPrint(
+            '[WatchSync] Stored token for inactive account ($watchStudentIdNorm), active is $expectedStudentIdNorm');
       }
-
-      KretaClient.clearReauthFlag();
 
       debugPrint('[WatchSync] Token from Watch saved successfully');
       return {'success': true};
@@ -263,6 +323,18 @@ class WatchSyncHelper {
         return false;
       }
 
+      final expectedStudentIdNorm = _resolveExpectedStudentIdNorm(
+        tokens: effectiveTokens,
+        client: effectiveClient,
+      );
+
+      final iCloudStudentIdNorm = tokenData['studentIdNorm'] as int?;
+      if (expectedStudentIdNorm != null && iCloudStudentIdNorm != expectedStudentIdNorm) {
+        debugPrint(
+            '[WatchSync] iCloud token belongs to different account ($iCloudStudentIdNorm), active is $expectedStudentIdNorm - ignoring');
+        return false;
+      }
+
       final iCloudExpiry = tokenData['expiryDate'] as int?;
       if (iCloudExpiry == null) {
         debugPrint('[WatchSync] iCloud token has no expiry');
@@ -276,7 +348,10 @@ class WatchSyncHelper {
         return false;
       }
 
-      final currentToken = effectiveTokens?.isNotEmpty == true ? effectiveTokens!.first : null;
+      final currentToken = _resolveCurrentToken(
+        tokens: effectiveTokens,
+        client: effectiveClient,
+      );
       final localExpiry = currentToken?.expiryDate;
 
       if (localExpiry == null || iCloudExpiryDate.isAfter(localExpiry)) {
@@ -302,11 +377,16 @@ class WatchSyncHelper {
           initData.tokens = updatedTokens;
         }
 
-        if (effectiveClient != null) {
+        if (effectiveClient != null &&
+            (expectedStudentIdNorm == null ||
+                newToken.studentIdNorm == expectedStudentIdNorm)) {
           effectiveClient.model = newToken;
         }
 
-        KretaClient.clearReauthFlag();
+        if (expectedStudentIdNorm == null ||
+            newToken.studentIdNorm == expectedStudentIdNorm) {
+          KretaClient.clearReauthFlag();
+        }
 
         debugPrint('[WatchSync] Token recovered from iCloud! New expiry: $iCloudExpiryDate');
         return true;
@@ -368,9 +448,17 @@ class WatchSyncHelper {
     try {
       debugPrint('[WatchSync] Requesting token from Watch...');
       final result = await _watchChannel.invokeMethod('requestTokenFromWatch');
+      final expectedStudentIdNorm = _resolveExpectedStudentIdNorm(
+        tokens: effectiveTokens,
+        client: effectiveClient,
+      );
+      final currentToken = _resolveCurrentToken(
+        tokens: effectiveTokens,
+        client: effectiveClient,
+      );
+
       if (result == null) {
         debugPrint('[WatchSync] No response from Watch');
-        final currentToken = effectiveTokens.isNotEmpty ? effectiveTokens.first : null;
         if (currentToken != null &&
             currentToken.accessToken != null &&
             currentToken.refreshToken != null &&
@@ -385,7 +473,6 @@ class WatchSyncHelper {
       final tokenData = result as Map<dynamic, dynamic>;
       if (tokenData.containsKey('error')) {
         debugPrint('[WatchSync] Watch returned error: ${tokenData['error']}');
-        final currentToken = effectiveTokens.isNotEmpty ? effectiveTokens.first : null;
         if (currentToken != null &&
             currentToken.accessToken != null &&
             currentToken.refreshToken != null &&
@@ -403,10 +490,29 @@ class WatchSyncHelper {
         return;
       }
 
-      final watchExpiryDate = DateTime.fromMillisecondsSinceEpoch(watchExpiry);
-      final currentToken = effectiveTokens.isNotEmpty ? effectiveTokens.first : null;
+      final watchStudentIdNorm = tokenData['studentIdNorm'] as int?;
+      if (watchStudentIdNorm == null) {
+        debugPrint('[WatchSync] Watch token has no studentIdNorm');
+        return;
+      }
 
-      if (currentToken?.expiryDate == null || watchExpiryDate.isAfter(currentToken!.expiryDate!)) {
+      if (expectedStudentIdNorm != null && watchStudentIdNorm != expectedStudentIdNorm) {
+        debugPrint(
+            '[WatchSync] Watch token belongs to different account ($watchStudentIdNorm), active is $expectedStudentIdNorm - keeping active account');
+        if (currentToken != null &&
+            currentToken.accessToken != null &&
+            currentToken.refreshToken != null &&
+            currentToken.expiryDate != null &&
+            !KretaClient.needsReauth) {
+          await _sendTokenToWatchInternal(currentToken);
+        }
+        return;
+      }
+
+      final watchExpiryDate = DateTime.fromMillisecondsSinceEpoch(watchExpiry);
+
+      final currentExpiry = currentToken?.expiryDate;
+      if (currentExpiry == null || watchExpiryDate.isAfter(currentExpiry)) {
         debugPrint('[WatchSync] Watch has newer token, updating iPhone');
         final newToken = TokenModel.fromValues(
           tokenData['studentIdNorm'] as int,
@@ -428,16 +534,24 @@ class WatchSyncHelper {
           initData.tokens = updatedTokens;
         }
 
-        if (effectiveClient != null) {
+        if (effectiveClient != null &&
+            (expectedStudentIdNorm == null ||
+                newToken.studentIdNorm == expectedStudentIdNorm)) {
           effectiveClient.model = newToken;
         }
 
-        KretaClient.clearReauthFlag();
+        if (expectedStudentIdNorm == null ||
+            newToken.studentIdNorm == expectedStudentIdNorm) {
+          KretaClient.clearReauthFlag();
+        }
 
         debugPrint('[WatchSync] Token updated from Watch. New expiry: $watchExpiryDate');
       } else {
         debugPrint('[WatchSync] iPhone token is same or newer, sending to Watch');
-        await _sendTokenToWatchInternal(currentToken!);
+        final tokenToSend = currentToken;
+        if (tokenToSend != null) {
+          await _sendTokenToWatchInternal(tokenToSend);
+        }
       }
     } catch (e) {
       debugPrint('[WatchSync] Failed to sync token from Watch: $e');

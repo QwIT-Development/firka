@@ -7,6 +7,7 @@ import 'package:firka/helpers/db/models/token_model.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../main.dart';
+import '../active_account_helper.dart';
 import '../watch_sync_helper.dart';
 import 'consts.dart';
 
@@ -90,7 +91,14 @@ Future<TokenGrantResponse> extendToken(TokenModel model) async {
             );
             if (recovered) {
               debugPrint('[TokenGrant] Found fresher token in iCloud! Using it instead of failing.');
-              final freshToken = initData.tokens.first;
+              final freshToken = pickActiveToken(
+                tokens: initData.tokens,
+                settings: initData.settings,
+                preferredStudentIdNorm: model.studentIdNorm,
+              );
+              if (freshToken == null) {
+                throw TokenExpiredException();
+              }
               return TokenGrantResponse(
                 accessToken: freshToken.accessToken!,
                 refreshToken: freshToken.refreshToken!,

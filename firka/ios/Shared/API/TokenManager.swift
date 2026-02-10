@@ -50,7 +50,16 @@ class TokenManager {
 
             let isValidToken = iCloudToken.expiryDate > Date().addingTimeInterval(60)
 
-            if let localToken = self.loadTokenFromKeychain() {
+            let keychainToken = self.loadTokenFromKeychain()
+            let fileToken = self.loadTokenFromFile()
+            let localToken: WatchToken? = {
+                if let k = keychainToken, let f = fileToken {
+                    return k.expiryDate > f.expiryDate ? k : f
+                }
+                return keychainToken ?? fileToken
+            }()
+
+            if let localToken = localToken {
                 if iCloudToken.expiryDate > localToken.expiryDate {
                     print("[TokenManager] iCloud token is fresher (\(iCloudToken.expiryDate) > \(localToken.expiryDate)), updating local cache")
                     try? self.saveTokenToKeychain(iCloudToken)
@@ -66,7 +75,7 @@ class TokenManager {
                     }
                     #endif
                 } else {
-                    print("[TokenManager] Local token is fresher or equal, ignoring iCloud update and pushing local to iCloud")
+                    print("[TokenManager] Local token is fresher or equal (local: \(localToken.expiryDate), iCloud: \(iCloudToken.expiryDate)), ignoring iCloud update and pushing local to iCloud")
                     iCloudTokenManager.shared.saveToken(localToken, deviceName: self.deviceName)
                 }
             } else {
