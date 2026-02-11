@@ -328,16 +328,30 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
             }
 
             let token = try decoder.decode(WatchToken.self, from: jsonData)
+            let currentToken = TokenManager.shared.loadToken()
+            let shouldForceAccountSwitch: Bool
+            if incomingSentAtMs > 0,
+               let currentToken,
+               !token.isSameAccount(as: currentToken) {
+                shouldForceAccountSwitch = true
+            } else {
+                shouldForceAccountSwitch = false
+            }
+
             if incomingSentAtMs <= 0,
-               let currentToken = TokenManager.shared.loadToken(),
+               let currentToken,
                !token.isNewer(than: currentToken) {
                 print("[Watch] Ignoring stale token_update without sentAtMs")
                 return
             }
 
-            print("[Watch] Token decoded, saving... (sentAtMs: \(incomingSentAtMs))")
+            print("[Watch] Token decoded, saving... (sentAtMs: \(incomingSentAtMs), forceSwitch: \(shouldForceAccountSwitch))")
 
-            try TokenManager.shared.saveToken(token, syncToICloud: false)
+            try TokenManager.shared.saveToken(
+                token,
+                syncToICloud: false,
+                forceAccountSwitch: shouldForceAccountSwitch
+            )
             print("[Watch] Token saved successfully")
             if incomingSentAtMs > 0 {
                 lastAppliedTokenUpdateMs = max(previousSentAtMs, incomingSentAtMs)

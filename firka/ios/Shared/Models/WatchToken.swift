@@ -66,7 +66,34 @@ struct WatchToken: Codable {
 
     func isNewer(than other: WatchToken) -> Bool {
         if !isSameAccount(as: other) {
-            return expiryDate > other.expiryDate
+            let incomingUpdatedAt = effectiveUpdatedAtMs
+            let currentUpdatedAt = other.effectiveUpdatedAtMs
+            if let incomingUpdatedAt, let currentUpdatedAt, incomingUpdatedAt != currentUpdatedAt {
+                return incomingUpdatedAt > currentUpdatedAt
+            }
+            if let _ = incomingUpdatedAt, currentUpdatedAt == nil {
+                return true
+            }
+            if incomingUpdatedAt == nil, let _ = currentUpdatedAt {
+                return false
+            }
+
+            let incomingVersion = effectiveTokenVersion
+            let currentVersion = other.effectiveTokenVersion
+            if let incomingVersion, let currentVersion, incomingVersion != currentVersion {
+                return incomingVersion > currentVersion
+            }
+            if let _ = incomingVersion, currentVersion == nil {
+                return true
+            }
+            if incomingVersion == nil, let _ = currentVersion {
+                return false
+            }
+
+            if expiryDate != other.expiryDate {
+                return expiryDate > other.expiryDate
+            }
+            return false
         }
 
         let incomingVersion = effectiveTokenVersion

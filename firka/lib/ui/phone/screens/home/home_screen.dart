@@ -9,6 +9,7 @@ import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/live_activity_service.dart';
 import 'package:firka/helpers/settings.dart';
 import 'package:firka/helpers/update_notifier.dart';
+import 'package:firka/helpers/watch_sync_helper.dart';
 import 'package:firka/main.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/pages/extras/main_wear_pair.dart';
@@ -87,6 +88,7 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
   bool _disposed = false;
   bool _preloadDone = false;
   int forcedNav = 0;
+  bool _didRunSecondaryICloudRecovery = false;
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
 
@@ -201,11 +203,67 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     }
   }
 
+  Future<void> _runSecondaryICloudRecoveryIfNeeded() async {
+    if (!Platform.isIOS || _didRunSecondaryICloudRecovery) return;
+    _didRunSecondaryICloudRecovery = true;
+
+    final activeToken = pickActiveToken(
+      tokens: widget.data.tokens,
+      settings: widget.data.settings,
+      preferredStudentIdNorm: widget.data.client.model.studentIdNorm,
+    );
+
+    final now = DateTime.now();
+    final shouldRunRecovery = KretaClient.needsReauth ||
+        activeToken == null ||
+        activeToken.expiryDate == null ||
+        activeToken.expiryDate!.isBefore(now.add(const Duration(seconds: 60)));
+
+    if (!shouldRunRecovery) {
+      return;
+    }
+
+    logger.info(
+        '[Home] Secondary iCloud recovery scheduled (5s delay, startup safety pass)');
+    await Future.delayed(const Duration(seconds: 5));
+    if (_disposed) return;
+
+    try {
+      final recovered = await WatchSyncHelper.checkAndRecoverFromiCloud(
+        isar: widget.data.isar,
+        tokens: widget.data.tokens,
+        client: widget.data.client,
+      );
+      if (!recovered) {
+        logger.info('[Home] Secondary iCloud recovery found no fresher token');
+        return;
+      }
+
+      final refreshedTokens = initDone ? initData.tokens : widget.data.tokens;
+      widget.data.tokens = refreshedTokens;
+
+      final selectedToken = pickActiveToken(
+        tokens: refreshedTokens,
+        settings: widget.data.settings,
+        preferredStudentIdNorm: widget.data.client.model.studentIdNorm,
+      );
+      if (selectedToken != null) {
+        widget.data.client.model = selectedToken;
+      }
+      KretaClient.clearReauthFlag();
+      logger.info('[Home] Secondary iCloud recovery applied a fresher token');
+    } catch (e) {
+      logger.warning('[Home] Secondary iCloud recovery failed: $e');
+    }
+  }
+
   void prefetch() async {
     if (_prefetched) return;
 
     try {
       _prefetched = true;
+
+      await _runSecondaryICloudRecoveryIfNeeded();
 
       try {
         await widget.data.client.refreshTokenProactively().timeout(
