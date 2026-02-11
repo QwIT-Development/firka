@@ -3,9 +3,36 @@ import WatchConnectivity
 
 class WatchConnectivityManager: NSObject, WCSessionDelegate {
     static let shared = WatchConnectivityManager()
+    private let lastAppliedTokenUpdateKey = "watch_last_applied_token_update_ms"
 
     private override init() {
         super.init()
+    }
+
+    private var lastAppliedTokenUpdateMs: Int64 {
+        get {
+            Int64(UserDefaults.standard.double(forKey: lastAppliedTokenUpdateKey))
+        }
+        set {
+            UserDefaults.standard.set(Double(newValue), forKey: lastAppliedTokenUpdateKey)
+        }
+    }
+
+    private func extractSentAtMs(from authDict: [String: Any]) -> Int64? {
+        if let value = authDict["sentAtMs"] as? Int64 {
+            return value
+        }
+        if let value = authDict["sentAtMs"] as? Int {
+            return Int64(value)
+        }
+        if let value = authDict["sentAtMs"] as? Double {
+            return Int64(value)
+        }
+        if let value = authDict["sentAtMs"] as? String,
+           let parsed = Int64(value) {
+            return parsed
+        }
+        return nil
     }
 
     func activate() {
@@ -92,7 +119,7 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
                     let freshToken = try await KretaAPIClient.shared.getValidToken()
                     print("[Watch] Token refresh succeeded, sending fresh token to iPhone")
 
-                    let tokenData: [String: Any] = [
+                    var tokenData: [String: Any] = [
                         "studentId": freshToken.studentId,
                         "studentIdNorm": freshToken.studentIdNorm,
                         "iss": freshToken.iss,
@@ -101,6 +128,10 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
                         "refreshToken": freshToken.refreshToken,
                         "expiryDate": Int64(freshToken.expiryDate.timeIntervalSince1970 * 1000)
                     ]
+                    if let tokenVersion = freshToken.effectiveTokenVersion {
+                        tokenData["tokenVersion"] = tokenVersion
+                    }
+                    tokenData["updatedAtMs"] = freshToken.effectiveUpdatedAtMs ?? Int64(Date().timeIntervalSince1970 * 1000)
 
                     replyHandler(["token": tokenData])
                 } catch {
@@ -116,7 +147,7 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
             return
         }
 
-        let tokenData: [String: Any] = [
+        var tokenData: [String: Any] = [
             "studentId": token.studentId,
             "studentIdNorm": token.studentIdNorm,
             "iss": token.iss,
@@ -125,6 +156,10 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
             "refreshToken": token.refreshToken,
             "expiryDate": Int64(token.expiryDate.timeIntervalSince1970 * 1000)
         ]
+        if let tokenVersion = token.effectiveTokenVersion {
+            tokenData["tokenVersion"] = tokenVersion
+        }
+        tokenData["updatedAtMs"] = token.effectiveUpdatedAtMs ?? Int64(Date().timeIntervalSince1970 * 1000)
 
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss"
@@ -210,7 +245,7 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
             return
         }
 
-        let tokenData: [String: Any] = [
+        var tokenData: [String: Any] = [
             "studentId": token.studentId,
             "studentIdNorm": token.studentIdNorm,
             "iss": token.iss,
@@ -219,6 +254,10 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
             "refreshToken": token.refreshToken,
             "expiryDate": Int64(token.expiryDate.timeIntervalSince1970 * 1000)
         ]
+        if let tokenVersion = token.effectiveTokenVersion {
+            tokenData["tokenVersion"] = tokenVersion
+        }
+        tokenData["updatedAtMs"] = token.effectiveUpdatedAtMs ?? Int64(Date().timeIntervalSince1970 * 1000)
 
         do {
             try WCSession.default.updateApplicationContext(["auth": tokenData])
@@ -271,6 +310,14 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
     private func processAuthData(_ authDict: [String: Any]) {
         print("[Watch] processAuthData called")
         do {
+            let incomingSentAtMs = extractSentAtMs(from: authDict) ?? 0
+            let previousSentAtMs = lastAppliedTokenUpdateMs
+
+            if incomingSentAtMs > 0 && incomingSentAtMs < previousSentAtMs {
+                print("[Watch] Ignoring stale token_update (sentAtMs: \(incomingSentAtMs), lastApplied: \(previousSentAtMs))")
+                return
+            }
+
             let jsonData = try JSONSerialization.data(withJSONObject: authDict)
 
             let decoder = JSONDecoder()
@@ -281,10 +328,20 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
             }
 
             let token = try decoder.decode(WatchToken.self, from: jsonData)
-            print("[Watch] Token decoded, saving...")
+            if incomingSentAtMs <= 0,
+               let currentToken = TokenManager.shared.loadToken(),
+               !token.isNewer(than: currentToken) {
+                print("[Watch] Ignoring stale token_update without sentAtMs")
+                return
+            }
 
-            try TokenManager.shared.saveToken(token)
+            print("[Watch] Token decoded, saving... (sentAtMs: \(incomingSentAtMs))")
+
+            try TokenManager.shared.saveToken(token, syncToICloud: false)
             print("[Watch] Token saved successfully")
+            if incomingSentAtMs > 0 {
+                lastAppliedTokenUpdateMs = max(previousSentAtMs, incomingSentAtMs)
+            }
 
             DataStore.shared.checkTokenState()
 

@@ -162,6 +162,8 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     });
 
     final r = cacheOnly ? 1 : 2;
+    final startTime = DateTime.now();
+    const maxWaitTime = Duration(seconds: 30);
 
     while (lessonsFetched < r ||
         noticeBoardFetched < r ||
@@ -170,6 +172,10 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         testsFetched < r ||
         gradesFetched < r ||
         homeworkFetched < r) {
+      if (DateTime.now().difference(startTime) > maxWaitTime) {
+        debugPrint('[HomeMain] Data fetch timed out after 30s');
+        break;
+      }
       await Future.delayed(Duration(milliseconds: 50));
     }
   }

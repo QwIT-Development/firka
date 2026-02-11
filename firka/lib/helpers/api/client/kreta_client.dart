@@ -76,161 +76,185 @@ class KretaClient {
   }
 
   static Future<void> _setReauthFlag() async {
-    if (Platform.isIOS && !needsReauth) {
-      debugPrint('[KretaClient] Token expired, trying to recover from Watch/iCloud first...');
-
-      var recovered = await _tryRecoverFromWatch();
-      if (recovered) {
-        debugPrint('[KretaClient] Successfully recovered token (attempt 1), reauth not needed');
-        return;
-      }
-
-      debugPrint('[KretaClient] First recovery failed, waiting for iCloud sync...');
-      await Future.delayed(const Duration(milliseconds: 1500));
-
-      recovered = await _tryRecoverFromWatch();
-      if (recovered) {
-        debugPrint('[KretaClient] Successfully recovered token (attempt 2), reauth not needed');
-        return;
-      }
-
-      debugPrint('[KretaClient] Could not recover from Watch/iCloud, setting reauth flag');
-    }
-
+    if (needsReauth) return;
     needsReauth = true;
     reauthStateNotifier.value = true;
-  }
-
-  static Future<bool> _tryRecoverFromWatch() async {
-    if (!Platform.isIOS || !initDone) return false;
-
-    try {
-      final recoveredFromiCloud = await WatchSyncHelper.checkAndRecoverFromiCloud(
-        isar: initData.isar,
-        tokens: initData.tokens,
-        client: initData.client,
-      );
-      if (recoveredFromiCloud) {
-        debugPrint('[KretaClient] Recovered fresh token from iCloud');
-        return true;
-      }
-
-      await WatchSyncHelper.syncTokenFromWatch(
-        isar: initData.isar,
-        tokens: initData.tokens,
-        client: initData.client,
-      );
-
-      final tokens = await initData.isar.tokenModels.where().findAll();
-      final token = pickActiveToken(
-        tokens: tokens,
-        settings: initData.settings,
-        preferredStudentIdNorm: initData.client.model.studentIdNorm,
-      );
-      if (token == null) return false;
-      if (token.expiryDate == null) return false;
-
-      if (token.expiryDate!.isAfter(DateTime.now().add(const Duration(minutes: 1)))) {
-        debugPrint('[KretaClient] Watch provided fresh token, expiry: ${token.expiryDate}');
-        return true;
-      }
-
-      return false;
-    } catch (e) {
-      debugPrint('[KretaClient] Failed to recover from Watch/iCloud: $e');
-      return false;
-    }
+    debugPrint('[KretaClient] Reauth flag set');
   }
 
   KretaClient(this.model, this.isar);
 
+  Future<void> _syncTokenToAppleTargets(TokenModel token) async {
+    if (!Platform.isIOS) return;
+    if (token.accessToken == null ||
+        token.refreshToken == null ||
+        token.expiryDate == null) {
+      return;
+    }
+
+    try {
+      await WatchSyncHelper.saveTokenToiCloud(token);
+    } catch (e) {
+      debugPrint('[KretaClient] iCloud token sync skipped: $e');
+    }
+
+    try {
+      await WatchSyncHelper.sendTokenToWatch();
+    } catch (e) {
+      debugPrint('[KretaClient] Watch token sync skipped: $e');
+    }
+  }
+
+  Future<void> _reloadActiveTokenModel({int? preferredStudentIdNorm}) async {
+    final allTokens = await isar.tokenModels.where().findAll();
+    if (allTokens.isEmpty) return;
+
+    if (initDone) {
+      initData.tokens = allTokens;
+      final selected = pickActiveToken(
+        tokens: allTokens,
+        settings: initData.settings,
+        preferredStudentIdNorm: preferredStudentIdNorm ?? model.studentIdNorm,
+      );
+      if (selected != null) {
+        model = selected;
+      }
+      return;
+    }
+
+    if (preferredStudentIdNorm != null) {
+      for (final token in allTokens) {
+        if (token.studentIdNorm == preferredStudentIdNorm) {
+          model = token;
+          return;
+        }
+      }
+    }
+
+    model = allTokens.first;
+  }
+
+  Future<bool> recoverToken() async {
+    logger.info("[Recovery] Starting central token recovery...");
+
+    logger.info("[Recovery] Step 1: Trying local token refresh...");
+    try {
+      var extended = await extendToken(model);
+      var tokenModel = TokenModel.fromResp(extended);
+
+      await isar.writeTxn(() async {
+        await isar.tokenModels.put(tokenModel);
+      });
+
+      model = tokenModel;
+      await _syncTokenToAppleTargets(model);
+      logger.info("[Recovery] Step 1 SUCCESS: Local refresh succeeded");
+      return true;
+    } catch (e) {
+      logger.warning("[Recovery] Step 1 FAILED: Local refresh failed: $e");
+    }
+
+    if (!Platform.isIOS || !initDone) {
+      logger.warning("[Recovery] Not iOS or not initialized, cannot try iCloud");
+      return false;
+    }
+
+    logger.info("[Recovery] Step 2: Trying iCloud recovery with retries...");
+    const retryDelays = [0, 5, 10, 5, 10]; // instant, 5s, 10s, 5s, 10s
+    bool iCloudHasToken = false; // Track if iCloud has any token (to avoid useless retries)
+
+    for (var attempt = 0; attempt < retryDelays.length; attempt++) {
+      final delay = retryDelays[attempt];
+      if (delay > 0) {
+        if (!iCloudHasToken && attempt > 0) {
+          logger.info("[Recovery] Skipping retries - iCloud has no token");
+          break;
+        }
+        logger.info("[Recovery] Waiting ${delay}s before attempt ${attempt + 1}...");
+        await Future.delayed(Duration(seconds: delay));
+      }
+
+      logger.info("[Recovery] iCloud attempt ${attempt + 1}/${retryDelays.length}...");
+
+      final recovered = await WatchSyncHelper.checkAndRecoverFromiCloud(
+        isar: isar,
+        tokens: initData.tokens,
+        client: this,
+      );
+
+      if (recovered) {
+        iCloudHasToken = true;
+        await _reloadActiveTokenModel(preferredStudentIdNorm: model.studentIdNorm);
+
+        logger.info("[Recovery] Found iCloud token, trying refresh...");
+        try {
+          var extended = await extendToken(model);
+          var tokenModel = TokenModel.fromResp(extended);
+
+          await isar.writeTxn(() async {
+            await isar.tokenModels.put(tokenModel);
+          });
+
+          model = tokenModel;
+          await _syncTokenToAppleTargets(model);
+          logger.info("[Recovery] Step 2 SUCCESS on attempt ${attempt + 1}");
+          return true;
+        } catch (e) {
+          logger.warning("[Recovery] iCloud token refresh failed on attempt ${attempt + 1}: $e");
+          iCloudHasToken = true;
+        }
+      } else {
+        logger.info("[Recovery] No fresh token in iCloud on attempt ${attempt + 1}");
+        if (attempt == 0) {
+          iCloudHasToken = false;
+        }
+      }
+    }
+
+    logger.warning("[Recovery] All recovery attempts failed");
+    return false;
+  }
 
   Future<bool> refreshTokenProactively() async {
     final now = timeNow();
     final fiveMinutesFromNow = now.add(const Duration(minutes: 5));
 
-    if (model.expiryDate == null || model.expiryDate!.isBefore(fiveMinutesFromNow)) {
-      logger.info("[Proactive] Token expired or expiring soon...");
+    if (model.expiryDate == null ||
+        model.expiryDate!.isBefore(fiveMinutesFromNow)) {
+      logger.info("[Proactive] Token expired or expiring soon, starting recovery...");
 
-      if (Platform.isIOS && initDone) {
-        final recoveredFromiCloud = await WatchSyncHelper.checkAndRecoverFromiCloud(
-          isar: isar,
-          tokens: initData.tokens,
-          client: this,
-        );
-        if (recoveredFromiCloud) {
-          logger.info("[Proactive] Found fresh token in iCloud, no refresh needed");
-          initData.tokens = await isar.tokenModels.where().findAll();
-          final activeToken = pickActiveToken(
-            tokens: initData.tokens,
-            settings: initData.settings,
-            preferredStudentIdNorm: model.studentIdNorm,
-          );
-          if (activeToken != null) {
-            model = activeToken;
-          }
-          return true;
-        }
-      }
-
-      logger.info("[Proactive] No fresh token in iCloud, refreshing...");
-
-      try {
-        var extended = await extendToken(model);
-        var tokenModel = TokenModel.fromResp(extended);
-
-        await isar.writeTxn(() async {
-          await isar.tokenModels.put(tokenModel);
-        });
-
-        logger.info("[Proactive] Token refreshed successfully. New expiry: ${tokenModel.expiryDate}");
-        model = tokenModel;
-
-        if (Platform.isIOS) {
-          try {
-            await WatchSyncHelper.saveTokenToiCloud(tokenModel);
-          } catch (e) {
-            debugPrint('[KretaClient] iCloud token sync skipped: $e');
-          }
-
-          try {
-            await _watchChannel.invokeMethod('sendTokenToWatch', {
-              'studentId': model.studentId,
-              'studentIdNorm': model.studentIdNorm,
-              'iss': model.iss,
-              'idToken': model.idToken,
-              'accessToken': model.accessToken,
-              'refreshToken': model.refreshToken,
-              'expiryDate': model.expiryDate!.millisecondsSinceEpoch,
-            });
-          } catch (e) {
-            debugPrint('[KretaClient] Watch token sync skipped: $e');
-          }
-        }
-
+      final recovered = await recoverToken();
+      if (recovered) {
         return true;
-      } catch (e) {
-        logger.warning("[Proactive] Token refresh failed: $e");
-        if (_isTokenExpired(e)) {
-          await _setReauthFlag();
-          if (Platform.isIOS && needsReauth) {
-            try {
-              _watchChannel.invokeMethod('notifyReauthRequired');
-            } catch (e) {
-              debugPrint('[KretaClient] Watch reauth notification skipped: $e');
-            }
-          }
-        }
-        return false;
       }
+
+      logger.warning("[Proactive] Token recovery failed");
+      await _setReauthFlag();
+      if (Platform.isIOS && needsReauth) {
+        try {
+          _watchChannel.invokeMethod('notifyReauthRequired');
+        } catch (e) {
+          debugPrint('[KretaClient] Watch reauth notification skipped: $e');
+        }
+      }
+      return false;
     }
 
-    logger.fine("[Proactive] Token still valid until ${model.expiryDate}, no refresh needed");
+    logger.fine(
+        "[Proactive] Token still valid until ${model.expiryDate}, no refresh needed");
     return true;
   }
 
   Future<T> _mutexCallback<T>(Future<T> Function() callback) async {
+    const maxWaitTime = Duration(seconds: 30);
+    final startTime = DateTime.now();
+
     while (_tokenMutex) {
+      if (DateTime.now().difference(startTime) > maxWaitTime) {
+        logger.warning("[Mutex] Timeout waiting for token mutex, forcing release");
+        _tokenMutex = false;
+        break;
+      }
       await Future.delayed(const Duration(milliseconds: 50));
     }
     _tokenMutex = true;
@@ -247,38 +271,13 @@ class KretaClient {
 
       if (now.millisecondsSinceEpoch >=
           model.expiryDate!.millisecondsSinceEpoch) {
-        logger.info("Token expired at ${model.expiryDate}, refreshing for user: ${model.studentId}");
-        var extended = await extendToken(model);
-        var tokenModel = TokenModel.fromResp(extended);
+        logger.info(
+            "Token expired at ${model.expiryDate}, starting recovery for user: ${model.studentId}");
 
-        await isar.writeTxn(() async {
-          await isar.tokenModels.put(tokenModel);
-        });
-
-        logger.info("Token refreshed successfully. New expiry: ${tokenModel.expiryDate}");
-
-        model = tokenModel;
-
-        if (Platform.isIOS) {
-          try {
-            await WatchSyncHelper.saveTokenToiCloud(tokenModel);
-          } catch (e) {
-            debugPrint('[KretaClient] iCloud token sync skipped: $e');
-          }
-
-          try {
-            await _watchChannel.invokeMethod('sendTokenToWatch', {
-              'studentId': model.studentId,
-              'studentIdNorm': model.studentIdNorm,
-              'iss': model.iss,
-              'idToken': model.idToken,
-              'accessToken': model.accessToken,
-              'refreshToken': model.refreshToken,
-              'expiryDate': model.expiryDate!.millisecondsSinceEpoch,
-            });
-          } catch (e) {
-            debugPrint('[KretaClient] Watch token sync skipped: $e');
-          }
+        final recovered = await recoverToken();
+        if (!recovered) {
+          logger.warning("Token recovery failed for user: ${model.studentId}");
+          throw TokenExpiredException();
         }
       }
 
@@ -313,7 +312,8 @@ class KretaClient {
         if (responseData == null ||
             (responseData is List && responseData.isEmpty) ||
             (responseData is Map && responseData.isEmpty)) {
-          logger.warning("API returned ${resp.statusCode} with empty data for: $url - possible stale session");
+          logger.warning(
+              "API returned ${resp.statusCode} with empty data for: $url - possible stale session");
         }
       }
     } catch (ex) {
@@ -672,7 +672,8 @@ class KretaClient {
     } catch (ex) {
       if (_isTokenExpired(ex)) {
         await _setReauthFlag();
-        logger.warning("Token expired in timed request, setting needsReauth flag");
+        logger.warning(
+            "Token expired in timed request, setting needsReauth flag");
       }
 
       if (cache != null) {
@@ -811,7 +812,8 @@ class KretaClient {
     return ApiResponse(lessons, 200, err, cached);
   }
 
-  Future<ApiResponse<List<AllLessons>>> getLessons({bool forceCache = true}) async {
+  Future<ApiResponse<List<AllLessons>>> getLessons(
+      {bool forceCache = true}) async {
     var (resp, status, ex, cached) = await _cachingGet(
       CacheId.getLessons,
       KretaEndpoints.getLessons(model.iss!),

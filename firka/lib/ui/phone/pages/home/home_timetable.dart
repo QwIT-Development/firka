@@ -213,14 +213,31 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
       testsFetched++;
     });
 
+    final startTime = DateTime.now();
+    const maxWaitTime = Duration(seconds: 15);
+
     while (lessonsFetched < 1 || testsFetched < 1) {
+      if (DateTime.now().difference(startTime) > maxWaitTime) {
+        debugPrint('[Timetable] Cache load timed out after 15s');
+        return;
+      }
       await Future.delayed(Duration(milliseconds: 50));
     }
     await _updateState(now, lessonsResp!, testsResp!);
-    while (lessonsFetched < 2 || testsFetched < 2) {
-      await Future.delayed(Duration(milliseconds: 50));
+
+    if (!forceCache) {
+      final networkStartTime = DateTime.now();
+      while (lessonsFetched < 2 || testsFetched < 2) {
+        if (DateTime.now().difference(networkStartTime) > maxWaitTime) {
+          debugPrint('[Timetable] Network load timed out after 15s');
+          break;
+        }
+        await Future.delayed(Duration(milliseconds: 50));
+      }
+      if (lessonsFetched >= 2 && testsFetched >= 2) {
+        await _updateState(now, lessonsResp!, testsResp!);
+      }
     }
-    await _updateState(now, lessonsResp!, testsResp!);
   }
 
   void updateListener() async {

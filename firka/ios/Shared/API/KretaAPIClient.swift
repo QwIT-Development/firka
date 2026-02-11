@@ -1,7 +1,4 @@
 import Foundation
-#if os(watchOS)
-import WatchConnectivity
-#endif
 
 // MARK: - API Error Types
 
@@ -89,97 +86,23 @@ class KretaAPIClient {
 
     // MARK: - Token Management
 
-    private let retryDelays: [Double] = [1, 10, 30, 60]
-
     func getValidToken() async throws -> WatchToken {
-        if !TokenManager.shared.isTokenExpired() {
-            guard let token = TokenManager.shared.loadToken() else {
-                throw APIError.tokenError(.noToken)
-            }
-            return token
-        }
-
-        #if os(watchOS)
-        if await requestTokenFromiPhoneIfReachable() {
-            if let token = TokenManager.shared.loadToken(), !TokenManager.shared.isTokenExpired() {
-                print("[KretaAPI] Using token received from iPhone")
+        if let token = TokenManager.shared.loadToken() {
+            let expiryThreshold = token.expiryDate.addingTimeInterval(-60)
+            if Date() < expiryThreshold {
                 return token
             }
         }
-        #endif
 
-        var lastError: TokenError = .noToken
-
-        for (attempt, delay) in retryDelays.enumerated() {
-            do {
-                print("[KretaAPI] Token refresh attempt \(attempt + 1)/\(retryDelays.count)")
-                let token = try await TokenManager.shared.refreshToken()
-                print("[KretaAPI] Token refresh succeeded on attempt \(attempt + 1)")
-                return token
-            } catch let error as TokenError {
-                lastError = error
-                print("[KretaAPI] Token refresh failed (attempt \(attempt + 1)): \(error)")
-
-                if error == .refreshExpired || error == .invalidGrant {
-                    print("[KretaAPI] Permanent token error, not retrying")
-                    throw APIError.tokenError(error)
-                }
-
-                if attempt < retryDelays.count - 1 {
-                    print("[KretaAPI] Waiting \(delay)s before next attempt...")
-                    try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-                }
-            }
+        print("[KretaAPI] Token invalid or expired, starting recovery...")
+        if let recoveredToken = await TokenManager.shared.recoverToken() {
+            print("[KretaAPI] Token recovery succeeded")
+            return recoveredToken
         }
 
-        print("[KretaAPI] All \(retryDelays.count) token refresh attempts failed")
-        throw APIError.tokenError(lastError)
+        print("[KretaAPI] Token recovery failed")
+        throw APIError.tokenError(.noToken)
     }
-
-    #if os(watchOS)
-    private func requestTokenFromiPhoneIfReachable() async -> Bool {
-        guard WCSession.default.activationState == .activated,
-              WCSession.default.isReachable else {
-            print("[KretaAPI] iPhone not reachable, will refresh locally")
-            return false
-        }
-
-        print("[KretaAPI] Requesting fresh token from iPhone...")
-
-        return await withCheckedContinuation { continuation in
-            WCSession.default.sendMessage(
-                ["action": "requestToken"],
-                replyHandler: { response in
-                    if let authDict = response["auth"] as? [String: Any] {
-                        do {
-                            let jsonData = try JSONSerialization.data(withJSONObject: authDict)
-                            let decoder = JSONDecoder()
-                            decoder.dateDecodingStrategy = .custom { decoder in
-                                let container = try decoder.singleValueContainer()
-                                let timestamp = try container.decode(Int64.self)
-                                return Date(timeIntervalSince1970: Double(timestamp) / 1000.0)
-                            }
-                            let token = try decoder.decode(WatchToken.self, from: jsonData)
-                            try TokenManager.shared.saveToken(token)
-                            print("[KretaAPI] Token received from iPhone and saved")
-                            continuation.resume(returning: true)
-                        } catch {
-                            print("[KretaAPI] Failed to process token from iPhone: \(error)")
-                            continuation.resume(returning: false)
-                        }
-                    } else {
-                        print("[KretaAPI] iPhone didn't return a token")
-                        continuation.resume(returning: false)
-                    }
-                },
-                errorHandler: { error in
-                    print("[KretaAPI] Failed to request token from iPhone: \(error)")
-                    continuation.resume(returning: false)
-                }
-            )
-        }
-    }
-    #endif
 
     // MARK: - Private Helper Methods
     private func performRequest(

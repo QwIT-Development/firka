@@ -12,6 +12,8 @@ class iCloudTokenManager {
     private let kStudentId = "firka_student_id"
     private let kStudentIdNorm = "firka_student_id_norm"
     private let kExpiryDate = "firka_expiry_date"
+    private let kTokenVersion = "firka_token_version"
+    private let kUpdatedAtMs = "firka_updated_at_ms"
     private let kLastUpdatedDevice = "firka_last_updated_device"
     private let kLastUpdateTimestamp = "firka_last_update_timestamp"
 
@@ -39,7 +41,21 @@ class iCloudTokenManager {
             return
         }
 
+        if let existingToken = loadToken(),
+           existingToken.isSameAccount(as: token),
+           !token.isNewer(than: existingToken) {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "HH:mm:ss"
+            formatter.timeZone = TimeZone.current
+            print("[iCloud] Ignoring stale token save from \(deviceName), existing expiry: \(formatter.string(from: existingToken.expiryDate)), incoming: \(formatter.string(from: token.expiryDate))")
+            return
+        }
+
         print("[iCloud] Saving token to iCloud from \(deviceName)")
+
+        let nowMs = Int64(Date().timeIntervalSince1970 * 1000)
+        let updatedAtMs = token.effectiveUpdatedAtMs ?? nowMs
+        let tokenVersion = token.effectiveTokenVersion
 
         iCloudStore.set(token.accessToken, forKey: kAccessToken)
         iCloudStore.set(token.refreshToken, forKey: kRefreshToken)
@@ -48,8 +64,14 @@ class iCloudTokenManager {
         iCloudStore.set(token.studentId, forKey: kStudentId)
         iCloudStore.set(token.studentIdNorm, forKey: kStudentIdNorm)
         iCloudStore.set(token.expiryDate.timeIntervalSince1970, forKey: kExpiryDate)
+        if let tokenVersion {
+            iCloudStore.set(tokenVersion, forKey: kTokenVersion)
+        } else {
+            iCloudStore.removeObject(forKey: kTokenVersion)
+        }
+        iCloudStore.set(updatedAtMs, forKey: kUpdatedAtMs)
         iCloudStore.set(deviceName, forKey: kLastUpdatedDevice)
-        iCloudStore.set(Date().timeIntervalSince1970, forKey: kLastUpdateTimestamp)
+        iCloudStore.set(Double(updatedAtMs) / 1000.0, forKey: kLastUpdateTimestamp)
 
         let success = iCloudStore.synchronize()
         if success {
@@ -80,6 +102,9 @@ class iCloudTokenManager {
 
         let studentIdNorm = iCloudStore.longLong(forKey: kStudentIdNorm)
         let expiryTimestamp = iCloudStore.double(forKey: kExpiryDate)
+        let tokenVersionRaw = iCloudStore.longLong(forKey: kTokenVersion)
+        let updatedAtMsRaw = iCloudStore.longLong(forKey: kUpdatedAtMs)
+        let fallbackUpdatedAt = Int64(iCloudStore.double(forKey: kLastUpdateTimestamp) * 1000.0)
         let lastDevice = iCloudStore.string(forKey: kLastUpdatedDevice) ?? "unknown"
 
         guard expiryTimestamp > 0 else {
@@ -96,7 +121,9 @@ class iCloudTokenManager {
             iss: iss,
             studentId: studentId,
             studentIdNorm: studentIdNorm,
-            expiryDate: expiryDate
+            expiryDate: expiryDate,
+            tokenVersion: tokenVersionRaw > 0 ? tokenVersionRaw : nil,
+            updatedAtMs: updatedAtMsRaw > 0 ? updatedAtMsRaw : (fallbackUpdatedAt > 0 ? fallbackUpdatedAt : nil)
         )
 
         let formatter = DateFormatter()
@@ -121,6 +148,8 @@ class iCloudTokenManager {
         iCloudStore.removeObject(forKey: kStudentId)
         iCloudStore.removeObject(forKey: kStudentIdNorm)
         iCloudStore.removeObject(forKey: kExpiryDate)
+        iCloudStore.removeObject(forKey: kTokenVersion)
+        iCloudStore.removeObject(forKey: kUpdatedAtMs)
         iCloudStore.removeObject(forKey: kLastUpdatedDevice)
         iCloudStore.removeObject(forKey: kLastUpdateTimestamp)
 
