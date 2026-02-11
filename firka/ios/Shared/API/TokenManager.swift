@@ -99,34 +99,45 @@ class TokenManager {
         UserDefaults.standard.set(studentIdNorm, forKey: activeStudentIdNormKey)
     }
 
+    private func localTokenFromKeychainAndFile(preferredStudentIdNorm: Int64? = nil) -> WatchToken? {
+        let keychainToken = loadTokenFromKeychain()
+        let fileToken = loadTokenFromFile()
+
+        var candidates: [WatchToken] = []
+        if let keychainToken { candidates.append(keychainToken) }
+        if let fileToken { candidates.append(fileToken) }
+
+        if let preferredStudentIdNorm {
+            let filtered = candidates.filter { $0.studentIdNorm == preferredStudentIdNorm }
+            if !filtered.isEmpty {
+                candidates = filtered
+            }
+        }
+
+        return candidates.dropFirst().reduce(candidates.first) { best, candidate in
+            guard let best else { return candidate }
+            return candidate.isNewer(than: best) ? candidate : best
+        }
+    }
+
     private init() {
         iCloudTokenManager.shared.observeChanges { [weak self] iCloudToken in
             guard let self = self else { return }
 
             let preferredStudentIdNorm = self.getActiveStudentIdNorm()
+            let isValidToken = iCloudToken.expiryDate > Date().addingTimeInterval(60)
+            let preferredLocalToken = self.localTokenFromKeychainAndFile(
+                preferredStudentIdNorm: preferredStudentIdNorm
+            )
+
             if let preferredStudentIdNorm,
-               iCloudToken.studentIdNorm != preferredStudentIdNorm {
+               iCloudToken.studentIdNorm != preferredStudentIdNorm,
+               preferredLocalToken != nil {
                 print("[TokenManager] Ignoring iCloud token for inactive account (\(iCloudToken.studentIdNorm)), active is \(preferredStudentIdNorm)")
                 return
             }
 
-            let isValidToken = iCloudToken.expiryDate > Date().addingTimeInterval(60)
-
-            let keychainToken = self.loadTokenFromKeychain()
-            let fileToken = self.loadTokenFromFile()
-            var localCandidates: [WatchToken] = []
-            if let keychainToken { localCandidates.append(keychainToken) }
-            if let fileToken { localCandidates.append(fileToken) }
-            if let preferredStudentIdNorm {
-                let filtered = localCandidates.filter { $0.studentIdNorm == preferredStudentIdNorm }
-                if !filtered.isEmpty {
-                    localCandidates = filtered
-                }
-            }
-            let localToken = localCandidates.dropFirst().reduce(localCandidates.first) { best, candidate in
-                guard let best else { return candidate }
-                return candidate.isNewer(than: best) ? candidate : best
-            }
+            let localToken = preferredLocalToken ?? self.localTokenFromKeychainAndFile()
 
             if let localToken = localToken {
                 if iCloudToken.isNewer(than: localToken) {
@@ -186,7 +197,7 @@ class TokenManager {
         return containerURL.appendingPathComponent(tokenFileName)
     }
 
-    // MARK: - Load Token (fresher-wins strategy)
+    // MARK: - Load Token (active-account first)
     func loadToken() -> WatchToken? {
         let iCloudToken = iCloudTokenManager.shared.loadToken()
         let keychainToken = loadTokenFromKeychain()
@@ -203,19 +214,24 @@ class TokenManager {
         }
 
         let preferredStudentIdNorm = getActiveStudentIdNorm()
-        let preferredCandidates: [(token: WatchToken, source: String)]
+        let freshest: (token: WatchToken, source: String)
         if let preferredStudentIdNorm {
             let filtered = candidates.filter { $0.token.studentIdNorm == preferredStudentIdNorm }
-            preferredCandidates = filtered.isEmpty ? candidates : filtered
-            if filtered.isEmpty {
+            if let preferredFreshest = filtered.dropFirst().reduce(filtered.first) { best, candidate in
+                guard let best else { return candidate }
+                return candidate.token.isNewer(than: best.token) ? candidate : best
+            } {
+                freshest = preferredFreshest
+            } else {
                 print("[TokenManager] Active account token not found locally, falling back to freshest available account")
+                freshest = candidates.dropFirst().reduce(candidates[0]) { currentBest, candidate in
+                    candidate.token.isNewer(than: currentBest.token) ? candidate : currentBest
+                }
             }
         } else {
-            preferredCandidates = candidates
-        }
-
-        let freshest = preferredCandidates.dropFirst().reduce(preferredCandidates[0]) { currentBest, candidate in
-            candidate.token.isNewer(than: currentBest.token) ? candidate : currentBest
+            freshest = candidates.dropFirst().reduce(candidates[0]) { currentBest, candidate in
+                candidate.token.isNewer(than: currentBest.token) ? candidate : currentBest
+            }
         }
         setActiveStudentIdNorm(freshest.token.studentIdNorm)
 
@@ -224,7 +240,7 @@ class TokenManager {
         formatter.timeZone = TimeZone.current
 
         print("[TokenManager] Token sources found: \(candidates.map { "\($0.source): \($0.token.studentIdNorm) @ \(formatter.string(from: $0.token.expiryDate))" }.joined(separator: ", "))")
-        print("[TokenManager] Using freshest token from \(freshest.source) (expiry: \(formatter.string(from: freshest.token.expiryDate)))")
+        print("[TokenManager] Using selected token from \(freshest.source) (expiry: \(formatter.string(from: freshest.token.expiryDate)))")
 
         if keychainToken == nil ||
             keychainToken!.studentIdNorm != freshest.token.studentIdNorm ||
@@ -269,10 +285,18 @@ class TokenManager {
     }
 
     // MARK: - Save Token
-    func saveToken(_ token: WatchToken, syncToICloud: Bool = false) throws {
-        if let currentToken = loadToken(), !token.isNewer(than: currentToken) {
-            print("[TokenManager] Ignoring stale or same token save attempt")
-            return
+    func saveToken(
+        _ token: WatchToken,
+        syncToICloud: Bool = false,
+        forceAccountSwitch: Bool = false
+    ) throws {
+        if let currentToken = loadToken() {
+            if forceAccountSwitch && !token.isSameAccount(as: currentToken) {
+                print("[TokenManager] Forcing token save for explicit account switch (\(currentToken.studentIdNorm) -> \(token.studentIdNorm))")
+            } else if !token.isNewer(than: currentToken) {
+                print("[TokenManager] Ignoring stale or same token save attempt")
+                return
+            }
         }
 
         print("[TokenManager] Saving token locally (Keychain + file)")
@@ -515,8 +539,13 @@ class TokenManager {
             if let iCloudToken = iCloudTokenManager.shared.loadToken() {
                 if let preferredStudentIdNorm = getActiveStudentIdNorm(),
                    iCloudToken.studentIdNorm != preferredStudentIdNorm {
-                    print("[TokenManager] Step 3: Ignoring iCloud token for inactive account (\(iCloudToken.studentIdNorm)), active is \(preferredStudentIdNorm)")
-                    continue
+                    if localTokenFromKeychainAndFile(
+                        preferredStudentIdNorm: preferredStudentIdNorm
+                    ) != nil {
+                        print("[TokenManager] Step 3: Ignoring iCloud token for inactive account (\(iCloudToken.studentIdNorm)), active is \(preferredStudentIdNorm)")
+                        continue
+                    }
+                    print("[TokenManager] Step 3: Active account token missing locally, considering different-account iCloud token")
                 }
                 iCloudHasToken = true
                 if iCloudToken.expiryDate > Date() {

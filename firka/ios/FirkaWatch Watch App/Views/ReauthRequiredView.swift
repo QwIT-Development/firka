@@ -258,6 +258,15 @@ struct ReauthRequiredView: View {
 
     private func processAuthData(_ authDict: [String: Any]) {
         do {
+            func parseInt64(_ value: Any?) -> Int64? {
+                if let value = value as? Int64 { return value }
+                if let value = value as? Int { return Int64(value) }
+                if let value = value as? Double { return Int64(value) }
+                if let value = value as? String, let parsed = Int64(value) { return parsed }
+                return nil
+            }
+
+            let incomingSentAtMs = parseInt64(authDict["sentAtMs"]) ?? 0
             let jsonData = try JSONSerialization.data(withJSONObject: authDict)
 
             let decoder = JSONDecoder()
@@ -268,7 +277,21 @@ struct ReauthRequiredView: View {
             }
 
             let token = try decoder.decode(WatchToken.self, from: jsonData)
-            try TokenManager.shared.saveToken(token, syncToICloud: false)
+            let currentToken = TokenManager.shared.loadToken()
+            let shouldForceAccountSwitch: Bool
+            if incomingSentAtMs > 0,
+               let currentToken,
+               !token.isSameAccount(as: currentToken) {
+                shouldForceAccountSwitch = true
+            } else {
+                shouldForceAccountSwitch = false
+            }
+
+            try TokenManager.shared.saveToken(
+                token,
+                syncToICloud: false,
+                forceAccountSwitch: shouldForceAccountSwitch
+            )
 
             DataStore.shared.checkTokenState()
             DataStore.shared.clearError()
