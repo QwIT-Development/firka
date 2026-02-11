@@ -4,6 +4,8 @@ import WatchConnectivity
 class WatchConnectivityManager: NSObject, WCSessionDelegate {
     static let shared = WatchConnectivityManager()
     private let lastAppliedTokenUpdateKey = "watch_last_applied_token_update_ms"
+    private let minPhoneTokenRequestInterval: TimeInterval = 5
+    private var lastPhoneTokenRequestAt: Date?
 
     private override init() {
         super.init()
@@ -179,6 +181,14 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
             return
         }
 
+        let now = Date()
+        if let lastPhoneTokenRequestAt,
+           now.timeIntervalSince(lastPhoneTokenRequestAt) < minPhoneTokenRequestInterval {
+            print("[Watch] Skipping token request due to cooldown")
+            return
+        }
+        lastPhoneTokenRequestAt = now
+
         print("[Watch] Requesting token from iPhone...")
 
         WCSession.default.sendMessage(
@@ -201,6 +211,12 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
     }
 
     private func processApplicationContext(_ context: [String: Any]) {
+        if (context["force_logout"] as? Bool) == true {
+            print("[Watch] Received force_logout via applicationContext")
+            handleForceLogoutFromPhone()
+            return
+        }
+
         if let authDict = context["auth"] as? [String: Any] {
             print("[Watch] Received auth from iPhone")
             processAuthData(authDict)
@@ -228,10 +244,20 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
             case "reauth_required":
                 print("[Watch] Received reauth_required notification from iPhone")
                 DataStore.shared.setReauthRequired()
+            case "force_logout":
+                print("[Watch] Received force_logout notification from iPhone")
+                handleForceLogoutFromPhone()
             default:
                 break
             }
         }
+    }
+
+    private func handleForceLogoutFromPhone() {
+        TokenManager.shared.deleteToken()
+        DataStore.shared.clearAll()
+        DataStore.shared.resetRecoveryState()
+        DataStore.shared.checkTokenState()
     }
 
     func sendTokenToiPhoneInBackground() {

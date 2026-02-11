@@ -36,6 +36,12 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                 self?.handleCheckiCloudToken(result: result)
             case "saveTokeToniCloud":
                 self?.handleSaveTokenToiCloud(arguments: call.arguments, result: result)
+            case "isWatchAppInstalled":
+                self?.handleIsWatchAppInstalled(result: result)
+            case "clearICloudToken":
+                self?.handleClearICloudToken(result: result)
+            case "sendLogoutToWatch":
+                self?.handleSendLogoutToWatch(result: result)
             case "watchSyncReady":
                 self?.handleWatchSyncReady(result: result)
             default:
@@ -101,8 +107,16 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         return tokenData
     }
 
+    private func isTokenUsable(_ token: WatchToken, skewSeconds: TimeInterval = 60) -> Bool {
+        token.expiryDate > Date().addingTimeInterval(skewSeconds)
+    }
+
     private func fallbackTokenFromiCloud() -> [String: Any]? {
         guard let token = iCloudTokenManager.shared.loadToken() else {
+            return nil
+        }
+        guard isTokenUsable(token, skewSeconds: 0) else {
+            print("[WatchSessionManager] iCloud fallback token is expired, skipping fallback")
             return nil
         }
         return tokenPayload(from: token)
@@ -114,6 +128,14 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                parseInt64(lhs["tokenVersion"]) == parseInt64(rhs["tokenVersion"]) &&
                parseInt64(lhs["updatedAtMs"]) == parseInt64(rhs["updatedAtMs"]) &&
                (lhs["refreshToken"] as? String) == (rhs["refreshToken"] as? String)
+    }
+
+    private func tokenPayloadIsUsable(_ tokenData: [String: Any], skewMs: Int64 = 0) -> Bool {
+        guard let expiryMs = parseInt64(tokenData["expiryDate"]) else {
+            return false
+        }
+        let nowMs = Int64(Date().timeIntervalSince1970 * 1000)
+        return expiryMs > (nowMs + skewMs)
     }
 
     private func enqueuePendingAuth(_ authData: [String: Any]) {
@@ -332,6 +354,46 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         result(nil)
     }
 
+    private func handleIsWatchAppInstalled(result: @escaping FlutterResult) {
+        guard WCSession.isSupported() else {
+            result(false)
+            return
+        }
+
+        let session = WCSession.default
+        let installed = session.isPaired && session.isWatchAppInstalled
+        result(installed)
+    }
+
+    private func handleClearICloudToken(result: @escaping FlutterResult) {
+        iCloudTokenManager.shared.deleteToken()
+        result(nil)
+    }
+
+    private func handleSendLogoutToWatch(result: @escaping FlutterResult) {
+        guard WCSession.default.activationState == .activated else {
+            result(nil)
+            return
+        }
+
+        guard WCSession.default.isWatchAppInstalled else {
+            result(nil)
+            return
+        }
+
+        do {
+            try WCSession.default.updateApplicationContext(["force_logout": true])
+        } catch {
+            print("[WatchSessionManager] Failed to update applicationContext for logout: \(error)")
+        }
+
+        WCSession.default.transferUserInfo([
+            "id": "force_logout"
+        ])
+        print("[WatchSessionManager] Force logout sent to Watch")
+        result(nil)
+    }
+
     func session(
         _ session: WCSession,
         activationDidCompleteWith activationState: WCSessionActivationState,
@@ -392,7 +454,10 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                 self.flutterChannel?.invokeMethod("getTokenForWatch", arguments: nil) { result in
                     if let tokenData = result as? [String: Any] {
                         if let error = tokenData["error"] as? String {
-                            if let fallbackToken = self.fallbackTokenFromiCloud() {
+                            if error == "needsReauth" {
+                                print("[WatchSessionManager] Flutter reported needsReauth, not using iCloud fallback")
+                                replyHandler(["error": error])
+                            } else if let fallbackToken = self.fallbackTokenFromiCloud() {
                                 print("[WatchSessionManager] Flutter returned error (\(error)), falling back to iCloud token")
                                 replyHandler(["auth": fallbackToken])
                             } else {
@@ -400,6 +465,11 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                                 replyHandler(["error": error])
                             }
                         } else {
+                            guard self.tokenPayloadIsUsable(tokenData) else {
+                                print("[WatchSessionManager] Flutter token is expired, refusing to send to Watch")
+                                replyHandler(["error": "needsReauth"])
+                                return
+                            }
                             print("[WatchSessionManager] Sending token to Watch")
                             replyHandler(["auth": tokenData])
                         }

@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:isar/isar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
 import 'active_account_helper.dart';
@@ -15,6 +16,12 @@ import 'db/models/token_model.dart';
 class WatchSyncHelper {
   static const _watchChannel = MethodChannel('app.firka/watch_sync');
   static bool _initialized = false;
+  static bool _watchAppInstalledCache = false;
+  static DateTime? _lastWatchInstallCheckAt;
+  static const Duration _watchInstallCheckCooldown = Duration(seconds: 10);
+  static const Duration _tokenUsableSkew = Duration(seconds: 60);
+  static const String _iosFreshInstallHandledKey =
+      'ios_fresh_install_cleanup_done_v1';
 
   /// Invoke method with timeout to prevent infinite blocking
   static Future<T?> _invokeMethodWithTimeout<T>(
@@ -181,6 +188,14 @@ class WatchSyncHelper {
     return false;
   }
 
+  static bool _isAccessTokenUsable(
+    DateTime? expiryDate, {
+    Duration skew = _tokenUsableSkew,
+  }) {
+    if (expiryDate == null) return false;
+    return expiryDate.isAfter(DateTime.now().add(skew));
+  }
+
   static Map<String, dynamic> _buildTokenSyncPayload(
     TokenModel token, {
     bool includeSentAt = false,
@@ -221,6 +236,79 @@ class WatchSyncHelper {
     ));
   }
 
+  static Future<bool> isWatchAppInstalled({bool forceRefresh = false}) async {
+    if (!Platform.isIOS) return false;
+    if (_watchAppInstalledCache && !forceRefresh) return true;
+
+    final now = DateTime.now();
+    if (!forceRefresh &&
+        _lastWatchInstallCheckAt != null &&
+        now.difference(_lastWatchInstallCheckAt!) <
+            _watchInstallCheckCooldown) {
+      return _watchAppInstalledCache;
+    }
+    _lastWatchInstallCheckAt = now;
+
+    final result = await _invokeMethodWithTimeout<bool>(
+      'isWatchAppInstalled',
+      null,
+      const Duration(seconds: 2),
+    );
+    _watchAppInstalledCache = result == true;
+    return _watchAppInstalledCache;
+  }
+
+  static Future<void> clearICloudToken({bool notifyWatch = false}) async {
+    if (!Platform.isIOS) return;
+    await _invokeMethodWithTimeout(
+      'clearICloudToken',
+      null,
+      const Duration(seconds: 5),
+    );
+    if (notifyWatch) {
+      await notifyWatchForceLogout();
+    }
+  }
+
+  static Future<void> notifyWatchForceLogout() async {
+    if (!Platform.isIOS) return;
+    final watchInstalled = await isWatchAppInstalled(forceRefresh: true);
+    if (!watchInstalled) return;
+    await _invokeMethodWithTimeout(
+      'sendLogoutToWatch',
+      null,
+      const Duration(seconds: 5),
+    );
+  }
+
+  static Future<bool> runFreshInstallCleanupIfNeeded({
+    required Isar isar,
+  }) async {
+    if (!Platform.isIOS) return false;
+
+    final prefs = await SharedPreferences.getInstance();
+    final cleanupHandled = prefs.getBool(_iosFreshInstallHandledKey) ?? false;
+    if (cleanupHandled) {
+      return false;
+    }
+
+    debugPrint(
+        '[WatchSync] Fresh iOS install detected, clearing iCloud and local auth state');
+    await clearICloudToken(notifyWatch: true);
+
+    await isar.writeTxn(() async {
+      await isar.tokenModels.clear();
+    });
+
+    if (initDone) {
+      initData.tokens = [];
+    }
+    KretaClient.clearReauthFlag();
+
+    await prefs.setBool(_iosFreshInstallHandledKey, true);
+    return true;
+  }
+
   static Future<dynamic> _handleMethodCall(MethodCall call) async {
     switch (call.method) {
       case 'getTokenForWatch':
@@ -229,6 +317,8 @@ class WatchSyncHelper {
         return _getLanguageForWatch();
       case 'watchAppInstalled':
         debugPrint('[WatchSync] Watch app installed detected');
+        _watchAppInstalledCache = true;
+        _lastWatchInstallCheckAt = DateTime.now();
         return null;
       case 'onTokenFromWatch':
         debugPrint('[WatchSync] Token received from Watch');
@@ -301,6 +391,12 @@ class WatchSyncHelper {
       return {'error': 'token_incomplete'};
     }
 
+    if (!_isAccessTokenUsable(token.expiryDate, skew: const Duration())) {
+      debugPrint(
+          '[WatchSync] Active iPhone token is expired, not sending to Watch');
+      return {'error': 'needsReauth'};
+    }
+
     if (KretaClient.needsReauth) {
       debugPrint('[WatchSync] iPhone needs reauth');
       return {'error': 'needsReauth'};
@@ -361,6 +457,11 @@ class WatchSyncHelper {
       );
 
       final watchExpiryDate = DateTime.fromMillisecondsSinceEpoch(watchExpiry);
+      if (!_isAccessTokenUsable(watchExpiryDate, skew: const Duration())) {
+        debugPrint(
+            '[WatchSync] Rejecting expired token from Watch, expiry: $watchExpiryDate');
+        return {'success': false, 'error': 'expired_token'};
+      }
       final watchTokenVersion = _resolveIncomingTokenVersion(tokenData);
       final watchUpdatedAtMs = _asInt(tokenData['updatedAtMs']);
       final watchIdToken = tokenData['idToken'] as String?;
@@ -431,6 +532,11 @@ class WatchSyncHelper {
       return;
     }
 
+    if (!_isAccessTokenUsable(token.expiryDate, skew: const Duration())) {
+      debugPrint('[WatchSync] Token expired, not sending to Watch');
+      return;
+    }
+
     final tokenData = _buildTokenSyncPayload(token, includeSentAt: true);
 
     await _invokeMethodWithTimeout('sendTokenToWatch', tokenData);
@@ -466,6 +572,7 @@ class WatchSyncHelper {
     Isar? isar,
     List<TokenModel>? tokens,
     KretaClient? client,
+    bool allowExpiredAccessToken = false,
   }) async {
     if (!Platform.isIOS) return false;
 
@@ -515,6 +622,13 @@ class WatchSyncHelper {
 
       final iCloudExpiryDate =
           DateTime.fromMillisecondsSinceEpoch(iCloudExpiry);
+      final iCloudAccessExpired =
+          !_isAccessTokenUsable(iCloudExpiryDate, skew: const Duration());
+      if (iCloudAccessExpired && !allowExpiredAccessToken) {
+        debugPrint(
+            '[WatchSync] iCloud token access is expired (expiry: $iCloudExpiryDate), skipping direct apply');
+        return false;
+      }
       final iCloudTokenVersion = _resolveIncomingTokenVersion(tokenData);
       final iCloudUpdatedAtMs = _asInt(tokenData['updatedAtMs']);
       final iCloudIdToken = tokenData['idToken'] as String?;
@@ -569,8 +683,10 @@ class WatchSyncHelper {
           effectiveClient.model = newToken;
         }
 
-        if (expectedStudentIdNorm == null ||
-            newToken.studentIdNorm == expectedStudentIdNorm) {
+        final shouldClearReauth = !iCloudAccessExpired &&
+            (expectedStudentIdNorm == null ||
+                newToken.studentIdNorm == expectedStudentIdNorm);
+        if (shouldClearReauth) {
           KretaClient.clearReauthFlag();
         }
 
@@ -596,6 +712,13 @@ class WatchSyncHelper {
         token.refreshToken == null ||
         token.expiryDate == null) {
       debugPrint('[WatchSync] Token incomplete, not saving to iCloud');
+      return;
+    }
+
+    final watchInstalled = await isWatchAppInstalled();
+    if (!watchInstalled) {
+      debugPrint(
+          '[WatchSync] Skipping iCloud token save because no paired Watch app is installed');
       return;
     }
 
@@ -690,6 +813,20 @@ class WatchSyncHelper {
       }
 
       final watchExpiryDate = DateTime.fromMillisecondsSinceEpoch(watchExpiry);
+      if (!_isAccessTokenUsable(watchExpiryDate, skew: const Duration())) {
+        debugPrint(
+            '[WatchSync] Watch provided expired token, ignoring and keeping iPhone token');
+        if (currentToken != null &&
+            currentToken.accessToken != null &&
+            currentToken.refreshToken != null &&
+            currentToken.expiryDate != null &&
+            _isAccessTokenUsable(currentToken.expiryDate,
+                skew: const Duration()) &&
+            !KretaClient.needsReauth) {
+          await _sendTokenToWatchInternal(currentToken);
+        }
+        return;
+      }
       final watchTokenVersion = _resolveIncomingTokenVersion(tokenData);
       final watchUpdatedAtMs = _asInt(tokenData['updatedAtMs']);
       final watchIdToken = tokenData['idToken'] as String?;

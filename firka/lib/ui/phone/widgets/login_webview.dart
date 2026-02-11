@@ -90,14 +90,18 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
             await accountPicker.postUpdate();
 
             if (Platform.isIOS) {
-              try {
-                await WatchSyncHelper.saveTokenToiCloud(tokenModel);
-              } catch (_) {}
+              final watchInstalled =
+                  await WatchSyncHelper.isWatchAppInstalled();
+              if (watchInstalled) {
+                try {
+                  await WatchSyncHelper.saveTokenToiCloud(tokenModel);
+                } catch (_) {}
 
-              try {
-                await WatchSyncHelper.sendTokenToWatch();
-              } catch (e) {
-                // Watch may not be available, ignore
+                try {
+                  await WatchSyncHelper.sendTokenToWatch();
+                } catch (_) {
+                  // Watch may be unavailable, ignore
+                }
               }
             }
 
