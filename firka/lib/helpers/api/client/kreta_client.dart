@@ -92,6 +92,13 @@ class KretaClient {
       return;
     }
 
+    final watchInstalled = await WatchSyncHelper.isWatchAppInstalled();
+    if (!watchInstalled) {
+      debugPrint(
+          '[KretaClient] Skipping Apple token sync because no paired Watch app is installed');
+      return;
+    }
+
     try {
       await WatchSyncHelper.saveTokenToiCloud(token);
     } catch (e) {
@@ -194,6 +201,7 @@ class KretaClient {
         isar: isar,
         tokens: initData.tokens,
         client: this,
+        allowExpiredAccessToken: true,
       );
 
       if (recovered) {

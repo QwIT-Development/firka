@@ -23,8 +23,10 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../../../helpers/db/widget.dart';
 import '../../../../helpers/firka_bundle.dart';
 import '../../../../helpers/firka_state.dart';
+import '../../../../helpers/api/client/kreta_client.dart';
 import '../../../../helpers/settings.dart';
 import '../../../../helpers/live_activity_service.dart';
+import '../../../../helpers/watch_sync_helper.dart';
 import '../../widgets/login_webview.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -149,12 +151,14 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
         widgets.add(GestureDetector(
           onTap: () {
-            if (item.redirectTo != null && item.redirectTo == "discord"){
-              launchUrlString("https://discord.com/invite/firka-1111649116020285532");
-              return; 
-            } else if (item.redirectTo != null && item.redirectTo == "privacy"){
+            if (item.redirectTo != null && item.redirectTo == "discord") {
+              launchUrlString(
+                  "https://discord.com/invite/firka-1111649116020285532");
+              return;
+            } else if (item.redirectTo != null &&
+                item.redirectTo == "privacy") {
               launchUrlString("https://firka.app/privacy");
-              return; 
+              return;
             } else {
               Navigator.push(
                   context,
@@ -164,10 +168,18 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                           child: SettingsScreen(widget.data, item.children))));
             }
           },
-    child: item.redirectTo != null
-        ? FirkaCard(left: cardWidgets, right: [RotationTransition(turns: AlwaysStoppedAnimation(-45/360), child: FirkaIconWidget(FirkaIconType.majesticons, Majesticon.arrowRightSolid, size: 24, color: appStyle.colors.textSecondary))],)
-        : FirkaCard(left: cardWidgets),
-            
+          child: item.redirectTo != null
+              ? FirkaCard(
+                  left: cardWidgets,
+                  right: [
+                    RotationTransition(
+                        turns: AlwaysStoppedAnimation(-45 / 360),
+                        child: FirkaIconWidget(FirkaIconType.majesticons,
+                            Majesticon.arrowRightSolid,
+                            size: 24, color: appStyle.colors.textSecondary))
+                  ],
+                )
+              : FirkaCard(left: cardWidgets),
         ));
 
         continue;
@@ -177,28 +189,24 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         var v = item.toRoundedString();
 
         widgets.add(GestureDetector(
-          child: FirkaCard(
-            height: 52 + 12,
-            left: [
-              item.iconType != null
-                  ? Row(
-                      children: [
-                        FirkaIconWidget(item.iconType!, item.iconData!,
-                            color: appStyle.colors.accent),
-                        SizedBox(width: 4),
-                      ],
-                    )
-                  : SizedBox(),
-              Text(item.title,
-                  style: appStyle.fonts.B_16SB
-                      .apply(color: appStyle.colors.textPrimary))
-            ],
-            right: [
-              Text(v == "0.0" ? "0" : v,
-                  style: appStyle.fonts.B_16R
-                      .apply(color: appStyle.colors.textPrimary))
-            ]
-          ),
+          child: FirkaCard(height: 52 + 12, left: [
+            item.iconType != null
+                ? Row(
+                    children: [
+                      FirkaIconWidget(item.iconType!, item.iconData!,
+                          color: appStyle.colors.accent),
+                      SizedBox(width: 4),
+                    ],
+                  )
+                : SizedBox(),
+            Text(item.title,
+                style: appStyle.fonts.B_16SB
+                    .apply(color: appStyle.colors.textPrimary))
+          ], right: [
+            Text(v == "0.0" ? "0" : v,
+                style: appStyle.fonts.B_16R
+                    .apply(color: appStyle.colors.textPrimary))
+          ]),
           onTap: () async {
             showSetDoubleSheet(context, item, widget.data, setState);
           },
@@ -212,12 +220,12 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           left: [
             item.iconType != null
                 ? Row(
-              children: [
-                FirkaIconWidget(item.iconType!, item.iconData!,
-                    color: appStyle.colors.accent),
-                SizedBox(width: 4),
-              ],
-            )
+                    children: [
+                      FirkaIconWidget(item.iconType!, item.iconData!,
+                          color: appStyle.colors.accent),
+                      SizedBox(width: 4),
+                    ],
+                  )
                 : SizedBox(),
             Text(item.title,
                 style: appStyle.fonts.B_16SB
@@ -316,67 +324,74 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         continue;
       }
       if (item is ShowLicensePage) {
-        widgets.add(
-          FutureBuilder<List<LicenseEntry>>(
-            future: LicenseRegistry.licenses.toList(),
-            builder: (BuildContext context, AsyncSnapshot<List<LicenseEntry>> snapshot) {
-              if (!snapshot.hasData) {
-                return Center(child: CircularProgressIndicator(color: appStyle.colors.accent));
-              }
-              final licenses = snapshot.data!;
-              final shownPackages = <String>{};
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: licenses.where((license) {
-              return license.packages.any((pkg) => !shownPackages.contains(pkg));
-                }).map((license) {
-              final packageName = license.packages.firstWhere(
-                (pkg) => !shownPackages.contains(pkg),
-                orElse: () => license.packages.first,
-              );
-              shownPackages.add(packageName);
-              final paragraphs = license.paragraphs.map((p) => p.text).join('\n\n');
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text(packageName, style: TextStyle(fontWeight: FontWeight.bold)),
-                              content: SingleChildScrollView(
-                            child: Text(paragraphs),
-                              ),
-                              actions: [
-                                TextButton(
-                                  child: Text(widget.data.l10n.close),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
+        widgets.add(FutureBuilder<List<LicenseEntry>>(
+          future: LicenseRegistry.licenses.toList(),
+          builder: (BuildContext context,
+              AsyncSnapshot<List<LicenseEntry>> snapshot) {
+            if (!snapshot.hasData) {
+              return Center(
+                  child:
+                      CircularProgressIndicator(color: appStyle.colors.accent));
+            }
+            final licenses = snapshot.data!;
+            final shownPackages = <String>{};
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: licenses.where((license) {
+                return license.packages
+                    .any((pkg) => !shownPackages.contains(pkg));
+              }).map((license) {
+                final packageName = license.packages.firstWhere(
+                  (pkg) => !shownPackages.contains(pkg),
+                  orElse: () => license.packages.first,
+                );
+                shownPackages.add(packageName);
+                final paragraphs =
+                    license.paragraphs.map((p) => p.text).join('\n\n');
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text(packageName,
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                content: SingleChildScrollView(
+                                  child: Text(paragraphs),
                                 ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                      child: FirkaCard(left: [
-                        Text(
-                          packageName,
-                          style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textPrimary),
-                            ),
-                      ]),
-                    )
-                  ],
-                ),
-              );}).toList(),
-              );
-            },
-          )
-        );
+                                actions: [
+                                  TextButton(
+                                    child: Text(widget.data.l10n.close),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: FirkaCard(left: [
+                          Text(
+                            packageName,
+                            style: appStyle.fonts.B_14R
+                                .apply(color: appStyle.colors.textPrimary),
+                          ),
+                        ]),
+                      )
+                    ],
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ));
         continue;
       }
 
@@ -718,11 +733,19 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
               await item.save(widget.data.isar.appSettingsModels);
             });
 
-
             final accounts =
                 await widget.data.isar.tokenModels.where().findAll();
 
             if (accounts.isEmpty) {
+              if (Platform.isIOS) {
+                try {
+                  await WatchSyncHelper.clearICloudToken(notifyWatch: true);
+                } catch (e) {
+                  logger.warning('[Settings] Failed to clear iCloud token: $e');
+                }
+                KretaClient.clearReauthFlag();
+              }
+              if (!mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
                     builder: (context) => LoginScreen(widget.data)),
@@ -919,7 +942,10 @@ void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
                                         value: setting.value,
                                         max: setting.maxValue,
                                         divisions: setting.step != null
-                                            ? ((setting.maxValue - setting.minValue) / setting.step!).round()
+                                            ? ((setting.maxValue -
+                                                        setting.minValue) /
+                                                    setting.step!)
+                                                .round()
                                             : null,
                                         thumbColor: appStyle.colors.accent,
                                         activeColor: appStyle.colors.secondary,
@@ -927,7 +953,9 @@ void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
                                         onChanged: (v) async {
                                           setState(() {
                                             if (setting.step != null) {
-                                              setting.value = (v / setting.step!).round() * setting.step!;
+                                              setting.value =
+                                                  (v / setting.step!).round() *
+                                                      setting.step!;
                                             } else {
                                               setting.value = v;
                                             }

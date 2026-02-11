@@ -205,14 +205,22 @@ Future<void> _initData(AppInitialization init) async {
   resetOldTimeTableCache(init.isar);
   resetOldHomeworkCache(init.isar);
 
+  var didRunFreshInstallCleanup = false;
   if (Platform.isIOS) {
     try {
-      await WatchSyncHelper.checkAndRecoverFromiCloud(
-        isar: init.isar,
-        tokens: init.tokens,
-      );
+      didRunFreshInstallCleanup =
+          await WatchSyncHelper.runFreshInstallCleanupIfNeeded(isar: init.isar);
+      if (didRunFreshInstallCleanup) {
+        logger.info(
+            '[Init] Fresh-install cleanup completed; skipping startup iCloud recovery on this launch');
+      } else {
+        await WatchSyncHelper.checkAndRecoverFromiCloud(
+          isar: init.isar,
+          tokens: init.tokens,
+        );
+      }
     } catch (e) {
-      logger.warning('[Init] iCloud recovery check failed: $e');
+      logger.warning('[Init] iCloud bootstrap/recovery failed: $e');
     }
   }
 
