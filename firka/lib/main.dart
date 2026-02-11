@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
-
 import 'package:dio/dio.dart';
 import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/helpers/db/models/app_settings_model.dart';
@@ -32,7 +31,6 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 import 'helpers/db/models/homework_cache_model.dart';
 import 'helpers/update_notifier.dart';
 import 'helpers/live_activity_service.dart';
@@ -289,7 +287,10 @@ Future<AppInitialization> initializeApp() async {
 
   if (Platform.isIOS) {
     try {
-      await LiveActivityService.initialize();
+      await LiveActivityService.initialize()
+          .timeout(const Duration(seconds: 8));
+    } on TimeoutException catch (e, st) {
+      logger.warning('LiveActivity init timed out: $e', e, st);
     } catch (e, st) {
       logger.severe('Failed to initialize LiveActivity: $e', e, st);
     }
@@ -315,8 +316,12 @@ void main() async {
     WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
     FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-    await dotenv.load(fileName: ".env");
-    logger.info("Environment variables loaded");
+    try {
+      await dotenv.load(fileName: ".env");
+      logger.info("Environment variables loaded");
+    } catch (e, st) {
+      logger.severe("Failed to load .env: $e", e, st);
+    }
 
     {
       final jwtPattern =
@@ -410,9 +415,13 @@ void main() async {
       })();
     }
 
-    logger.finest('loading dirty words');
-    await loadDirtyWords();
-    logger.finest('loaded dirty words');
+    try {
+      logger.finest('loading dirty words');
+      await loadDirtyWords();
+      logger.finest('loaded dirty words');
+    } catch (e, st) {
+      logger.severe('Failed to load dirty words: $e', e, st);
+    }
 
     // Run App Initialization
     runApp(InitializationScreen());
@@ -435,7 +444,8 @@ final UpdateNotifier globalUpdate = UpdateNotifier();
 class InitializationScreen extends StatelessWidget {
   InitializationScreen({super.key});
 
-  final Future<AppInitialization> _init = initializeApp();
+  final Future<AppInitialization> _init =
+      initializeApp().timeout(const Duration(seconds: 20));
 
   @override
   Widget build(BuildContext context) {
@@ -447,6 +457,8 @@ class InitializationScreen extends StatelessWidget {
           if (snapshot.hasError) {
             logger.shout("Error in InitializationScreen",
                 snapshot.error.toString(), snapshot.stackTrace);
+
+            FlutterNativeSplash.remove();
 
             // Handle initialization error
             return MaterialApp(
