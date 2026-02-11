@@ -2,12 +2,24 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
-@available(iOS 16.2, *)
+@available(iOS 18.0, *)
 struct TimetableLiveActivity: Widget {
     var body: some WidgetConfiguration {
+        TimetableLiveActivityLegacy.activityConfiguration
+            .supplementalActivityFamilies([.small])
+    }
+}
+
+@available(iOS 16.2, *)
+struct TimetableLiveActivityLegacy: Widget {
+    var body: some WidgetConfiguration {
+        Self.activityConfiguration
+    }
+
+    static var activityConfiguration: ActivityConfiguration<TimetableActivityAttributes> {
         ActivityConfiguration(for: TimetableActivityAttributes.self) { context in
             // Lock screen/banner UI
-            TimetableLiveActivityView(context: context)
+            TimetableLiveActivityAdaptiveView(context: context)
                 .activityBackgroundTint(Color(red: 0.1, green: 0.15, blue: 0.1))
                 .activitySystemActionForegroundColor(Color.white)
         } dynamicIsland: { context in
@@ -281,6 +293,36 @@ struct TimetableLiveActivity: Widget {
             }
         }
     }
+
+@available(iOS 16.2, *)
+struct TimetableLiveActivityAdaptiveView: View {
+    let context: ActivityViewContext<TimetableActivityAttributes>
+
+    var body: some View {
+        if #available(iOS 18.0, *) {
+            TimetableLiveActivityFamilyView(context: context)
+        } else {
+            TimetableLiveActivityView(context: context)
+        }
+    }
+}
+
+@available(iOS 18.0, *)
+struct TimetableLiveActivityFamilyView: View {
+    @Environment(\.activityFamily) private var activityFamily
+    let context: ActivityViewContext<TimetableActivityAttributes>
+
+    var body: some View {
+        switch activityFamily {
+        case .small:
+            SmallActivityView(context: context)
+        case .medium:
+            TimetableLiveActivityView(context: context)
+        @unknown default:
+            TimetableLiveActivityView(context: context)
+        }
+    }
+}
 
 // MARK: - Lock Screen View
 @available(iOS 16.2, *)
@@ -563,4 +605,317 @@ struct TimetableLiveActivityView: View {
             }
             .padding(16)
         }
+}
+
+@available(iOS 18.0, *)
+struct SmallActivityView: View {
+    let context: ActivityViewContext<TimetableActivityAttributes>
+
+    private var mode: String {
+        context.state.mode ?? (context.state.isBreak ? "break" : "lesson")
+    }
+
+    private var season: String {
+        context.state.season ?? ""
+    }
+
+    private var titleText: String {
+        switch mode {
+        case "beforeSchool":
+            return firstNonEmpty([
+                trimmedOrNil(context.state.labels?.title),
+                trimmedOrNil(context.state.lessonName),
+                trimmedOrNil(context.state.message),
+            ]) ?? ""
+        case "xmas", "newYearEve", "newYearDay":
+            return firstNonEmpty([
+                trimmedOrNil(context.state.message),
+                trimmedOrNil(context.state.lessonName),
+                trimmedOrNil(context.state.labels?.title),
+            ]) ?? ""
+        case "seasonalBreak":
+            return firstNonEmpty([
+                trimmedOrNil(context.state.labels?.title),
+                trimmedOrNil(context.state.lessonName),
+                trimmedOrNil(context.state.message),
+            ]) ?? ""
+        case "break":
+            return firstNonEmpty([
+                trimmedOrNil(context.state.labels?.title),
+                trimmedOrNil(context.state.message),
+            ]) ?? ""
+        default:
+            return firstNonEmpty([
+                trimmedOrNil(context.state.lessonName),
+                trimmedOrNil(context.state.labels?.title),
+                trimmedOrNil(context.state.message),
+            ]) ?? ""
+        }
+    }
+
+    private var iconName: String {
+        if SeasonalIconHelper.isSeasonalMode(mode) || mode == "beforeSchool" {
+            return SeasonalIconHelper.iconName(for: mode, season: season, lessonIcon: context.state.lessonIcon)
+        }
+
+        return context.state.isBreak ? "cup.and.saucer.fill" : (context.state.lessonIcon ?? "book.fill")
+    }
+
+    private var warningState: (text: String, color: Color, icon: String)? {
+        let showWarningModes = ["newYearEve", "lesson", "break", "seasonalBreak"]
+        guard showWarningModes.contains(mode),
+              let warningText = trimmedOrNil(context.state.tokenExpirationWarning) else {
+            return nil
+        }
+
+        let isExpired = context.state.tokenExpired ?? false
+        return (
+            text: warningText,
+            color: isExpired ? .red : .orange,
+            icon: isExpired ? "exclamationmark.circle.fill" : "exclamationmark.triangle.fill"
+        )
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 5) {
+                Image(systemName: iconName)
+                    .font(.system(size: 14))
+                    .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
+
+                if mode == "lesson", let lessonNumber = context.state.lessonNumber {
+                    Text("\(lessonNumber). \(titleText)")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
+                        .truncationMode(.tail)
+                } else {
+                    Text(titleText)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
+                        .truncationMode(.tail)
+                }
+
+                Spacer(minLength: 0)
+            }
+
+            detailsSection
+
+            Spacer(minLength: 0)
+
+            timerSection
+
+            if let warningState = warningState {
+                HStack(spacing: 3) {
+                    Image(systemName: warningState.icon)
+                        .font(.system(size: 8))
+                        .foregroundColor(warningState.color)
+
+                    Text(warningState.text)
+                        .font(.system(size: 8, weight: .semibold))
+                        .foregroundColor(warningState.color)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .truncationMode(.tail)
+                }
+                .padding(.top, 1)
+            }
+        }
+        .padding(10)
+    }
+
+    @ViewBuilder
+    private var detailsSection: some View {
+        switch mode {
+        case "beforeSchool":
+            labeledDetailLine(
+                label: context.state.labels?.firstLessonLabel,
+                value: context.state.lessonName,
+                color: .white,
+                weight: .semibold
+            )
+            labeledDetailLine(
+                label: context.state.labels?.teacherLabel,
+                value: context.state.teacherName,
+                color: .white,
+                weight: .semibold
+            )
+            labeledDetailLine(
+                label: context.state.labels?.roomLabel,
+                value: context.state.roomName,
+                color: .white,
+                weight: .semibold
+            )
+
+        case "lesson":
+            if context.state.isSubstitution ?? false {
+                if let substitution = trimmedOrNil(context.state.labels?.substitutionText) {
+                    if let substituteTeacher = trimmedOrNil(context.state.substituteTeacher) {
+                        detailLine("\(substitution) (\(substituteTeacher))", color: .orange)
+                    } else {
+                        detailLine(substitution, color: .orange)
+                    }
+                }
+            }
+
+        case "break":
+            labeledDetailLine(
+                label: context.state.labels?.nextLabel,
+                value: context.state.nextLessonName,
+                color: .white,
+                weight: .semibold
+            )
+            labeledDetailLine(
+                label: context.state.labels?.roomLabel,
+                value: context.state.nextRoomName,
+                color: .white,
+                weight: .semibold
+            )
+
+        case "seasonalBreak":
+            if let remainingLabel = trimmedOrNil(context.state.labels?.remainingLabel) {
+                detailLine(remainingLabel)
+            }
+
+        default:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private var timerSection: some View {
+        switch mode {
+        case "xmas", "newYearDay":
+            EmptyView()
+
+        case "seasonalBreak":
+            if let remainingLabel = trimmedOrNil(context.state.labels?.remainingLabel) {
+                timerLabelLine(remainingLabel)
+            }
+            timerValueText(context.state.seasonalDisplayValue)
+
+        case "newYearEve", "beforeSchool":
+            if let timerLabel = trimmedOrNil(context.state.labels?.timerLabel) {
+                if mode == "beforeSchool" {
+                    timerLabelLine(timerLabel, color: .white, weight: .semibold)
+                } else {
+                    timerLabelLine(timerLabel)
+                }
+            }
+            countdownValueView()
+
+        case "lesson", "break", "loading":
+            if context.state.isCancelled ?? false {
+                if let cancelled = trimmedOrNil(context.state.labels?.cancelledText) {
+                    timerValueText(cancelled, color: .red)
+                }
+            } else {
+                if let timerLabel = trimmedOrNil(context.state.labels?.timerLabel) {
+                    if mode == "lesson" || mode == "break" {
+                        timerLabelLine(timerLabel, color: .white, weight: .semibold)
+                    } else {
+                        timerLabelLine(timerLabel)
+                    }
+                }
+                countdownValueView()
+            }
+
+        default:
+            countdownValueView()
+        }
+    }
+
+    @ViewBuilder
+    private func labeledDetailLine(
+        label: String?,
+        value: String?,
+        color: Color = .gray,
+        weight: Font.Weight = .regular
+    ) -> some View {
+        if let text = joinedLabelValue(label: label, value: value) {
+            detailLine(text, color: color, weight: weight)
+        }
+    }
+
+    @ViewBuilder
+    private func countdownValueView() -> some View {
+        if context.state.endTime > context.state.currentTime {
+            Text(timerInterval: context.state.currentTime...context.state.endTime, countsDown: true)
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            timerValueText(context.state.formattedEndTime)
+        }
+    }
+
+    private func detailLine(
+        _ text: String,
+        color: Color = .gray,
+        weight: Font.Weight = .regular
+    ) -> some View {
+        Text(text)
+            .font(.system(size: 9, weight: weight))
+            .foregroundColor(color)
+            .lineLimit(1)
+            .minimumScaleFactor(0.6)
+            .truncationMode(.tail)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func timerLabelLine(
+        _ text: String,
+        color: Color = .gray,
+        weight: Font.Weight = .regular
+    ) -> some View {
+        Text(text)
+            .font(.system(size: 8, weight: weight))
+            .foregroundColor(color)
+            .lineLimit(1)
+            .minimumScaleFactor(0.65)
+            .truncationMode(.tail)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func timerValueText(_ text: String, color: Color? = nil) -> some View {
+        Text(text)
+            .font(.system(size: 16, weight: .bold, design: .rounded))
+            .foregroundColor(color ?? SeasonalIconHelper.iconColor(for: mode, season: season))
+            .monospacedDigit()
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+            .truncationMode(.tail)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func joinedLabelValue(label: String?, value: String?) -> String? {
+        guard let value = trimmedOrNil(value) else { return nil }
+
+        if let label = trimmedOrNil(label) {
+            return "\(label) \(value)"
+        }
+
+        return value
+    }
+
+    private func firstNonEmpty(_ values: [String?]) -> String? {
+        for value in values {
+            if let value = value, !value.isEmpty {
+                return value
+            }
+        }
+        return nil
+    }
+
+    private func trimmedOrNil(_ value: String?) -> String? {
+        guard let value else { return nil }
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
 }

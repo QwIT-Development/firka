@@ -9,6 +9,7 @@ import 'package:isar/isar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../helpers/api/client/kreta_client.dart';
+import '../../../helpers/watch_sync_helper.dart';
 import '../../../helpers/api/consts.dart';
 import '../../../helpers/api/token_grant.dart';
 import '../../../helpers/db/models/token_model.dart';
@@ -89,17 +90,12 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget> {
             await accountPicker.postUpdate();
 
             if (Platform.isIOS) {
-              const watchChannel = MethodChannel('app.firka/watch_sync');
               try {
-                await watchChannel.invokeMethod('sendTokenToWatch', {
-                  'studentId': tokenModel.studentId,
-                  'studentIdNorm': tokenModel.studentIdNorm,
-                  'iss': tokenModel.iss,
-                  'idToken': tokenModel.idToken,
-                  'accessToken': tokenModel.accessToken,
-                  'refreshToken': tokenModel.refreshToken,
-                  'expiryDate': tokenModel.expiryDate!.millisecondsSinceEpoch,
-                });
+                await WatchSyncHelper.saveTokenToiCloud(tokenModel);
+              } catch (_) {}
+
+              try {
+                await WatchSyncHelper.sendTokenToWatch();
               } catch (e) {
                 // Watch may not be available, ignore
               }

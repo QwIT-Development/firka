@@ -59,6 +59,22 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         flutterChannel?.invokeMethod("onTokenRecoveredFromiCloud", arguments: nil)
     }
 
+    private func parseInt64(_ value: Any?) -> Int64? {
+        if let value = value as? Int64 {
+            return value
+        }
+        if let value = value as? Int {
+            return Int64(value)
+        }
+        if let value = value as? Double {
+            return Int64(value)
+        }
+        if let value = value as? String, let parsed = Int64(value) {
+            return parsed
+        }
+        return nil
+    }
+
     private func handleSendTokenToWatch(arguments: Any?, result: @escaping FlutterResult) {
         guard let authData = arguments as? [String: Any] else {
             result(FlutterError(code: "INVALID_ARGS", message: "Arguments must be a dictionary", details: nil))
@@ -180,7 +196,7 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         formatter.dateFormat = "HH:mm:ss"
         print("[WatchSessionManager] Found iCloud token, expiry: \(formatter.string(from: token.expiryDate))")
 
-        let tokenData: [String: Any] = [
+        var tokenData: [String: Any] = [
             "studentId": token.studentId,
             "studentIdNorm": token.studentIdNorm,
             "iss": token.iss,
@@ -189,6 +205,12 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             "refreshToken": token.refreshToken,
             "expiryDate": Int64(token.expiryDate.timeIntervalSince1970 * 1000)
         ]
+        if let tokenVersion = token.effectiveTokenVersion {
+            tokenData["tokenVersion"] = tokenVersion
+        }
+        if let updatedAtMs = token.effectiveUpdatedAtMs {
+            tokenData["updatedAtMs"] = updatedAtMs
+        }
 
         result(tokenData)
     }
@@ -204,13 +226,15 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
               let idToken = tokenData["idToken"] as? String,
               let iss = tokenData["iss"] as? String,
               let studentId = tokenData["studentId"] as? String,
-              let expiryMs = tokenData["expiryDate"] as? Int64 else {
+              let expiryMs = parseInt64(tokenData["expiryDate"]) else {
             result(FlutterError(code: "INVALID_ARGS", message: "Missing required token fields", details: nil))
             return
         }
 
-        let studentIdNorm = tokenData["studentIdNorm"] as? Int64 ?? 0
+        let studentIdNorm = parseInt64(tokenData["studentIdNorm"]) ?? 0
         let expiryDate = Date(timeIntervalSince1970: Double(expiryMs) / 1000.0)
+        let tokenVersion = parseInt64(tokenData["tokenVersion"]) ?? WatchToken.extractIatMillis(from: idToken)
+        let updatedAtMs = parseInt64(tokenData["updatedAtMs"]) ?? Int64(Date().timeIntervalSince1970 * 1000)
 
         let token = WatchToken(
             accessToken: accessToken,
@@ -219,7 +243,9 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             iss: iss,
             studentId: studentId,
             studentIdNorm: studentIdNorm,
-            expiryDate: expiryDate
+            expiryDate: expiryDate,
+            tokenVersion: tokenVersion,
+            updatedAtMs: updatedAtMs
         )
 
         iCloudTokenManager.shared.saveToken(token, deviceName: "iPhone")

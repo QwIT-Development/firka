@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:isar/isar.dart';
-
 import 'package:firka/helpers/api/client/kreta_client.dart';
-import 'package:firka/helpers/db/models/token_model.dart';
 import 'package:firka/helpers/api/client/kreta_stream.dart';
 import 'package:firka/helpers/api/exceptions/token.dart';
 import 'package:firka/helpers/active_account_helper.dart';
@@ -34,7 +31,6 @@ import '../../../../helpers/debug_helper.dart';
 import '../../../../helpers/firka_bundle.dart';
 import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/image_preloader.dart';
-import '../../../../helpers/watch_sync_helper.dart';
 import '../../../widget/delayed_spinner.dart';
 import '../../../widget/firka_icon.dart';
 import '../../pages/extras/extras.dart';
@@ -211,48 +207,16 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     try {
       _prefetched = true;
 
-      if (Platform.isIOS) {
-        final token = pickActiveToken(
-          tokens: widget.data.tokens,
-          settings: widget.data.settings,
-          preferredStudentIdNorm: widget.data.client.model.studentIdNorm,
+      try {
+        await widget.data.client.refreshTokenProactively().timeout(
+          const Duration(seconds: 60),
+          onTimeout: () {
+            logger.warning('[Home] Token refresh/recovery timed out after 60s');
+            return false;
+          },
         );
-        final tokenExpiry = token?.expiryDate;
-        final isTokenExpiredOrExpiring = tokenExpiry == null ||
-            tokenExpiry.isBefore(DateTime.now().add(const Duration(minutes: 5)));
-
-        if (isTokenExpiredOrExpiring || KretaClient.needsReauth) {
-          logger.info('[Home] Token expired/expiring or needsReauth, trying iCloud recovery...');
-
-          const delays = [1, 5, 10, 5, 10];
-
-          for (int attempt = 0; attempt < delays.length; attempt++) {
-            await Future.delayed(Duration(seconds: delays[attempt]));
-
-            final recovered = await WatchSyncHelper.checkAndRecoverFromiCloud(
-              isar: widget.data.isar,
-              tokens: widget.data.tokens,
-              client: widget.data.client,
-            );
-
-            if (recovered) {
-              widget.data.tokens = await widget.data.isar.tokenModels.where().findAll();
-              final activeToken = pickActiveToken(
-                tokens: widget.data.tokens,
-                settings: widget.data.settings,
-                preferredStudentIdNorm: widget.data.client.model.studentIdNorm,
-              );
-              if (activeToken != null) {
-                widget.data.client.model = activeToken;
-              }
-              KretaClient.clearReauthFlag();
-              logger.info('[Home] Recovered token from iCloud (attempt ${attempt + 1}, after ${delays[attempt]}s)');
-              break;
-            }
-
-            logger.fine('[Home] iCloud check attempt ${attempt + 1} (after ${delays[attempt]}s): no fresher token yet');
-          }
-        }
+      } catch (e) {
+        logger.warning('[Home] Token refresh/recovery failed: $e');
       }
 
       await fetchData();
@@ -264,10 +228,25 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
       }
 
       if (Platform.isIOS) {
-        await WidgetCacheHelper.refreshIOSWidgets(widget.data.client, widget.data.settings);
+        await WidgetCacheHelper.refreshIOSWidgets(
+            widget.data.client, widget.data.settings);
+
+        final token = pickActiveToken(
+          tokens: widget.data.tokens,
+          settings: widget.data.settings,
+        );
+        final studentName = token?.studentId ?? "Student";
+        LiveActivityService.onUserLogin(
+          client: widget.data.client,
+          studentName: studentName,
+          settingsStore: widget.data.settings,
+        ).catchError((e, st) {
+          logger.severe('LiveActivity registration failed: $e', e, st);
+        });
       }
 
-      if (!_disposed && (LiveActivityService.isTokenExpired || KretaClient.needsReauth)) {
+      if (!_disposed &&
+          (LiveActivityService.isTokenExpired || KretaClient.needsReauth)) {
         activeToast = ActiveToastType.reauth;
         setState(() {
           toast = buildReauthToast(context, widget.data, () {
@@ -281,7 +260,6 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
         });
         return;
       }
-
     } catch (e) {
       if (e is TokenExpiredException || e is InvalidGrantException) {
         activeToast = ActiveToastType.reauth;
@@ -413,6 +391,9 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
       homeworkFetched++;
     });
 
+    final startTime = DateTime.now();
+    const maxWaitTime = Duration(seconds: 30);
+
     while (lessonsFetched < 2 ||
         noticeBoardFetched < 2 ||
         infoBoardFetched < 2 ||
@@ -420,6 +401,10 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
         testsFetched < 2 ||
         gradesFetched < 2 ||
         homeworkFetched < 2) {
+      if (DateTime.now().difference(startTime) > maxWaitTime) {
+        logger.warning('[Home] fetchData timed out after 30s');
+        break;
+      }
       await Future.delayed(Duration(milliseconds: 50));
     }
   }
@@ -443,7 +428,8 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     prefetch();
     _preloadImages();
 
-    if (Platform.isIOS && widget.data.settings.group("settings").boolean("beta_warning")) {
+    if (Platform.isIOS &&
+        widget.data.settings.group("settings").boolean("beta_warning")) {
       Future.delayed(Duration(seconds: 5), () async {
         await LiveActivityService.showConsentScreenIfNeeded();
       });

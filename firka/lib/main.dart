@@ -8,7 +8,6 @@ import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/helpers/db/models/generic_cache_model.dart';
 import 'package:firka/helpers/db/models/timetable_cache_model.dart';
 import 'package:firka/helpers/db/models/token_model.dart';
-import 'package:firka/helpers/db/widget.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/firka_bundle.dart';
 import 'package:firka/helpers/settings.dart';
@@ -213,86 +212,26 @@ Future<void> _initData(AppInitialization init) async {
     init.tokens = allTokens;
     final token = pickActiveToken(tokens: allTokens, settings: init.settings);
     if (token == null) {
-      logger.warning("[Init] Tokens disappeared during initialization; skipping client setup");
+      logger.warning(
+          "[Init] Tokens disappeared during initialization; skipping client setup");
       return;
     }
     logger.fine("Initializing kréta client as: ${token.studentId}");
     init.client = KretaClient(token, init.isar);
 
     if (Platform.isIOS) {
-      final recoveredFromiCloud = await WatchSyncHelper.checkAndRecoverFromiCloud(
-        isar: init.isar,
-        tokens: init.tokens,
-        client: init.client,
-      );
-      if (recoveredFromiCloud) {
-        init.tokens = await init.isar.tokenModels.where().findAll();
-        final activeToken = pickActiveToken(
-          tokens: init.tokens,
-          settings: init.settings,
-          preferredStudentIdNorm: init.client.model.studentIdNorm,
-        );
-        if (activeToken != null) {
-          init.client.model = activeToken;
-        }
-        logger.info('[Init] Recovered fresher token from iCloud (immediate)');
+      final expiryDate = token.expiryDate;
+      if (expiryDate != null) {
+        KretaClient.clearReauthFlag();
       }
 
-      await Future.delayed(const Duration(milliseconds: 300));
-      await WatchSyncHelper.syncTokenFromWatch(
-        isar: init.isar,
-        tokens: init.tokens,
-        client: init.client,
-      );
-      init.tokens = await init.isar.tokenModels.where().findAll();
-      final activeToken = pickActiveToken(
-        tokens: init.tokens,
-        settings: init.settings,
-        preferredStudentIdNorm: init.client.model.studentIdNorm,
-      );
-      if (activeToken != null) {
-        init.client.model = activeToken;
-      }
-    }
-
-    await init.client.refreshTokenProactively();
-
-    if (Platform.isIOS) {
-      final selectedToken = pickActiveToken(
-        tokens: init.tokens,
-        settings: init.settings,
-        preferredStudentIdNorm: init.client.model.studentIdNorm,
-      );
-      if (selectedToken != null) {
+      unawaited(() async {
         try {
-          await WatchSyncHelper.saveTokenToiCloud(selectedToken);
+          await WatchSyncHelper.sendTokenModelToWatch(token);
         } catch (e) {
-          logger.warning('[Init] Failed to push active token to iCloud: $e');
+          logger.warning('[Init] Failed to sync active token to Watch: $e');
         }
-      }
-      try {
-        await WatchSyncHelper.sendTokenToWatch();
-      } catch (e) {
-        logger.warning('[Init] Failed to push active token to Watch: $e');
-      }
-    }
-
-    await WidgetCacheHelper.updateWidgetCache(appStyle, init.client);
-
-    if (Platform.isIOS) {
-      await WidgetCacheHelper.refreshIOSWidgets(init.client, init.settings);
-    }
-
-    if (Platform.isIOS) {
-      final studentName = token.studentId ?? "Student";
-
-      LiveActivityService.onUserLogin(
-        client: init.client,
-        studentName: studentName,
-        settingsStore: init.settings,
-      ).catchError((e, st) {
-        logger.severe('LiveActivity registration failed: $e', e, st);
-      });
+      }());
     }
   }
 
@@ -351,7 +290,6 @@ Future<AppInitialization> initializeApp() async {
   if (Platform.isIOS) {
     try {
       await LiveActivityService.initialize();
-
     } catch (e, st) {
       logger.severe('Failed to initialize LiveActivity: $e', e, st);
     }

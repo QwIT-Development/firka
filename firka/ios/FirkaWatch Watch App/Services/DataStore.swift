@@ -1,7 +1,6 @@
 import Foundation
 import Observation
 import WidgetKit
-import WatchConnectivity
 
 // MARK: - Cache Wrapper
 
@@ -156,136 +155,28 @@ class DataStore {
         isRecoveringToken = true
         recoveryAttempted = false
         error = nil
-        print("[Watch] Starting background token recovery...")
+        print("[Watch] Starting token recovery via central method...")
 
         defer {
             isRecoveringToken = false
         }
 
-        let retryDelays: [UInt64] = [0, 2, 5]
-        var isNetworkError = false
-        var isTokenPermanentlyInvalid = false
-
-        for (attemptIndex, delaySeconds) in retryDelays.enumerated() {
-            if delaySeconds > 0 {
-                print("[Watch] Recovery attempt \(attemptIndex + 1): waiting \(delaySeconds)s before retry...")
-                try? await Task.sleep(nanoseconds: delaySeconds * 1_000_000_000)
-            }
-
-            print("[Watch] Recovery attempt \(attemptIndex + 1)/\(retryDelays.count) - Step 1: Checking iCloud for updated token...")
-            if let iCloudToken = iCloudTokenManager.shared.loadToken() {
-                if !isTokenExpired(iCloudToken) {
-                    print("[Watch] Recovery: Found valid token in iCloud!")
-                    try? TokenManager.shared.saveToken(iCloudToken)
-                    checkTokenState()
-                    return true
-                } else {
-                    print("[Watch] Recovery: iCloud token is expired, trying refresh...")
-                }
-            }
-
-            print("[Watch] Recovery attempt \(attemptIndex + 1)/\(retryDelays.count) - Step 2: Attempting API token refresh...")
-            do {
-                _ = try await TokenManager.shared.refreshToken()
-                print("[Watch] Recovery: Token refresh succeeded!")
-                checkTokenState()
-                return true
-            } catch let tokenError as TokenError {
-                print("[Watch] Recovery: API token refresh failed: \(tokenError)")
-                switch tokenError {
-                case .networkError:
-                    isNetworkError = true
-                case .refreshExpired, .invalidGrant:
-                    isTokenPermanentlyInvalid = true
-                default:
-                    break
-                }
-            } catch {
-                print("[Watch] Recovery: API token refresh failed with unknown error: \(error)")
-                isNetworkError = true
-            }
-
-            print("[Watch] Recovery attempt \(attemptIndex + 1)/\(retryDelays.count) - Step 3: Checking if iPhone is reachable...")
-            if await requestTokenFromiPhoneAsync() {
-                print("[Watch] Recovery: Got token from iPhone!")
-                checkTokenState()
-                return true
-            }
-
-            if attemptIndex < retryDelays.count - 1 {
-                print("[Watch] Recovery attempt \(attemptIndex + 1) failed, retrying...")
-            }
+        if let token = TokenManager.shared.loadToken(), !TokenManager.shared.isTokenExpired() {
+            print("[Watch] Recovery: Token is already valid")
+            checkTokenState()
+            return true
         }
 
-        if isTokenPermanentlyInvalid {
-            print("[Watch] Recovery: Token permanently invalid, showing reauth screen")
-            recoveryAttempted = true
-            self.error = "token_expired"
-        } else if isNetworkError {
-            print("[Watch] Recovery: Network error - not showing reauth, user can retry")
-            self.error = "network"
-        } else {
-            print("[Watch] Recovery: All retries failed, treating as transient/network issue")
-            self.error = "network"
+        if let _ = await TokenManager.shared.recoverToken() {
+            print("[Watch] Recovery: Central recovery succeeded")
+            checkTokenState()
+            return true
         }
 
+        print("[Watch] Recovery: All attempts failed")
+        recoveryAttempted = true
+        self.error = "token_expired"
         return false
-    }
-
-    private func isTokenExpired(_ token: WatchToken) -> Bool {
-        let expiryThreshold = token.expiryDate.addingTimeInterval(-60)
-        return Date() >= expiryThreshold
-    }
-
-    private func requestTokenFromiPhoneAsync() async -> Bool {
-        return await withCheckedContinuation { continuation in
-            guard WCSession.default.activationState == .activated,
-                  WCSession.default.isReachable else {
-                print("[Watch] Recovery: iPhone not reachable")
-                continuation.resume(returning: false)
-                return
-            }
-
-            print("[Watch] Recovery: Requesting token from iPhone...")
-
-            WCSession.default.sendMessage(
-                ["action": "requestToken"],
-                replyHandler: { response in
-                    if let authDict = response["auth"] as? [String: Any] {
-                        print("[Watch] Recovery: Received token from iPhone")
-                        self.processAuthDataSync(authDict)
-                        continuation.resume(returning: true)
-                    } else {
-                        print("[Watch] Recovery: iPhone returned no token")
-                        continuation.resume(returning: false)
-                    }
-                },
-                errorHandler: { error in
-                    print("[Watch] Recovery: iPhone request failed: \(error.localizedDescription)")
-                    continuation.resume(returning: false)
-                }
-            )
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
-            }
-        }
-    }
-
-    private func processAuthDataSync(_ authDict: [String: Any]) {
-        do {
-            let jsonData = try JSONSerialization.data(withJSONObject: authDict)
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .custom { decoder in
-                let container = try decoder.singleValueContainer()
-                let timestamp = try container.decode(Int64.self)
-                return Date(timeIntervalSince1970: Double(timestamp) / 1000.0)
-            }
-            let token = try decoder.decode(WatchToken.self, from: jsonData)
-            try TokenManager.shared.saveToken(token)
-            print("[Watch] Recovery: Token saved from iPhone")
-        } catch {
-            print("[Watch] Recovery: Failed to process auth data: \(error)")
-        }
     }
 
     private func refreshComplications() {

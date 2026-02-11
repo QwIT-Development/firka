@@ -1,5 +1,8 @@
 import Foundation
 import Security
+#if os(watchOS)
+import WatchConnectivity
+#endif
 
 // MARK: - Token Response Structure
 private struct TokenRefreshResponse: Decodable {
@@ -43,6 +46,30 @@ class TokenManager {
     #elseif os(watchOS)
     private let deviceName = "Watch"
     #endif
+    private let recoveryLock = NSLock()
+    private var recoveryInProgress = false
+
+    private func startRecoveryIfNeeded() -> Bool {
+        recoveryLock.lock()
+        defer { recoveryLock.unlock() }
+        if recoveryInProgress {
+            return false
+        }
+        recoveryInProgress = true
+        return true
+    }
+
+    private func finishRecovery() {
+        recoveryLock.lock()
+        recoveryInProgress = false
+        recoveryLock.unlock()
+    }
+
+    private func isRecoveryRunning() -> Bool {
+        recoveryLock.lock()
+        defer { recoveryLock.unlock() }
+        return recoveryInProgress
+    }
 
     private init() {
         iCloudTokenManager.shared.observeChanges { [weak self] iCloudToken in
@@ -54,14 +81,14 @@ class TokenManager {
             let fileToken = self.loadTokenFromFile()
             let localToken: WatchToken? = {
                 if let k = keychainToken, let f = fileToken {
-                    return k.expiryDate > f.expiryDate ? k : f
+                    return k.isNewer(than: f) ? k : f
                 }
                 return keychainToken ?? fileToken
             }()
 
             if let localToken = localToken {
-                if iCloudToken.expiryDate > localToken.expiryDate {
-                    print("[TokenManager] iCloud token is fresher (\(iCloudToken.expiryDate) > \(localToken.expiryDate)), updating local cache")
+                if iCloudToken.isNewer(than: localToken) {
+                    print("[TokenManager] iCloud token is fresher, updating local cache")
                     try? self.saveTokenToKeychain(iCloudToken)
                     try? self.saveTokenToFile(iCloudToken)
 
@@ -75,8 +102,7 @@ class TokenManager {
                     }
                     #endif
                 } else {
-                    print("[TokenManager] Local token is fresher or equal (local: \(localToken.expiryDate), iCloud: \(iCloudToken.expiryDate)), ignoring iCloud update and pushing local to iCloud")
-                    iCloudTokenManager.shared.saveToken(localToken, deviceName: self.deviceName)
+                    print("[TokenManager] Local token is fresher or equal, ignoring iCloud update")
                 }
             } else {
                 print("[TokenManager] No local token, using iCloud token")
@@ -132,7 +158,9 @@ class TokenManager {
             return nil
         }
 
-        let freshest = candidates.max(by: { $0.token.expiryDate < $1.token.expiryDate })!
+        let freshest = candidates.dropFirst().reduce(candidates[0]) { currentBest, candidate in
+            candidate.token.isNewer(than: currentBest.token) ? candidate : currentBest
+        }
 
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss"
@@ -141,15 +169,11 @@ class TokenManager {
         print("[TokenManager] Token sources found: \(candidates.map { "\($0.source): \(formatter.string(from: $0.token.expiryDate))" }.joined(separator: ", "))")
         print("[TokenManager] Using freshest token from \(freshest.source) (expiry: \(formatter.string(from: freshest.token.expiryDate)))")
 
-        if iCloudToken == nil || iCloudToken!.expiryDate < freshest.token.expiryDate {
-            print("[TokenManager] Syncing fresher token to iCloud")
-            iCloudTokenManager.shared.saveToken(freshest.token, deviceName: deviceName)
-        }
-        if keychainToken == nil || keychainToken!.expiryDate < freshest.token.expiryDate {
+        if keychainToken == nil || freshest.token.isNewer(than: keychainToken!) {
             print("[TokenManager] Syncing fresher token to keychain")
             try? saveTokenToKeychain(freshest.token)
         }
-        if fileToken == nil || fileToken!.expiryDate < freshest.token.expiryDate {
+        if fileToken == nil || freshest.token.isNewer(than: fileToken!) {
             print("[TokenManager] Syncing fresher token to file")
             try? saveTokenToFile(freshest.token)
         }
@@ -182,13 +206,20 @@ class TokenManager {
         try? FileManager.default.removeItem(at: filePath)
     }
 
-    // MARK: - Save Token (to all storage locations)
-    func saveToken(_ token: WatchToken) throws {
-        print("[TokenManager] Saving token to all storage locations")
+    // MARK: - Save Token
+    func saveToken(_ token: WatchToken, syncToICloud: Bool = false) throws {
+        if let currentToken = loadToken(), !token.isNewer(than: currentToken) {
+            print("[TokenManager] Ignoring stale or same token save attempt")
+            return
+        }
+
+        print("[TokenManager] Saving token locally (Keychain + file)")
 
         try saveTokenToKeychain(token)
 
-        iCloudTokenManager.shared.saveToken(token, deviceName: deviceName)
+        if syncToICloud {
+            iCloudTokenManager.shared.saveToken(token, deviceName: deviceName)
+        }
 
         guard let filePath = getTokenFilePath() else {
             throw TokenError.networkError
@@ -213,7 +244,9 @@ class TokenManager {
 
     // MARK: - Keychain Methods
     func saveTokenToKeychain(_ token: WatchToken) throws {
-        let data = try JSONEncoder().encode(token)
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(token)
 
         let deleteQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -256,7 +289,16 @@ class TokenManager {
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        return try? decoder.decode(WatchToken.self, from: data)
+        if let token = try? decoder.decode(WatchToken.self, from: data) {
+            return token
+        }
+
+        if let legacyToken = try? JSONDecoder().decode(WatchToken.self, from: data) {
+            try? saveTokenToKeychain(legacyToken)
+            return legacyToken
+        }
+
+        return nil
     }
 
     func deleteTokenFromKeychain() {
@@ -290,18 +332,262 @@ class TokenManager {
     }
 
     func refreshTokenProactively() async {
-        guard shouldRefreshProactively() else {
+        guard let token = loadToken() else {
+            print("[TokenManager] No token available for proactive refresh")
+            return
+        }
+
+        let proactiveThreshold = token.expiryDate.addingTimeInterval(-12 * 3600)
+        guard Date() >= proactiveThreshold else {
             print("[TokenManager] Token still valid, no proactive refresh needed")
             return
         }
 
         print("[TokenManager] Proactively refreshing token...")
         do {
-            _ = try await refreshToken()
+            _ = try await refreshTokenInternal(token)
             print("[TokenManager] Proactive token refresh succeeded")
         } catch {
             print("[TokenManager] Proactive token refresh failed: \(error)")
         }
+    }
+
+    // MARK: - Central Token Recovery
+    func recoverToken() async -> WatchToken? {
+        if !startRecoveryIfNeeded() {
+            print("[TokenManager] Recovery already in progress, waiting for current recovery...")
+            for _ in 0..<40 {
+                if let token = loadToken(), !isTokenExpired() {
+                    print("[TokenManager] Current recovery produced a valid token")
+                    return token
+                }
+
+                if !isRecoveryRunning() {
+                    break
+                }
+                try? await Task.sleep(nanoseconds: 250_000_000)
+            }
+
+            if let token = loadToken(), !isTokenExpired() {
+                print("[TokenManager] Valid token became available after waiting")
+                return token
+            }
+
+            print("[TokenManager] Existing recovery did not yield a valid token")
+            return nil
+        }
+
+        defer { finishRecovery() }
+
+        print("[TokenManager] Starting central token recovery...")
+
+        print("[TokenManager] Step 1: Trying local token refresh...")
+        if let token = loadToken() {
+            do {
+                let refreshedToken = try await refreshTokenInternal(token)
+                print("[TokenManager] Step 1 SUCCESS: Local refresh succeeded")
+                return refreshedToken
+            } catch {
+                print("[TokenManager] Step 1 FAILED: Local refresh failed: \(error)")
+            }
+        } else {
+            print("[TokenManager] Step 1 SKIPPED: No local token found")
+        }
+
+        print("[TokenManager] Step 2: Checking Keychain and WatchConnectivity...")
+        if let recoveredToken = await tryRecoverFromKeychainAndWatch() {
+            do {
+                let refreshedToken = try await refreshTokenInternal(recoveredToken)
+                print("[TokenManager] Step 2 SUCCESS: Keychain/Watch token refresh succeeded")
+                return refreshedToken
+            } catch {
+                print("[TokenManager] Step 2 FAILED: Keychain/Watch token refresh failed: \(error)")
+            }
+        } else {
+            print("[TokenManager] Step 2 SKIPPED: No token from Keychain/Watch")
+        }
+
+        print("[TokenManager] Step 3: Trying iCloud recovery with retries...")
+        let retryDelays: [TimeInterval] = [0, 5, 10, 5, 10]
+        var iCloudHasToken = false
+
+        for (attempt, delay) in retryDelays.enumerated() {
+            if delay > 0 {
+                if !iCloudHasToken && attempt > 0 {
+                    print("[TokenManager] Step 3: Skipping retries - iCloud has no token")
+                    break
+                }
+                print("[TokenManager] Step 3: Waiting \(Int(delay))s before attempt \(attempt + 1)...")
+                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            }
+
+            print("[TokenManager] Step 3: iCloud attempt \(attempt + 1)/\(retryDelays.count)...")
+
+            if let iCloudToken = iCloudTokenManager.shared.loadToken() {
+                iCloudHasToken = true
+                if iCloudToken.expiryDate > Date() {
+                    print("[TokenManager] Step 3: Found valid iCloud token, trying refresh...")
+                    do {
+                        let refreshedToken = try await refreshTokenInternal(iCloudToken)
+                        print("[TokenManager] Step 3 SUCCESS: iCloud token refresh succeeded on attempt \(attempt + 1)")
+                        return refreshedToken
+                    } catch {
+                        print("[TokenManager] Step 3: iCloud token refresh failed on attempt \(attempt + 1): \(error)")
+                    }
+                } else {
+                    print("[TokenManager] Step 3: iCloud token is expired, trying refresh anyway...")
+                    do {
+                        let refreshedToken = try await refreshTokenInternal(iCloudToken)
+                        print("[TokenManager] Step 3 SUCCESS: Expired iCloud token refresh succeeded on attempt \(attempt + 1)")
+                        return refreshedToken
+                    } catch {
+                        print("[TokenManager] Step 3: Expired iCloud token refresh failed on attempt \(attempt + 1): \(error)")
+                    }
+                }
+            } else {
+                print("[TokenManager] Step 3: No token in iCloud on attempt \(attempt + 1)")
+                if attempt == 0 {
+                    iCloudHasToken = false
+                }
+            }
+        }
+
+        print("[TokenManager] All recovery attempts failed")
+        return nil
+    }
+
+    private func tryRecoverFromKeychainAndWatch() async -> WatchToken? {
+        var candidates: [(token: WatchToken, source: String)] = []
+
+        if let keychainToken = loadTokenFromKeychain() {
+            candidates.append((keychainToken, "keychain"))
+            print("[TokenManager] Found token in Keychain")
+        }
+
+        if let fileToken = loadTokenFromFile() {
+            candidates.append((fileToken, "file"))
+            print("[TokenManager] Found token in file storage")
+        }
+
+        #if os(watchOS)
+        if let watchToken = await requestTokenFromiPhoneForRecovery() {
+            candidates.append((watchToken, "WatchConnectivity"))
+            print("[TokenManager] Found token from iPhone via WatchConnectivity")
+        }
+        #endif
+
+        guard !candidates.isEmpty else {
+            return nil
+        }
+
+        let freshest = candidates.dropFirst().reduce(candidates[0]) { currentBest, candidate in
+            candidate.token.isNewer(than: currentBest.token) ? candidate : currentBest
+        }
+        print("[TokenManager] Using freshest token from \(freshest.source)")
+        return freshest.token
+    }
+
+    #if os(watchOS)
+    private func requestTokenFromiPhoneForRecovery() async -> WatchToken? {
+        guard WCSession.default.activationState == .activated,
+              WCSession.default.isReachable else {
+            print("[TokenManager] iPhone not reachable for recovery")
+            return nil
+        }
+
+        let timeoutSeconds: UInt64 = 10
+
+        return await withTaskGroup(of: WatchToken?.self) { group in
+            group.addTask {
+                do {
+                    try await Task.sleep(nanoseconds: timeoutSeconds * 1_000_000_000)
+                } catch {
+                    return nil
+                }
+                if Task.isCancelled {
+                    return nil
+                }
+                print("[TokenManager] iPhone request timed out after \(timeoutSeconds)s")
+                return nil
+            }
+
+            group.addTask {
+                await withCheckedContinuation { continuation in
+                    var hasResumed = false
+                    let resumeOnce: (WatchToken?) -> Void = { token in
+                        guard !hasResumed else { return }
+                        hasResumed = true
+                        continuation.resume(returning: token)
+                    }
+
+                    WCSession.default.sendMessage(
+                        ["action": "requestToken"],
+                        replyHandler: { response in
+                            if let authDict = response["auth"] as? [String: Any] {
+                                do {
+                                    let jsonData = try JSONSerialization.data(withJSONObject: authDict)
+                                    let decoder = JSONDecoder()
+                                    decoder.dateDecodingStrategy = .custom { decoder in
+                                        let container = try decoder.singleValueContainer()
+                                        let timestamp = try container.decode(Int64.self)
+                                        return Date(timeIntervalSince1970: Double(timestamp) / 1000.0)
+                                    }
+                                    let token = try decoder.decode(WatchToken.self, from: jsonData)
+                                    print("[TokenManager] Received token from iPhone for recovery")
+                                    resumeOnce(token)
+                                } catch {
+                                    print("[TokenManager] Failed to decode iPhone token: \(error)")
+                                    resumeOnce(nil)
+                                }
+                            } else {
+                                print("[TokenManager] iPhone returned no token for recovery")
+                                resumeOnce(nil)
+                            }
+                        },
+                        errorHandler: { error in
+                            print("[TokenManager] iPhone request failed: \(error)")
+                            resumeOnce(nil)
+                        }
+                    )
+                }
+            }
+
+            if let result = await group.next() {
+                group.cancelAll()
+                return result
+            }
+            return nil
+        }
+    }
+    #endif
+
+    private func refreshTokenInternal(_ token: WatchToken) async throws -> WatchToken {
+        let response = try await performTokenRefresh(
+            refreshToken: token.refreshToken,
+            instituteCode: token.iss
+        )
+        let nowMs = Int64(Date().timeIntervalSince1970 * 1000)
+        let tokenVersion = WatchToken.extractIatMillis(from: response.idToken) ?? nowMs
+
+        let newToken = WatchToken(
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+            idToken: response.idToken,
+            iss: token.iss,
+            studentId: token.studentId,
+            studentIdNorm: token.studentIdNorm,
+            expiryDate: Date().addingTimeInterval(Double(response.expiresIn) - 60),
+            tokenVersion: tokenVersion,
+            updatedAtMs: nowMs
+        )
+
+        try saveToken(newToken, syncToICloud: true)
+
+        #if os(watchOS)
+        WatchConnectivityManager.shared.sendTokenToiPhoneInBackground()
+        #endif
+
+        return newToken
     }
 
     // MARK: - Refresh Token
@@ -314,6 +600,8 @@ class TokenManager {
             refreshToken: currentToken.refreshToken,
             instituteCode: currentToken.iss
         )
+        let nowMs = Int64(Date().timeIntervalSince1970 * 1000)
+        let tokenVersion = WatchToken.extractIatMillis(from: response.idToken) ?? nowMs
 
         let newToken = WatchToken(
             accessToken: response.accessToken,
@@ -322,10 +610,12 @@ class TokenManager {
             iss: currentToken.iss,
             studentId: currentToken.studentId,
             studentIdNorm: currentToken.studentIdNorm,
-            expiryDate: Date().addingTimeInterval(Double(response.expiresIn) - 60)
+            expiryDate: Date().addingTimeInterval(Double(response.expiresIn) - 60),
+            tokenVersion: tokenVersion,
+            updatedAtMs: nowMs
         )
 
-        try saveToken(newToken)
+        try saveToken(newToken, syncToICloud: true)
 
         #if os(watchOS)
         WatchConnectivityManager.shared.sendTokenToiPhoneInBackground()

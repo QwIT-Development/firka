@@ -212,7 +212,7 @@ struct ReauthRequiredView: View {
 
         print("[Watch] Sending Watch token to iPhone...")
 
-        let tokenData: [String: Any] = [
+        var tokenData: [String: Any] = [
             "studentId": token.studentId,
             "studentIdNorm": token.studentIdNorm,
             "iss": token.iss,
@@ -221,6 +221,10 @@ struct ReauthRequiredView: View {
             "refreshToken": token.refreshToken,
             "expiryDate": Int64(token.expiryDate.timeIntervalSince1970 * 1000)
         ]
+        if let tokenVersion = token.effectiveTokenVersion {
+            tokenData["tokenVersion"] = tokenVersion
+        }
+        tokenData["updatedAtMs"] = token.effectiveUpdatedAtMs ?? Int64(Date().timeIntervalSince1970 * 1000)
 
         WCSession.default.sendMessage(
             ["action": "receiveTokenFromWatch", "token": tokenData],
@@ -264,7 +268,7 @@ struct ReauthRequiredView: View {
             }
 
             let token = try decoder.decode(WatchToken.self, from: jsonData)
-            try TokenManager.shared.saveToken(token)
+            try TokenManager.shared.saveToken(token, syncToICloud: false)
 
             DataStore.shared.checkTokenState()
             DataStore.shared.clearError()
