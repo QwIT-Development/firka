@@ -46,6 +46,16 @@ const TokenModelSchema = CollectionSchema(
       id: 5,
       name: r'studentId',
       type: IsarType.string,
+    ),
+    r'tokenVersion': PropertySchema(
+      id: 6,
+      name: r'tokenVersion',
+      type: IsarType.long,
+    ),
+    r'updatedAtMs': PropertySchema(
+      id: 7,
+      name: r'updatedAtMs',
+      type: IsarType.long,
     )
   },
   estimateSize: _tokenModelEstimateSize,
@@ -113,6 +123,8 @@ void _tokenModelSerialize(
   writer.writeString(offsets[3], object.iss);
   writer.writeString(offsets[4], object.refreshToken);
   writer.writeString(offsets[5], object.studentId);
+  writer.writeLong(offsets[6], object.tokenVersion);
+  writer.writeLong(offsets[7], object.updatedAtMs);
 }
 
 TokenModel _tokenModelDeserialize(
@@ -129,6 +141,8 @@ TokenModel _tokenModelDeserialize(
   object.refreshToken = reader.readStringOrNull(offsets[4]);
   object.studentId = reader.readStringOrNull(offsets[5]);
   object.studentIdNorm = id;
+  object.tokenVersion = reader.readLongOrNull(offsets[6]);
+  object.updatedAtMs = reader.readLongOrNull(offsets[7]);
   return object;
 }
 
@@ -151,6 +165,10 @@ P _tokenModelDeserializeProp<P>(
       return (reader.readStringOrNull(offset)) as P;
     case 5:
       return (reader.readStringOrNull(offset)) as P;
+    case 6:
+      return (reader.readLongOrNull(offset)) as P;
+    case 7:
+      return (reader.readLongOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -1153,6 +1171,154 @@ extension TokenModelQueryFilter
       ));
     });
   }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      tokenVersionIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'tokenVersion',
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      tokenVersionIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'tokenVersion',
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      tokenVersionEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'tokenVersion',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      tokenVersionGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'tokenVersion',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      tokenVersionLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'tokenVersion',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      tokenVersionBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'tokenVersion',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      updatedAtMsIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'updatedAtMs',
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      updatedAtMsIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'updatedAtMs',
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      updatedAtMsEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'updatedAtMs',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      updatedAtMsGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'updatedAtMs',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      updatedAtMsLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'updatedAtMs',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+      updatedAtMsBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'updatedAtMs',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension TokenModelQueryObject
@@ -1232,6 +1398,30 @@ extension TokenModelQuerySortBy
   QueryBuilder<TokenModel, TokenModel, QAfterSortBy> sortByStudentIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'studentId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterSortBy> sortByTokenVersion() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'tokenVersion', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterSortBy> sortByTokenVersionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'tokenVersion', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterSortBy> sortByUpdatedAtMs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAtMs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterSortBy> sortByUpdatedAtMsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAtMs', Sort.desc);
     });
   }
 }
@@ -1321,6 +1511,30 @@ extension TokenModelQuerySortThenBy
       return query.addSortBy(r'studentIdNorm', Sort.desc);
     });
   }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterSortBy> thenByTokenVersion() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'tokenVersion', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterSortBy> thenByTokenVersionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'tokenVersion', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterSortBy> thenByUpdatedAtMs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAtMs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterSortBy> thenByUpdatedAtMsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAtMs', Sort.desc);
+    });
+  }
 }
 
 extension TokenModelQueryWhereDistinct
@@ -1363,6 +1577,18 @@ extension TokenModelQueryWhereDistinct
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'studentId', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QDistinct> distinctByTokenVersion() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'tokenVersion');
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QDistinct> distinctByUpdatedAtMs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'updatedAtMs');
     });
   }
 }
@@ -1408,6 +1634,18 @@ extension TokenModelQueryProperty
   QueryBuilder<TokenModel, String?, QQueryOperations> studentIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'studentId');
+    });
+  }
+
+  QueryBuilder<TokenModel, int?, QQueryOperations> tokenVersionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'tokenVersion');
+    });
+  }
+
+  QueryBuilder<TokenModel, int?, QQueryOperations> updatedAtMsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'updatedAtMs');
     });
   }
 }

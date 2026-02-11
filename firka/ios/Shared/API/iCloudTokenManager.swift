@@ -41,14 +41,25 @@ class iCloudTokenManager {
             return
         }
 
-        if let existingToken = loadToken(),
-           existingToken.isSameAccount(as: token),
-           !token.isNewer(than: existingToken) {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "HH:mm:ss"
-            formatter.timeZone = TimeZone.current
-            print("[iCloud] Ignoring stale token save from \(deviceName), existing expiry: \(formatter.string(from: existingToken.expiryDate)), incoming: \(formatter.string(from: token.expiryDate))")
-            return
+        if let existingToken = loadToken() {
+            if existingToken.isSameAccount(as: token) {
+                if !token.isNewer(than: existingToken) {
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "HH:mm:ss"
+                    formatter.timeZone = TimeZone.current
+                    print("[iCloud] Ignoring stale token save from \(deviceName), existing expiry: \(formatter.string(from: existingToken.expiryDate)), incoming: \(formatter.string(from: token.expiryDate))")
+                    return
+                }
+            } else {
+                let incomingUpdatedAt = token.effectiveUpdatedAtMs ?? 0
+                let existingUpdatedAt = existingToken.effectiveUpdatedAtMs ?? 0
+                if incomingUpdatedAt > 0 &&
+                    existingUpdatedAt > 0 &&
+                    incomingUpdatedAt <= existingUpdatedAt {
+                    print("[iCloud] Ignoring cross-account stale token save from \(deviceName)")
+                    return
+                }
+            }
         }
 
         print("[iCloud] Saving token to iCloud from \(deviceName)")

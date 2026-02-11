@@ -40,6 +40,9 @@ class TokenManager {
     private let tokenRefreshURL = "https://idp.e-kreta.hu/connect/token"
     private let clientID = "kreta-ellenorzo-student-mobile-ios"
     private let userAgent = "eKretaStudent/264745 CFNetwork/1494.0.7 Darwin/23.4.0"
+    private let activeStudentIdNormKey = "firka.active_student_id_norm"
+    private let proactiveRefreshLeadTime: TimeInterval = 5 * 60
+    private let minimumProactiveRefreshInterval: TimeInterval = 60
 
     #if os(iOS)
     private let deviceName = "iPhone"
@@ -48,6 +51,10 @@ class TokenManager {
     #endif
     private let recoveryLock = NSLock()
     private var recoveryInProgress = false
+    private var lastProactiveRefreshAttemptAt: Date?
+    #if os(watchOS)
+    private var lastPhoneRecoveryRequestAt: Date?
+    #endif
 
     private func startRecoveryIfNeeded() -> Bool {
         recoveryLock.lock()
@@ -71,26 +78,62 @@ class TokenManager {
         return recoveryInProgress
     }
 
+    private func getActiveStudentIdNorm() -> Int64? {
+        if let value = UserDefaults.standard.object(forKey: activeStudentIdNormKey) as? Int64 {
+            return value
+        }
+        if let value = UserDefaults.standard.object(forKey: activeStudentIdNormKey) as? Int {
+            return Int64(value)
+        }
+        if let value = UserDefaults.standard.object(forKey: activeStudentIdNormKey) as? Double {
+            return Int64(value)
+        }
+        if let value = UserDefaults.standard.object(forKey: activeStudentIdNormKey) as? String,
+           let parsed = Int64(value) {
+            return parsed
+        }
+        return nil
+    }
+
+    private func setActiveStudentIdNorm(_ studentIdNorm: Int64) {
+        UserDefaults.standard.set(studentIdNorm, forKey: activeStudentIdNormKey)
+    }
+
     private init() {
         iCloudTokenManager.shared.observeChanges { [weak self] iCloudToken in
             guard let self = self else { return }
+
+            let preferredStudentIdNorm = self.getActiveStudentIdNorm()
+            if let preferredStudentIdNorm,
+               iCloudToken.studentIdNorm != preferredStudentIdNorm {
+                print("[TokenManager] Ignoring iCloud token for inactive account (\(iCloudToken.studentIdNorm)), active is \(preferredStudentIdNorm)")
+                return
+            }
 
             let isValidToken = iCloudToken.expiryDate > Date().addingTimeInterval(60)
 
             let keychainToken = self.loadTokenFromKeychain()
             let fileToken = self.loadTokenFromFile()
-            let localToken: WatchToken? = {
-                if let k = keychainToken, let f = fileToken {
-                    return k.isNewer(than: f) ? k : f
+            var localCandidates: [WatchToken] = []
+            if let keychainToken { localCandidates.append(keychainToken) }
+            if let fileToken { localCandidates.append(fileToken) }
+            if let preferredStudentIdNorm {
+                let filtered = localCandidates.filter { $0.studentIdNorm == preferredStudentIdNorm }
+                if !filtered.isEmpty {
+                    localCandidates = filtered
                 }
-                return keychainToken ?? fileToken
-            }()
+            }
+            let localToken = localCandidates.dropFirst().reduce(localCandidates.first) { best, candidate in
+                guard let best else { return candidate }
+                return candidate.isNewer(than: best) ? candidate : best
+            }
 
             if let localToken = localToken {
                 if iCloudToken.isNewer(than: localToken) {
                     print("[TokenManager] iCloud token is fresher, updating local cache")
                     try? self.saveTokenToKeychain(iCloudToken)
                     try? self.saveTokenToFile(iCloudToken)
+                    self.setActiveStudentIdNorm(iCloudToken.studentIdNorm)
 
                     #if os(watchOS)
                     DataStore.shared.checkTokenState()
@@ -108,6 +151,7 @@ class TokenManager {
                 print("[TokenManager] No local token, using iCloud token")
                 try? self.saveTokenToKeychain(iCloudToken)
                 try? self.saveTokenToFile(iCloudToken)
+                self.setActiveStudentIdNorm(iCloudToken.studentIdNorm)
 
                 #if os(watchOS)
                 DataStore.shared.checkTokenState()
@@ -158,22 +202,39 @@ class TokenManager {
             return nil
         }
 
-        let freshest = candidates.dropFirst().reduce(candidates[0]) { currentBest, candidate in
+        let preferredStudentIdNorm = getActiveStudentIdNorm()
+        let preferredCandidates: [(token: WatchToken, source: String)]
+        if let preferredStudentIdNorm {
+            let filtered = candidates.filter { $0.token.studentIdNorm == preferredStudentIdNorm }
+            preferredCandidates = filtered.isEmpty ? candidates : filtered
+            if filtered.isEmpty {
+                print("[TokenManager] Active account token not found locally, falling back to freshest available account")
+            }
+        } else {
+            preferredCandidates = candidates
+        }
+
+        let freshest = preferredCandidates.dropFirst().reduce(preferredCandidates[0]) { currentBest, candidate in
             candidate.token.isNewer(than: currentBest.token) ? candidate : currentBest
         }
+        setActiveStudentIdNorm(freshest.token.studentIdNorm)
 
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss"
         formatter.timeZone = TimeZone.current
 
-        print("[TokenManager] Token sources found: \(candidates.map { "\($0.source): \(formatter.string(from: $0.token.expiryDate))" }.joined(separator: ", "))")
+        print("[TokenManager] Token sources found: \(candidates.map { "\($0.source): \($0.token.studentIdNorm) @ \(formatter.string(from: $0.token.expiryDate))" }.joined(separator: ", "))")
         print("[TokenManager] Using freshest token from \(freshest.source) (expiry: \(formatter.string(from: freshest.token.expiryDate)))")
 
-        if keychainToken == nil || freshest.token.isNewer(than: keychainToken!) {
+        if keychainToken == nil ||
+            keychainToken!.studentIdNorm != freshest.token.studentIdNorm ||
+            freshest.token.isNewer(than: keychainToken!) {
             print("[TokenManager] Syncing fresher token to keychain")
             try? saveTokenToKeychain(freshest.token)
         }
-        if fileToken == nil || freshest.token.isNewer(than: fileToken!) {
+        if fileToken == nil ||
+            fileToken!.studentIdNorm != freshest.token.studentIdNorm ||
+            freshest.token.isNewer(than: fileToken!) {
             print("[TokenManager] Syncing fresher token to file")
             try? saveTokenToFile(freshest.token)
         }
@@ -201,6 +262,7 @@ class TokenManager {
         print("[TokenManager] Deleting token from all storage locations")
         deleteTokenFromKeychain()
         iCloudTokenManager.shared.deleteToken()
+        UserDefaults.standard.removeObject(forKey: activeStudentIdNormKey)
 
         guard let filePath = getTokenFilePath() else { return }
         try? FileManager.default.removeItem(at: filePath)
@@ -214,6 +276,7 @@ class TokenManager {
         }
 
         print("[TokenManager] Saving token locally (Keychain + file)")
+        setActiveStudentIdNorm(token.studentIdNorm)
 
         try saveTokenToKeychain(token)
 
@@ -327,24 +390,35 @@ class TokenManager {
             return false
         }
 
-        let proactiveThreshold = token.expiryDate.addingTimeInterval(-12 * 3600)
+        let proactiveThreshold = token.expiryDate.addingTimeInterval(-proactiveRefreshLeadTime)
         return Date() >= proactiveThreshold
     }
 
     func refreshTokenProactively() async {
-        guard let token = loadToken() else {
+        guard loadToken() != nil else {
             print("[TokenManager] No token available for proactive refresh")
             return
         }
 
-        let proactiveThreshold = token.expiryDate.addingTimeInterval(-12 * 3600)
-        guard Date() >= proactiveThreshold else {
-            print("[TokenManager] Token still valid, no proactive refresh needed")
+        guard shouldRefreshProactively() else {
+            print("[TokenManager] Token is not close to expiry, no proactive refresh needed")
             return
         }
 
+        let now = Date()
+        if let lastAttempt = lastProactiveRefreshAttemptAt,
+           now.timeIntervalSince(lastAttempt) < minimumProactiveRefreshInterval {
+            print("[TokenManager] Proactive refresh skipped due to cooldown")
+            return
+        }
+        lastProactiveRefreshAttemptAt = now
+
         print("[TokenManager] Proactively refreshing token...")
         do {
+            guard let token = loadToken() else {
+                print("[TokenManager] Token disappeared before proactive refresh")
+                return
+            }
             _ = try await refreshTokenInternal(token)
             print("[TokenManager] Proactive token refresh succeeded")
         } catch {
@@ -354,6 +428,11 @@ class TokenManager {
 
     // MARK: - Central Token Recovery
     func recoverToken() async -> WatchToken? {
+        if let validToken = loadToken(), !isTokenExpired() {
+            print("[TokenManager] Existing token is valid, skipping recovery flow")
+            return validToken
+        }
+
         if !startRecoveryIfNeeded() {
             print("[TokenManager] Recovery already in progress, waiting for current recovery...")
             for _ in 0..<40 {
@@ -383,6 +462,10 @@ class TokenManager {
 
         print("[TokenManager] Step 1: Trying local token refresh...")
         if let token = loadToken() {
+            if token.expiryDate > Date().addingTimeInterval(60) {
+                print("[TokenManager] Step 1 SUCCESS: Local token already valid")
+                return token
+            }
             do {
                 let refreshedToken = try await refreshTokenInternal(token)
                 print("[TokenManager] Step 1 SUCCESS: Local refresh succeeded")
@@ -396,12 +479,18 @@ class TokenManager {
 
         print("[TokenManager] Step 2: Checking Keychain and WatchConnectivity...")
         if let recoveredToken = await tryRecoverFromKeychainAndWatch() {
-            do {
-                let refreshedToken = try await refreshTokenInternal(recoveredToken)
-                print("[TokenManager] Step 2 SUCCESS: Keychain/Watch token refresh succeeded")
-                return refreshedToken
-            } catch {
-                print("[TokenManager] Step 2 FAILED: Keychain/Watch token refresh failed: \(error)")
+            if recoveredToken.expiryDate > Date().addingTimeInterval(60) {
+                print("[TokenManager] Step 2 SUCCESS: Keychain/Watch token is already valid")
+                try? saveToken(recoveredToken, syncToICloud: false)
+                return recoveredToken
+            } else {
+                do {
+                    let refreshedToken = try await refreshTokenInternal(recoveredToken)
+                    print("[TokenManager] Step 2 SUCCESS: Keychain/Watch token refresh succeeded")
+                    return refreshedToken
+                } catch {
+                    print("[TokenManager] Step 2 FAILED: Keychain/Watch token refresh failed: \(error)")
+                }
             }
         } else {
             print("[TokenManager] Step 2 SKIPPED: No token from Keychain/Watch")
@@ -424,16 +513,16 @@ class TokenManager {
             print("[TokenManager] Step 3: iCloud attempt \(attempt + 1)/\(retryDelays.count)...")
 
             if let iCloudToken = iCloudTokenManager.shared.loadToken() {
+                if let preferredStudentIdNorm = getActiveStudentIdNorm(),
+                   iCloudToken.studentIdNorm != preferredStudentIdNorm {
+                    print("[TokenManager] Step 3: Ignoring iCloud token for inactive account (\(iCloudToken.studentIdNorm)), active is \(preferredStudentIdNorm)")
+                    continue
+                }
                 iCloudHasToken = true
                 if iCloudToken.expiryDate > Date() {
-                    print("[TokenManager] Step 3: Found valid iCloud token, trying refresh...")
-                    do {
-                        let refreshedToken = try await refreshTokenInternal(iCloudToken)
-                        print("[TokenManager] Step 3 SUCCESS: iCloud token refresh succeeded on attempt \(attempt + 1)")
-                        return refreshedToken
-                    } catch {
-                        print("[TokenManager] Step 3: iCloud token refresh failed on attempt \(attempt + 1): \(error)")
-                    }
+                    print("[TokenManager] Step 3 SUCCESS: Found valid iCloud token, applying without immediate refresh")
+                    try? saveToken(iCloudToken, syncToICloud: false)
+                    return iCloudToken
                 } else {
                     print("[TokenManager] Step 3: iCloud token is expired, trying refresh anyway...")
                     do {
@@ -480,6 +569,16 @@ class TokenManager {
             return nil
         }
 
+        if let preferredStudentIdNorm = getActiveStudentIdNorm() {
+            let filtered = candidates.filter { $0.token.studentIdNorm == preferredStudentIdNorm }
+            if !filtered.isEmpty {
+                candidates = filtered
+            } else {
+                print("[TokenManager] No recovery candidate for active account \(preferredStudentIdNorm)")
+                return nil
+            }
+        }
+
         let freshest = candidates.dropFirst().reduce(candidates[0]) { currentBest, candidate in
             candidate.token.isNewer(than: currentBest.token) ? candidate : currentBest
         }
@@ -494,6 +593,14 @@ class TokenManager {
             print("[TokenManager] iPhone not reachable for recovery")
             return nil
         }
+
+        let now = Date()
+        if let lastPhoneRecoveryRequestAt,
+           now.timeIntervalSince(lastPhoneRecoveryRequestAt) < 5 {
+            print("[TokenManager] Skipping iPhone recovery request due to cooldown")
+            return nil
+        }
+        lastPhoneRecoveryRequestAt = now
 
         let timeoutSeconds: UInt64 = 10
 

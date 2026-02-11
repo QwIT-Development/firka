@@ -19,11 +19,22 @@ class TokenModel {
   String? accessToken; // The main auth token
   String? refreshToken; // Token used to refresh the access token
   DateTime? expiryDate;
+  int? tokenVersion;
+  int? updatedAtMs;
 
   TokenModel();
 
-  factory TokenModel.fromValues(Id studentIdNorm, studentId, String iss,
-      String idToken, String accessToken, String refreshToken, int expiryDate) {
+  factory TokenModel.fromValues(
+    Id studentIdNorm,
+    studentId,
+    String iss,
+    String idToken,
+    String accessToken,
+    String refreshToken,
+    int expiryDate, {
+    int? tokenVersion,
+    int? updatedAtMs,
+  }) {
     var m = TokenModel();
 
     m.studentIdNorm = studentIdNorm;
@@ -33,6 +44,8 @@ class TokenModel {
     m.accessToken = accessToken;
     m.refreshToken = refreshToken;
     m.expiryDate = DateTime.fromMillisecondsSinceEpoch(expiryDate);
+    m.tokenVersion = tokenVersion;
+    m.updatedAtMs = updatedAtMs;
 
     return m;
   }
@@ -67,6 +80,16 @@ class TokenModel {
     m.expiryDate = timeNow()
         .add(Duration(seconds: resp.expiresIn))
         .subtract(Duration(minutes: 1)); // just to be safe
+    final iat = payload["iat"];
+    if (iat is int) {
+      m.tokenVersion = iat * 1000;
+    } else if (iat is String) {
+      final parsed = int.tryParse(iat);
+      if (parsed != null) {
+        m.tokenVersion = parsed * 1000;
+      }
+    }
+    m.updatedAtMs = DateTime.now().millisecondsSinceEpoch;
 
     return m;
   }

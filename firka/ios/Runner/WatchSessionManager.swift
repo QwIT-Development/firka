@@ -6,6 +6,9 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
     static let shared = WatchSessionManager()
 
     private var flutterChannel: FlutterMethodChannel?
+    private var isFlutterWatchSyncReady = false
+    private var pendingAuthPayloads: [[String: Any]] = []
+    private var pendingICloudRecoveryNotification = false
 
     override private init() {
         super.init()
@@ -33,6 +36,8 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                 self?.handleCheckiCloudToken(result: result)
             case "saveTokeToniCloud":
                 self?.handleSaveTokenToiCloud(arguments: call.arguments, result: result)
+            case "watchSyncReady":
+                self?.handleWatchSyncReady(result: result)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -56,7 +61,9 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
 
     @objc private func handleTokenRecoveredFromiCloud() {
         print("[WatchSessionManager] Token recovered from iCloud, notifying Flutter to clear reauth flag")
-        flutterChannel?.invokeMethod("onTokenRecoveredFromiCloud", arguments: nil)
+        DispatchQueue.main.async {
+            self.notifyTokenRecoveredToFlutter()
+        }
     }
 
     private func parseInt64(_ value: Any?) -> Int64? {
@@ -73,6 +80,90 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             return parsed
         }
         return nil
+    }
+
+    private func tokenPayload(from token: WatchToken) -> [String: Any] {
+        var tokenData: [String: Any] = [
+            "studentId": token.studentId,
+            "studentIdNorm": token.studentIdNorm,
+            "iss": token.iss,
+            "idToken": token.idToken,
+            "accessToken": token.accessToken,
+            "refreshToken": token.refreshToken,
+            "expiryDate": Int64(token.expiryDate.timeIntervalSince1970 * 1000)
+        ]
+        if let tokenVersion = token.effectiveTokenVersion {
+            tokenData["tokenVersion"] = tokenVersion
+        }
+        if let updatedAtMs = token.effectiveUpdatedAtMs {
+            tokenData["updatedAtMs"] = updatedAtMs
+        }
+        return tokenData
+    }
+
+    private func fallbackTokenFromiCloud() -> [String: Any]? {
+        guard let token = iCloudTokenManager.shared.loadToken() else {
+            return nil
+        }
+        return tokenPayload(from: token)
+    }
+
+    private func sameTokenPayload(_ lhs: [String: Any], _ rhs: [String: Any]) -> Bool {
+        return parseInt64(lhs["studentIdNorm"]) == parseInt64(rhs["studentIdNorm"]) &&
+               parseInt64(lhs["expiryDate"]) == parseInt64(rhs["expiryDate"]) &&
+               parseInt64(lhs["tokenVersion"]) == parseInt64(rhs["tokenVersion"]) &&
+               parseInt64(lhs["updatedAtMs"]) == parseInt64(rhs["updatedAtMs"]) &&
+               (lhs["refreshToken"] as? String) == (rhs["refreshToken"] as? String)
+    }
+
+    private func enqueuePendingAuth(_ authData: [String: Any]) {
+        if pendingAuthPayloads.contains(where: { sameTokenPayload($0, authData) }) {
+            return
+        }
+        pendingAuthPayloads.append(authData)
+        print("[WatchSessionManager] Queued pending token from Watch until Flutter sync is ready")
+    }
+
+    private func forwardTokenToFlutter(_ authData: [String: Any]) {
+        guard isFlutterWatchSyncReady else {
+            enqueuePendingAuth(authData)
+            return
+        }
+        flutterChannel?.invokeMethod("onTokenFromWatch", arguments: authData)
+    }
+
+    private func notifyTokenRecoveredToFlutter() {
+        guard isFlutterWatchSyncReady else {
+            pendingICloudRecoveryNotification = true
+            print("[WatchSessionManager] Queued iCloud recovery notification until Flutter sync is ready")
+            return
+        }
+        flutterChannel?.invokeMethod("onTokenRecoveredFromiCloud", arguments: nil)
+    }
+
+    private func flushPendingEvents() {
+        guard isFlutterWatchSyncReady else {
+            return
+        }
+        if !pendingAuthPayloads.isEmpty {
+            print("[WatchSessionManager] Flushing \(pendingAuthPayloads.count) queued token event(s) to Flutter")
+        }
+        for authData in pendingAuthPayloads {
+            flutterChannel?.invokeMethod("onTokenFromWatch", arguments: authData)
+        }
+        pendingAuthPayloads.removeAll()
+
+        if pendingICloudRecoveryNotification {
+            pendingICloudRecoveryNotification = false
+            flutterChannel?.invokeMethod("onTokenRecoveredFromiCloud", arguments: nil)
+        }
+    }
+
+    private func handleWatchSyncReady(result: @escaping FlutterResult) {
+        isFlutterWatchSyncReady = true
+        print("[WatchSessionManager] Flutter WatchSync marked as ready")
+        flushPendingEvents()
+        result(nil)
     }
 
     private func handleSendTokenToWatch(arguments: Any?, result: @escaping FlutterResult) {
@@ -196,23 +287,7 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         formatter.dateFormat = "HH:mm:ss"
         print("[WatchSessionManager] Found iCloud token, expiry: \(formatter.string(from: token.expiryDate))")
 
-        var tokenData: [String: Any] = [
-            "studentId": token.studentId,
-            "studentIdNorm": token.studentIdNorm,
-            "iss": token.iss,
-            "idToken": token.idToken,
-            "accessToken": token.accessToken,
-            "refreshToken": token.refreshToken,
-            "expiryDate": Int64(token.expiryDate.timeIntervalSince1970 * 1000)
-        ]
-        if let tokenVersion = token.effectiveTokenVersion {
-            tokenData["tokenVersion"] = tokenVersion
-        }
-        if let updatedAtMs = token.effectiveUpdatedAtMs {
-            tokenData["updatedAtMs"] = updatedAtMs
-        }
-
-        result(tokenData)
+        result(tokenPayload(from: token))
     }
 
     private func handleSaveTokenToiCloud(arguments: Any?, result: @escaping FlutterResult) {
@@ -272,7 +347,7 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                     let context = session.receivedApplicationContext
                     if let authData = context["auth"] as? [String: Any] {
                         print("[WatchSessionManager] Found pending auth in applicationContext")
-                        self.flutterChannel?.invokeMethod("onTokenFromWatch", arguments: authData)
+                        self.forwardTokenToFlutter(authData)
                     }
                 }
             }
@@ -284,7 +359,7 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         DispatchQueue.main.async {
             if let authData = applicationContext["auth"] as? [String: Any] {
                 print("[WatchSessionManager] Processing auth from applicationContext")
-                self.flutterChannel?.invokeMethod("onTokenFromWatch", arguments: authData)
+                self.forwardTokenToFlutter(authData)
             }
         }
     }
@@ -303,19 +378,39 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
 
         switch action {
         case "requestToken":
+            if !self.isFlutterWatchSyncReady {
+                if let tokenData = self.fallbackTokenFromiCloud() {
+                    print("[WatchSessionManager] Flutter not ready, returning iCloud token to Watch")
+                    replyHandler(["auth": tokenData])
+                } else {
+                    print("[WatchSessionManager] Flutter not ready and no iCloud token available")
+                    replyHandler(["error": "no_token"])
+                }
+                return
+            }
             DispatchQueue.main.async {
                 self.flutterChannel?.invokeMethod("getTokenForWatch", arguments: nil) { result in
                     if let tokenData = result as? [String: Any] {
                         if let error = tokenData["error"] as? String {
-                            print("[WatchSessionManager] Flutter returned error: \(error)")
-                            replyHandler(["error": error])
+                            if let fallbackToken = self.fallbackTokenFromiCloud() {
+                                print("[WatchSessionManager] Flutter returned error (\(error)), falling back to iCloud token")
+                                replyHandler(["auth": fallbackToken])
+                            } else {
+                                print("[WatchSessionManager] Flutter returned error: \(error)")
+                                replyHandler(["error": error])
+                            }
                         } else {
                             print("[WatchSessionManager] Sending token to Watch")
                             replyHandler(["auth": tokenData])
                         }
                     } else {
-                        print("[WatchSessionManager] No token available from Flutter")
-                        replyHandler(["error": "no_token"])
+                        if let fallbackToken = self.fallbackTokenFromiCloud() {
+                            print("[WatchSessionManager] No Flutter token available, falling back to iCloud token")
+                            replyHandler(["auth": fallbackToken])
+                        } else {
+                            print("[WatchSessionManager] No token available from Flutter")
+                            replyHandler(["error": "no_token"])
+                        }
                     }
                 }
             }
@@ -336,6 +431,15 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         case "receiveTokenFromWatch":
             guard let tokenData = message["token"] as? [String: Any] else {
                 replyHandler(["error": "no_token_data"])
+                return
+            }
+
+            if !self.isFlutterWatchSyncReady {
+                print("[WatchSessionManager] Flutter not ready, queueing token from Watch")
+                DispatchQueue.main.async {
+                    self.enqueuePendingAuth(tokenData)
+                }
+                replyHandler(["success": true])
                 return
             }
 
@@ -383,7 +487,7 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
 
             if messageId == "token_update_from_watch" {
                 if let authData = userInfo["auth"] as? [String: Any] {
-                    self.flutterChannel?.invokeMethod("onTokenFromWatch", arguments: authData)
+                    self.forwardTokenToFlutter(authData)
                     print("[WatchSessionManager] Token received from Watch")
                 }
             }

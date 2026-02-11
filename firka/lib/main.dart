@@ -207,9 +207,21 @@ Future<void> _initData(AppInitialization init) async {
   resetOldTimeTableCache(init.isar);
   resetOldHomeworkCache(init.isar);
 
-  if (init.tokens.isNotEmpty) {
-    final allTokens = await init.isar.tokenModels.where().findAll();
-    init.tokens = allTokens;
+  if (Platform.isIOS) {
+    try {
+      await WatchSyncHelper.checkAndRecoverFromiCloud(
+        isar: init.isar,
+        tokens: init.tokens,
+      );
+    } catch (e) {
+      logger.warning('[Init] iCloud recovery check failed: $e');
+    }
+  }
+
+  final allTokens = await init.isar.tokenModels.where().findAll();
+  init.tokens = allTokens;
+
+  if (allTokens.isNotEmpty) {
     final token = pickActiveToken(tokens: allTokens, settings: init.settings);
     if (token == null) {
       logger.warning(
@@ -221,7 +233,7 @@ Future<void> _initData(AppInitialization init) async {
 
     if (Platform.isIOS) {
       final expiryDate = token.expiryDate;
-      if (expiryDate != null) {
+      if (expiryDate != null && expiryDate.isAfter(DateTime.now())) {
         KretaClient.clearReauthFlag();
       }
 
