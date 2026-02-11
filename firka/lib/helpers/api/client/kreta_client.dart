@@ -136,6 +136,15 @@ class KretaClient {
 
   Future<bool> recoverToken() async {
     logger.info("[Recovery] Starting central token recovery...");
+    final now = timeNow();
+    final localExpiry = model.expiryDate;
+    if (localExpiry != null &&
+        localExpiry.isAfter(now.add(const Duration(seconds: 60)))) {
+      logger.info(
+          "[Recovery] Existing token is still valid, skipping recovery steps");
+      clearReauthFlag();
+      return true;
+    }
 
     logger.info("[Recovery] Step 1: Trying local token refresh...");
     try {
@@ -148,6 +157,7 @@ class KretaClient {
 
       model = tokenModel;
       await _syncTokenToAppleTargets(model);
+      clearReauthFlag();
       logger.info("[Recovery] Step 1 SUCCESS: Local refresh succeeded");
       return true;
     } catch (e) {
@@ -155,13 +165,15 @@ class KretaClient {
     }
 
     if (!Platform.isIOS || !initDone) {
-      logger.warning("[Recovery] Not iOS or not initialized, cannot try iCloud");
+      logger
+          .warning("[Recovery] Not iOS or not initialized, cannot try iCloud");
       return false;
     }
 
     logger.info("[Recovery] Step 2: Trying iCloud recovery with retries...");
     const retryDelays = [0, 5, 10, 5, 10]; // instant, 5s, 10s, 5s, 10s
-    bool iCloudHasToken = false; // Track if iCloud has any token (to avoid useless retries)
+    bool iCloudHasToken =
+        false; // Track if iCloud has any token (to avoid useless retries)
 
     for (var attempt = 0; attempt < retryDelays.length; attempt++) {
       final delay = retryDelays[attempt];
@@ -170,11 +182,13 @@ class KretaClient {
           logger.info("[Recovery] Skipping retries - iCloud has no token");
           break;
         }
-        logger.info("[Recovery] Waiting ${delay}s before attempt ${attempt + 1}...");
+        logger.info(
+            "[Recovery] Waiting ${delay}s before attempt ${attempt + 1}...");
         await Future.delayed(Duration(seconds: delay));
       }
 
-      logger.info("[Recovery] iCloud attempt ${attempt + 1}/${retryDelays.length}...");
+      logger.info(
+          "[Recovery] iCloud attempt ${attempt + 1}/${retryDelays.length}...");
 
       final recovered = await WatchSyncHelper.checkAndRecoverFromiCloud(
         isar: isar,
@@ -184,9 +198,21 @@ class KretaClient {
 
       if (recovered) {
         iCloudHasToken = true;
-        await _reloadActiveTokenModel(preferredStudentIdNorm: model.studentIdNorm);
+        await _reloadActiveTokenModel(
+            preferredStudentIdNorm: model.studentIdNorm);
 
-        logger.info("[Recovery] Found iCloud token, trying refresh...");
+        final recoveredExpiry = model.expiryDate;
+        if (recoveredExpiry != null &&
+            recoveredExpiry
+                .isAfter(timeNow().add(const Duration(seconds: 60)))) {
+          logger.info(
+              "[Recovery] Step 2 SUCCESS on attempt ${attempt + 1}: usable iCloud token applied without immediate refresh");
+          clearReauthFlag();
+          return true;
+        }
+
+        logger.info(
+            "[Recovery] Found iCloud token close to expiry, trying refresh...");
         try {
           var extended = await extendToken(model);
           var tokenModel = TokenModel.fromResp(extended);
@@ -197,14 +223,17 @@ class KretaClient {
 
           model = tokenModel;
           await _syncTokenToAppleTargets(model);
+          clearReauthFlag();
           logger.info("[Recovery] Step 2 SUCCESS on attempt ${attempt + 1}");
           return true;
         } catch (e) {
-          logger.warning("[Recovery] iCloud token refresh failed on attempt ${attempt + 1}: $e");
+          logger.warning(
+              "[Recovery] iCloud token refresh failed on attempt ${attempt + 1}: $e");
           iCloudHasToken = true;
         }
       } else {
-        logger.info("[Recovery] No fresh token in iCloud on attempt ${attempt + 1}");
+        logger.info(
+            "[Recovery] No fresh token in iCloud on attempt ${attempt + 1}");
         if (attempt == 0) {
           iCloudHasToken = false;
         }
@@ -221,7 +250,8 @@ class KretaClient {
 
     if (model.expiryDate == null ||
         model.expiryDate!.isBefore(fiveMinutesFromNow)) {
-      logger.info("[Proactive] Token expired or expiring soon, starting recovery...");
+      logger.info(
+          "[Proactive] Token expired or expiring soon, starting recovery...");
 
       final recovered = await recoverToken();
       if (recovered) {
@@ -251,7 +281,8 @@ class KretaClient {
 
     while (_tokenMutex) {
       if (DateTime.now().difference(startTime) > maxWaitTime) {
-        logger.warning("[Mutex] Timeout waiting for token mutex, forcing release");
+        logger.warning(
+            "[Mutex] Timeout waiting for token mutex, forcing release");
         _tokenMutex = false;
         break;
       }

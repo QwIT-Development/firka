@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -96,14 +97,25 @@ class WatchSyncHelper {
     }
   }
 
-  static int _resolveTokenVersionForSend(TokenModel token) {
-    return _extractTokenVersionFromIdToken(token.idToken) ??
-        DateTime.now().millisecondsSinceEpoch;
-  }
-
   static int? _resolveIncomingTokenVersion(Map<dynamic, dynamic> tokenData) {
     return _asInt(tokenData['tokenVersion']) ??
         _extractTokenVersionFromIdToken(tokenData['idToken'] as String?);
+  }
+
+  static int? _resolveTokenVersionForModel(TokenModel token) {
+    final tokenVersion = token.tokenVersion;
+    if (tokenVersion != null && tokenVersion > 0) {
+      return tokenVersion;
+    }
+    return _extractTokenVersionFromIdToken(token.idToken);
+  }
+
+  static int? _resolveUpdatedAtForModel(TokenModel token) {
+    final updatedAtMs = token.updatedAtMs;
+    if (updatedAtMs != null && updatedAtMs > 0) {
+      return updatedAtMs;
+    }
+    return null;
   }
 
   static bool _isIncomingTokenNewerThanCurrent({
@@ -119,9 +131,10 @@ class WatchSyncHelper {
       return true;
     }
 
-    final incomingVersion =
-        incomingTokenVersion ?? _extractTokenVersionFromIdToken(incomingIdToken);
-    final currentVersion = _extractTokenVersionFromIdToken(currentToken.idToken);
+    final incomingVersion = incomingTokenVersion ??
+        _extractTokenVersionFromIdToken(incomingIdToken);
+    final currentVersion = _resolveTokenVersionForModel(currentToken);
+    final currentUpdatedAtMs = _resolveUpdatedAtForModel(currentToken);
 
     if (incomingVersion != null &&
         currentVersion != null &&
@@ -143,14 +156,26 @@ class WatchSyncHelper {
       return false;
     }
 
+    if (incomingUpdatedAtMs != null &&
+        currentUpdatedAtMs != null &&
+        incomingUpdatedAtMs != currentUpdatedAtMs) {
+      return incomingUpdatedAtMs > currentUpdatedAtMs;
+    }
+    if (incomingUpdatedAtMs != null && currentUpdatedAtMs == null) {
+      return true;
+    }
+    if (incomingUpdatedAtMs == null && currentUpdatedAtMs != null) {
+      return false;
+    }
+
     final currentRefresh = currentToken.refreshToken;
     if (incomingRefreshToken != null &&
         currentRefresh != null &&
         incomingRefreshToken != currentRefresh) {
-      if (incomingUpdatedAtMs != null && incomingUpdatedAtMs > 0) {
+      if (incomingIdToken != null && incomingIdToken != currentToken.idToken) {
         return true;
       }
-      return incomingIdToken != null && incomingIdToken != currentToken.idToken;
+      return false;
     }
 
     return false;
@@ -161,6 +186,10 @@ class WatchSyncHelper {
     bool includeSentAt = false,
   }) {
     final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final tokenVersion = _resolveTokenVersionForModel(token) ?? nowMs;
+    final updatedAtMs = (token.updatedAtMs != null && token.updatedAtMs! > 0)
+        ? token.updatedAtMs!
+        : nowMs;
     final payload = <String, dynamic>{
       'studentId': token.studentId,
       'studentIdNorm': token.studentIdNorm,
@@ -169,8 +198,8 @@ class WatchSyncHelper {
       'accessToken': token.accessToken,
       'refreshToken': token.refreshToken,
       'expiryDate': token.expiryDate!.millisecondsSinceEpoch,
-      'tokenVersion': _resolveTokenVersionForSend(token),
-      'updatedAtMs': nowMs,
+      'tokenVersion': tokenVersion,
+      'updatedAtMs': updatedAtMs,
     };
     if (includeSentAt) {
       payload['sentAtMs'] = nowMs;
@@ -185,6 +214,11 @@ class WatchSyncHelper {
 
     _watchChannel.setMethodCallHandler(_handleMethodCall);
     debugPrint('[WatchSync] Handler initialized');
+    unawaited(_invokeMethodWithTimeout(
+      'watchSyncReady',
+      null,
+      const Duration(seconds: 2),
+    ));
   }
 
   static Future<dynamic> _handleMethodCall(MethodCall call) async {
@@ -362,6 +396,8 @@ class WatchSyncHelper {
         tokenData['accessToken'] as String,
         tokenData['refreshToken'] as String,
         watchExpiry,
+        tokenVersion: watchTokenVersion,
+        updatedAtMs: watchUpdatedAtMs ?? DateTime.now().millisecondsSinceEpoch,
       );
 
       await initData.isar.writeTxn(() async {
@@ -512,6 +548,9 @@ class WatchSyncHelper {
           tokenData['accessToken'] as String,
           tokenData['refreshToken'] as String,
           iCloudExpiry,
+          tokenVersion: iCloudTokenVersion,
+          updatedAtMs:
+              iCloudUpdatedAtMs ?? DateTime.now().millisecondsSinceEpoch,
         );
 
         await effectiveIsar.writeTxn(() async {
@@ -675,6 +714,9 @@ class WatchSyncHelper {
           tokenData['accessToken'] as String,
           tokenData['refreshToken'] as String,
           watchExpiry,
+          tokenVersion: watchTokenVersion,
+          updatedAtMs:
+              watchUpdatedAtMs ?? DateTime.now().millisecondsSinceEpoch,
         );
 
         await effectiveIsar.writeTxn(() async {
