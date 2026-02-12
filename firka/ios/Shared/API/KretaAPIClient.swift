@@ -90,6 +90,7 @@ class KretaAPIClient {
         if let token = TokenManager.shared.loadToken() {
             let expiryThreshold = token.expiryDate.addingTimeInterval(-60)
             if Date() < expiryThreshold {
+                TokenManager.shared.clearLastRecoveryFailure()
                 return token
             }
         }
@@ -97,7 +98,13 @@ class KretaAPIClient {
         print("[KretaAPI] Token invalid or expired, starting recovery...")
         if let recoveredToken = await TokenManager.shared.recoverToken() {
             print("[KretaAPI] Token recovery succeeded")
+            TokenManager.shared.clearLastRecoveryFailure()
             return recoveredToken
+        }
+
+        if let recoveryFailure = TokenManager.shared.lastRecoveryFailure {
+            print("[KretaAPI] Token recovery failed with classified error: \(recoveryFailure)")
+            throw APIError.tokenError(recoveryFailure)
         }
 
         print("[KretaAPI] Token recovery failed")

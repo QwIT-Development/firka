@@ -43,6 +43,7 @@ class TokenManager {
     private let activeStudentIdNormKey = "firka.active_student_id_norm"
     private let proactiveRefreshLeadTime: TimeInterval = 5 * 60
     private let minimumProactiveRefreshInterval: TimeInterval = 60
+    private let iCloudProbeTimeoutNs: UInt64 = 1_500_000_000
 
     #if os(iOS)
     private let deviceName = "iPhone"
@@ -52,6 +53,7 @@ class TokenManager {
     private let recoveryLock = NSLock()
     private var recoveryInProgress = false
     private var lastProactiveRefreshAttemptAt: Date?
+    private(set) var lastRecoveryFailure: TokenError?
     #if os(watchOS)
     private var lastPhoneRecoveryRequestAt: Date?
     #endif
@@ -76,6 +78,10 @@ class TokenManager {
         recoveryLock.lock()
         defer { recoveryLock.unlock() }
         return recoveryInProgress
+    }
+
+    func clearLastRecoveryFailure() {
+        lastRecoveryFailure = nil
     }
 
     private func getActiveStudentIdNorm() -> Int64? {
@@ -117,6 +123,22 @@ class TokenManager {
         return candidates.dropFirst().reduce(candidates.first) { best, candidate in
             guard let best else { return candidate }
             return candidate.isNewer(than: best) ? candidate : best
+        }
+    }
+
+    private func probeICloudTokenWithTimeout() async -> WatchToken? {
+        await withTaskGroup(of: WatchToken?.self) { group in
+            group.addTask {
+                iCloudTokenManager.shared.loadToken()
+            }
+            group.addTask { [iCloudProbeTimeoutNs] in
+                try? await Task.sleep(nanoseconds: iCloudProbeTimeoutNs)
+                return nil
+            }
+
+            let first = await group.next() ?? nil
+            group.cancelAll()
+            return first
         }
     }
 
@@ -444,16 +466,25 @@ class TokenManager {
                 return
             }
             _ = try await refreshTokenInternal(token)
+            clearLastRecoveryFailure()
             print("[TokenManager] Proactive token refresh succeeded")
         } catch {
+            if let tokenError = error as? TokenError {
+                lastRecoveryFailure = tokenError
+            } else {
+                lastRecoveryFailure = .networkError
+            }
             print("[TokenManager] Proactive token refresh failed: \(error)")
         }
     }
 
     // MARK: - Central Token Recovery
     func recoverToken() async -> WatchToken? {
+        clearLastRecoveryFailure()
+
         if let validToken = loadToken(), !isTokenExpired() {
             print("[TokenManager] Existing token is valid, skipping recovery flow")
+            clearLastRecoveryFailure()
             return validToken
         }
 
@@ -484,18 +515,49 @@ class TokenManager {
 
         print("[TokenManager] Starting central token recovery...")
 
+        if let iCloudToken = await probeICloudTokenWithTimeout() {
+            let now = Date()
+            if let preferredStudentIdNorm = getActiveStudentIdNorm(),
+               iCloudToken.studentIdNorm != preferredStudentIdNorm,
+               localTokenFromKeychainAndFile(preferredStudentIdNorm: preferredStudentIdNorm) != nil {
+                print("[TokenManager] iCloud probe token belongs to inactive account, skipping direct apply")
+            } else if iCloudToken.expiryDate > now.addingTimeInterval(60) {
+                print("[TokenManager] iCloud probe found valid token, applying without recovery")
+                do {
+                    try saveToken(iCloudToken, syncToICloud: false)
+                    clearLastRecoveryFailure()
+                    return iCloudToken
+                } catch {
+                    print("[TokenManager] Failed to apply iCloud probe token: \(error)")
+                }
+            } else {
+                print("[TokenManager] iCloud probe token exists but access is expired, continuing with refresh path")
+            }
+        } else {
+            print("[TokenManager] iCloud probe timed out or no token available, continuing with refresh path")
+        }
+
         print("[TokenManager] Step 1: Trying local token refresh...")
         if let token = loadToken() {
             if token.expiryDate > Date().addingTimeInterval(60) {
                 print("[TokenManager] Step 1 SUCCESS: Local token already valid")
+                clearLastRecoveryFailure()
                 return token
             }
             do {
                 let refreshedToken = try await refreshTokenInternal(token)
                 print("[TokenManager] Step 1 SUCCESS: Local refresh succeeded")
+                clearLastRecoveryFailure()
                 return refreshedToken
             } catch {
                 print("[TokenManager] Step 1 FAILED: Local refresh failed: \(error)")
+                if let tokenError = error as? TokenError {
+                    lastRecoveryFailure = tokenError
+                    if tokenError == .networkError {
+                        print("[TokenManager] Step 1 detected network error, aborting recovery flow")
+                        return nil
+                    }
+                }
             }
         } else {
             print("[TokenManager] Step 1 SKIPPED: No local token found")
@@ -506,14 +568,23 @@ class TokenManager {
             if recoveredToken.expiryDate > Date().addingTimeInterval(60) {
                 print("[TokenManager] Step 2 SUCCESS: Keychain/Watch token is already valid")
                 try? saveToken(recoveredToken, syncToICloud: false)
+                clearLastRecoveryFailure()
                 return recoveredToken
             } else {
                 do {
                     let refreshedToken = try await refreshTokenInternal(recoveredToken)
                     print("[TokenManager] Step 2 SUCCESS: Keychain/Watch token refresh succeeded")
+                    clearLastRecoveryFailure()
                     return refreshedToken
                 } catch {
                     print("[TokenManager] Step 2 FAILED: Keychain/Watch token refresh failed: \(error)")
+                    if let tokenError = error as? TokenError {
+                        lastRecoveryFailure = tokenError
+                        if tokenError == .networkError {
+                            print("[TokenManager] Step 2 detected network error, aborting recovery flow")
+                            return nil
+                        }
+                    }
                 }
             }
         } else {
@@ -551,15 +622,24 @@ class TokenManager {
                 if iCloudToken.expiryDate > Date() {
                     print("[TokenManager] Step 3 SUCCESS: Found valid iCloud token, applying without immediate refresh")
                     try? saveToken(iCloudToken, syncToICloud: false)
+                    clearLastRecoveryFailure()
                     return iCloudToken
                 } else {
                     print("[TokenManager] Step 3: iCloud token is expired, trying refresh anyway...")
                     do {
                         let refreshedToken = try await refreshTokenInternal(iCloudToken)
                         print("[TokenManager] Step 3 SUCCESS: Expired iCloud token refresh succeeded on attempt \(attempt + 1)")
+                        clearLastRecoveryFailure()
                         return refreshedToken
                     } catch {
                         print("[TokenManager] Step 3: Expired iCloud token refresh failed on attempt \(attempt + 1): \(error)")
+                        if let tokenError = error as? TokenError {
+                            lastRecoveryFailure = tokenError
+                            if tokenError == .networkError {
+                                print("[TokenManager] Step 3 detected network error, aborting retries")
+                                return nil
+                            }
+                        }
                     }
                 }
             } else {
@@ -571,6 +651,9 @@ class TokenManager {
         }
 
         print("[TokenManager] All recovery attempts failed")
+        if lastRecoveryFailure == nil {
+            lastRecoveryFailure = .noToken
+        }
         return nil
     }
 
