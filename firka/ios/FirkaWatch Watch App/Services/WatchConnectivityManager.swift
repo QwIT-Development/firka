@@ -375,7 +375,7 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
 
             try TokenManager.shared.saveToken(
                 token,
-                syncToICloud: false,
+                syncToSharedKeychain: false,
                 forceAccountSwitch: shouldForceAccountSwitch
             )
             print("[Watch] Token saved successfully")

@@ -111,12 +111,12 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         token.expiryDate > Date().addingTimeInterval(skewSeconds)
     }
 
-    private func fallbackTokenFromiCloud() -> [String: Any]? {
-        guard let token = iCloudTokenManager.shared.loadToken() else {
+    private func fallbackTokenFromSharedKeychain() -> [String: Any]? {
+        guard let token = SharedKeychainManager.shared.loadToken() else {
             return nil
         }
         guard isTokenUsable(token, skewSeconds: 0) else {
-            print("[WatchSessionManager] iCloud fallback token is expired, skipping fallback")
+            print("[WatchSessionManager] Shared Keychain fallback token is expired, skipping fallback")
             return nil
         }
         return tokenPayload(from: token)
@@ -297,17 +297,17 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
     }
 
     private func handleCheckiCloudToken(result: @escaping FlutterResult) {
-        print("[WatchSessionManager] Checking iCloud for token...")
+        print("[WatchSessionManager] Checking shared Keychain for token...")
 
-        guard let token = iCloudTokenManager.shared.loadToken() else {
-            print("[WatchSessionManager] No token in iCloud")
+        guard let token = SharedKeychainManager.shared.loadToken() else {
+            print("[WatchSessionManager] No token in shared Keychain")
             result(["error": "no_token"])
             return
         }
 
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss"
-        print("[WatchSessionManager] Found iCloud token, expiry: \(formatter.string(from: token.expiryDate))")
+        print("[WatchSessionManager] Found shared Keychain token, expiry: \(formatter.string(from: token.expiryDate))")
 
         result(tokenPayload(from: token))
     }
@@ -345,11 +345,11 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             updatedAtMs: updatedAtMs
         )
 
-        iCloudTokenManager.shared.saveToken(token, deviceName: "iPhone")
+        SharedKeychainManager.shared.saveToken(token)
 
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss"
-        print("[WatchSessionManager] Token saved to iCloud, expiry: \(formatter.string(from: expiryDate))")
+        print("[WatchSessionManager] Token saved to shared Keychain, expiry: \(formatter.string(from: expiryDate))")
 
         result(nil)
     }
@@ -366,7 +366,9 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
     }
 
     private func handleClearICloudToken(result: @escaping FlutterResult) {
-        iCloudTokenManager.shared.deleteToken()
+        SharedKeychainManager.shared.deleteToken()
+
+        SharedKeychainManager.shared.clearKVStore()
         result(nil)
     }
 
@@ -441,7 +443,7 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         switch action {
         case "requestToken":
             if !self.isFlutterWatchSyncReady {
-                if let tokenData = self.fallbackTokenFromiCloud() {
+                if let tokenData = self.fallbackTokenFromSharedKeychain() {
                     print("[WatchSessionManager] Flutter not ready, returning iCloud token to Watch")
                     replyHandler(["auth": tokenData])
                 } else {
@@ -457,7 +459,7 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                             if error == "needsReauth" {
                                 print("[WatchSessionManager] Flutter reported needsReauth, not using iCloud fallback")
                                 replyHandler(["error": error])
-                            } else if let fallbackToken = self.fallbackTokenFromiCloud() {
+                            } else if let fallbackToken = self.fallbackTokenFromSharedKeychain() {
                                 print("[WatchSessionManager] Flutter returned error (\(error)), falling back to iCloud token")
                                 replyHandler(["auth": fallbackToken])
                             } else {
@@ -474,7 +476,7 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                             replyHandler(["auth": tokenData])
                         }
                     } else {
-                        if let fallbackToken = self.fallbackTokenFromiCloud() {
+                        if let fallbackToken = self.fallbackTokenFromSharedKeychain() {
                             print("[WatchSessionManager] No Flutter token available, falling back to iCloud token")
                             replyHandler(["auth": fallbackToken])
                         } else {
