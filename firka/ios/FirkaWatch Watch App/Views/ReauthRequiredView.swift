@@ -289,7 +289,7 @@ struct ReauthRequiredView: View {
 
             try TokenManager.shared.saveToken(
                 token,
-                syncToICloud: false,
+                syncToSharedKeychain: false,
                 forceAccountSwitch: shouldForceAccountSwitch
             )
 

@@ -126,10 +126,10 @@ class TokenManager {
         }
     }
 
-    private func probeICloudTokenWithTimeout() async -> WatchToken? {
+    private func probeSharedKeychainTokenWithTimeout() async -> WatchToken? {
         await withTaskGroup(of: WatchToken?.self) { group in
             group.addTask {
-                iCloudTokenManager.shared.loadToken()
+                SharedKeychainManager.shared.loadToken()
             }
             group.addTask { [iCloudProbeTimeoutNs] in
                 try? await Task.sleep(nanoseconds: iCloudProbeTimeoutNs)
@@ -143,30 +143,32 @@ class TokenManager {
     }
 
     private init() {
-        iCloudTokenManager.shared.observeChanges { [weak self] iCloudToken in
+        runKVStoreMigrationIfNeeded()
+
+        SharedKeychainManager.shared.observeChanges { [weak self] sharedToken in
             guard let self = self else { return }
 
             let preferredStudentIdNorm = self.getActiveStudentIdNorm()
-            let isValidToken = iCloudToken.expiryDate > Date().addingTimeInterval(60)
+            let isValidToken = sharedToken.expiryDate > Date().addingTimeInterval(60)
             let preferredLocalToken = self.localTokenFromKeychainAndFile(
                 preferredStudentIdNorm: preferredStudentIdNorm
             )
 
             if let preferredStudentIdNorm,
-               iCloudToken.studentIdNorm != preferredStudentIdNorm,
+               sharedToken.studentIdNorm != preferredStudentIdNorm,
                preferredLocalToken != nil {
-                print("[TokenManager] Ignoring iCloud token for inactive account (\(iCloudToken.studentIdNorm)), active is \(preferredStudentIdNorm)")
+                print("[TokenManager] Ignoring shared Keychain token for inactive account (\(sharedToken.studentIdNorm)), active is \(preferredStudentIdNorm)")
                 return
             }
 
             let localToken = preferredLocalToken ?? self.localTokenFromKeychainAndFile()
 
             if let localToken = localToken {
-                if iCloudToken.isNewer(than: localToken) {
-                    print("[TokenManager] iCloud token is fresher, updating local cache")
-                    try? self.saveTokenToKeychain(iCloudToken)
-                    try? self.saveTokenToFile(iCloudToken)
-                    self.setActiveStudentIdNorm(iCloudToken.studentIdNorm)
+                if sharedToken.isNewer(than: localToken) {
+                    print("[TokenManager] Shared Keychain token is fresher, updating local cache")
+                    try? self.saveTokenToKeychain(sharedToken)
+                    try? self.saveTokenToFile(sharedToken)
+                    self.setActiveStudentIdNorm(sharedToken.studentIdNorm)
 
                     #if os(watchOS)
                     DataStore.shared.checkTokenState()
@@ -178,13 +180,13 @@ class TokenManager {
                     }
                     #endif
                 } else {
-                    print("[TokenManager] Local token is fresher or equal, ignoring iCloud update")
+                    print("[TokenManager] Local token is fresher or equal, ignoring shared Keychain update")
                 }
             } else {
-                print("[TokenManager] No local token, using iCloud token")
-                try? self.saveTokenToKeychain(iCloudToken)
-                try? self.saveTokenToFile(iCloudToken)
-                self.setActiveStudentIdNorm(iCloudToken.studentIdNorm)
+                print("[TokenManager] No local token, using shared Keychain token")
+                try? self.saveTokenToKeychain(sharedToken)
+                try? self.saveTokenToFile(sharedToken)
+                self.setActiveStudentIdNorm(sharedToken.studentIdNorm)
 
                 #if os(watchOS)
                 DataStore.shared.checkTokenState()
@@ -197,6 +199,32 @@ class TokenManager {
                 #endif
             }
         }
+    }
+
+    private let kvStoreMigrationKey = "firka_kv_store_migrated_v1"
+
+    private func runKVStoreMigrationIfNeeded() {
+        let alreadyMigrated = UserDefaults.standard.bool(forKey: kvStoreMigrationKey)
+        if alreadyMigrated {
+            return
+        }
+
+        print("[TokenManager] Running KV Store migration...")
+
+        if let migratedToken = SharedKeychainManager.shared.migrateFromKVStoreAndClear() {
+            SharedKeychainManager.shared.saveToken(migratedToken)
+
+            try? saveTokenToKeychain(migratedToken)
+            try? saveTokenToFile(migratedToken)
+            setActiveStudentIdNorm(migratedToken.studentIdNorm)
+
+            print("[TokenManager] KV Store migration completed, token migrated")
+        } else {
+            SharedKeychainManager.shared.clearKVStore()
+            print("[TokenManager] KV Store migration completed, no token to migrate")
+        }
+
+        UserDefaults.standard.set(true, forKey: kvStoreMigrationKey)
     }
 
     #if os(iOS)
@@ -221,12 +249,12 @@ class TokenManager {
 
     // MARK: - Load Token (active-account first)
     func loadToken() -> WatchToken? {
-        let iCloudToken = iCloudTokenManager.shared.loadToken()
+        let sharedKeychainToken = SharedKeychainManager.shared.loadToken()
         let keychainToken = loadTokenFromKeychain()
         let fileToken = loadTokenFromFile()
 
         var candidates: [(token: WatchToken, source: String)] = []
-        if let t = iCloudToken { candidates.append((t, "iCloud")) }
+        if let t = sharedKeychainToken { candidates.append((t, "sharedKeychain")) }
         if let t = keychainToken { candidates.append((t, "keychain")) }
         if let t = fileToken { candidates.append((t, "file")) }
 
@@ -299,7 +327,7 @@ class TokenManager {
     func deleteToken() {
         print("[TokenManager] Deleting token from all storage locations")
         deleteTokenFromKeychain()
-        iCloudTokenManager.shared.deleteToken()
+        SharedKeychainManager.shared.deleteToken()
         UserDefaults.standard.removeObject(forKey: activeStudentIdNormKey)
 
         guard let filePath = getTokenFilePath() else { return }
@@ -309,7 +337,7 @@ class TokenManager {
     // MARK: - Save Token
     func saveToken(
         _ token: WatchToken,
-        syncToICloud: Bool = false,
+        syncToSharedKeychain: Bool = false,
         forceAccountSwitch: Bool = false
     ) throws {
         if let currentToken = loadToken() {
@@ -326,8 +354,8 @@ class TokenManager {
 
         try saveTokenToKeychain(token)
 
-        if syncToICloud {
-            iCloudTokenManager.shared.saveToken(token, deviceName: deviceName)
+        if syncToSharedKeychain {
+            SharedKeychainManager.shared.saveToken(token, forceAccountSwitch: forceAccountSwitch)
         }
 
         guard let filePath = getTokenFilePath() else {
@@ -515,26 +543,26 @@ class TokenManager {
 
         print("[TokenManager] Starting central token recovery...")
 
-        if let iCloudToken = await probeICloudTokenWithTimeout() {
+        if let sharedToken = await probeSharedKeychainTokenWithTimeout() {
             let now = Date()
             if let preferredStudentIdNorm = getActiveStudentIdNorm(),
-               iCloudToken.studentIdNorm != preferredStudentIdNorm,
+               sharedToken.studentIdNorm != preferredStudentIdNorm,
                localTokenFromKeychainAndFile(preferredStudentIdNorm: preferredStudentIdNorm) != nil {
-                print("[TokenManager] iCloud probe token belongs to inactive account, skipping direct apply")
-            } else if iCloudToken.expiryDate > now.addingTimeInterval(60) {
-                print("[TokenManager] iCloud probe found valid token, applying without recovery")
+                print("[TokenManager] Shared Keychain probe token belongs to inactive account, skipping direct apply")
+            } else if sharedToken.expiryDate > now.addingTimeInterval(60) {
+                print("[TokenManager] Shared Keychain probe found valid token, applying without recovery")
                 do {
-                    try saveToken(iCloudToken, syncToICloud: false)
+                    try saveToken(sharedToken, syncToSharedKeychain: false)
                     clearLastRecoveryFailure()
-                    return iCloudToken
+                    return sharedToken
                 } catch {
-                    print("[TokenManager] Failed to apply iCloud probe token: \(error)")
+                    print("[TokenManager] Failed to apply shared Keychain probe token: \(error)")
                 }
             } else {
-                print("[TokenManager] iCloud probe token exists but access is expired, continuing with refresh path")
+                print("[TokenManager] Shared Keychain probe token exists but access is expired, continuing with refresh path")
             }
         } else {
-            print("[TokenManager] iCloud probe timed out or no token available, continuing with refresh path")
+            print("[TokenManager] Shared Keychain probe timed out or no token available, continuing with refresh path")
         }
 
         print("[TokenManager] Step 1: Trying local token refresh...")
@@ -567,7 +595,7 @@ class TokenManager {
         if let recoveredToken = await tryRecoverFromKeychainAndWatch() {
             if recoveredToken.expiryDate > Date().addingTimeInterval(60) {
                 print("[TokenManager] Step 2 SUCCESS: Keychain/Watch token is already valid")
-                try? saveToken(recoveredToken, syncToICloud: false)
+                try? saveToken(recoveredToken, syncToSharedKeychain: false)
                 clearLastRecoveryFailure()
                 return recoveredToken
             } else {
@@ -591,48 +619,48 @@ class TokenManager {
             print("[TokenManager] Step 2 SKIPPED: No token from Keychain/Watch")
         }
 
-        print("[TokenManager] Step 3: Trying iCloud recovery with retries...")
+        print("[TokenManager] Step 3: Trying shared Keychain recovery with retries...")
         let retryDelays: [TimeInterval] = [0, 5, 10, 5, 10]
-        var iCloudHasToken = false
+        var sharedKeychainHasToken = false
 
         for (attempt, delay) in retryDelays.enumerated() {
             if delay > 0 {
-                if !iCloudHasToken && attempt > 0 {
-                    print("[TokenManager] Step 3: Skipping retries - iCloud has no token")
+                if !sharedKeychainHasToken && attempt > 0 {
+                    print("[TokenManager] Step 3: Skipping retries - shared Keychain has no token")
                     break
                 }
                 print("[TokenManager] Step 3: Waiting \(Int(delay))s before attempt \(attempt + 1)...")
                 try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
             }
 
-            print("[TokenManager] Step 3: iCloud attempt \(attempt + 1)/\(retryDelays.count)...")
+            print("[TokenManager] Step 3: Shared Keychain attempt \(attempt + 1)/\(retryDelays.count)...")
 
-            if let iCloudToken = iCloudTokenManager.shared.loadToken() {
+            if let sharedToken = SharedKeychainManager.shared.loadToken() {
                 if let preferredStudentIdNorm = getActiveStudentIdNorm(),
-                   iCloudToken.studentIdNorm != preferredStudentIdNorm {
+                   sharedToken.studentIdNorm != preferredStudentIdNorm {
                     if localTokenFromKeychainAndFile(
                         preferredStudentIdNorm: preferredStudentIdNorm
                     ) != nil {
-                        print("[TokenManager] Step 3: Ignoring iCloud token for inactive account (\(iCloudToken.studentIdNorm)), active is \(preferredStudentIdNorm)")
+                        print("[TokenManager] Step 3: Ignoring shared Keychain token for inactive account (\(sharedToken.studentIdNorm)), active is \(preferredStudentIdNorm)")
                         continue
                     }
-                    print("[TokenManager] Step 3: Active account token missing locally, considering different-account iCloud token")
+                    print("[TokenManager] Step 3: Active account token missing locally, considering different-account shared Keychain token")
                 }
-                iCloudHasToken = true
-                if iCloudToken.expiryDate > Date() {
-                    print("[TokenManager] Step 3 SUCCESS: Found valid iCloud token, applying without immediate refresh")
-                    try? saveToken(iCloudToken, syncToICloud: false)
+                sharedKeychainHasToken = true
+                if sharedToken.expiryDate > Date() {
+                    print("[TokenManager] Step 3 SUCCESS: Found valid shared Keychain token, applying without immediate refresh")
+                    try? saveToken(sharedToken, syncToSharedKeychain: false)
                     clearLastRecoveryFailure()
-                    return iCloudToken
+                    return sharedToken
                 } else {
-                    print("[TokenManager] Step 3: iCloud token is expired, trying refresh anyway...")
+                    print("[TokenManager] Step 3: Shared Keychain token is expired, trying refresh anyway...")
                     do {
-                        let refreshedToken = try await refreshTokenInternal(iCloudToken)
-                        print("[TokenManager] Step 3 SUCCESS: Expired iCloud token refresh succeeded on attempt \(attempt + 1)")
+                        let refreshedToken = try await refreshTokenInternal(sharedToken)
+                        print("[TokenManager] Step 3 SUCCESS: Expired shared Keychain token refresh succeeded on attempt \(attempt + 1)")
                         clearLastRecoveryFailure()
                         return refreshedToken
                     } catch {
-                        print("[TokenManager] Step 3: Expired iCloud token refresh failed on attempt \(attempt + 1): \(error)")
+                        print("[TokenManager] Step 3: Expired shared Keychain token refresh failed on attempt \(attempt + 1): \(error)")
                         if let tokenError = error as? TokenError {
                             lastRecoveryFailure = tokenError
                             if tokenError == .networkError {
@@ -643,9 +671,9 @@ class TokenManager {
                     }
                 }
             } else {
-                print("[TokenManager] Step 3: No token in iCloud on attempt \(attempt + 1)")
+                print("[TokenManager] Step 3: No token in shared Keychain on attempt \(attempt + 1)")
                 if attempt == 0 {
-                    iCloudHasToken = false
+                    sharedKeychainHasToken = false
                 }
             }
         }
@@ -800,7 +828,7 @@ class TokenManager {
             updatedAtMs: nowMs
         )
 
-        try saveToken(newToken, syncToICloud: true)
+        try saveToken(newToken, syncToSharedKeychain: true)
 
         #if os(watchOS)
         WatchConnectivityManager.shared.sendTokenToiPhoneInBackground()
@@ -834,7 +862,7 @@ class TokenManager {
             updatedAtMs: nowMs
         )
 
-        try saveToken(newToken, syncToICloud: true)
+        try saveToken(newToken, syncToSharedKeychain: true)
 
         #if os(watchOS)
         WatchConnectivityManager.shared.sendTokenToiPhoneInBackground()
