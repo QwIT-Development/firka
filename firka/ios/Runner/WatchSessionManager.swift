@@ -242,6 +242,13 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             return
         }
 
+        do {
+            try WCSession.default.updateApplicationContext(["language": languageCode])
+            print("[WatchSessionManager] Language '\(languageCode)' sent to Watch via applicationContext")
+        } catch {
+            print("[WatchSessionManager] Failed to update applicationContext for language: \(error)")
+        }
+
         WCSession.default.transferUserInfo([
             "id": "language_update",
             "language": languageCode
