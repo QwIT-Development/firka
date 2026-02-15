@@ -190,7 +190,7 @@ void initTheme(AppInitialization data) {
 
 Future<void> _initData(AppInitialization init) async {
   await init.settings.load(init.isar.appSettingsModels);
-  initLang(init);
+  await initLang(init);
   initTheme(init);
   init.settings = SettingsStore(init.l10n);
   await init.settings.load(init.isar.appSettingsModels);
@@ -200,6 +200,27 @@ Future<void> _initData(AppInitialization init) async {
   dispatcher.onPlatformBrightnessChanged = () {
     globalUpdate.update();
     initTheme(init);
+  };
+
+  dispatcher.onLocaleChanged = () {
+    final languageSetting =
+        init.settings.group("settings").subGroup("application")["language"]
+            as SettingsItemsRadio;
+    final isAutoLanguage = languageSetting.activeIndex == 0;
+    if (!isAutoLanguage) {
+      return;
+    }
+
+    final previousLocale = init.l10n.localeName;
+    unawaited(() async {
+      await initLang(init);
+      final nextLocale = init.l10n.localeName;
+      if (previousLocale != nextLocale) {
+        logger.info(
+            "[Init] System locale changed in auto mode: $previousLocale -> $nextLocale");
+      }
+      globalUpdate.update();
+    }());
   };
 
   resetOldTimeTableCache(init.isar);
