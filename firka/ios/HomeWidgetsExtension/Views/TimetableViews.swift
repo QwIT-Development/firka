@@ -117,8 +117,8 @@ struct TimetableMediumView: View {
 
     var hasActiveBreak: Bool {
         let checkDate = entry.date
-        for i in 0..<entry.lessons.count - 1 {
-            if checkDate > entry.lessons[i].end && checkDate < entry.lessons[i + 1].start {
+        for (currentLesson, nextLesson) in zip(entry.lessons, entry.lessons.dropFirst()) {
+            if checkDate > currentLesson.end && checkDate < nextLesson.start {
                 return true
             }
         }
@@ -209,8 +209,8 @@ struct TimetableLargeView: View {
 
     var hasActiveBreak: Bool {
         let checkDate = entry.date
-        for i in 0..<entry.lessons.count - 1 {
-            if checkDate > entry.lessons[i].end && checkDate < entry.lessons[i + 1].start {
+        for (currentLesson, nextLesson) in zip(entry.lessons, entry.lessons.dropFirst()) {
+            if checkDate > currentLesson.end && checkDate < nextLesson.start {
                 return true
             }
         }
