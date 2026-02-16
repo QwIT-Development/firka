@@ -38,12 +38,26 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                 self?.handleSaveTokenToiCloud(arguments: call.arguments, result: result)
             case "isWatchAppInstalled":
                 self?.handleIsWatchAppInstalled(result: result)
+            case "isWatchReachable":
+                self?.handleIsWatchReachable(result: result)
             case "clearICloudToken":
                 self?.handleClearICloudToken(result: result)
             case "sendLogoutToWatch":
                 self?.handleSendLogoutToWatch(result: result)
             case "watchSyncReady":
                 self?.handleWatchSyncReady(result: result)
+            case "waitForPeerRefreshLease":
+                self?.handleWaitForPeerRefreshLease(arguments: call.arguments, result: result)
+            case "acquireRefreshLease":
+                self?.handleAcquireRefreshLease(arguments: call.arguments, result: result)
+            case "releaseRefreshLease":
+                self?.handleReleaseRefreshLease(arguments: call.arguments, result: result)
+            case "clearRefreshLeaseForAccount":
+                self?.handleClearRefreshLeaseForAccount(arguments: call.arguments, result: result)
+            case "clearAllRefreshLeases":
+                self?.handleClearAllRefreshLeases(result: result)
+            case "clearSharedLanguageState":
+                self?.handleClearSharedLanguageState(result: result)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -86,6 +100,13 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             return parsed
         }
         return nil
+    }
+
+    private func parseLeaseOwner(_ value: Any?) -> RefreshLeaseOwner? {
+        guard let raw = value as? String else {
+            return nil
+        }
+        return RefreshLeaseOwner(rawValue: raw)
     }
 
     private func tokenPayload(from token: WatchToken) -> [String: Any] {
@@ -194,21 +215,49 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             return
         }
 
+        guard WCSession.default.isWatchAppInstalled else {
+            print("[WatchSessionManager] No paired Watch app, skipping token send")
+            result(nil)
+            return
+        }
+
         guard WCSession.default.activationState == .activated else {
             result(FlutterError(code: "SESSION_NOT_ACTIVE", message: "WCSession is not activated", details: nil))
             return
         }
 
+        let session = WCSession.default
+
         do {
-            WCSession.default.transferUserInfo([
-                "id": "token_update",
+            try session.updateApplicationContext([
                 "auth": authData
             ])
-            result(nil)
-            print("[WatchSessionManager] Token sent to Watch")
         } catch {
-            result(FlutterError(code: "TRANSFER_ERROR", message: error.localizedDescription, details: nil))
+            print("[WatchSessionManager] Failed to update applicationContext for token: \(error)")
         }
+
+        session.transferUserInfo([
+            "id": "token_update",
+            "auth": authData
+        ])
+
+        if session.isReachable {
+            session.sendMessage(
+                [
+                    "id": "token_update",
+                    "auth": authData
+                ],
+                replyHandler: { _ in
+                    print("[WatchSessionManager] Token delivered to Watch via sendMessage")
+                },
+                errorHandler: { error in
+                    print("[WatchSessionManager] Failed immediate token send via sendMessage: \(error.localizedDescription)")
+                }
+            )
+        }
+
+        result(nil)
+        print("[WatchSessionManager] Token sent to Watch")
     }
 
     private func handleSendWidgetDataToWatch(arguments: Any?, result: @escaping FlutterResult) {
@@ -237,22 +286,33 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             return
         }
 
-        guard WCSession.default.activationState == .activated else {
-            result(FlutterError(code: "SESSION_NOT_ACTIVE", message: "WCSession is not activated", details: nil))
+        guard WCSession.default.isWatchAppInstalled else {
+            print("[WatchSessionManager] No paired Watch app, skipping language publish")
+            result(nil)
             return
         }
 
-        do {
-            try WCSession.default.updateApplicationContext(["language": languageCode])
-            print("[WatchSessionManager] Language '\(languageCode)' sent to Watch via applicationContext")
-        } catch {
-            print("[WatchSessionManager] Failed to update applicationContext for language: \(error)")
-        }
+        let sharedState = SharedLanguageStateManager.shared.publishState(languageCode: languageCode)
 
-        WCSession.default.transferUserInfo([
-            "id": "language_update",
-            "language": languageCode
-        ])
+        if WCSession.default.activationState == .activated {
+            do {
+                try WCSession.default.updateApplicationContext([
+                    "language": languageCode,
+                    "language_state_version": sharedState.stateVersion
+                ])
+                print("[WatchSessionManager] Language '\(languageCode)' sent to Watch via applicationContext")
+            } catch {
+                print("[WatchSessionManager] Failed to update applicationContext for language: \(error)")
+            }
+
+            WCSession.default.transferUserInfo([
+                "id": "language_update",
+                "language": languageCode,
+                "language_state_version": sharedState.stateVersion
+            ])
+        } else {
+            print("[WatchSessionManager] WCSession not active, language shared-state published only")
+        }
         result(nil)
         print("[WatchSessionManager] Language '\(languageCode)' sent to Watch")
     }
@@ -325,6 +385,12 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             return
         }
 
+        guard WCSession.default.isWatchAppInstalled else {
+            print("[WatchSessionManager] No paired Watch app, skipping token save to shared Keychain")
+            result(nil)
+            return
+        }
+
         guard let accessToken = tokenData["accessToken"] as? String,
               let refreshToken = tokenData["refreshToken"] as? String,
               let idToken = tokenData["idToken"] as? String,
@@ -352,7 +418,26 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             updatedAtMs: updatedAtMs
         )
 
-        SharedKeychainManager.shared.saveToken(token)
+        let forceAccountSwitch = (tokenData["forceAccountSwitch"] as? Bool) == true
+        let didSave = SharedKeychainManager.shared.saveToken(
+            token,
+            forceAccountSwitch: forceAccountSwitch
+        )
+        if WCSession.default.isWatchAppInstalled {
+            if didSave {
+                _ = SharedSessionStateManager.shared.publishState(
+                    hasAnyAccount: true,
+                    activeStudentIdNorm: studentIdNorm
+                )
+            } else if SharedKeychainManager.shared.loadToken()?.studentIdNorm == studentIdNorm {
+                _ = SharedSessionStateManager.shared.publishState(
+                    hasAnyAccount: true,
+                    activeStudentIdNorm: studentIdNorm
+                )
+            } else {
+                print("[WatchSessionManager] Token save skipped (stale/cross-account); skipping session-state publish for \(studentIdNorm)")
+            }
+        }
 
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss"
@@ -372,10 +457,136 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         result(installed)
     }
 
+    private func handleIsWatchReachable(result: @escaping FlutterResult) {
+        guard WCSession.isSupported() else {
+            result(false)
+            return
+        }
+
+        let session = WCSession.default
+        let reachable =
+            session.isPaired &&
+            session.isWatchAppInstalled &&
+            session.activationState == .activated &&
+            session.isReachable
+        result(reachable)
+    }
+
     private func handleClearICloudToken(result: @escaping FlutterResult) {
         SharedKeychainManager.shared.deleteToken()
 
         SharedKeychainManager.shared.clearKVStore()
+        RefreshLeaseManager.shared.clearAllLeases()
+        SharedLanguageStateManager.shared.clearState()
+        if WCSession.default.isWatchAppInstalled {
+            _ = SharedSessionStateManager.shared.publishState(
+                hasAnyAccount: false,
+                activeStudentIdNorm: nil
+            )
+        } else {
+            SharedSessionStateManager.shared.clearState()
+        }
+        result(nil)
+    }
+
+    private func handleWaitForPeerRefreshLease(arguments: Any?, result: @escaping FlutterResult) {
+        guard let args = arguments as? [String: Any],
+              let owner = parseLeaseOwner(args["owner"]),
+              let studentIdNorm = parseInt64(args["studentIdNorm"]) else {
+            result(FlutterError(code: "INVALID_ARGS", message: "Invalid wait lease arguments", details: nil))
+            return
+        }
+
+        let maxWaitMs = parseInt64(args["maxWaitMs"]) ?? 150_000
+        let pollMs = parseInt64(args["pollIntervalMs"]) ?? 250
+
+        if owner == .iphone && !WCSession.default.isWatchAppInstalled {
+            result([
+                "ready": true,
+                "status": "no_watch",
+                "waitedMs": 0,
+                "leaseChanged": false
+            ])
+            return
+        }
+
+        Task {
+            let waitResult = await RefreshLeaseManager.shared.waitForPeerLeaseRelease(
+                owner: owner,
+                studentIdNorm: studentIdNorm,
+                maxWaitMs: maxWaitMs,
+                pollIntervalMs: pollMs
+            )
+            DispatchQueue.main.async {
+                result(waitResult.asDictionary())
+            }
+        }
+    }
+
+    private func handleAcquireRefreshLease(arguments: Any?, result: @escaping FlutterResult) {
+        guard let args = arguments as? [String: Any],
+              let owner = parseLeaseOwner(args["owner"]),
+              let studentIdNorm = parseInt64(args["studentIdNorm"]) else {
+            result(FlutterError(code: "INVALID_ARGS", message: "Invalid acquire lease arguments", details: nil))
+            return
+        }
+
+        if owner == .iphone && !WCSession.default.isWatchAppInstalled {
+            result([
+                "skipped": true,
+                "status": "no_watch"
+            ])
+            return
+        }
+
+        let ttlMs = parseInt64(args["ttlMs"]) ?? 120_000
+        let operationId = (args["operationId"] as? String) ?? UUID().uuidString
+        let lease = RefreshLeaseManager.shared.acquireLease(
+            owner: owner,
+            studentIdNorm: studentIdNorm,
+            ttlMs: ttlMs,
+            operationId: operationId
+        )
+        result([
+            "operationId": lease.operationId,
+            "startedAtMs": lease.startedAtMs,
+            "expiresAtMs": lease.expiresAtMs
+        ])
+    }
+
+    private func handleReleaseRefreshLease(arguments: Any?, result: @escaping FlutterResult) {
+        guard let args = arguments as? [String: Any],
+              let owner = parseLeaseOwner(args["owner"]),
+              let studentIdNorm = parseInt64(args["studentIdNorm"]) else {
+            result(FlutterError(code: "INVALID_ARGS", message: "Invalid release lease arguments", details: nil))
+            return
+        }
+        let operationId = args["operationId"] as? String
+        RefreshLeaseManager.shared.releaseLease(
+            owner: owner,
+            studentIdNorm: studentIdNorm,
+            operationId: operationId
+        )
+        result(nil)
+    }
+
+    private func handleClearRefreshLeaseForAccount(arguments: Any?, result: @escaping FlutterResult) {
+        guard let args = arguments as? [String: Any],
+              let studentIdNorm = parseInt64(args["studentIdNorm"]) else {
+            result(FlutterError(code: "INVALID_ARGS", message: "Missing studentIdNorm", details: nil))
+            return
+        }
+        RefreshLeaseManager.shared.clearLeases(studentIdNorm: studentIdNorm)
+        result(nil)
+    }
+
+    private func handleClearAllRefreshLeases(result: @escaping FlutterResult) {
+        RefreshLeaseManager.shared.clearAllLeases()
+        result(nil)
+    }
+
+    private func handleClearSharedLanguageState(result: @escaping FlutterResult) {
+        SharedLanguageStateManager.shared.clearState()
         result(nil)
     }
 
@@ -498,11 +709,19 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             DispatchQueue.main.async {
                 self.flutterChannel?.invokeMethod("getLanguageForWatch", arguments: nil) { result in
                     if let languageCode = result as? String {
+                        let sharedState = SharedLanguageStateManager.shared.publishState(languageCode: languageCode)
                         print("[WatchSessionManager] Sending language to Watch: \(languageCode)")
-                        replyHandler(["language": languageCode])
+                        replyHandler([
+                            "language": languageCode,
+                            "language_state_version": sharedState.stateVersion
+                        ])
                     } else {
+                        let sharedState = SharedLanguageStateManager.shared.publishState(languageCode: "hu")
                         print("[WatchSessionManager] No language from Flutter, defaulting to hu")
-                        replyHandler(["language": "hu"])
+                        replyHandler([
+                            "language": "hu",
+                            "language_state_version": sharedState.stateVersion
+                        ])
                     }
                 }
             }

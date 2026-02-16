@@ -84,6 +84,44 @@ class KretaClient {
 
   KretaClient(this.model, this.isar);
 
+  Future<TokenModel> _refreshModelWithCrossDeviceLease(
+      TokenModel sourceToken) async {
+    final studentIdNorm = sourceToken.studentIdNorm;
+    String? leaseOperationId;
+
+    try {
+      if (Platform.isIOS && studentIdNorm != null) {
+        final watchInstalled = await WatchSyncHelper.isWatchAppInstalled();
+        if (watchInstalled) {
+          final leaseReady = await WatchSyncHelper.waitForWatchRefreshLease(
+            studentIdNorm: studentIdNorm,
+          );
+          if (!leaseReady) {
+            throw Exception('watch_refresh_lease_timeout');
+          }
+          leaseOperationId = await WatchSyncHelper.acquireIPhoneRefreshLease(
+            studentIdNorm: studentIdNorm,
+          );
+          if (leaseOperationId == null) {
+            throw Exception('iphone_refresh_lease_acquire_failed');
+          }
+        }
+      }
+
+      final extended = await extendToken(sourceToken);
+      return TokenModel.fromResp(extended);
+    } finally {
+      if (Platform.isIOS &&
+          studentIdNorm != null &&
+          leaseOperationId != null) {
+        await WatchSyncHelper.releaseIPhoneRefreshLease(
+          studentIdNorm: studentIdNorm,
+          operationId: leaseOperationId,
+        );
+      }
+    }
+  }
+
   Future<void> _syncTokenToAppleTargets(TokenModel token) async {
     if (!Platform.isIOS) return;
     if (token.accessToken == null ||
@@ -155,8 +193,7 @@ class KretaClient {
 
     logger.info("[Recovery] Step 1: Trying local token refresh...");
     try {
-      var extended = await extendToken(model);
-      var tokenModel = TokenModel.fromResp(extended);
+      var tokenModel = await _refreshModelWithCrossDeviceLease(model);
 
       await isar.writeTxn(() async {
         await isar.tokenModels.put(tokenModel);
@@ -222,8 +259,7 @@ class KretaClient {
         logger.info(
             "[Recovery] Found iCloud token close to expiry, trying refresh...");
         try {
-          var extended = await extendToken(model);
-          var tokenModel = TokenModel.fromResp(extended);
+          var tokenModel = await _refreshModelWithCrossDeviceLease(model);
 
           await isar.writeTxn(() async {
             await isar.tokenModels.put(tokenModel);

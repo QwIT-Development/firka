@@ -266,6 +266,12 @@ Future<void> _initData(AppInitialization init) async {
 
       unawaited(() async {
         try {
+          await WatchSyncHelper.saveTokenToiCloud(token);
+        } catch (e) {
+          logger.warning('[Init] Failed to sync active token to iCloud: $e');
+        }
+
+        try {
           await WatchSyncHelper.sendTokenModelToWatch(token);
         } catch (e) {
           logger.warning('[Init] Failed to sync active token to Watch: $e');

@@ -37,6 +37,22 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
         return nil
     }
 
+    private func parseInt64(_ value: Any?) -> Int64? {
+        if let value = value as? Int64 {
+            return value
+        }
+        if let value = value as? Int {
+            return Int64(value)
+        }
+        if let value = value as? Double {
+            return Int64(value)
+        }
+        if let value = value as? String, let parsed = Int64(value) {
+            return parsed
+        }
+        return nil
+    }
+
     func activate() {
         print("[Watch] WatchConnectivityManager.activate() called")
         if WCSession.isSupported() {
@@ -93,6 +109,17 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
         replyHandler: @escaping ([String: Any]) -> Void
     ) {
         print("[Watch] didReceiveMessage called: \(message)")
+
+        if let messageId = message["id"] as? String, messageId == "token_update" {
+            if let authDict = message["auth"] as? [String: Any] {
+                print("[Watch] Received immediate token_update via sendMessage")
+                processAuthData(authDict)
+                replyHandler(["success": true])
+            } else {
+                replyHandler(["error": "no_auth"])
+            }
+            return
+        }
 
         guard let action = message["action"] as? String else {
             replyHandler(["error": "no_action"])
@@ -223,8 +250,14 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
         }
 
         if let language = context["language"] as? String {
+            let sharedStateVersion =
+                parseInt64(context["language_state_version"]) ??
+                parseInt64(context["languageStateVersion"])
             print("[Watch] Received language from iPhone: \(language)")
-            WatchL10n.shared.updateFromiPhone(languageCode: language)
+            WatchL10n.shared.updateFromiPhone(
+                languageCode: language,
+                sharedStateVersion: sharedStateVersion
+            )
         }
     }
 
@@ -238,8 +271,14 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
                 }
             case "language_update":
                 if let language = userInfo["language"] as? String {
+                    let sharedStateVersion =
+                        parseInt64(userInfo["language_state_version"]) ??
+                        parseInt64(userInfo["languageStateVersion"])
                     print("[Watch] Received language_update via userInfo: \(language)")
-                    WatchL10n.shared.updateFromiPhone(languageCode: language)
+                    WatchL10n.shared.updateFromiPhone(
+                        languageCode: language,
+                        sharedStateVersion: sharedStateVersion
+                    )
                 }
             case "reauth_required":
                 print("[Watch] Received reauth_required notification from iPhone")
@@ -322,8 +361,14 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
                 print("[Watch] Received language response from iPhone")
                 DispatchQueue.main.async {
                     if let language = response["language"] as? String {
+                        let sharedStateVersion =
+                            self.parseInt64(response["language_state_version"]) ??
+                            self.parseInt64(response["languageStateVersion"])
                         print("[Watch] Language received from iPhone: \(language)")
-                        WatchL10n.shared.updateFromiPhone(languageCode: language)
+                        WatchL10n.shared.updateFromiPhone(
+                            languageCode: language,
+                            sharedStateVersion: sharedStateVersion
+                        )
                     }
                 }
             },
@@ -379,6 +424,10 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
                 forceAccountSwitch: shouldForceAccountSwitch
             )
             print("[Watch] Token saved successfully")
+            _ = SharedSessionStateManager.shared.publishState(
+                hasAnyAccount: true,
+                activeStudentIdNorm: token.studentIdNorm
+            )
             if incomingSentAtMs > 0 {
                 lastAppliedTokenUpdateMs = max(previousSentAtMs, incomingSentAtMs)
             }

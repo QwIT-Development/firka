@@ -44,6 +44,13 @@ class TokenManager {
     private let proactiveRefreshLeadTime: TimeInterval = 5 * 60
     private let minimumProactiveRefreshInterval: TimeInterval = 60
     private let iCloudProbeTimeoutNs: UInt64 = 1_500_000_000
+    private let refreshRequestTimeout: TimeInterval = 12
+    private let refreshResourceTimeout: TimeInterval = 20
+    #if os(watchOS)
+    private let watchRefreshLeaseTtlMs: Int64 = 180_000
+    private let iPhoneRefreshLeaseMaxWaitMs: Int64 = 150_000
+    private let refreshLeasePollIntervalMs: Int64 = 250
+    #endif
 
     #if os(iOS)
     private let deviceName = "iPhone"
@@ -83,6 +90,41 @@ class TokenManager {
     func clearLastRecoveryFailure() {
         lastRecoveryFailure = nil
     }
+
+    #if os(watchOS)
+    private func withWatchRefreshLease<T>(
+        studentIdNorm: Int64,
+        _ operation: () async throws -> T
+    ) async throws -> T {
+        let waitResult = await RefreshLeaseManager.shared.waitForPeerLeaseRelease(
+            owner: .watch,
+            studentIdNorm: studentIdNorm,
+            maxWaitMs: iPhoneRefreshLeaseMaxWaitMs,
+            pollIntervalMs: refreshLeasePollIntervalMs
+        )
+
+        guard waitResult.ready else {
+            print("[TokenManager] Watch refresh lease wait timed out (waited \(waitResult.waitedMs)ms, changed: \(waitResult.leaseChanged))")
+            throw TokenError.networkError
+        }
+
+        let lease = RefreshLeaseManager.shared.acquireLease(
+            owner: .watch,
+            studentIdNorm: studentIdNorm,
+            ttlMs: watchRefreshLeaseTtlMs
+        )
+
+        defer {
+            RefreshLeaseManager.shared.releaseLease(
+                owner: .watch,
+                studentIdNorm: studentIdNorm,
+                operationId: lease.operationId
+            )
+        }
+
+        return try await operation()
+    }
+    #endif
 
     private func getActiveStudentIdNorm() -> Int64? {
         if let value = UserDefaults.standard.object(forKey: activeStudentIdNormKey) as? Int64 {
@@ -263,7 +305,24 @@ class TokenManager {
             return nil
         }
 
-        let preferredStudentIdNorm = getActiveStudentIdNorm()
+        var preferredStudentIdNorm = getActiveStudentIdNorm()
+        var requirePreferredAccount = false
+        #if os(watchOS)
+        if let sessionState = SharedSessionStateManager.shared.loadState() {
+            if !sessionState.hasAnyAccount {
+                print("[TokenManager] Shared session state indicates no active accounts, returning no token")
+                return nil
+            }
+            if let sharedActiveStudentIdNorm = sessionState.activeStudentIdNorm {
+                preferredStudentIdNorm = sharedActiveStudentIdNorm
+                requirePreferredAccount = true
+                if getActiveStudentIdNorm() != sharedActiveStudentIdNorm {
+                    setActiveStudentIdNorm(sharedActiveStudentIdNorm)
+                }
+            }
+        }
+        #endif
+
         let freshest: (token: WatchToken, source: String)
         if let preferredStudentIdNorm {
             let filtered = candidates.filter { $0.token.studentIdNorm == preferredStudentIdNorm }
@@ -273,7 +332,15 @@ class TokenManager {
             } {
                 freshest = preferredFreshest
             } else {
-                print("[TokenManager] Active account token not found locally, falling back to freshest available account")
+                if requirePreferredAccount {
+                    print("[TokenManager] Active shared-session account token (\(preferredStudentIdNorm)) not found yet, falling back to best available token")
+                    #if os(watchOS)
+                    if WCSession.default.activationState == .activated && WCSession.default.isReachable {
+                        print("[TokenManager] iPhone reachable, requesting active account token")
+                        WatchConnectivityManager.shared.requestTokenFromPhone()
+                    }
+                    #endif
+                }
                 freshest = candidates.dropFirst().reduce(candidates[0]) { currentBest, candidate in
                     candidate.token.isNewer(than: currentBest.token) ? candidate : currentBest
                 }
@@ -326,6 +393,11 @@ class TokenManager {
     // MARK: - Delete Token
     func deleteToken() {
         print("[TokenManager] Deleting token from all storage locations")
+        if let previousToken = loadToken() {
+            RefreshLeaseManager.shared.clearLeases(studentIdNorm: previousToken.studentIdNorm)
+        } else {
+            RefreshLeaseManager.shared.clearAllLeases()
+        }
         deleteTokenFromKeychain()
         SharedKeychainManager.shared.deleteToken()
         UserDefaults.standard.removeObject(forKey: activeStudentIdNormKey)
@@ -340,13 +412,20 @@ class TokenManager {
         syncToSharedKeychain: Bool = false,
         forceAccountSwitch: Bool = false
     ) throws {
-        if let currentToken = loadToken() {
+        let currentToken = loadToken()
+        if let currentToken {
             if forceAccountSwitch && !token.isSameAccount(as: currentToken) {
                 print("[TokenManager] Forcing token save for explicit account switch (\(currentToken.studentIdNorm) -> \(token.studentIdNorm))")
             } else if !token.isNewer(than: currentToken) {
                 print("[TokenManager] Ignoring stale or same token save attempt")
                 return
             }
+        }
+
+        if forceAccountSwitch,
+           let currentToken,
+           !token.isSameAccount(as: currentToken) {
+            RefreshLeaseManager.shared.clearLeases(studentIdNorm: currentToken.studentIdNorm)
         }
 
         print("[TokenManager] Saving token locally (Keychain + file)")
@@ -809,6 +888,32 @@ class TokenManager {
     #endif
 
     private func refreshTokenInternal(_ token: WatchToken) async throws -> WatchToken {
+        #if os(watchOS)
+        return try await withWatchRefreshLease(studentIdNorm: token.studentIdNorm) {
+            let response = try await performTokenRefresh(
+                refreshToken: token.refreshToken,
+                instituteCode: token.iss
+            )
+            let nowMs = Int64(Date().timeIntervalSince1970 * 1000)
+            let tokenVersion = WatchToken.extractIatMillis(from: response.idToken) ?? nowMs
+
+            let newToken = WatchToken(
+                accessToken: response.accessToken,
+                refreshToken: response.refreshToken,
+                idToken: response.idToken,
+                iss: token.iss,
+                studentId: token.studentId,
+                studentIdNorm: token.studentIdNorm,
+                expiryDate: Date().addingTimeInterval(Double(response.expiresIn) - 60),
+                tokenVersion: tokenVersion,
+                updatedAtMs: nowMs
+            )
+
+            try saveToken(newToken, syncToSharedKeychain: true)
+            WatchConnectivityManager.shared.sendTokenToiPhoneInBackground()
+            return newToken
+        }
+        #else
         let response = try await performTokenRefresh(
             refreshToken: token.refreshToken,
             instituteCode: token.iss
@@ -829,12 +934,8 @@ class TokenManager {
         )
 
         try saveToken(newToken, syncToSharedKeychain: true)
-
-        #if os(watchOS)
-        WatchConnectivityManager.shared.sendTokenToiPhoneInBackground()
-        #endif
-
         return newToken
+        #endif
     }
 
     // MARK: - Refresh Token
@@ -843,6 +944,32 @@ class TokenManager {
             throw TokenError.noToken
         }
 
+        #if os(watchOS)
+        return try await withWatchRefreshLease(studentIdNorm: currentToken.studentIdNorm) {
+            let response = try await performTokenRefresh(
+                refreshToken: currentToken.refreshToken,
+                instituteCode: currentToken.iss
+            )
+            let nowMs = Int64(Date().timeIntervalSince1970 * 1000)
+            let tokenVersion = WatchToken.extractIatMillis(from: response.idToken) ?? nowMs
+
+            let newToken = WatchToken(
+                accessToken: response.accessToken,
+                refreshToken: response.refreshToken,
+                idToken: response.idToken,
+                iss: currentToken.iss,
+                studentId: currentToken.studentId,
+                studentIdNorm: currentToken.studentIdNorm,
+                expiryDate: Date().addingTimeInterval(Double(response.expiresIn) - 60),
+                tokenVersion: tokenVersion,
+                updatedAtMs: nowMs
+            )
+
+            try saveToken(newToken, syncToSharedKeychain: true)
+            WatchConnectivityManager.shared.sendTokenToiPhoneInBackground()
+            return newToken
+        }
+        #else
         let response = try await performTokenRefresh(
             refreshToken: currentToken.refreshToken,
             instituteCode: currentToken.iss
@@ -863,12 +990,8 @@ class TokenManager {
         )
 
         try saveToken(newToken, syncToSharedKeychain: true)
-
-        #if os(watchOS)
-        WatchConnectivityManager.shared.sendTokenToiPhoneInBackground()
-        #endif
-
         return newToken
+        #endif
     }
 
     // MARK: - Private Helper Methods
@@ -885,6 +1008,7 @@ class TokenManager {
         request.setValue("application/x-www-form-urlencoded; charset=UTF-8", forHTTPHeaderField: "Content-Type")
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
         request.setValue("*/*", forHTTPHeaderField: "Accept")
+        request.timeoutInterval = refreshRequestTimeout
 
         let formParameters: [String: String] = [
             "institute_code": instituteCode,
@@ -896,7 +1020,11 @@ class TokenManager {
         request.httpBody = encodeFormData(formParameters).data(using: .utf8)
 
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let configuration = URLSessionConfiguration.ephemeral
+            configuration.timeoutIntervalForRequest = refreshRequestTimeout
+            configuration.timeoutIntervalForResource = refreshResourceTimeout
+            let session = URLSession(configuration: configuration)
+            let (data, response) = try await session.data(for: request)
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw TokenError.networkError

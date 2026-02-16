@@ -15,11 +15,15 @@ import 'db/models/token_model.dart';
 /// Helper class for Watch ↔ iPhone token sync
 class WatchSyncHelper {
   static const _watchChannel = MethodChannel('app.firka/watch_sync');
+  static const _leaseOwnerIPhone = 'iphone';
   static bool _initialized = false;
   static bool _watchAppInstalledCache = false;
   static DateTime? _lastWatchInstallCheckAt;
   static const Duration _watchInstallCheckCooldown = Duration(seconds: 10);
   static const Duration _tokenUsableSkew = Duration(seconds: 60);
+  static const Duration _leasePollInterval = Duration(milliseconds: 250);
+  static const Duration _iPhoneRefreshLeaseTtl = Duration(seconds: 120);
+  static const Duration _watchRefreshLeaseMaxWait = Duration(seconds: 150);
   static const String _iosFreshInstallHandledKey =
       'ios_fresh_install_cleanup_done_v1';
 
@@ -258,6 +262,21 @@ class WatchSyncHelper {
     return _watchAppInstalledCache;
   }
 
+  static Future<bool> isWatchReachable({bool forceRefreshInstall = false}) async {
+    if (!Platform.isIOS) return false;
+
+    final watchInstalled =
+        await isWatchAppInstalled(forceRefresh: forceRefreshInstall);
+    if (!watchInstalled) return false;
+
+    final result = await _invokeMethodWithTimeout<bool>(
+      'isWatchReachable',
+      null,
+      const Duration(seconds: 2),
+    );
+    return result == true;
+  }
+
   static Future<void> clearICloudToken({bool notifyWatch = false}) async {
     if (!Platform.isIOS) return;
     await _invokeMethodWithTimeout(
@@ -281,6 +300,124 @@ class WatchSyncHelper {
     );
   }
 
+  static Future<bool> waitForWatchRefreshLease({
+    required int studentIdNorm,
+    Duration maxWait = _watchRefreshLeaseMaxWait,
+  }) async {
+    if (!Platform.isIOS) return true;
+    final watchInstalled = await isWatchAppInstalled();
+    if (!watchInstalled) return true;
+
+    final timeout = maxWait + const Duration(seconds: 5);
+    final result = await _invokeMethodWithTimeout<dynamic>(
+      'waitForPeerRefreshLease',
+      {
+        'owner': _leaseOwnerIPhone,
+        'studentIdNorm': studentIdNorm,
+        'maxWaitMs': maxWait.inMilliseconds,
+        'pollIntervalMs': _leasePollInterval.inMilliseconds,
+      },
+      timeout,
+    );
+
+    if (result is! Map) {
+      debugPrint('[WatchSync] Lease wait returned invalid response: $result');
+      return true;
+    }
+
+    final ready = result['ready'] == true;
+    final status = result['status'];
+    final waitedMs = result['waitedMs'];
+    final leaseChanged = result['leaseChanged'] == true;
+    debugPrint(
+        '[WatchSync] Lease wait status=$status ready=$ready waitedMs=$waitedMs leaseChanged=$leaseChanged');
+    return ready;
+  }
+
+  static Future<String?> acquireIPhoneRefreshLease({
+    required int studentIdNorm,
+    Duration ttl = _iPhoneRefreshLeaseTtl,
+  }) async {
+    if (!Platform.isIOS) return null;
+    final watchInstalled = await isWatchAppInstalled();
+    if (!watchInstalled) return null;
+
+    final result = await _invokeMethodWithTimeout<dynamic>(
+      'acquireRefreshLease',
+      {
+        'owner': _leaseOwnerIPhone,
+        'studentIdNorm': studentIdNorm,
+        'ttlMs': ttl.inMilliseconds,
+      },
+      const Duration(seconds: 5),
+    );
+
+    if (result is! Map) {
+      debugPrint('[WatchSync] Lease acquire returned invalid response: $result');
+      return null;
+    }
+    if (result['skipped'] == true) {
+      return null;
+    }
+    final operationId = result['operationId'] as String?;
+    if (operationId == null || operationId.isEmpty) {
+      debugPrint('[WatchSync] Lease acquire response missing operationId');
+      return null;
+    }
+    return operationId;
+  }
+
+  static Future<void> releaseIPhoneRefreshLease({
+    required int studentIdNorm,
+    required String operationId,
+  }) async {
+    if (!Platform.isIOS) return;
+    await _invokeMethodWithTimeout(
+      'releaseRefreshLease',
+      {
+        'owner': _leaseOwnerIPhone,
+        'studentIdNorm': studentIdNorm,
+        'operationId': operationId,
+      },
+      const Duration(seconds: 5),
+    );
+  }
+
+  static Future<void> clearRefreshLeaseForAccount(int studentIdNorm) async {
+    if (!Platform.isIOS) return;
+    final watchInstalled = await isWatchAppInstalled();
+    if (!watchInstalled) return;
+    await _invokeMethodWithTimeout(
+      'clearRefreshLeaseForAccount',
+      {
+        'studentIdNorm': studentIdNorm,
+      },
+      const Duration(seconds: 5),
+    );
+  }
+
+  static Future<void> clearAllRefreshLeases() async {
+    if (!Platform.isIOS) return;
+    final watchInstalled = await isWatchAppInstalled();
+    if (!watchInstalled) return;
+    await _invokeMethodWithTimeout(
+      'clearAllRefreshLeases',
+      null,
+      const Duration(seconds: 5),
+    );
+  }
+
+  static Future<void> clearSharedLanguageState() async {
+    if (!Platform.isIOS) return;
+    final watchInstalled = await isWatchAppInstalled();
+    if (!watchInstalled) return;
+    await _invokeMethodWithTimeout(
+      'clearSharedLanguageState',
+      null,
+      const Duration(seconds: 5),
+    );
+  }
+
   static Future<bool> runFreshInstallCleanupIfNeeded({
     required Isar isar,
   }) async {
@@ -295,6 +432,7 @@ class WatchSyncHelper {
     debugPrint(
         '[WatchSync] Fresh iOS install detected, clearing iCloud and local auth state');
     await clearICloudToken(notifyWatch: true);
+    await clearAllRefreshLeases();
 
     await isar.writeTxn(() async {
       await isar.tokenModels.clear();
@@ -391,15 +529,14 @@ class WatchSyncHelper {
       return {'error': 'token_incomplete'};
     }
 
-    if (!_isAccessTokenUsable(token.expiryDate, skew: const Duration())) {
-      debugPrint(
-          '[WatchSync] Active iPhone token is expired, not sending to Watch');
-      return {'error': 'needsReauth'};
-    }
-
     if (KretaClient.needsReauth) {
       debugPrint('[WatchSync] iPhone needs reauth');
       return {'error': 'needsReauth'};
+    }
+
+    if (!_isAccessTokenUsable(token.expiryDate, skew: const Duration())) {
+      debugPrint(
+          '[WatchSync] Active iPhone token access is expired, forwarding token to Watch for recovery');
     }
 
     final tokenData = _buildTokenSyncPayload(token, includeSentAt: true);
@@ -410,6 +547,8 @@ class WatchSyncHelper {
 
   static Future<void> sendTokenToWatch() async {
     if (!Platform.isIOS) return;
+    final watchInstalled = await isWatchAppInstalled();
+    if (!watchInstalled) return;
 
     final tokenData = _getTokenForWatch();
     if (tokenData == null) return;
@@ -420,9 +559,15 @@ class WatchSyncHelper {
 
   /// Sends a specific token directly to Watch.
   /// Useful during app initialization before global init state is fully ready.
-  static Future<void> sendTokenModelToWatch(TokenModel token) async {
+  static Future<void> sendTokenModelToWatch(
+    TokenModel token, {
+    bool allowExpiredAccessToken = false,
+  }) async {
     if (!Platform.isIOS) return;
-    await _sendTokenToWatchInternal(token);
+    await _sendTokenToWatchInternal(
+      token,
+      allowExpiredAccessToken: allowExpiredAccessToken,
+    );
   }
 
   static Future<Map<String, dynamic>> _processTokenFromWatch(
@@ -522,8 +667,16 @@ class WatchSyncHelper {
     }
   }
 
-  static Future<void> _sendTokenToWatchInternal(TokenModel token) async {
+  static Future<void> _sendTokenToWatchInternal(
+    TokenModel token, {
+    bool allowExpiredAccessToken = false,
+  }) async {
     if (!Platform.isIOS) return;
+    final watchInstalled = await isWatchAppInstalled();
+    if (!watchInstalled) {
+      debugPrint('[WatchSync] No paired Watch app, skipping token send');
+      return;
+    }
 
     if (token.accessToken == null ||
         token.refreshToken == null ||
@@ -532,9 +685,15 @@ class WatchSyncHelper {
       return;
     }
 
-    if (!_isAccessTokenUsable(token.expiryDate, skew: const Duration())) {
+    final accessExpired =
+        !_isAccessTokenUsable(token.expiryDate, skew: const Duration());
+    if (accessExpired && !allowExpiredAccessToken) {
       debugPrint('[WatchSync] Token expired, not sending to Watch');
       return;
+    }
+    if (accessExpired && allowExpiredAccessToken) {
+      debugPrint(
+          '[WatchSync] Sending expired-access token to Watch for account-switch recovery');
     }
 
     final tokenData = _buildTokenSyncPayload(token, includeSentAt: true);
@@ -556,6 +715,11 @@ class WatchSyncHelper {
 
   static Future<void> sendLanguageToWatch() async {
     if (!Platform.isIOS) return;
+    final watchInstalled = await isWatchAppInstalled();
+    if (!watchInstalled) {
+      debugPrint('[WatchSync] No paired Watch app, skipping language publish');
+      return;
+    }
 
     final languageCode = _getLanguageForWatch();
     if (languageCode == null) return;
@@ -575,6 +739,10 @@ class WatchSyncHelper {
     bool allowExpiredAccessToken = false,
   }) async {
     if (!Platform.isIOS) return false;
+    final watchInstalled = await isWatchAppInstalled();
+    if (!watchInstalled) {
+      return false;
+    }
 
     final effectiveIsar = isar ?? (initDone ? initData.isar : null);
     final effectiveTokens = tokens ?? (initDone ? initData.tokens : null);
@@ -705,7 +873,10 @@ class WatchSyncHelper {
   }
 
   /// Save token to iCloud. Call this after refreshing token on iPhone.
-  static Future<void> saveTokenToiCloud(TokenModel token) async {
+  static Future<void> saveTokenToiCloud(
+    TokenModel token, {
+    bool forceAccountSwitch = false,
+  }) async {
     if (!Platform.isIOS) return;
 
     if (token.accessToken == null ||
@@ -723,6 +894,7 @@ class WatchSyncHelper {
     }
 
     final tokenData = _buildTokenSyncPayload(token);
+    tokenData['forceAccountSwitch'] = forceAccountSwitch;
 
     await _invokeMethodWithTimeout(
         'saveTokeToniCloud', tokenData, const Duration(seconds: 5));
@@ -766,7 +938,10 @@ class WatchSyncHelper {
             currentToken.expiryDate != null &&
             !KretaClient.needsReauth) {
           debugPrint('[WatchSync] Sending iPhone token to Watch (no response)');
-          await _sendTokenToWatchInternal(currentToken);
+          await _sendTokenToWatchInternal(
+            currentToken,
+            allowExpiredAccessToken: true,
+          );
         }
         return;
       }
@@ -781,7 +956,10 @@ class WatchSyncHelper {
             !KretaClient.needsReauth) {
           debugPrint(
               '[WatchSync] Sending iPhone token to Watch (Watch has no token)');
-          await _sendTokenToWatchInternal(currentToken);
+          await _sendTokenToWatchInternal(
+            currentToken,
+            allowExpiredAccessToken: true,
+          );
         }
         return;
       }
@@ -807,7 +985,10 @@ class WatchSyncHelper {
             currentToken.refreshToken != null &&
             currentToken.expiryDate != null &&
             !KretaClient.needsReauth) {
-          await _sendTokenToWatchInternal(currentToken);
+          await _sendTokenToWatchInternal(
+            currentToken,
+            allowExpiredAccessToken: true,
+          );
         }
         return;
       }
@@ -823,7 +1004,10 @@ class WatchSyncHelper {
             _isAccessTokenUsable(currentToken.expiryDate,
                 skew: const Duration()) &&
             !KretaClient.needsReauth) {
-          await _sendTokenToWatchInternal(currentToken);
+          await _sendTokenToWatchInternal(
+            currentToken,
+            allowExpiredAccessToken: true,
+          );
         }
         return;
       }
@@ -882,7 +1066,10 @@ class WatchSyncHelper {
       } else {
         debugPrint(
             '[WatchSync] iPhone token is same or newer, sending to Watch');
-        await _sendTokenToWatchInternal(currentToken);
+        await _sendTokenToWatchInternal(
+          currentToken,
+          allowExpiredAccessToken: true,
+        );
       }
     } catch (e) {
       debugPrint('[WatchSync] Failed to sync token from Watch: $e');

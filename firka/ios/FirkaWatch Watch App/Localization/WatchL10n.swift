@@ -30,6 +30,7 @@ class WatchL10n {
 
     private let languageKey = "watch_language"
     private let syncWithiPhoneKey = "watch_sync_language_with_iphone"
+    private let lastAppliedSharedLanguageVersionKey = "watch_last_applied_shared_language_version"
     private static let appGroupID = "group.app.firka.firkaa"
     private var appGroupDefaults: UserDefaults? {
         UserDefaults(suiteName: Self.appGroupID)
@@ -45,8 +46,9 @@ class WatchL10n {
     var syncWithiPhone: Bool {
         didSet {
             UserDefaults.standard.set(syncWithiPhone, forKey: syncWithiPhoneKey)
+            appGroupDefaults?.set(syncWithiPhone, forKey: syncWithiPhoneKey)
             if syncWithiPhone {
-                requestLanguageFromiPhone()
+                refreshFromiPhoneAndSharedState()
             }
         }
     }
@@ -56,7 +58,13 @@ class WatchL10n {
     private init() {
         let savedLanguage = UserDefaults.standard.string(forKey: languageKey) ?? "hu"
         self.currentLanguage = WatchLanguage(rawValue: savedLanguage) ?? .hungarian
-        self.syncWithiPhone = UserDefaults.standard.bool(forKey: syncWithiPhoneKey)
+        if let storedSyncPref = UserDefaults.standard.object(forKey: syncWithiPhoneKey) as? Bool {
+            self.syncWithiPhone = storedSyncPref
+        } else {
+            self.syncWithiPhone = true
+            UserDefaults.standard.set(true, forKey: syncWithiPhoneKey)
+            appGroupDefaults?.set(true, forKey: syncWithiPhoneKey)
+        }
         appGroupDefaults?.set(currentLanguage.rawValue, forKey: languageKey)
         loadStrings()
     }
@@ -71,11 +79,60 @@ class WatchL10n {
         WidgetCenter.shared.reloadAllTimelines()
     }
 
-    func updateFromiPhone(languageCode: String) {
+    func updateFromiPhone(languageCode: String, sharedStateVersion: Int64? = nil) {
         guard syncWithiPhone else { return }
-        if let language = WatchLanguage(rawValue: languageCode) {
-            setLanguage(language)
+        let lastAppliedVersion = lastAppliedSharedLanguageVersion()
+        if let sharedStateVersion,
+           sharedStateVersion > 0,
+           sharedStateVersion < lastAppliedVersion {
+            print("[WatchL10n] Ignoring stale WC language update (version: \(sharedStateVersion), lastApplied: \(lastAppliedVersion))")
+            return
         }
+
+        if let language = WatchLanguage(rawValue: languageCode) {
+            if language != currentLanguage {
+                setLanguage(language)
+            }
+            if let sharedStateVersion, sharedStateVersion > 0 {
+                setLastAppliedSharedLanguageVersion(max(lastAppliedVersion, sharedStateVersion))
+            }
+        }
+    }
+
+    private func parseInt64(_ value: Any?) -> Int64? {
+        if let value = value as? Int64 { return value }
+        if let value = value as? Int { return Int64(value) }
+        if let value = value as? Double { return Int64(value) }
+        if let value = value as? String, let parsed = Int64(value) { return parsed }
+        return nil
+    }
+
+    private func lastAppliedSharedLanguageVersion() -> Int64 {
+        parseInt64(UserDefaults.standard.object(forKey: lastAppliedSharedLanguageVersionKey)) ?? 0
+    }
+
+    private func setLastAppliedSharedLanguageVersion(_ value: Int64) {
+        UserDefaults.standard.set(value, forKey: lastAppliedSharedLanguageVersionKey)
+    }
+
+    func reconcileFromSharedState() {
+        guard syncWithiPhone else { return }
+        guard let sharedState = SharedLanguageStateManager.shared.loadState() else { return }
+        let lastAppliedVersion = lastAppliedSharedLanguageVersion()
+        guard sharedState.stateVersion > lastAppliedVersion else { return }
+
+        if let language = WatchLanguage(rawValue: sharedState.languageCode) {
+            if language != currentLanguage {
+                setLanguage(language)
+            }
+            setLastAppliedSharedLanguageVersion(sharedState.stateVersion)
+        }
+    }
+
+    func refreshFromiPhoneAndSharedState() {
+        guard syncWithiPhone else { return }
+        requestLanguageFromiPhone()
+        reconcileFromSharedState()
     }
 
     private func requestLanguageFromiPhone() {
@@ -113,12 +170,20 @@ class WatchL10n {
         "no_more_lessons": "Ma nincs több órád",
         "pair_with_iphone": "Párosítsd az iPhone-oddal",
         "open_firka_on_iphone": "Nyisd meg a Firka appot az iPhone-odon",
+        "login_on_iphone": "Jelentkezz be iPhone-on",
+        "open_and_login_on_iphone": "Nyisd meg a Firka appot iPhone-on, és lépj be egy fiókba",
         "updated": "Frissítve: %@",
         "minutes": "perc",
         "time_now": "most",
         "time_hours_minutes": "%d ó %d p",
         "time_hours": "%d óra",
         "time_minutes_only": "%d perc",
+        "time_since_minutes_one": "1 perce",
+        "time_since_minutes_many": "%d perce",
+        "time_since_hours_one": "1 órája",
+        "time_since_hours_many": "%d órája",
+        "time_since_days_one": "1 napja",
+        "time_since_days_many": "%d napja",
 
         // Timetable View
         "free_day": "Szabad nap",
@@ -198,12 +263,20 @@ class WatchL10n {
         "no_more_lessons": "No more lessons today",
         "pair_with_iphone": "Pair with iPhone",
         "open_firka_on_iphone": "Open Firka app on your iPhone",
+        "login_on_iphone": "Sign in on iPhone",
+        "open_and_login_on_iphone": "Open Firka on your iPhone and sign in to an account",
         "updated": "Updated: %@",
         "minutes": "min",
         "time_now": "now",
         "time_hours_minutes": "%dh %dm",
         "time_hours": "%d hours",
         "time_minutes_only": "%d min",
+        "time_since_minutes_one": "1 min ago",
+        "time_since_minutes_many": "%d mins ago",
+        "time_since_hours_one": "1 hour ago",
+        "time_since_hours_many": "%d hours ago",
+        "time_since_days_one": "1 day ago",
+        "time_since_days_many": "%d days ago",
 
         // Timetable View
         "free_day": "Free Day",
@@ -283,12 +356,20 @@ class WatchL10n {
         "no_more_lessons": "Keine Stunden mehr heute",
         "pair_with_iphone": "Mit iPhone koppeln",
         "open_firka_on_iphone": "Öffne Firka auf deinem iPhone",
+        "login_on_iphone": "Auf iPhone anmelden",
+        "open_and_login_on_iphone": "Öffne Firka auf deinem iPhone und melde dich mit einem Konto an",
         "updated": "Aktualisiert: %@",
         "minutes": "Min",
         "time_now": "jetzt",
         "time_hours_minutes": "%d Std %d Min",
         "time_hours": "%d Stunden",
         "time_minutes_only": "%d Min",
+        "time_since_minutes_one": "vor 1 Min",
+        "time_since_minutes_many": "vor %d Min",
+        "time_since_hours_one": "vor 1 Std",
+        "time_since_hours_many": "vor %d Std",
+        "time_since_days_one": "vor 1 Tag",
+        "time_since_days_many": "vor %d Tagen",
 
         // Timetable View
         "free_day": "Freier Tag",

@@ -1,4 +1,5 @@
 import SwiftUI
+import WatchConnectivity
 internal import Combine
 
 struct HomeView: View {
@@ -438,17 +439,36 @@ struct HomeView: View {
 
     // MARK: - No Token View
 
+    private var isWatchSystemPaired: Bool {
+        guard WCSession.isSupported() else { return false }
+        return WCSession.default.isCompanionAppInstalled
+    }
+
+    private var noTokenTitleKey: String {
+        isWatchSystemPaired ? "login_on_iphone" : "pair_with_iphone"
+    }
+
+    private var noTokenDescriptionKey: String {
+        isWatchSystemPaired ? "open_and_login_on_iphone" : "open_firka_on_iphone"
+    }
+
+    private var noTokenIconName: String {
+        isWatchSystemPaired
+            ? "person.crop.circle.badge.exclamationmark"
+            : "iphone.and.arrow.right.inward"
+    }
+
     private var noTokenView: some View {
         VStack(spacing: 12) {
-            Image(systemName: "iphone.and.arrow.right.inward")
+            Image(systemName: noTokenIconName)
                 .font(.system(size: 44))
                 .foregroundColor(.blue)
 
-            Text("pair_with_iphone".localized)
+            Text(noTokenTitleKey.localized)
                 .font(.headline)
                 .multilineTextAlignment(.center)
 
-            Text("open_firka_on_iphone".localized)
+            Text(noTokenDescriptionKey.localized)
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

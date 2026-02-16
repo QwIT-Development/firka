@@ -20,6 +20,10 @@ class SharedKeychainManager {
 
     private init() {}
 
+    var resolvedAccessGroup: String {
+        accessGroup
+    }
+
     private func resolveAccessGroup() -> String {
         let probeService = "\(service).probe"
         let probeAccount = "probe"
@@ -277,5 +281,522 @@ class SharedKeychainManager {
 
         iCloudStore.synchronize()
         print("[SharedKeychain] Cleared old KV Store data")
+    }
+}
+
+enum RefreshLeaseOwner: String {
+    case iphone
+    case watch
+
+    var peer: RefreshLeaseOwner {
+        switch self {
+        case .iphone:
+            return .watch
+        case .watch:
+            return .iphone
+        }
+    }
+}
+
+struct SharedSessionStateRecord: Codable {
+    let stateVersion: Int64
+    let hasAnyAccount: Bool
+    let activeStudentIdNorm: Int64?
+    let updatedAtMs: Int64
+    let sourceDevice: String
+}
+
+struct SharedLanguageStateRecord: Codable {
+    let stateVersion: Int64
+    let languageCode: String
+    let updatedAtMs: Int64
+    let expiresAtMs: Int64
+    let sourceDevice: String
+}
+
+class SharedLanguageStateManager {
+    static let shared = SharedLanguageStateManager()
+
+    private let service = "app.firka.shared.language_state"
+    private let account = "language_state"
+    private let accessGroup: String
+    private let maxTtlMs: Int64 = 7 * 24 * 60 * 60 * 1000
+
+    #if os(iOS)
+    private let sourceDevice = "iphone"
+    #elseif os(watchOS)
+    private let sourceDevice = "watch"
+    #endif
+
+    private init() {
+        accessGroup = SharedKeychainManager.shared.resolvedAccessGroup
+    }
+
+    private func nowMs() -> Int64 {
+        Int64(Date().timeIntervalSince1970 * 1000)
+    }
+
+    private func encode(_ state: SharedLanguageStateRecord) -> Data? {
+        try? JSONEncoder().encode(state)
+    }
+
+    private func decode(_ data: Data) -> SharedLanguageStateRecord? {
+        try? JSONDecoder().decode(SharedLanguageStateRecord.self, from: data)
+    }
+
+    private func keychainQueryBase() -> [String: Any] {
+        [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecAttrAccessGroup as String: accessGroup
+        ]
+    }
+
+    private func loadStateFromKeychain() -> SharedLanguageStateRecord? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecAttrAccessGroup as String: accessGroup,
+            kSecAttrSynchronizable as String: kSecAttrSynchronizableAny,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        guard status == errSecSuccess, let data = result as? Data else {
+            return nil
+        }
+        return decode(data)
+    }
+
+    private func storeStateInKeychain(_ state: SharedLanguageStateRecord) {
+        guard let data = encode(state) else {
+            print("[SharedLanguageState] Failed to encode state for keychain")
+            return
+        }
+
+        var deleteQuery = keychainQueryBase()
+        deleteQuery[kSecAttrSynchronizable as String] = kSecAttrSynchronizableAny
+        SecItemDelete(deleteQuery as CFDictionary)
+
+        var addQuery = keychainQueryBase()
+        addQuery[kSecAttrSynchronizable as String] = kCFBooleanTrue!
+        addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
+        addQuery[kSecValueData as String] = data
+        let status = SecItemAdd(addQuery as CFDictionary, nil)
+        if status != errSecSuccess {
+            print("[SharedLanguageState] Failed to publish state to keychain: \(status)")
+        }
+    }
+
+    private func clearKeychainState() {
+        var query = keychainQueryBase()
+        query[kSecAttrSynchronizable as String] = kSecAttrSynchronizableAny
+        SecItemDelete(query as CFDictionary)
+    }
+
+    private func isExpired(_ state: SharedLanguageStateRecord, now: Int64) -> Bool {
+        state.expiresAtMs <= now
+    }
+
+    func loadState() -> SharedLanguageStateRecord? {
+        let now = nowMs()
+        guard let keychainState = loadStateFromKeychain() else {
+            return nil
+        }
+        if isExpired(keychainState, now: now) {
+            clearKeychainState()
+            return nil
+        }
+        return keychainState
+    }
+
+    @discardableResult
+    func publishState(
+        languageCode: String,
+        ttlMs: Int64 = 24 * 60 * 60 * 1000
+    ) -> SharedLanguageStateRecord {
+        let now = nowMs()
+        let previousVersion = loadStateFromKeychain()?.stateVersion ?? 0
+        let nextVersion = max(now, previousVersion + 1)
+        let effectiveTtl = max(min(ttlMs, maxTtlMs), 60_000)
+        let state = SharedLanguageStateRecord(
+            stateVersion: nextVersion,
+            languageCode: languageCode,
+            updatedAtMs: now,
+            expiresAtMs: now + effectiveTtl,
+            sourceDevice: sourceDevice
+        )
+
+        storeStateInKeychain(state)
+
+        return state
+    }
+
+    func clearState() {
+        clearKeychainState()
+    }
+}
+
+class SharedSessionStateManager {
+    static let shared = SharedSessionStateManager()
+
+    private let service = "app.firka.shared.session_state"
+    private let account = "session_state"
+    private let accessGroup: String
+
+    #if os(iOS)
+    private let sourceDevice = "iphone"
+    #elseif os(watchOS)
+    private let sourceDevice = "watch"
+    #endif
+
+    private init() {
+        accessGroup = SharedKeychainManager.shared.resolvedAccessGroup
+    }
+
+    private func nowMs() -> Int64 {
+        Int64(Date().timeIntervalSince1970 * 1000)
+    }
+
+    private func encode(_ state: SharedSessionStateRecord) -> Data? {
+        try? JSONEncoder().encode(state)
+    }
+
+    private func decode(_ data: Data) -> SharedSessionStateRecord? {
+        try? JSONDecoder().decode(SharedSessionStateRecord.self, from: data)
+    }
+
+    func loadState() -> SharedSessionStateRecord? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecAttrAccessGroup as String: accessGroup,
+            kSecAttrSynchronizable as String: kSecAttrSynchronizableAny,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        guard status == errSecSuccess, let data = result as? Data else {
+            return nil
+        }
+        return decode(data)
+    }
+
+    @discardableResult
+    func publishState(
+        hasAnyAccount: Bool,
+        activeStudentIdNorm: Int64?
+    ) -> SharedSessionStateRecord {
+        let now = nowMs()
+        let previousVersion = loadState()?.stateVersion ?? 0
+        let nextVersion = max(now, previousVersion + 1)
+        let state = SharedSessionStateRecord(
+            stateVersion: nextVersion,
+            hasAnyAccount: hasAnyAccount,
+            activeStudentIdNorm: hasAnyAccount ? activeStudentIdNorm : nil,
+            updatedAtMs: now,
+            sourceDevice: sourceDevice
+        )
+
+        if let data = encode(state) {
+            let deleteQuery: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: service,
+                kSecAttrAccount as String: account,
+                kSecAttrAccessGroup as String: accessGroup,
+                kSecAttrSynchronizable as String: kSecAttrSynchronizableAny
+            ]
+            SecItemDelete(deleteQuery as CFDictionary)
+
+            let addQuery: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: service,
+                kSecAttrAccount as String: account,
+                kSecAttrAccessGroup as String: accessGroup,
+                kSecAttrSynchronizable as String: kCFBooleanTrue!,
+                kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
+                kSecValueData as String: data
+            ]
+            let status = SecItemAdd(addQuery as CFDictionary, nil)
+            if status != errSecSuccess {
+                print("[SharedSessionState] Failed to publish state: \(status)")
+            }
+        } else {
+            print("[SharedSessionState] Failed to encode state")
+        }
+
+        return state
+    }
+
+    func clearState() {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecAttrAccessGroup as String: accessGroup,
+            kSecAttrSynchronizable as String: kSecAttrSynchronizableAny
+        ]
+        SecItemDelete(query as CFDictionary)
+    }
+}
+
+struct RefreshLeaseRecord: Codable {
+    let owner: String
+    let studentIdNorm: Int64
+    let operationId: String
+    let startedAtMs: Int64
+    let expiresAtMs: Int64
+}
+
+struct RefreshLeaseWaitResult {
+    let ready: Bool
+    let status: String
+    let waitedMs: Int64
+    let peerOperationId: String?
+    let leaseChanged: Bool
+
+    func asDictionary() -> [String: Any] {
+        var dict: [String: Any] = [
+            "ready": ready,
+            "status": status,
+            "waitedMs": waitedMs,
+            "leaseChanged": leaseChanged
+        ]
+        if let peerOperationId {
+            dict["peerOperationId"] = peerOperationId
+        }
+        return dict
+    }
+}
+
+class RefreshLeaseManager {
+    static let shared = RefreshLeaseManager()
+
+    private let service = "app.firka.shared.refresh_lease"
+    private let accountPrefix = "lease"
+    private let accessGroup: String
+
+    private init() {
+        accessGroup = SharedKeychainManager.shared.resolvedAccessGroup
+    }
+
+    private func keyAccount(
+        owner: RefreshLeaseOwner,
+        studentIdNorm: Int64
+    ) -> String {
+        "\(accountPrefix)_\(owner.rawValue)_\(studentIdNorm)"
+    }
+
+    private func nowMs() -> Int64 {
+        Int64(Date().timeIntervalSince1970 * 1000)
+    }
+
+    private func encode(_ lease: RefreshLeaseRecord) -> Data? {
+        try? JSONEncoder().encode(lease)
+    }
+
+    private func decode(_ data: Data) -> RefreshLeaseRecord? {
+        try? JSONDecoder().decode(RefreshLeaseRecord.self, from: data)
+    }
+
+    func loadLease(
+        owner: RefreshLeaseOwner,
+        studentIdNorm: Int64
+    ) -> RefreshLeaseRecord? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: keyAccount(owner: owner, studentIdNorm: studentIdNorm),
+            kSecAttrAccessGroup as String: accessGroup,
+            kSecAttrSynchronizable as String: kSecAttrSynchronizableAny,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        guard status == errSecSuccess, let data = result as? Data else {
+            return nil
+        }
+        return decode(data)
+    }
+
+    @discardableResult
+    func acquireLease(
+        owner: RefreshLeaseOwner,
+        studentIdNorm: Int64,
+        ttlMs: Int64,
+        operationId: String = UUID().uuidString
+    ) -> RefreshLeaseRecord {
+        let now = nowMs()
+        let clampedTtl = max(ttlMs, 5_000)
+        let lease = RefreshLeaseRecord(
+            owner: owner.rawValue,
+            studentIdNorm: studentIdNorm,
+            operationId: operationId,
+            startedAtMs: now,
+            expiresAtMs: now + clampedTtl
+        )
+
+        if let data = encode(lease) {
+            let account = keyAccount(owner: owner, studentIdNorm: studentIdNorm)
+            let deleteQuery: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: service,
+                kSecAttrAccount as String: account,
+                kSecAttrAccessGroup as String: accessGroup,
+                kSecAttrSynchronizable as String: kSecAttrSynchronizableAny
+            ]
+            SecItemDelete(deleteQuery as CFDictionary)
+
+            let addQuery: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: service,
+                kSecAttrAccount as String: account,
+                kSecAttrAccessGroup as String: accessGroup,
+                kSecAttrSynchronizable as String: kCFBooleanTrue!,
+                kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
+                kSecValueData as String: data
+            ]
+            let status = SecItemAdd(addQuery as CFDictionary, nil)
+            if status != errSecSuccess {
+                print("[RefreshLease] Failed to acquire lease for \(owner.rawValue): \(status)")
+            }
+        } else {
+            print("[RefreshLease] Failed to encode lease for \(owner.rawValue)")
+        }
+
+        return lease
+    }
+
+    func releaseLease(
+        owner: RefreshLeaseOwner,
+        studentIdNorm: Int64,
+        operationId: String? = nil
+    ) {
+        if let operationId,
+           let current = loadLease(owner: owner, studentIdNorm: studentIdNorm),
+           current.operationId != operationId {
+            return
+        }
+
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: keyAccount(owner: owner, studentIdNorm: studentIdNorm),
+            kSecAttrAccessGroup as String: accessGroup,
+            kSecAttrSynchronizable as String: kSecAttrSynchronizableAny
+        ]
+        SecItemDelete(query as CFDictionary)
+    }
+
+    func clearLeases(studentIdNorm: Int64) {
+        releaseLease(owner: .iphone, studentIdNorm: studentIdNorm, operationId: nil)
+        releaseLease(owner: .watch, studentIdNorm: studentIdNorm, operationId: nil)
+    }
+
+    func clearAllLeases() {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccessGroup as String: accessGroup,
+            kSecAttrSynchronizable as String: kSecAttrSynchronizableAny,
+            kSecReturnAttributes as String: true,
+            kSecMatchLimit as String: kSecMatchLimitAll
+        ]
+
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        if status != errSecSuccess {
+            return
+        }
+
+        guard let items = result as? [[String: Any]] else {
+            return
+        }
+
+        for item in items {
+            guard let account = item[kSecAttrAccount as String] as? String else {
+                continue
+            }
+            let deleteQuery: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: service,
+                kSecAttrAccount as String: account,
+                kSecAttrAccessGroup as String: accessGroup,
+                kSecAttrSynchronizable as String: kSecAttrSynchronizableAny
+            ]
+            SecItemDelete(deleteQuery as CFDictionary)
+        }
+    }
+
+    func waitForPeerLeaseRelease(
+        owner: RefreshLeaseOwner,
+        studentIdNorm: Int64,
+        maxWaitMs: Int64,
+        pollIntervalMs: Int64
+    ) async -> RefreshLeaseWaitResult {
+        let startedAt = nowMs()
+        var deadline = startedAt + max(maxWaitMs, 1_000)
+        var lastFingerprint: String?
+        var leaseChanged = false
+
+        while nowMs() < deadline {
+            let now = nowMs()
+            guard let peer = loadLease(owner: owner.peer, studentIdNorm: studentIdNorm) else {
+                return RefreshLeaseWaitResult(
+                    ready: true,
+                    status: leaseChanged ? "peer_lease_changed" : "peer_lease_missing",
+                    waitedMs: now - startedAt,
+                    peerOperationId: nil,
+                    leaseChanged: leaseChanged
+                )
+            }
+
+            if peer.expiresAtMs <= now {
+                releaseLease(
+                    owner: owner.peer,
+                    studentIdNorm: studentIdNorm,
+                    operationId: peer.operationId
+                )
+                return RefreshLeaseWaitResult(
+                    ready: true,
+                    status: "peer_lease_expired",
+                    waitedMs: now - startedAt,
+                    peerOperationId: peer.operationId,
+                    leaseChanged: leaseChanged
+                )
+            }
+
+            let fingerprint = "\(peer.operationId)|\(peer.startedAtMs)|\(peer.expiresAtMs)"
+            if let previousFingerprint = lastFingerprint, previousFingerprint != fingerprint {
+                leaseChanged = true
+                deadline = min(deadline, peer.expiresAtMs + 5_000)
+                lastFingerprint = fingerprint
+                continue
+            }
+
+            lastFingerprint = fingerprint
+            deadline = min(deadline, peer.expiresAtMs + 5_000)
+            let sleepMs = max(min(pollIntervalMs, 1_000), 50)
+            try? await Task.sleep(nanoseconds: UInt64(sleepMs) * 1_000_000)
+        }
+
+        let waited = max(nowMs() - startedAt, 0)
+        let peerOperation = loadLease(owner: owner.peer, studentIdNorm: studentIdNorm)?.operationId
+        return RefreshLeaseWaitResult(
+            ready: false,
+            status: "timed_out",
+            waitedMs: waited,
+            peerOperationId: peerOperation,
+            leaseChanged: leaseChanged
+        )
     }
 }
