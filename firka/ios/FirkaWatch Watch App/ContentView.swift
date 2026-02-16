@@ -44,6 +44,8 @@ struct ContentView: View {
             }
         }
         .task {
+            dataStore.reconcileSharedSessionState()
+            WatchL10n.shared.reconcileFromSharedState()
             dataStore.checkTokenState()
             dataStore.loadFromCache()
             if dataStore.hasToken {
@@ -54,6 +56,8 @@ struct ContentView: View {
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
             if newPhase == .active && oldPhase != .active {
+                dataStore.reconcileSharedSessionState()
+                WatchL10n.shared.reconcileFromSharedState()
                 if shouldAutoRefresh {
                     print("[Watch] App came to foreground, data is stale (>10 min), refreshing...")
                     Task {
@@ -65,7 +69,10 @@ struct ContentView: View {
             }
         }
         .onReceive(staleCheckTimer) { _ in
-            if scenePhase == .active && shouldAutoRefresh && !dataStore.isLoading {
+            guard scenePhase == .active else { return }
+            dataStore.reconcileSharedSessionState()
+            WatchL10n.shared.reconcileFromSharedState()
+            if shouldAutoRefresh && !dataStore.isLoading {
                 print("[Watch] Data became stale (>10 min), auto-refreshing...")
                 Task {
                     await dataStore.refreshAllWithRecovery()
@@ -124,22 +131,41 @@ struct ContentView: View {
 struct PairingView: View {
     var onRequestToken: (() -> Void)?
 
+    private var isWatchSystemPaired: Bool {
+        guard WCSession.isSupported() else { return false }
+        return WCSession.default.isCompanionAppInstalled
+    }
+
+    private var titleKey: String {
+        isWatchSystemPaired ? "login_on_iphone" : "pair_with_iphone"
+    }
+
+    private var descriptionKey: String {
+        isWatchSystemPaired ? "open_and_login_on_iphone" : "open_firka_on_iphone"
+    }
+
+    private var iconName: String {
+        isWatchSystemPaired
+            ? "person.crop.circle.badge.exclamationmark"
+            : "iphone.and.arrow.right.inward"
+    }
+
     var body: some View {
         VStack(spacing: 16) {
-            Image(systemName: "iphone.and.arrow.right.inward")
+            Image(systemName: iconName)
                 .font(.system(size: 50))
                 .foregroundColor(.blue)
 
-            Text("pair_with_iphone".localized)
+            Text(titleKey.localized)
                 .font(.headline)
 
-            Text("open_firka_on_iphone".localized)
+            Text(descriptionKey.localized)
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
-            if WCSession.default.isReachable {
+            if isWatchSystemPaired && WCSession.default.isReachable {
                 Button("sync_button".localized) {
                     onRequestToken?()
                 }

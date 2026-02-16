@@ -377,21 +377,6 @@ class LiveActivityService {
     }
   }
 
-  /// Check if there are any remaining lessons today
-  static bool _hasRemainingLessonsToday(List<Lesson> lessons) {
-    final now = DateTime.now();
-    final todayLessons = lessons.where((lesson) {
-      final uid = lesson.uid.toLowerCase();
-      return lesson.date == now.toIso8601String().split('T').first &&
-             lesson.end.isAfter(now) &&
-             (uid.contains('orarendiora') ||
-              uid.contains('tanitasiora') ||
-              uid.contains('uresora'));
-    }).toList();
-
-    return todayLessons.isNotEmpty;
-  }
-
   /// Perform background fetch - fetch fresh timetable from KRÉTA API and send to backend
   /// This is called by iOS BGTaskScheduler when the app is in background
   static Future<bool> _performBackgroundFetch() async {
@@ -538,14 +523,7 @@ class LiveActivityService {
       if (success) {
         await _saveLastUpdate();
         _logger.info('Background fetch: successfully sent timetable to backend');
-
-        if (!_hasRemainingLessonsToday(allLessons)) {
-          _logger.info('Background fetch: no remaining lessons today, cancelling future background fetches until app reopens');
-          await cancelBackgroundFetch();
-        } else {
-          _logger.info('Background fetch: remaining lessons today, will continue background fetches');
-        }
-
+        _logger.info('Background fetch: keeping periodic scheduling active');
         return true;
       } else {
         _logger.warning('Background fetch: failed to send timetable to backend');

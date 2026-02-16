@@ -662,8 +662,24 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
             ),
             onTap: () async {
               if (i != item.accountIndex) {
+                final previousAccountId = widget.data.client.model.studentIdNorm;
                 if (Platform.isIOS) {
                   await LiveActivityService.onUserLogout();
+                  try {
+                    await WatchSyncHelper.clearSharedLanguageState();
+                  } catch (e) {
+                    logger.warning(
+                        '[Settings] Failed to clear shared language state on account switch: $e');
+                  }
+                  if (previousAccountId != null) {
+                    try {
+                      await WatchSyncHelper.clearRefreshLeaseForAccount(
+                          previousAccountId);
+                    } catch (e) {
+                      logger.warning(
+                          '[Settings] Failed to clear refresh lease on account switch: $e');
+                    }
+                  }
                 }
 
                 await widget.data.isar.writeTxn(() async {
@@ -673,6 +689,40 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                 });
 
                 await item.postUpdate();
+
+                if (Platform.isIOS) {
+                  var watchReachable = false;
+                  try {
+                    watchReachable = await WatchSyncHelper.isWatchReachable(
+                      forceRefreshInstall: true,
+                    );
+                  } catch (e) {
+                    logger.warning(
+                        '[Settings] Failed to query Watch reachability on account switch: $e');
+                  }
+
+                  if (watchReachable) {
+                    try {
+                      await WatchSyncHelper.sendTokenModelToWatch(
+                        token,
+                        allowExpiredAccessToken: true,
+                      );
+                    } catch (e) {
+                      logger.warning(
+                          '[Settings] Failed to send switched account token to reachable Watch: $e');
+                    }
+                  } else {
+                    try {
+                      await WatchSyncHelper.saveTokenToiCloud(
+                        token,
+                        forceAccountSwitch: true,
+                      );
+                    } catch (e) {
+                      logger.warning(
+                          '[Settings] Failed to sync switched account token to iCloud: $e');
+                    }
+                  }
+                }
 
                 runApp(InitializationScreen());
               }
@@ -725,6 +775,20 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
             }
 
             final active = widget.data.client.model.studentIdNorm!;
+            if (Platform.isIOS) {
+              try {
+                await WatchSyncHelper.clearRefreshLeaseForAccount(active);
+              } catch (e) {
+                logger.warning(
+                    '[Settings] Failed to clear refresh lease for active account: $e');
+              }
+              try {
+                await WatchSyncHelper.clearSharedLanguageState();
+              } catch (e) {
+                logger.warning(
+                    '[Settings] Failed to clear shared language state on logout: $e');
+              }
+            }
 
             await widget.data.isar.writeTxn(() async {
               await widget.data.isar.tokenModels.delete(active);
@@ -740,6 +804,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
               if (Platform.isIOS) {
                 try {
                   await WatchSyncHelper.clearICloudToken(notifyWatch: true);
+                  await WatchSyncHelper.clearAllRefreshLeases();
                 } catch (e) {
                   logger.warning('[Settings] Failed to clear iCloud token: $e');
                 }
@@ -752,6 +817,41 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                 (route) => false,
               );
             } else {
+              if (Platform.isIOS) {
+                final nextToken = accounts.first;
+                var watchReachable = false;
+                try {
+                  watchReachable = await WatchSyncHelper.isWatchReachable(
+                    forceRefreshInstall: true,
+                  );
+                } catch (e) {
+                  logger.warning(
+                      '[Settings] Failed to query Watch reachability after logout: $e');
+                }
+
+                if (watchReachable) {
+                  try {
+                    await WatchSyncHelper.sendTokenModelToWatch(
+                      nextToken,
+                      allowExpiredAccessToken: true,
+                    );
+                  } catch (e) {
+                    logger.warning(
+                        '[Settings] Failed to send next account token to reachable Watch after logout: $e');
+                  }
+                } else {
+                  try {
+                    await WatchSyncHelper.saveTokenToiCloud(
+                      nextToken,
+                      forceAccountSwitch: true,
+                    );
+                  } catch (e) {
+                    logger.warning(
+                        '[Settings] Failed to sync next account token to iCloud after logout: $e');
+                  }
+                }
+              }
+
               widget.data.tokens = accounts;
               runApp(InitializationScreen());
             }

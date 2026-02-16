@@ -213,12 +213,12 @@ import BackgroundTasks
     let request = BGAppRefreshTaskRequest(identifier: backgroundTaskIdentifier)
 
     // IMPORTANT: iOS may delay this based on system conditions and user behavior
-    // The default setting is 30 minutes
-    request.earliestBeginDate = Date(timeIntervalSinceNow: 30 * 60)
+    // Requested cadence: 15 minutes (best effort, not guaranteed by iOS)
+    request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
 
     do {
       try BGTaskScheduler.shared.submit(request)
-      print("[AppDelegate] Background refresh scheduled for ~30 minutes from now")
+      print("[AppDelegate] Background refresh scheduled for ~15 minutes from now")
     } catch {
       print("[AppDelegate] Could not schedule background refresh: \(error)")
     }

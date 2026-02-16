@@ -32,6 +32,8 @@ class DataStore {
 
     private let appGroupID = "group.app.firka.firkaa"
     private let cacheFileName = "watch_data.json"
+    private let lastHandledSessionStateVersionKey = "firka.watch.last_handled_session_state_version"
+    private let lastHandledSessionActiveStudentIdNormKey = "firka.watch.last_handled_session_active_student_id_norm"
 
     private init() {
         checkTokenState()
@@ -46,6 +48,72 @@ class DataStore {
     func checkTokenState() {
         hasToken = TokenManager.shared.loadToken() != nil
         print("[Watch] Token state updated: hasToken = \(hasToken)")
+    }
+
+    private func parseInt64(_ value: Any?) -> Int64? {
+        if let value = value as? Int64 { return value }
+        if let value = value as? Int { return Int64(value) }
+        if let value = value as? Double { return Int64(value) }
+        if let value = value as? String, let parsed = Int64(value) { return parsed }
+        return nil
+    }
+
+    private func lastHandledSessionStateVersion() -> Int64 {
+        parseInt64(UserDefaults.standard.object(forKey: lastHandledSessionStateVersionKey)) ?? 0
+    }
+
+    private func setLastHandledSessionStateVersion(_ value: Int64) {
+        UserDefaults.standard.set(value, forKey: lastHandledSessionStateVersionKey)
+    }
+
+    private func lastHandledSessionActiveStudentIdNorm() -> Int64? {
+        parseInt64(UserDefaults.standard.object(forKey: lastHandledSessionActiveStudentIdNormKey))
+    }
+
+    private func setLastHandledSessionActiveStudentIdNorm(_ value: Int64?) {
+        if let value {
+            UserDefaults.standard.set(value, forKey: lastHandledSessionActiveStudentIdNormKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: lastHandledSessionActiveStudentIdNormKey)
+        }
+    }
+
+    func reconcileSharedSessionState() {
+        guard let state = SharedSessionStateManager.shared.loadState() else {
+            return
+        }
+
+        let lastVersion = lastHandledSessionStateVersion()
+        guard state.stateVersion > lastVersion else {
+            return
+        }
+
+        if !state.hasAnyAccount {
+            print("[Watch] Shared session state: no active iPhone account, clearing watch state")
+            clearAll()
+            resetRecoveryState()
+            setLastHandledSessionStateVersion(state.stateVersion)
+            setLastHandledSessionActiveStudentIdNorm(nil)
+            return
+        }
+
+        if let activeStudentIdNorm = state.activeStudentIdNorm {
+            let lastHandledActiveStudentIdNorm = lastHandledSessionActiveStudentIdNorm()
+            if lastHandledActiveStudentIdNorm != activeStudentIdNorm {
+                print("[Watch] Shared session switched active account to \(activeStudentIdNorm), clearing stale cache")
+                clearCache()
+                data = nil
+                lastUpdated = nil
+                error = nil
+                recoveryAttempted = false
+            }
+            setLastHandledSessionActiveStudentIdNorm(activeStudentIdNorm)
+        } else {
+            setLastHandledSessionActiveStudentIdNorm(nil)
+        }
+
+        setLastHandledSessionStateVersion(state.stateVersion)
+        checkTokenState()
     }
 
     // MARK: - Cache Loading
@@ -255,6 +323,21 @@ class DataStore {
     }
 
     func refreshAllWithRecovery() async {
+        reconcileSharedSessionState()
+        WatchL10n.shared.refreshFromiPhoneAndSharedState()
+
+        let sharedActiveStudentIdNorm = SharedSessionStateManager.shared.loadState()?.activeStudentIdNorm
+        let localStudentIdNorm = TokenManager.shared.loadToken()?.studentIdNorm
+        let shouldRequestTokenFromPhone =
+            !hasValidToken ||
+            (sharedActiveStudentIdNorm != nil && localStudentIdNorm != sharedActiveStudentIdNorm)
+
+        if shouldRequestTokenFromPhone {
+            WatchConnectivityManager.shared.requestTokenFromPhone()
+            try? await Task.sleep(nanoseconds: 700_000_000)
+            checkTokenState()
+        }
+
         await refreshAll()
 
         guard error == "token_expired" || error == "no_token" else {
@@ -428,18 +511,24 @@ class DataStore {
         // Minutes
         let minutes = Int(elapsed / 60)
         if minutes < 60 {
-            return minutes == 1 ? "1 perce" : "\(minutes) perce"
+            return minutes == 1
+                ? "time_since_minutes_one".localized
+                : "time_since_minutes_many".localized(minutes)
         }
 
         // Hours
         let hours = Int(elapsed / 3600)
         if hours < 24 {
-            return hours == 1 ? "1 órája" : "\(hours) órája"
+            return hours == 1
+                ? "time_since_hours_one".localized
+                : "time_since_hours_many".localized(hours)
         }
 
         // Days
         let days = Int(elapsed / 86400)
-        return days == 1 ? "1 napja" : "\(days) napja"
+        return days == 1
+            ? "time_since_days_one".localized
+            : "time_since_days_many".localized(days)
     }
 
     /// Returns true if data is stale (> 1 hour old or never updated)

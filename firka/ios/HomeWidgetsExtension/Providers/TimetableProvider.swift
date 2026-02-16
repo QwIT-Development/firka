@@ -38,7 +38,12 @@ struct TimetableProvider: AppIntentTimelineProvider {
 
     private func parseNextSchoolDayDate(_ dateString: String?) -> Date? {
         guard let dateString = dateString else { return nil }
-        return Self.dateFormatter.date(from: dateString)
+        if let date = Self.dateFormatter.date(from: dateString) {
+            return date
+        }
+
+        let trimmed = String(dateString.prefix(10))
+        return Self.dateFormatter.date(from: trimmed)
     }
 
     func placeholder(in context: Context) -> TimetableEntry {
