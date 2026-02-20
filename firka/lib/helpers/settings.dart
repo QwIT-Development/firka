@@ -163,7 +163,7 @@ class SettingsStore {
                     ],
                     0,
                     always, () async {
-                  initLang(initData);
+                  await initLang(initData);
                   initData.settings = SettingsStore(initData.l10n);
                   await initData.settings.load(initData.isar.appSettingsModels);
 

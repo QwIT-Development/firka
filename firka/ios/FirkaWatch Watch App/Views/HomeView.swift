@@ -93,10 +93,10 @@ struct HomeView: View {
         .disabled(dataStore.isLoading || refreshStatus == .loading)
         .padding(.top, 8)
         .onChange(of: dataStore.isLoading) { oldValue, newValue in
-            if newValue && refreshStatus == .idle {
+            if newValue && refreshStatus != .loading {
                 wasLoadingFromBackground = true
             }
-            if !newValue && wasLoadingFromBackground && refreshStatus == .idle {
+            if !newValue && wasLoadingFromBackground && refreshStatus != .loading {
                 wasLoadingFromBackground = false
                 if dataStore.error == nil && dataStore.data != nil {
                     refreshStatus = .success
@@ -108,6 +108,20 @@ struct HomeView: View {
                     if refreshStatus == .success || refreshStatus == .failure {
                         refreshStatus = .idle
                     }
+                }
+            }
+        }
+        .onChange(of: dataStore.lastUpdated) { oldValue, newValue in
+            guard let oldValue, let newValue else { return }
+            guard newValue > oldValue else { return }
+            guard dataStore.error == nil else { return }
+            guard refreshStatus != .loading else { return }
+
+            refreshStatus = .success
+            Task {
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                if refreshStatus == .success {
+                    refreshStatus = .idle
                 }
             }
         }
@@ -196,12 +210,20 @@ struct HomeView: View {
                     displayOffset: 1
                 )
                 .id("lesson-\(lesson.start.timeIntervalSince1970)")
-                FirkaCard(isHighlighted: true) {
+                FirkaCard(
+                    isHighlighted: true,
+                    backgroundColor: lessonCardBackgroundColor(
+                        for: lesson,
+                        isHighlighted: true
+                    )
+                ) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(lesson.displayName)
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .lineLimit(2)
+                        lessonTitleWithStatus(
+                            lesson,
+                            font: .subheadline,
+                            weight: .semibold,
+                            lineLimit: 2
+                        )
 
                         HStack(spacing: 6) {
                             if let room = lesson.roomName {
@@ -222,11 +244,15 @@ struct HomeView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
 
-                FirkaCard {
+                FirkaCard(backgroundColor: lessonCardBackgroundColor(for: next)) {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(next.displayName)
-                                .font(.subheadline)
+                            lessonTitleWithStatus(
+                                next,
+                                font: .subheadline,
+                                weight: .regular,
+                                lineLimit: 2
+                            )
                             if let room = next.roomName {
                                 Text(room)
                                     .font(.caption2)
@@ -252,11 +278,16 @@ struct HomeView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
 
-            let remaining = max(0, Int(next.start.timeIntervalSince(now) / 60))
+            let remaining = max(0, Int(ceil(next.start.timeIntervalSince(now) / 60)))
+            let totalBreakMinutes: Int = {
+                guard let previous = previousLesson else { return max(remaining, 1) }
+                let breakSeconds = max(60, next.start.timeIntervalSince(previous.end))
+                return max(1, Int(ceil(breakSeconds / 60)))
+            }()
 
             HStack(spacing: 10) {
                 CountdownRing(
-                    totalMinutes: 15,
+                    totalMinutes: totalBreakMinutes,
                     remainingMinutes: remaining,
                     label: "minutes".localized,
                     size: 56,
@@ -265,12 +296,14 @@ struct HomeView: View {
                 )
                 .id("break-\(next.start.timeIntervalSince1970)")
 
-                FirkaCard {
+                FirkaCard(backgroundColor: lessonCardBackgroundColor(for: next)) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("next_lesson".localized(next.displayName))
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .lineLimit(2)
+                        HStack(spacing: 4) {
+                            Text("next_lesson".localized(next.displayName))
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .lineLimit(2)
+                        }
 
                         HStack(spacing: 6) {
                             if let room = next.roomName {
@@ -296,10 +329,14 @@ struct HomeView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
 
-            FirkaCard {
+            FirkaCard(backgroundColor: lessonCardBackgroundColor(for: first)) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(first.displayName)
-                        .font(.headline)
+                    lessonTitleWithStatus(
+                        first,
+                        font: .headline,
+                        weight: .regular,
+                        lineLimit: 2
+                    )
 
                     HStack {
                         if let room = first.roomName {
@@ -342,10 +379,14 @@ struct HomeView: View {
                     .foregroundColor(.secondary)
                     .padding(.top, 8)
 
-                FirkaCard {
+                FirkaCard(backgroundColor: lessonCardBackgroundColor(for: nextLesson)) {
                     HStack {
-                        Text(nextLesson.displayName)
-                            .font(.subheadline)
+                        lessonTitleWithStatus(
+                            nextLesson,
+                            font: .subheadline,
+                            weight: .regular,
+                            lineLimit: 2
+                        )
                         Spacer()
                         Text(nextLesson.start, style: .time)
                             .font(.caption)
@@ -418,6 +459,46 @@ struct HomeView: View {
         default:
             return "next_school_day".localized
         }
+    }
+
+    @ViewBuilder
+    private func lessonTitleWithStatus(
+        _ lesson: WidgetLesson,
+        font: Font,
+        weight: Font.Weight = .regular,
+        lineLimit: Int = 2
+    ) -> some View {
+        Text(lesson.displayName)
+            .font(font)
+            .fontWeight(weight)
+            .lineLimit(lineLimit)
+            .foregroundColor(lessonPrimaryTextColor(for: lesson))
+    }
+
+    private func lessonPrimaryTextColor(for lesson: WidgetLesson) -> Color {
+        if lesson.isCancelled {
+            return .red
+        }
+        if lesson.isSubstitution {
+            return .yellow
+        }
+        return .primary
+    }
+
+    private func lessonCardBackgroundColor(
+        for lesson: WidgetLesson,
+        isHighlighted: Bool = false
+    ) -> Color {
+        if lesson.isCancelled {
+            return Color.red.opacity(0.16)
+        }
+        if lesson.isSubstitution {
+            return Color.yellow.opacity(0.16)
+        }
+        if isHighlighted {
+            return Color.green.opacity(0.2)
+        }
+        return Color(white: 0.12)
     }
 
     // MARK: - Break/Vacation View

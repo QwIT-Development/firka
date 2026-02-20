@@ -308,17 +308,17 @@ struct TimetableView: View {
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text(lesson.displayName)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .lineLimit(1)
-                            .strikethrough(lesson.isCancelled)
-                            .opacity(lesson.isCancelled ? 0.5 : 1)
+                        HStack(spacing: 4) {
+                            Text(lesson.displayName)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .lineLimit(1)
 
-                        if lesson.isSubstitution {
-                            Image(systemName: "exclamationmark.circle.fill")
-                                .font(.caption2)
-                                .foregroundColor(.orange)
+                            if let statusIcon = lessonStatusIconName(for: lesson) {
+                                Image(systemName: statusIcon)
+                                    .font(.caption2)
+                                    .foregroundColor(lessonStatusColor(for: lesson))
+                            }
                         }
 
                         Spacer()
@@ -340,11 +340,23 @@ struct TimetableView: View {
                     }
                     .font(.caption2)
                     .foregroundColor(.secondary)
-                    .opacity(lesson.isCancelled ? 0.5 : 1)
                 }
             }
         }
-        .opacity(lesson.isCancelled ? 0.6 : 1)
+    }
+
+    private func lessonStatusIconName(for lesson: WidgetLesson) -> String? {
+        if lesson.isCancelled {
+            return "xmark.circle.fill"
+        }
+        if lesson.isSubstitution {
+            return "exclamationmark.circle.fill"
+        }
+        return nil
+    }
+
+    private func lessonStatusColor(for lesson: WidgetLesson) -> Color {
+        lesson.isCancelled ? .red : .yellow
     }
 }
 

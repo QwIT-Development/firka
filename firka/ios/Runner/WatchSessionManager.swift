@@ -706,22 +706,64 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             }
 
         case "requestLanguage":
+            if !self.isFlutterWatchSyncReady {
+                if let sharedState = SharedLanguageStateManager.shared.loadState() {
+                    print("[WatchSessionManager] Flutter not ready for language request, serving shared language: \(sharedState.languageCode)")
+                    replyHandler([
+                        "language": sharedState.languageCode,
+                        "language_state_version": sharedState.stateVersion
+                    ])
+                } else {
+                    print("[WatchSessionManager] Flutter not ready for language request and no shared language is available")
+                    replyHandler(["error": "language_not_ready"])
+                }
+                return
+            }
+
+            guard let flutterChannel = self.flutterChannel else {
+                if let sharedState = SharedLanguageStateManager.shared.loadState() {
+                    print("[WatchSessionManager] Flutter channel missing for language request, serving shared language: \(sharedState.languageCode)")
+                    replyHandler([
+                        "language": sharedState.languageCode,
+                        "language_state_version": sharedState.stateVersion
+                    ])
+                } else {
+                    print("[WatchSessionManager] Flutter channel missing for language request and no shared language is available")
+                    replyHandler(["error": "language_not_ready"])
+                }
+                return
+            }
+
             DispatchQueue.main.async {
-                self.flutterChannel?.invokeMethod("getLanguageForWatch", arguments: nil) { result in
-                    if let languageCode = result as? String {
-                        let sharedState = SharedLanguageStateManager.shared.publishState(languageCode: languageCode)
+                flutterChannel.invokeMethod("getLanguageForWatch", arguments: nil) { result in
+                    if let languageCode = result as? String, !languageCode.isEmpty {
+                        if let existingState = SharedLanguageStateManager.shared.loadState(),
+                           existingState.languageCode == languageCode {
+                            print("[WatchSessionManager] Sending language to Watch from shared cache: \(languageCode)")
+                            replyHandler([
+                                "language": languageCode,
+                                "language_state_version": existingState.stateVersion
+                            ])
+                            return
+                        }
+
+                        let sharedState = SharedLanguageStateManager.shared.publishState(
+                            languageCode: languageCode
+                        )
                         print("[WatchSessionManager] Sending language to Watch: \(languageCode)")
                         replyHandler([
                             "language": languageCode,
                             "language_state_version": sharedState.stateVersion
                         ])
-                    } else {
-                        let sharedState = SharedLanguageStateManager.shared.publishState(languageCode: "hu")
-                        print("[WatchSessionManager] No language from Flutter, defaulting to hu")
+                    } else if let sharedState = SharedLanguageStateManager.shared.loadState() {
+                        print("[WatchSessionManager] No language from Flutter, serving last shared language: \(sharedState.languageCode)")
                         replyHandler([
-                            "language": "hu",
+                            "language": sharedState.languageCode,
                             "language_state_version": sharedState.stateVersion
                         ])
+                    } else {
+                        print("[WatchSessionManager] No language available from Flutter or shared state")
+                        replyHandler(["error": "language_not_ready"])
                     }
                 }
             }
