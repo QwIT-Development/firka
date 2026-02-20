@@ -533,6 +533,16 @@ class InitializationScreen extends StatelessWidget {
           FlutterNativeSplash.remove();
 
           WatchSyncHelper.initialize();
+          if (Platform.isIOS) {
+            unawaited(() async {
+              try {
+                await WatchSyncHelper.sendLanguageToWatch();
+              } catch (e) {
+                logger.warning(
+                    '[Init] Failed to publish language to Watch after sync init: $e');
+              }
+            }());
+          }
 
           var watch = WatchConnectivity();
 

@@ -505,7 +505,7 @@ class DataStore {
         let elapsed = Date().timeIntervalSince(lastUpdated)
 
         if elapsed < 60 {
-            return nil
+            return "time_now".localized
         }
 
         // Minutes

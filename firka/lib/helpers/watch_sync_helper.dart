@@ -704,8 +704,9 @@ class WatchSyncHelper {
 
   static String? _getLanguageForWatch() {
     if (!initDone) {
-      debugPrint('[WatchSync] App not initialized, returning default language');
-      return 'hu';
+      debugPrint(
+          '[WatchSync] App not initialized yet, language unavailable for Watch');
+      return null;
     }
 
     final languageCode = initData.l10n.localeName;

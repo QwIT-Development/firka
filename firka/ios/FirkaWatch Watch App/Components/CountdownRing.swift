@@ -8,18 +8,23 @@ struct CountdownRing: View {
     var lineWidth: CGFloat = 8
     var displayOffset: Int = 0  // Add to displayed minutes (e.g., +1)
 
+    private var clampedRemainingMinutes: Int {
+        guard totalMinutes > 0 else { return 0 }
+        return max(0, min(remainingMinutes, totalMinutes))
+    }
+
     var progress: Double {
         guard totalMinutes > 0 else { return 0 }
-        return Double(totalMinutes - remainingMinutes) / Double(totalMinutes)
+        return Double(totalMinutes - clampedRemainingMinutes) / Double(totalMinutes)
     }
 
     var displayedMinutes: Int {
-        remainingMinutes + displayOffset
+        max(0, remainingMinutes + displayOffset)
     }
 
     var ringColor: Color {
-        if remainingMinutes < 5 { return .red }
-        if remainingMinutes < 10 { return .yellow }
+        if clampedRemainingMinutes < 5 { return .red }
+        if clampedRemainingMinutes < 10 { return .yellow }
         return .green
     }
 
