@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/helpers/api/client/kreta_stream.dart';
 import 'package:firka/helpers/api/exceptions/token.dart';
@@ -43,8 +42,9 @@ class PageNavData {
   HomePage page;
   String? subPageParams;
   String subjectName;
-
-  PageNavData(this.page, this.subPageParams, this.subjectName);
+  String? subjectId;
+  String? subjectCategory;
+  PageNavData(this.page, this.subPageParams, this.subjectName, {this.subjectId, this.subjectCategory});
 }
 
 final ValueNotifier<PageNavData> pageNavNotifier =
@@ -986,6 +986,8 @@ class _HomeSubPage extends State<HomeSubPage> {
       forcedHomePage = pageNavNotifier.value.page;
       subPageData = pageNavNotifier.value.subPageParams;
       subjectName = pageNavNotifier.value.subjectName;
+      subjectId = pageNavNotifier.value.subjectId ?? ""; 
+      subjectCategory = pageNavNotifier.value.subjectCategory ?? "";
       previousPages.add(homeScreenPage);
       homeScreenPage = forcedHomePage!;
       globalUpdate.update();
