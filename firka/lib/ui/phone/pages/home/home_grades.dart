@@ -1,5 +1,6 @@
 import 'package:firka/helpers/api/client/kreta_client.dart';
 import 'package:firka/helpers/api/model/generic.dart';
+import 'package:firka/helpers/average_helper.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
 import 'package:firka/helpers/ui/grade_helpers.dart';
 import 'package:firka/ui/phone/widgets/grade_chart.dart';
@@ -34,6 +35,8 @@ class HomeGradesScreen extends StatefulWidget {
 
 String activeSubjectUid = "";
 String subjectName = "";
+String subjectId = "";
+String subjectCategory = "";
 List<Subject> subjectInfo = [];
 
 class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
@@ -115,6 +118,7 @@ void updateListener() async {
       var subjectAvg = 0.00;
       var subjectCount = 0;
       var subjectAvgRounded = 0.00;
+      final summaryAvg2 = calculateAverage(grades!.response!);
       final List<Subject> subjects = List<Subject>.empty(growable: true);
       final List<Widget> gradeCards = [];
 
@@ -170,6 +174,8 @@ void updateListener() async {
             onTap: () {
               activeSubjectUid = subject.uid;
               subjectName = subject.name;
+              subjectId = subject.uid;
+              subjectCategory = subject.category.name!; 
               subjectInfo = subjects.where((s) => s.uid == subject.uid).toList();
               widget.pageController(1);
             },
@@ -180,6 +186,8 @@ void updateListener() async {
             onTap: () {
               activeSubjectUid = subject.uid;
               subjectName = subject.name;
+              subjectId = subject.uid;
+              subjectCategory = subject.category.name!; 
               subjectInfo = subjects.where((s) => s.uid == subject.uid).toList();
               widget.pageController(1);
             },
@@ -289,7 +297,30 @@ void updateListener() async {
                       ),
                     ],
                   ),
-                  
+                  FirkaCard(
+                    left: [
+                      Text(
+                        "Összesített átlag",
+                        style: appStyle.fonts.B_16SB
+                            .apply(color: appStyle.colors.textPrimary),
+                      ),
+                    ],
+                    right: [
+                      Card(
+                        shadowColor: Colors.transparent,
+                        color: subjectAvgColor.withAlpha(38),
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                              left: 8, right: 8, top: 4, bottom: 4),
+                          child: Text(
+                            summaryAvg2.toStringAsFixed(2),
+                            style: appStyle.fonts.B_16SB
+                                .apply(color: subjectAvgColor),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   FirkaCard(left: [
                     Text(
                       widget.data.l10n.class_avg,
