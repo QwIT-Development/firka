@@ -82,7 +82,9 @@ class LessonWidget extends StatelessWidget {
     }
 
     elements.add(GestureDetector(
+      
       onTap: () {
+        if (lessonNo == null) return;
         showLessonBottomSheet(
             context, data, lesson, lessonNo, accent, secondary, bgColor, test);
       },
@@ -92,7 +94,7 @@ class LessonWidget extends StatelessWidget {
             : appStyle.colors.card,
         shadow: !isDismissed,
         left: [
-          showLessonNos == false
+          showLessonNos == false || lessonNo == null
               ? SizedBox()
               : SizedBox(
                   width: 18,
