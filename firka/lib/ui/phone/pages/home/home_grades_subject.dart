@@ -143,34 +143,64 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: 12),
             Column(
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Transform.translate(
-                      offset: const Offset(-4, 0),
-                      child: GestureDetector(
-                        child: FirkaIconWidget(
+                  Row(
+                    children: [
+                      Transform.translate(
+                        offset: const Offset(-4, 0),
+                        child: GestureDetector(
+                          child: FirkaIconWidget(
                             FirkaIconType.majesticons, Majesticon.chevronLeftLine,
-                            color: appStyle.colors.textSecondary),
-                        onTap: () {
-                          widget.pageController(0);
-                        },
+                            color: appStyle.colors.textSecondary
+                          ),
+                          onTap: () {
+                            widget.pageController(0);
+                          }
+                        ),
+                      ),
+                      Transform.translate(
+                        offset: const Offset(-4, 0),
+                        child: Text(
+                          widget.data.l10n.subjects,
+                          style: appStyle.fonts.B_16R
+                            .apply(color: appStyle.colors.textPrimary),
+                        ),
+                      ),
+                    ],
+                  ),
+                  GestureDetector(
+                    child: Card(
+                      color: appStyle.colors.buttonSecondaryFill,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: FirkaIconWidget(
+                          FirkaIconType.majesticons,
+                          Majesticon.menuSolid,
+                          size: 26.0,
+                          color: appStyle.colors.accent,
+                        ),
                       ),
                     ),
-                    Transform.translate(
-                      offset: const Offset(-4, 1),
-                      child: Text(
-                        widget.data.l10n.subjects,
-                        style: appStyle.fonts.B_16R
-                            .apply(color: appStyle.colors.textPrimary),
-                      ),
+                    onTap: () {
+                      // Navigator.push(context, Settings)
+                      // showSubjectBottomSheetSettings(
+                      //   context,
+                      //   widget.data,
+                      //   aGrade.subject,
+                      // );  
+                     },
                     )
                   ],
                 ),
               ],
             ),
-            SizedBox(height: 16),
+            // SizedBox(height: 16),
+            // GradeChart(grades: grades?.toList() ?? []),
             SizedBox(
               height: MediaQuery.of(context).size.height -
                   MediaQuery.of(context).padding.top -
@@ -223,7 +253,6 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
         ),
       );
     } else {
-      logger.finest(subjectName);
       return Padding(
         padding: const EdgeInsets.only(
           left: 16.0,
@@ -277,16 +306,16 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                         child: Padding(
                           padding: EdgeInsetsGeometry.all(6),
                           child: ClassIconWidget(
-                            uid: subjectInfo.first.uid,
-                            className: subjectInfo.first.name,
-                            category: subjectInfo.first.category.name!,
+                            uid: subjectId,
+                            className: subjectName,
+                            category: subjectCategory,
                             color: appStyle.colors.accent,
                           ),
                         ),
                       ),
                       SizedBox(height: 8),
                       Text(
-                        subjectInfo.first.name,
+                        subjectName,
                         style: appStyle.fonts.H_H2
                             .apply(color: appStyle.colors.textPrimary),
                       ),
