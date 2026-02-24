@@ -28,6 +28,11 @@ struct TimetableProvider: AppIntentTimelineProvider {
     typealias Entry = TimetableEntry
     typealias Intent = TimetableWidgetIntent
 
+    private struct LessonCandidate {
+        let lessons: [WidgetLesson]
+        let day: Date
+    }
+
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -36,14 +41,49 @@ struct TimetableProvider: AppIntentTimelineProvider {
         return formatter
     }()
 
+    private static let isoFormatterWithFractional: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+
+    private static let isoFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
+
     private func parseNextSchoolDayDate(_ dateString: String?) -> Date? {
         guard let dateString = dateString else { return nil }
+        if let date = Self.isoFormatterWithFractional.date(from: dateString) {
+            return date
+        }
+        if let date = Self.isoFormatter.date(from: dateString) {
+            return date
+        }
         if let date = Self.dateFormatter.date(from: dateString) {
             return date
         }
 
         let trimmed = String(dateString.prefix(10))
         return Self.dateFormatter.date(from: trimmed)
+    }
+
+    private func startOfDay(for lessons: [WidgetLesson], calendar: Calendar) -> Date? {
+        guard let first = lessons.first else { return nil }
+        return calendar.startOfDay(for: first.start)
+    }
+
+    private func nextSchoolDay(from data: WidgetData, calendar: Calendar) -> Date? {
+        if let firstNextLesson = data.timetable.nextSchoolDay?.first {
+            return calendar.startOfDay(for: firstNextLesson.start)
+        }
+
+        if let parsedDate = parseNextSchoolDayDate(data.timetable.nextSchoolDayDate) {
+            return calendar.startOfDay(for: parsedDate)
+        }
+
+        return nil
     }
 
     func placeholder(in context: Context) -> TimetableEntry {
@@ -181,9 +221,8 @@ struct TimetableProvider: AppIntentTimelineProvider {
         let midnight = calendar.startOfDay(for: now.addingTimeInterval(86400))
         entries.append(createEntry(for: configuration, date: midnight))
 
-        if let nextSchoolDayDateString = data?.timetable.nextSchoolDayDate,
-           let nextSchoolDayDate = parseNextSchoolDayDate(nextSchoolDayDateString) {
-            let nextSchoolDay = calendar.startOfDay(for: nextSchoolDayDate)
+        if let data = data,
+           let nextSchoolDay = nextSchoolDay(from: data, calendar: calendar) {
             let dayBeforeNextSchoolDay = calendar.date(byAdding: .day, value: -1, to: nextSchoolDay)!
 
             if dayBeforeNextSchoolDay > now {
@@ -255,93 +294,47 @@ struct TimetableProvider: AppIntentTimelineProvider {
         }
 
         let entryDay = calendar.startOfDay(for: date)
+        let tomorrowOfEntryDay = calendar.date(byAdding: .day, value: 1, to: entryDay)!
 
-        var lessons = data.timetable.today
-        var isNextDay = false
+        let todayLessons = data.timetable.today
+        let tomorrowLessons = data.timetable.tomorrow
+        let nextSchoolDayLessons = data.timetable.nextSchoolDay ?? []
 
-        if let firstTodayLesson = lessons.first {
-            let todayLessonDay = calendar.startOfDay(for: firstTodayLesson.start)
+        var candidates: [LessonCandidate] = []
 
-            if entryDay > todayLessonDay {
-                lessons = data.timetable.tomorrow
-                if let firstTomorrowLesson = lessons.first {
-                    let tomorrowLessonDay = calendar.startOfDay(for: firstTomorrowLesson.start)
-                    isNextDay = entryDay < tomorrowLessonDay
-                }
-            } else {
-                let lastLesson = lessons.last
-                if let last = lastLesson, date > last.end {
-                    lessons = data.timetable.tomorrow
-                    isNextDay = true
-                }
-            }
-        } else {
-            lessons = data.timetable.tomorrow
-            if !lessons.isEmpty {
-                isNextDay = true
-            }
+        if let todayDay = startOfDay(for: todayLessons, calendar: calendar), !todayLessons.isEmpty {
+            candidates.append(LessonCandidate(lessons: todayLessons, day: todayDay))
         }
 
-        if lessons.isEmpty {
-            if let nextSchoolDayLessons = data.timetable.nextSchoolDay, !nextSchoolDayLessons.isEmpty {
-                if let nextSchoolDayDate = parseNextSchoolDayDate(data.timetable.nextSchoolDayDate) {
-                    let nextSchoolDay = calendar.startOfDay(for: nextSchoolDayDate)
-                    let dayBeforeNextSchoolDay = calendar.date(byAdding: .day, value: -1, to: nextSchoolDay)!
+        if let tomorrowDay = startOfDay(for: tomorrowLessons, calendar: calendar), !tomorrowLessons.isEmpty {
+            candidates.append(LessonCandidate(lessons: tomorrowLessons, day: tomorrowDay))
+        }
 
-                    if entryDay == nextSchoolDay {
-                        let currentLesson = nextSchoolDayLessons.first { lesson in
-                            return date >= lesson.start && date <= lesson.end
-                        }
-                        let nextLesson = nextSchoolDayLessons.first { $0.start > date }
+        if !nextSchoolDayLessons.isEmpty,
+           let resolvedNextSchoolDay = nextSchoolDay(from: data, calendar: calendar)
+            ?? startOfDay(for: nextSchoolDayLessons, calendar: calendar) {
+            candidates.append(LessonCandidate(lessons: nextSchoolDayLessons, day: resolvedNextSchoolDay))
+        }
 
-                        return TimetableEntry(
-                            date: date,
-                            configuration: configuration,
-                            data: data,
-                            lessons: nextSchoolDayLessons,
-                            currentLesson: currentLesson,
-                            nextLesson: nextLesson,
-                            isNextDay: false,
-                            isNextSchoolDay: false,
-                            nextSchoolDayDateString: nil,
-                            breakInfo: nil,
-                            state: .normal,
-                            debugInfo: WidgetData.lastError
-                        )
-                    }
+        candidates.sort { $0.day < $1.day }
 
-                    if entryDay == dayBeforeNextSchoolDay {
-                        return TimetableEntry(
-                            date: date,
-                            configuration: configuration,
-                            data: data,
-                            lessons: nextSchoolDayLessons,
-                            currentLesson: nil,
-                            nextLesson: nextSchoolDayLessons.first,
-                            isNextDay: true,
-                            isNextSchoolDay: false,
-                            nextSchoolDayDateString: nil,
-                            breakInfo: nil,
-                            state: .normal,
-                            debugInfo: WidgetData.lastError
-                        )
-                    }
-                }
+        // Pick the closest candidate that still has lessons ahead relative to this entry date.
+        let selectedCandidate = candidates.first { candidate in
+            if candidate.day > entryDay {
+                return true
+            }
 
-                return TimetableEntry(
-                    date: date,
-                    configuration: configuration,
-                    data: data,
-                    lessons: nextSchoolDayLessons,
-                    currentLesson: nil,
-                    nextLesson: nextSchoolDayLessons.first,
-                    isNextDay: false,
-                    isNextSchoolDay: true,
-                    nextSchoolDayDateString: data.timetable.nextSchoolDayDate,
-                    breakInfo: nil,
-                    state: .normal,
-                    debugInfo: WidgetData.lastError
-                )
+            if candidate.day == entryDay, let lastLesson = candidate.lessons.last {
+                return date <= lastLesson.end
+            }
+
+            return false
+        }
+
+        guard let selectedCandidate = selectedCandidate else {
+            let hadLessonsTodayButFinished = candidates.contains { candidate in
+                guard candidate.day == entryDay, let lastLesson = candidate.lessons.last else { return false }
+                return date > lastLesson.end
             }
 
             return TimetableEntry(
@@ -351,14 +344,22 @@ struct TimetableProvider: AppIntentTimelineProvider {
                 lessons: [],
                 currentLesson: nil,
                 nextLesson: nil,
-                isNextDay: isNextDay,
+                isNextDay: false,
                 isNextSchoolDay: false,
                 nextSchoolDayDateString: nil,
                 breakInfo: nil,
-                state: isNextDay ? .noMoreLessons : .unavailable,
+                state: hadLessonsTodayButFinished ? .noMoreLessons : .unavailable,
                 debugInfo: WidgetData.lastError
             )
         }
+
+        let lessons = selectedCandidate.lessons
+        let isToday = selectedCandidate.day == entryDay
+        let isNextDay = selectedCandidate.day == tomorrowOfEntryDay
+        let isNextSchoolDay = !isToday && !isNextDay
+        let nextSchoolDayDateString = isNextSchoolDay
+            ? (data.timetable.nextSchoolDayDate ?? Self.dateFormatter.string(from: selectedCandidate.day))
+            : nil
 
         let currentLesson = lessons.first { lesson in
             return date >= lesson.start && date <= lesson.end
@@ -373,8 +374,8 @@ struct TimetableProvider: AppIntentTimelineProvider {
             currentLesson: currentLesson,
             nextLesson: nextLesson,
             isNextDay: isNextDay,
-            isNextSchoolDay: false,
-            nextSchoolDayDateString: nil,
+            isNextSchoolDay: isNextSchoolDay,
+            nextSchoolDayDateString: nextSchoolDayDateString,
             breakInfo: nil,
             state: .normal,
             debugInfo: WidgetData.lastError
