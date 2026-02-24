@@ -1,10 +1,12 @@
 import 'package:firka/helpers/api/model/generic.dart';
 import 'package:firka/helpers/api/model/grade.dart';
 import 'package:firka/helpers/api/model/homework.dart';
+import 'package:firka/helpers/api/model/subject.dart';
 import 'package:firka/helpers/db/models/homework_cache_model.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/settings.dart';
+import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -587,9 +589,9 @@ Future<void> showGradeBottomSheet(
                             data,
                             [],
                             [], 
-                            -1,
+                            null,
                             Lesson(
-                                uid: "-1",
+                                uid: "-2",
                                 date: "",
                                 start: grade.creationDate,
                                 end: grade.creationDate,
@@ -719,7 +721,7 @@ Future<void> showHomeworkBottomSheet(
                       data,
                       [],
                       [], 
-                      -1,
+                      null,
                       Lesson(
                           uid: "-1",
                           date: "",
@@ -846,6 +848,92 @@ Future<void> showHomeworkBottomSheet(
                         },
                       ),
                     ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Future<void> showSubjectBottomSheetSettings(
+    BuildContext context, AppInitialization data, Subject subject) async {
+  showModalBottomSheet(
+    context: context,
+    elevation: 100,
+    isScrollControlled: true,
+    enableDrag: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: appStyle.colors.a15p,
+    builder: (BuildContext context) {
+
+
+      return Stack(
+        children: [
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              decoration: BoxDecoration(
+                color: appStyle.colors.background,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16) + EdgeInsets.only(bottom: 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(children: [
+                            Text(
+                              subject.name,
+                              style: appStyle.fonts.H_18px
+                                  .apply(color: appStyle.colors.textPrimary),
+                            ),
+                          ]),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    GestureDetector(
+                      child: FirkaCard(
+                        left: [
+                          SizedBox(
+                            height: 30,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Row(children: [
+                                  FirkaIconWidget(
+                                    FirkaIconType.majesticons,
+                                    Majesticon.editPen4Solid,
+                                    size: 24.0,
+                                    color: appStyle.colors.accent,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    "Tantárgy átnevezése",
+                                    style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
+                                  ),
+                                ])
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      onTap: () {
+                        logger.finest("Tantárgy átnevezése");
+                        // Navigator.pop(context);
+                      },
+                    )
                   ],
                 ),
               ),
