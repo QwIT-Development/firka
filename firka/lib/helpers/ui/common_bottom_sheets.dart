@@ -6,7 +6,7 @@ import 'package:firka/helpers/db/models/homework_cache_model.dart';
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/settings.dart';
-import 'package:firka/ui/phone/pages/home/home_grades.dart';
+import 'package:firka/helpers/ui/firka_shadow.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -677,12 +677,22 @@ Future<void> showHomeworkBottomSheet(
     enableDrag: true,
     backgroundColor: Colors.transparent,
     barrierColor: appStyle.colors.a15p,
+    constraints: BoxConstraints(
+      minHeight: MediaQuery.of(context).size.height * 0.34,
+    ),
     builder: (BuildContext context) {
 
       final formattedDate = DateFormat('yyyy. MMMM d.', data.l10n.localeName).format(homework.dueDate);
 
       return Stack(
         children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              behavior: HitTestBehavior.opaque,
+              child: Container(color: Colors.transparent),
+            ),
+          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -744,32 +754,35 @@ Future<void> showHomeworkBottomSheet(
                       null,
                       placeholderMode: true,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
+                    SizedBox(
+                      width: double.infinity,
+                      child: FirkaShadow(
+                        shadow: true,
+                        child: Card(
                           color: appStyle.colors.card,
-                          borderRadius: const BorderRadius.all(Radius.circular(16)),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Html(
-                            data: homework.description,
-                            style: {
-                              "*": Style(
-                                color: appStyle.colors.textPrimary,
-                                fontSize: FontSize(16),
-                                fontFamily: appStyle.fonts.B_16R.fontFamily,
-                                fontWeight: FontWeight.w900,
-                                margin: Margins.zero,
-                                padding: HtmlPaddings.zero,
-                                textAlign: TextAlign.start,
-                              ),
-                            },
+                          shadowColor: isLightMode.value ? null : Colors.transparent,
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                              child: Html(
+                                data: homework.description,
+                                style: {
+                                  "*": Style(
+                                    color: appStyle.colors.textPrimary,
+                                    fontSize: FontSize(16),
+                                    fontFamily: appStyle.fonts.B_16R.fontFamily,
+                                    fontWeight: FontWeight.w900,
+                                    margin: Margins.zero,
+                                    padding: HtmlPaddings.zero,
+                                    textAlign: TextAlign.start,
+                                  ),
+                                },
+                              ), 
+                            ),
                           ),
                         ),
-                      ),
+                      )
                     ),
                     FutureBuilder<bool>(
                       future: isHomeworkDone(data.isar, homework.uid),
