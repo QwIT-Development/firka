@@ -332,13 +332,18 @@ class KretaClient {
 
     if (_tokenMutexCompleter != null) {
       try {
-        await _tokenMutexCompleter!.future.timeout(maxWaitTime, onTimeout: () {
-          logger.warning(
-              "[Mutex] Timeout waiting for token mutex, forcing release");
-          if (_tokenMutexCompleter != null && !_tokenMutexCompleter!.isCompleted) {
-            _tokenMutexCompleter!.complete();
-          }
-        });
+        await _tokenMutexCompleter!.future.timeout(
+          maxWaitTime,
+          onTimeout: () {
+            logger.warning(
+              "[Mutex] Timeout waiting for token mutex, forcing release",
+            );
+            if (_tokenMutexCompleter != null &&
+                !_tokenMutexCompleter!.isCompleted) {
+              _tokenMutexCompleter!.complete();
+            }
+          },
+        );
       } catch (_) {}
     }
 

@@ -489,7 +489,9 @@ class WatchSyncHelper {
       } else if (arguments is Map) {
         message = Map<String, dynamic>.from(arguments);
       } else {
-        debugPrint('[WatchSync] onWatchMessage: unexpected type ${arguments.runtimeType}');
+        debugPrint(
+          '[WatchSync] onWatchMessage: unexpected type ${arguments.runtimeType}',
+        );
         return;
       }
       debugPrint('[WatchSync] Received Watch message: ${message["id"]}');

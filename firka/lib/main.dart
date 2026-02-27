@@ -7,7 +7,6 @@ import 'package:firka/helpers/db/models/app_settings_model.dart';
 import 'package:firka/helpers/db/models/generic_cache_model.dart';
 import 'package:firka/helpers/db/models/timetable_cache_model.dart';
 import 'package:firka/helpers/db/models/token_model.dart';
-import 'package:firka/helpers/extensions.dart';
 import 'package:firka/helpers/firka_bundle.dart';
 import 'package:firka/helpers/settings.dart';
 import 'package:firka/helpers/swear_generator.dart';
@@ -576,7 +575,9 @@ class InitializationScreen extends StatelessWidget {
                   if (initData.tokens.isNotEmpty) {
                     logger.finest("WatchOS IPC [Phone -> Watch]: pong");
                     const watchChannel = MethodChannel('app.firka/watch_sync');
-                    watchChannel.invokeMethod('sendMessageToWatch', {"id": "pong"});
+                    watchChannel.invokeMethod('sendMessageToWatch', {
+                      "id": "pong",
+                    });
                     navigatorKey.currentState?.push(
                       MaterialPageRoute(
                         builder: (context) => HomeScreen(

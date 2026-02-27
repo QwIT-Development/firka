@@ -277,7 +277,9 @@ class _HomeScreenState extends FirkaState<HomeScreen>
 
     final lifecycle = WidgetsBinding.instance.lifecycleState;
     if (lifecycle != null && lifecycle != AppLifecycleState.resumed) {
-      logger.info('[Home] prefetch: App is in background, deferring to foreground');
+      logger.info(
+        '[Home] prefetch: App is in background, deferring to foreground',
+      );
       return;
     }
 
@@ -511,7 +513,9 @@ class _HomeScreenState extends FirkaState<HomeScreen>
 
     widget.data.settingsUpdateNotifier.addListener(settingsUpdateListener);
 
-    widget.data.profilePictureUpdateNotifier.addListener(_onProfilePictureUpdated);
+    widget.data.profilePictureUpdateNotifier.addListener(
+      _onProfilePictureUpdated,
+    );
 
     // Listen for reauth state changes (e.g., when Watch sends a valid token)
     KretaClient.reauthStateNotifier.addListener(_onReauthStateChanged);
@@ -622,11 +626,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
 
     if (widget.watchPair && !pairingDone) {
       Timer.run(() {
-        showWearBottomSheet(
-          context,
-          widget.data,
-          widget.model ?? "unknown",
-        );
+        showWearBottomSheet(context, widget.data, widget.model ?? "unknown");
 
         // pairingDone = true;
       });
@@ -936,7 +936,9 @@ class _HomeScreenState extends FirkaState<HomeScreen>
 
   void _refreshLiveActivityOnResume() async {
     if (!_hasCompletedFirstPrefetch) {
-      logger.info('[Home] Skipping LiveActivity update: first prefetch not yet complete');
+      logger.info(
+        '[Home] Skipping LiveActivity update: first prefetch not yet complete',
+      );
       return;
     }
     try {
@@ -951,7 +953,9 @@ class _HomeScreenState extends FirkaState<HomeScreen>
         settingsStore: widget.data.settings,
       );
     } catch (e) {
-      logger.warning('[Home] LiveActivity timetable update on resume failed: $e');
+      logger.warning(
+        '[Home] LiveActivity timetable update on resume failed: $e',
+      );
     }
   }
 
@@ -960,8 +964,9 @@ class _HomeScreenState extends FirkaState<HomeScreen>
     WidgetsBinding.instance.removeObserver(this);
     _pageController.dispose();
     widget.data.settingsUpdateNotifier.removeListener(settingsUpdateListener);
-    widget.data.profilePictureUpdateNotifier
-        .removeListener(_onProfilePictureUpdated);
+    widget.data.profilePictureUpdateNotifier.removeListener(
+      _onProfilePictureUpdated,
+    );
 
     // Remove reauth state listener
     KretaClient.reauthStateNotifier.removeListener(_onReauthStateChanged);

@@ -863,7 +863,6 @@ class LiveActivityService {
       return;
     }
 
-
     final liveActivityEnabled = await isEnabled(settingsStore, client);
     final morningNotificationEnabled =
         _getCurrentMorningNotificationEnabled() ?? false;
