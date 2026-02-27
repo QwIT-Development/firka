@@ -186,61 +186,6 @@ class TokenManager {
 
     private init() {
         runKVStoreMigrationIfNeeded()
-
-        SharedKeychainManager.shared.observeChanges { [weak self] sharedToken in
-            guard let self = self else { return }
-
-            let preferredStudentIdNorm = self.getActiveStudentIdNorm()
-            let isValidToken = sharedToken.expiryDate > Date().addingTimeInterval(60)
-            let preferredLocalToken = self.localTokenFromKeychainAndFile(
-                preferredStudentIdNorm: preferredStudentIdNorm
-            )
-
-            if let preferredStudentIdNorm,
-               sharedToken.studentIdNorm != preferredStudentIdNorm,
-               preferredLocalToken != nil {
-                print("[TokenManager] Ignoring shared Keychain token for inactive account (\(sharedToken.studentIdNorm)), active is \(preferredStudentIdNorm)")
-                return
-            }
-
-            let localToken = preferredLocalToken ?? self.localTokenFromKeychainAndFile()
-
-            if let localToken = localToken {
-                if sharedToken.isNewer(than: localToken) {
-                    print("[TokenManager] Shared Keychain token is fresher, updating local cache")
-                    try? self.saveTokenToKeychain(sharedToken)
-                    try? self.saveTokenToFile(sharedToken)
-                    self.setActiveStudentIdNorm(sharedToken.studentIdNorm)
-
-                    #if os(watchOS)
-                    DataStore.shared.checkTokenState()
-                    #endif
-
-                    #if os(iOS)
-                    if isValidToken {
-                        self.notifyiOSTokenRecovered()
-                    }
-                    #endif
-                } else {
-                    print("[TokenManager] Local token is fresher or equal, ignoring shared Keychain update")
-                }
-            } else {
-                print("[TokenManager] No local token, using shared Keychain token")
-                try? self.saveTokenToKeychain(sharedToken)
-                try? self.saveTokenToFile(sharedToken)
-                self.setActiveStudentIdNorm(sharedToken.studentIdNorm)
-
-                #if os(watchOS)
-                DataStore.shared.checkTokenState()
-                #endif
-
-                #if os(iOS)
-                if isValidToken {
-                    self.notifyiOSTokenRecovered()
-                }
-                #endif
-            }
-        }
     }
 
     private let kvStoreMigrationKey = "firka_kv_store_migrated_v1"
@@ -350,7 +295,18 @@ class TokenManager {
                 candidate.token.isNewer(than: currentBest.token) ? candidate : currentBest
             }
         }
+        let previousActiveStudentIdNorm = getActiveStudentIdNorm()
         setActiveStudentIdNorm(freshest.token.studentIdNorm)
+
+        #if os(iOS)
+        if previousActiveStudentIdNorm != freshest.token.studentIdNorm {
+            _ = SharedSessionStateManager.shared.publishState(
+                hasAnyAccount: true,
+                activeStudentIdNorm: freshest.token.studentIdNorm
+            )
+            print("[TokenManager] Active account changed from \(previousActiveStudentIdNorm ?? 0) to \(freshest.token.studentIdNorm), published to SharedSessionState")
+        }
+        #endif
 
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss"
@@ -393,6 +349,9 @@ class TokenManager {
     // MARK: - Delete Token
     func deleteToken() {
         print("[TokenManager] Deleting token from all storage locations")
+
+        SharedSessionStateManager.shared.publishState(hasAnyAccount: false, activeStudentIdNorm: nil)
+
         if let previousToken = loadToken() {
             RefreshLeaseManager.shared.clearLeases(studentIdNorm: previousToken.studentIdNorm)
         } else {

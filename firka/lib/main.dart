@@ -29,7 +29,6 @@ import 'package:logging/logging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'helpers/db/models/homework_cache_model.dart';
 import 'helpers/update_notifier.dart';
@@ -544,30 +543,27 @@ class InitializationScreen extends StatelessWidget {
             }());
           }
 
-          var watch = WatchConnectivity();
-
           if (!initData.hasWatchListener) {
             initData.hasWatchListener = true;
 
-            watch.messageStream.listen((e) {
-              var msg = e.entries.toMap();
-
+            WatchSyncHelper.onWatchMessage = (msg) {
               logger.finest("WatchOS IPC [Watch -> Phone]: ${msg["id"]}");
 
               switch (msg["id"]) {
                 case "ping":
                   if (initData.tokens.isNotEmpty) {
                     logger.finest("WatchOS IPC [Phone -> Watch]: pong");
-                    watch.sendMessage({"id": "pong"});
+                    const watchChannel = MethodChannel('app.firka/watch_sync');
+                    watchChannel.invokeMethod('sendMessageToWatch', {"id": "pong"});
                     navigatorKey.currentState?.push(
                       MaterialPageRoute(
                         builder: (context) => HomeScreen(initData, true,
-                            model: msg["model"] as String),
+                            model: msg["model"] as String? ?? "unknown"),
                       ),
                     );
                   }
               }
-            });
+            };
           }
 
           if (snapshot.data!.tokens.isEmpty) {

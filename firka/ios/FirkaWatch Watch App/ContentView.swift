@@ -72,6 +72,18 @@ struct ContentView: View {
             guard scenePhase == .active else { return }
             dataStore.reconcileSharedSessionState()
             WatchL10n.shared.reconcileFromSharedState()
+
+            if !dataStore.hasToken {
+                dataStore.checkTokenState()
+                if dataStore.hasToken {
+                    print("[Watch] Token appeared (iCloud Keychain sync?), refreshing...")
+                    Task {
+                        await dataStore.refreshAllWithRecovery()
+                    }
+                }
+                return
+            }
+
             if shouldAutoRefresh && !dataStore.isLoading {
                 print("[Watch] Data became stale (>10 min), auto-refreshing...")
                 Task {
@@ -151,21 +163,21 @@ struct PairingView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 10) {
             Image(systemName: iconName)
-                .font(.system(size: 50))
+                .font(.system(size: 36))
                 .foregroundColor(.blue)
 
             Text(titleKey.localized)
                 .font(.headline)
 
             Text(descriptionKey.localized)
-                .font(.caption)
+                .font(.caption2)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
-            if isWatchSystemPaired && WCSession.default.isReachable {
+            if isWatchSystemPaired {
                 Button("sync_button".localized) {
                     onRequestToken?()
                 }

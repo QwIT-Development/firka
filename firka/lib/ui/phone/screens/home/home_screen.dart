@@ -77,7 +77,8 @@ UpdateNotifier subPageBack = UpdateNotifier();
 HomePage homeScreenPage = HomePage.home;
 List<HomePage> previousPages = List.empty(growable: true);
 
-class _HomeScreenState extends FirkaState<HomeScreen> {
+class _HomeScreenState extends FirkaState<HomeScreen>
+    with WidgetsBindingObserver {
   _HomeScreenState();
 
   final PageController _pageController = PageController();
@@ -257,9 +258,20 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     }
   }
 
+  bool _prefetchInProgress = false;
+  bool _didRunLiveActivityLogin = false;
+
   void prefetch() async {
     if (_prefetched) return;
+    if (_prefetchInProgress) return;
 
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    if (lifecycle != null && lifecycle != AppLifecycleState.resumed) {
+      logger.info('[Home] prefetch: App is in background, deferring to foreground');
+      return;
+    }
+
+    _prefetchInProgress = true;
     try {
       _prefetched = true;
 
@@ -289,18 +301,21 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
         await WidgetCacheHelper.refreshIOSWidgets(
             widget.data.client, widget.data.settings);
 
-        final token = pickActiveToken(
-          tokens: widget.data.tokens,
-          settings: widget.data.settings,
-        );
-        final studentName = token?.studentId ?? "Student";
-        LiveActivityService.onUserLogin(
-          client: widget.data.client,
-          studentName: studentName,
-          settingsStore: widget.data.settings,
-        ).catchError((e, st) {
-          logger.severe('LiveActivity registration failed: $e', e, st);
-        });
+        if (!_didRunLiveActivityLogin) {
+          _didRunLiveActivityLogin = true;
+          final token = pickActiveToken(
+            tokens: widget.data.tokens,
+            settings: widget.data.settings,
+          );
+          final studentName = token?.studentId ?? "Student";
+          LiveActivityService.onUserLogin(
+            client: widget.data.client,
+            studentName: studentName,
+            settingsStore: widget.data.settings,
+          ).catchError((e, st) {
+            logger.severe('LiveActivity registration failed: $e', e, st);
+          });
+        }
       }
 
       if (!_disposed &&
@@ -396,6 +411,8 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
         );
       });
     } finally {
+      _prefetchInProgress = false;
+      _hasCompletedFirstPrefetch = true;
       if (!_disposed) {
         setState(() {
           _fetching = false;
@@ -471,11 +488,11 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
   void initState() {
     super.initState();
 
+    WidgetsBinding.instance.addObserver(this);
+
     widget.data.settingsUpdateNotifier.addListener(settingsUpdateListener);
 
-    widget.data.profilePictureUpdateNotifier.addListener(() {
-      if (mounted) setState(() {});
-    });
+    widget.data.profilePictureUpdateNotifier.addListener(_onProfilePictureUpdated);
 
     // Listen for reauth state changes (e.g., when Watch sends a valid token)
     KretaClient.reauthStateNotifier.addListener(_onReauthStateChanged);
@@ -507,6 +524,10 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
   }
 
   void settingsUpdateListener() {
+    if (mounted) setState(() {});
+  }
+
+  void _onProfilePictureUpdated() {
     if (mounted) setState(() {});
   }
 
@@ -858,15 +879,50 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed && !_disposed) {
+      logger.info('[Home] App resumed to foreground, re-running prefetch');
+      _prefetched = false;
+      _didRunSecondaryICloudRecovery = false;
+      prefetch();
+
+      if (Platform.isIOS) {
+        _refreshLiveActivityOnResume();
+      }
+    }
+  }
+
+  bool _hasCompletedFirstPrefetch = false;
+
+  void _refreshLiveActivityOnResume() async {
+    if (!_hasCompletedFirstPrefetch) {
+      logger.info('[Home] Skipping onAppOpened: first prefetch not yet complete');
+      return;
+    }
+    try {
+      final token = pickActiveToken(
+        tokens: widget.data.tokens,
+        settings: widget.data.settings,
+      );
+      final studentName = token?.studentId ?? "Student";
+      await LiveActivityService.onAppOpened(
+        client: widget.data.client,
+        studentName: studentName,
+        settingsStore: widget.data.settings,
+      );
+    } catch (e) {
+      logger.warning('[Home] LiveActivity refresh on resume failed: $e');
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pageController.dispose();
     widget.data.settingsUpdateNotifier.removeListener(settingsUpdateListener);
     widget.data.profilePictureUpdateNotifier
-        .removeListener(settingsUpdateListener);
-
-    widget.data.profilePictureUpdateNotifier.removeListener(() {
-      if (mounted) setState(() {});
-    });
+        .removeListener(_onProfilePictureUpdated);
 
     // Remove reauth state listener
     KretaClient.reauthStateNotifier.removeListener(_onReauthStateChanged);

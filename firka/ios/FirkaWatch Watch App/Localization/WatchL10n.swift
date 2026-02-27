@@ -74,9 +74,17 @@ class WatchL10n {
     }
 
     func setLanguage(_ language: WatchLanguage) {
-        currentLanguage = language
-        loadStrings()
-        WidgetCenter.shared.reloadAllTimelines()
+        if Thread.isMainThread {
+            currentLanguage = language
+            loadStrings()
+            WidgetCenter.shared.reloadAllTimelines()
+        } else {
+            DispatchQueue.main.async { [self] in
+                currentLanguage = language
+                loadStrings()
+                WidgetCenter.shared.reloadAllTimelines()
+            }
+        }
     }
 
     func updateFromiPhone(languageCode: String, sharedStateVersion: Int64? = nil) {
@@ -113,6 +121,11 @@ class WatchL10n {
 
     private func setLastAppliedSharedLanguageVersion(_ value: Int64) {
         UserDefaults.standard.set(value, forKey: lastAppliedSharedLanguageVersionKey)
+    }
+
+    func resetLanguageVersionTracking() {
+        setLastAppliedSharedLanguageVersion(0)
+        print("[WatchL10n] Language version tracking reset for account switch")
     }
 
     func reconcileFromSharedState() {

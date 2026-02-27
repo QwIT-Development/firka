@@ -9,9 +9,28 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
     private var isFlutterWatchSyncReady = false
     private var pendingAuthPayloads: [[String: Any]] = []
     private var pendingICloudRecoveryNotification = false
+    private let pendingAuthQueue = DispatchQueue(label: "app.firka.pendingAuthQueue")
 
     override private init() {
         super.init()
+    }
+
+    private func mergeApplicationContext(_ newEntries: [String: Any]) {
+        let session = WCSession.default
+        guard session.activationState == .activated else { return }
+
+        var merged = session.applicationContext
+        for (key, value) in newEntries {
+            merged[key] = value
+        }
+        if !newEntries.keys.contains("force_logout") {
+            merged.removeValue(forKey: "force_logout")
+        }
+        do {
+            try session.updateApplicationContext(merged)
+        } catch {
+            print("[WatchSessionManager] Failed to merge applicationContext: \(error)")
+        }
     }
 
     func setup(with messenger: FlutterBinaryMessenger) {
@@ -58,6 +77,8 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                 self?.handleClearAllRefreshLeases(result: result)
             case "clearSharedLanguageState":
                 self?.handleClearSharedLanguageState(result: result)
+            case "sendMessageToWatch":
+                self?.handleSendMessageToWatch(arguments: call.arguments, result: result)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -160,11 +181,13 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
     }
 
     private func enqueuePendingAuth(_ authData: [String: Any]) {
-        if pendingAuthPayloads.contains(where: { sameTokenPayload($0, authData) }) {
-            return
+        pendingAuthQueue.sync {
+            if pendingAuthPayloads.contains(where: { sameTokenPayload($0, authData) }) {
+                return
+            }
+            pendingAuthPayloads.append(authData)
+            print("[WatchSessionManager] Queued pending token from Watch until Flutter sync is ready")
         }
-        pendingAuthPayloads.append(authData)
-        print("[WatchSessionManager] Queued pending token from Watch until Flutter sync is ready")
     }
 
     private func forwardTokenToFlutter(_ authData: [String: Any]) {
@@ -188,13 +211,19 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         guard isFlutterWatchSyncReady else {
             return
         }
-        if !pendingAuthPayloads.isEmpty {
-            print("[WatchSessionManager] Flushing \(pendingAuthPayloads.count) queued token event(s) to Flutter")
+
+        let payloadsToFlush: [[String: Any]] = pendingAuthQueue.sync {
+            let copy = pendingAuthPayloads
+            pendingAuthPayloads.removeAll()
+            return copy
         }
-        for authData in pendingAuthPayloads {
+
+        if !payloadsToFlush.isEmpty {
+            print("[WatchSessionManager] Flushing \(payloadsToFlush.count) queued token event(s) to Flutter")
+        }
+        for authData in payloadsToFlush {
             flutterChannel?.invokeMethod("onTokenFromWatch", arguments: authData)
         }
-        pendingAuthPayloads.removeAll()
 
         if pendingICloudRecoveryNotification {
             pendingICloudRecoveryNotification = false
@@ -228,13 +257,7 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
 
         let session = WCSession.default
 
-        do {
-            try session.updateApplicationContext([
-                "auth": authData
-            ])
-        } catch {
-            print("[WatchSessionManager] Failed to update applicationContext for token: \(error)")
-        }
+        mergeApplicationContext(["auth": authData])
 
         session.transferUserInfo([
             "id": "token_update",
@@ -271,13 +294,9 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             return
         }
 
-        do {
-            try WCSession.default.updateApplicationContext(["widget_data": jsonString])
-            result(nil)
-            print("[WatchSessionManager] Widget data sent to Watch")
-        } catch {
-            result(FlutterError(code: "UPDATE_ERROR", message: error.localizedDescription, details: nil))
-        }
+        mergeApplicationContext(["widget_data": jsonString])
+        result(nil)
+        print("[WatchSessionManager] Widget data sent to Watch")
     }
 
     private func handleSendLanguageToWatch(arguments: Any?, result: @escaping FlutterResult) {
@@ -295,15 +314,11 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         let sharedState = SharedLanguageStateManager.shared.publishState(languageCode: languageCode)
 
         if WCSession.default.activationState == .activated {
-            do {
-                try WCSession.default.updateApplicationContext([
-                    "language": languageCode,
-                    "language_state_version": sharedState.stateVersion
-                ])
-                print("[WatchSessionManager] Language '\(languageCode)' sent to Watch via applicationContext")
-            } catch {
-                print("[WatchSessionManager] Failed to update applicationContext for language: \(error)")
-            }
+            mergeApplicationContext([
+                "language": languageCode,
+                "language_state_version": sharedState.stateVersion
+            ])
+            print("[WatchSessionManager] Language '\(languageCode)' sent to Watch via applicationContext")
 
             WCSession.default.transferUserInfo([
                 "id": "language_update",
@@ -601,16 +616,34 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             return
         }
 
-        do {
-            try WCSession.default.updateApplicationContext(["force_logout": true])
-        } catch {
-            print("[WatchSessionManager] Failed to update applicationContext for logout: \(error)")
-        }
+        mergeApplicationContext(["force_logout": true])
 
         WCSession.default.transferUserInfo([
             "id": "force_logout"
         ])
         print("[WatchSessionManager] Force logout sent to Watch")
+        result(nil)
+    }
+
+    private func handleSendMessageToWatch(arguments: Any?, result: @escaping FlutterResult) {
+        guard let message = arguments as? [String: Any] else {
+            result(FlutterError(code: "INVALID_ARGS", message: "Arguments must be a dictionary", details: nil))
+            return
+        }
+
+        guard WCSession.default.activationState == .activated else {
+            result(FlutterError(code: "SESSION_NOT_ACTIVE", message: "WCSession is not activated", details: nil))
+            return
+        }
+
+        guard WCSession.default.isReachable else {
+            result(FlutterError(code: "NOT_REACHABLE", message: "Watch is not reachable", details: nil))
+            return
+        }
+
+        WCSession.default.sendMessage(message, replyHandler: nil, errorHandler: { error in
+            print("[WatchSessionManager] Failed to send message to Watch: \(error.localizedDescription)")
+        })
         result(nil)
     }
 
@@ -651,6 +684,12 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
         didReceiveMessage message: [String: Any],
         replyHandler: @escaping ([String: Any]) -> Void
     ) {
+        DispatchQueue.main.async { [self] in
+            self._handleMessageWithReply(message: message, replyHandler: replyHandler)
+        }
+    }
+
+    private func _handleMessageWithReply(message: [String: Any], replyHandler: @escaping ([String: Any]) -> Void) {
         print("[WatchSessionManager] Received message from Watch: \(message)")
 
         guard let action = message["action"] as? String else {
@@ -670,8 +709,7 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                 }
                 return
             }
-            DispatchQueue.main.async {
-                self.flutterChannel?.invokeMethod("getTokenForWatch", arguments: nil) { result in
+            self.flutterChannel?.invokeMethod("getTokenForWatch", arguments: nil) { result in
                     if let tokenData = result as? [String: Any] {
                         if let error = tokenData["error"] as? String {
                             if error == "needsReauth" {
@@ -703,7 +741,6 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                         }
                     }
                 }
-            }
 
         case "requestLanguage":
             if !self.isFlutterWatchSyncReady {
@@ -734,37 +771,56 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
                 return
             }
 
-            DispatchQueue.main.async {
-                flutterChannel.invokeMethod("getLanguageForWatch", arguments: nil) { result in
-                    if let languageCode = result as? String, !languageCode.isEmpty {
-                        if let existingState = SharedLanguageStateManager.shared.loadState(),
-                           existingState.languageCode == languageCode {
-                            print("[WatchSessionManager] Sending language to Watch from shared cache: \(languageCode)")
-                            replyHandler([
-                                "language": languageCode,
-                                "language_state_version": existingState.stateVersion
-                            ])
-                            return
-                        }
+            var hasReplied = false
+            let timeoutWorkItem = DispatchWorkItem {
+                guard !hasReplied else { return }
+                hasReplied = true
+                if let sharedState = SharedLanguageStateManager.shared.loadState() {
+                    print("[WatchSessionManager] Flutter timeout, serving shared language: \(sharedState.languageCode)")
+                    replyHandler([
+                        "language": sharedState.languageCode,
+                        "language_state_version": sharedState.stateVersion
+                    ])
+                } else {
+                    print("[WatchSessionManager] Flutter timeout and no shared language available")
+                    replyHandler(["error": "timeout"])
+                }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0, execute: timeoutWorkItem)
 
-                        let sharedState = SharedLanguageStateManager.shared.publishState(
-                            languageCode: languageCode
-                        )
-                        print("[WatchSessionManager] Sending language to Watch: \(languageCode)")
+            flutterChannel.invokeMethod("getLanguageForWatch", arguments: nil) { result in
+                timeoutWorkItem.cancel()
+                guard !hasReplied else { return }
+                hasReplied = true
+
+                if let languageCode = result as? String, !languageCode.isEmpty {
+                    if let existingState = SharedLanguageStateManager.shared.loadState(),
+                       existingState.languageCode == languageCode {
+                        print("[WatchSessionManager] Sending language to Watch from shared cache: \(languageCode)")
                         replyHandler([
                             "language": languageCode,
-                            "language_state_version": sharedState.stateVersion
+                            "language_state_version": existingState.stateVersion
                         ])
-                    } else if let sharedState = SharedLanguageStateManager.shared.loadState() {
-                        print("[WatchSessionManager] No language from Flutter, serving last shared language: \(sharedState.languageCode)")
-                        replyHandler([
-                            "language": sharedState.languageCode,
-                            "language_state_version": sharedState.stateVersion
-                        ])
-                    } else {
-                        print("[WatchSessionManager] No language available from Flutter or shared state")
-                        replyHandler(["error": "language_not_ready"])
+                        return
                     }
+
+                    let sharedState = SharedLanguageStateManager.shared.publishState(
+                        languageCode: languageCode
+                    )
+                    print("[WatchSessionManager] Sending language to Watch: \(languageCode)")
+                    replyHandler([
+                        "language": languageCode,
+                        "language_state_version": sharedState.stateVersion
+                    ])
+                } else if let sharedState = SharedLanguageStateManager.shared.loadState() {
+                    print("[WatchSessionManager] No language from Flutter, serving last shared language: \(sharedState.languageCode)")
+                    replyHandler([
+                        "language": sharedState.languageCode,
+                        "language_state_version": sharedState.stateVersion
+                    ])
+                } else {
+                    print("[WatchSessionManager] No language available from Flutter or shared state")
+                    replyHandler(["error": "language_not_ready"])
                 }
             }
 
@@ -776,32 +832,35 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
 
             if !self.isFlutterWatchSyncReady {
                 print("[WatchSessionManager] Flutter not ready, queueing token from Watch")
-                DispatchQueue.main.async {
-                    self.enqueuePendingAuth(tokenData)
-                }
+                self.enqueuePendingAuth(tokenData)
                 replyHandler(["success": true])
                 return
             }
 
             print("[WatchSessionManager] Receiving token from Watch")
-            DispatchQueue.main.async {
-                self.flutterChannel?.invokeMethod("onTokenFromWatch", arguments: tokenData) { result in
-                    if let success = result as? Bool, success {
-                        print("[WatchSessionManager] Flutter accepted Watch token")
-                        replyHandler(["success": true])
-                    } else if let resultDict = result as? [String: Any],
-                              let success = resultDict["success"] as? Bool, success {
-                        print("[WatchSessionManager] Flutter accepted Watch token")
-                        replyHandler(["success": true])
-                    } else {
-                        print("[WatchSessionManager] Flutter rejected Watch token")
-                        replyHandler(["error": "rejected"])
-                    }
+            self.flutterChannel?.invokeMethod("onTokenFromWatch", arguments: tokenData) { result in
+                if let success = result as? Bool, success {
+                    print("[WatchSessionManager] Flutter accepted Watch token")
+                    replyHandler(["success": true])
+                } else if let resultDict = result as? [String: Any],
+                          let success = resultDict["success"] as? Bool, success {
+                    print("[WatchSessionManager] Flutter accepted Watch token")
+                    replyHandler(["success": true])
+                } else {
+                    print("[WatchSessionManager] Flutter rejected Watch token")
+                    replyHandler(["error": "rejected"])
                 }
             }
 
         default:
             replyHandler(["error": "Unknown action: \(action)"])
+        }
+    }
+
+    func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
+        print("[WatchSessionManager] Received fire-and-forget message from Watch: \(message)")
+        DispatchQueue.main.async {
+            self.flutterChannel?.invokeMethod("onWatchMessage", arguments: message)
         }
     }
 

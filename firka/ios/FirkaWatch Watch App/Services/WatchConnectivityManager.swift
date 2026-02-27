@@ -294,6 +294,10 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
 
     private func handleForceLogoutFromPhone() {
         TokenManager.shared.deleteToken()
+        _ = SharedSessionStateManager.shared.publishState(
+            hasAnyAccount: false,
+            activeStudentIdNorm: nil
+        )
         DataStore.shared.clearAll()
         DataStore.shared.resetRecoveryState()
         DataStore.shared.checkTokenState()
@@ -400,19 +404,24 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
 
             let token = try decoder.decode(WatchToken.self, from: jsonData)
             let currentToken = TokenManager.shared.loadToken()
+
+            let isAccountSwitch = currentToken != nil && !token.isSameAccount(as: currentToken!)
             let shouldForceAccountSwitch: Bool
-            if incomingSentAtMs > 0,
-               let currentToken,
-               !token.isSameAccount(as: currentToken) {
-                shouldForceAccountSwitch = true
+            if isAccountSwitch {
+                if incomingSentAtMs > 0 {
+                    shouldForceAccountSwitch = true
+                } else {
+                    shouldForceAccountSwitch = token.isNewer(than: currentToken!)
+                }
             } else {
                 shouldForceAccountSwitch = false
             }
 
             if incomingSentAtMs <= 0,
                let currentToken,
+               !isAccountSwitch,
                !token.isNewer(than: currentToken) {
-                print("[Watch] Ignoring stale token_update without sentAtMs")
+                print("[Watch] Ignoring stale token_update without sentAtMs (same account, not newer)")
                 return
             }
 
@@ -432,6 +441,8 @@ class WatchConnectivityManager: NSObject, WCSessionDelegate {
                 lastAppliedTokenUpdateMs = max(previousSentAtMs, incomingSentAtMs)
             }
 
+            DataStore.shared.clearError()
+            DataStore.shared.resetRecoveryState()
             DataStore.shared.checkTokenState()
 
             Task {
