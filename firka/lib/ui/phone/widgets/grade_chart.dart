@@ -16,6 +16,7 @@ class GradeChart extends StatefulWidget {
 class _GradeChartState extends State<GradeChart> {
   bool _tooltipActive = false;
   double? _tooltipY;
+  int? _touchedIndex;
 
   List<Color> gradientColors = [
     appStyle.colors.grade5,
@@ -48,8 +49,8 @@ class _GradeChartState extends State<GradeChart> {
     //     spots.add(FlSpot(i.toDouble(), partialAvg));
     //   }
     // }
-    spots.add(FlSpot(1, 1.0));
-    spots.add(FlSpot(2, 1.5));
+    spots.add(FlSpot(1, 1.3));
+    spots.add(FlSpot(2, 1.0));
     spots.add(FlSpot(3, 2.0));
     spots.add(FlSpot(4, 1.75));
     spots.add(FlSpot(5, 1.8));
@@ -57,8 +58,7 @@ class _GradeChartState extends State<GradeChart> {
     spots.add(FlSpot(7, 2.57));
     spots.add(FlSpot(8, 3.00));
     spots.add(FlSpot(9, 4.00));
-    spots.add(FlSpot(10, 4.27));
-    spots.add(FlSpot(11, 4.89));
+    spots.add(FlSpot(10, 4.89));
 
 
     if (spots.isEmpty) {
@@ -114,14 +114,34 @@ class _GradeChartState extends State<GradeChart> {
       child: Text(text, style: style),
     );
   }
-
-  Widget leftTitleWidgets(double value, TitleMeta meta) {
-    final style = TextStyle(
-      fontWeight: FontWeight.bold,
-      fontSize: 16,
-      fontFamily: appStyle.fonts.B_14SB.fontFamily,
-      color: appStyle.colors.textTertiary,
+  Widget buildCircle({
+    required String text,
+    required Color bgColor,
+    required Color textColor,
+    }) {
+    return SizedBox(
+      width: 24,
+      height: 24,
+      child: Material(
+        shape: const CircleBorder(),
+        color: bgColor,
+        child: Center(
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              fontFamily: appStyle.fonts.B_14SB.fontFamily,
+            ),
+          ),
+        ),
+      ),
     );
+  }
+  Widget leftTitleWidgets(double value, TitleMeta meta) {
+
     String text = switch (value.toInt()) {
       1 => '1',
       2 => '2',
@@ -130,66 +150,33 @@ class _GradeChartState extends State<GradeChart> {
       5 => '5',
       _ => '',
     };
-    double eccentricity = 0;
     Color gradeColor;
     if (text != ""){
       gradeColor = getGradeColor(int.parse(text).toDouble());
     } else {
       gradeColor = getGradeColor(0);
     }
-    // if()
-    if(!_tooltipActive || _tooltipY == null){
-      return Text(text, style: style, textAlign: TextAlign.left);
+    if (!_tooltipActive || _tooltipY == null) {
+      return buildCircle(
+        text: text,
+        bgColor: appStyle.colors.card,
+        textColor: appStyle.colors.textPrimary.withValues(alpha: 0.2),
+      );
     }
-    if (text == _tooltipY!.round().toString()) {
-      // return Center(
-      //   child: Card(
-      //     shape: CircleBorder(eccentricity: eccentricity),
-      //     shadowColor: Colors.transparent,
-      //     color: gradeColor.withAlpha(38),
-      //     child: Padding(
-      //         padding: EdgeInsets.only(left: 8, right: 8),
-      //         child: Text(text,
-      //             style: appStyle.fonts.B_14SB
-      //                 .copyWith(fontSize: 24, color: gradeColor))),
-      // ));
-      return Padding(
-        padding: const EdgeInsets.only(left: 0, right: double.infinity),
 
-        child: Material(
-        shape: const CircleBorder(),
-        color: gradeColor.withAlpha(38),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-          child: Center(
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: style.copyWith(color: gradeColor, fontSize: 16, fontWeight: FontWeight.w600, fontFamily: appStyle.fonts.B_14SB.fontFamily),
-            ),
-          ),
-        ),
-      ));
-    } else {
-      return Padding(
-        
-        padding: const EdgeInsets.only(left: 0, right: double.infinity),
-        child: Material(
-        shape: const CircleBorder(),
-        color: appStyle.colors.card,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-          child: Center(
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: appStyle.colors.textPrimary.withValues(alpha: 0.2), fontWeight: FontWeight.bold, fontSize: 16, fontFamily: appStyle.fonts.B_14SB.fontFamily),
-            ),
-          ),
-        ),
-      ));
-      // return Text(text, style: TextStyle(color: appStyle.colors.textPrimary.withValues(alpha: 0.2), fontWeight: FontWeight.bold, fontSize: 16, fontFamily: appStyle.fonts.B_14SB.fontFamily), textAlign: TextAlign.left);
+    if (text == _tooltipY!.round().toString()) {
+      return buildCircle(
+        text: text,
+        bgColor: gradeColor.withAlpha(38),
+        textColor: gradeColor,
+      );
     }
+
+    return buildCircle(
+      text: text,
+      bgColor: appStyle.colors.card,
+      textColor: appStyle.colors.textPrimary.withValues(alpha: 0.2),
+    );
 
     // return Text(text, style: style, textAlign: TextAlign.left);
   }
@@ -217,17 +204,27 @@ class _GradeChartState extends State<GradeChart> {
 
     return LineChartData(
       lineTouchData: LineTouchData(
+        handleBuiltInTouches: true,
+        touchSpotThreshold: 1000,
         enabled: true,
         touchCallback: (FlTouchEvent event, LineTouchResponse? response) {
           setState(() {
-            if (event is FlLongPressEnd || event is FlPanEndEvent || event is FlTapUpEvent) {
+            if (event is FlLongPressEnd ||
+                event is FlPanEndEvent ||
+                event is FlTapUpEvent) {
               _tooltipActive = false;
               _tooltipY = null;
-            } else {
-              _tooltipActive = response != null &&
-            response.lineBarSpots != null &&
-            response.lineBarSpots!.isNotEmpty;
-              _tooltipY = _tooltipActive ? response!.lineBarSpots!.first.y : null;
+              _touchedIndex = null;
+              return;
+            }
+
+            if (response?.lineBarSpots != null &&
+                response!.lineBarSpots!.isNotEmpty) {
+              final spot = response.lineBarSpots!.first;
+
+              _tooltipActive = true;
+              _tooltipY = spot.y;
+              _touchedIndex = spot.spotIndex;
             }
           });
         },
@@ -334,6 +331,9 @@ class _GradeChartState extends State<GradeChart> {
         LineChartBarData(
           spots: spots,
           isCurved: false,
+          
+          showingIndicators:
+            _touchedIndex != null ? [_touchedIndex!] : [],
           gradient: LinearGradient(
             colors: [for (final s in spots) colorForY(s.y)],
           ),
