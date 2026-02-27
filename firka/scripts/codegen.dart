@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 
 void main() async {
@@ -27,6 +28,15 @@ void main() async {
       'Isar generated dart files out of date, running build_runner...',
     );
     await _run('dart', ['run', 'build_runner', 'build'], root);
+    ran = true;
+  }
+
+  if (_splashOutOfDate(root)) {
+    await _generateAndroid12SplashImage(root);
+    stdout.writeln(
+      'Splash out of date, running flutter_native_splash:create...',
+    );
+    await _run('dart', ['run', 'flutter_native_splash:create'], root);
     ran = true;
   }
 
@@ -116,6 +126,54 @@ bool _isarOutOfDate(String root) {
     if (_anyNewerThan([dartFile], gFile)) return true;
   }
   return false;
+}
+
+bool _splashOutOfDate(String root) {
+  final config = File(p.join(root, 'flutter_native_splash.yaml'));
+  final splashImage = File(p.join(root, 'assets/images/logos/splash.png'));
+  final inputs = [config, splashImage]
+      .where((f) => f.existsSync())
+      .map((f) => File(p.canonicalize(f.path)))
+      .toList();
+  if (inputs.isEmpty) return false;
+  final output = File(
+    p.join(root, 'android/app/src/main/res/drawable/launch_background.xml'),
+  );
+  return _anyNewerThan(inputs, output);
+}
+
+Future<void> _generateAndroid12SplashImage(String root) async {
+  const size = 960;
+  const circleDiameter = 640.0;
+
+  final splashPath = p.join(root, 'assets/images/logos/splash.png');
+  final outPath = p.join(root, 'assets/images/logos/splash_android12.png');
+  final splashFile = File(splashPath);
+  if (!splashFile.existsSync()) return;
+
+  final bytes = await splashFile.readAsBytes();
+  final logo = img.decodeImage(bytes);
+  if (logo == null) return;
+
+  final scale = (circleDiameter / logo.width).clamp(0.0, 1.0);
+  final scaleH = (circleDiameter / logo.height).clamp(0.0, 1.0);
+  final s = scale < scaleH ? scale : scaleH;
+  final w = (logo.width * s).round();
+  final h = (logo.height * s).round();
+  final resized = img.copyResize(logo, width: w, height: h);
+
+  final canvas = img.Image(width: size, height: size, numChannels: 4);
+  img.compositeImage(
+    canvas,
+    resized,
+    dstX: (size - w) ~/ 2,
+    dstY: (size - h) ~/ 2,
+  );
+
+  await File(outPath).writeAsBytes(img.encodePng(canvas));
+  stdout.writeln(
+    'Generated $outPath (960x960, logo fits in ${circleDiameter.toInt()}px circle).',
+  );
 }
 
 Future<bool> _run(
