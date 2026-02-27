@@ -31,7 +31,6 @@ class LiveActivityService {
   static Timer? _updateTimer;
   static String? _cachedDeviceToken;
   static bool _isInitialized = false;
-  static DateTime? _lastActivityRecreation;
 
   static Timer? _bellDelayDebounceTimer;
   static double? _pendingBellDelay;
@@ -1147,7 +1146,6 @@ class LiveActivityService {
 
         if (liveActivityEnabled) {
           await _startPlaceholderActivity(allLessons, studentName);
-          _lastActivityRecreation = DateTime.now();
         }
 
         await _startTimetableMonitoring(
@@ -1164,71 +1162,6 @@ class LiveActivityService {
       }
     } catch (e, st) {
       _logger.severe('Error during onUserLogin: $e', e, st);
-    }
-  }
-
-  /// Called when app is opened - sends timetable to backend, backend handles updates
-  static Future<void> onAppOpened({
-    required KretaClient client,
-    required String studentName,
-    SettingsStore? settingsStore,
-  }) async {
-    if (!Platform.isIOS || !_isInitialized) return;
-
-    try {
-      final enabled = await isEnabled(settingsStore, client);
-      if (!enabled) {
-        _logger.info('LiveActivity is disabled, ending any running activities');
-        await LiveActivityManager.endAllActivities();
-        return;
-      }
-
-      final now = DateTime.now();
-      if (_lastActivityRecreation != null) {
-        final timeSinceLastRecreation = now.difference(_lastActivityRecreation!);
-        if (timeSinceLastRecreation < const Duration(minutes: 5)) {
-          _logger.info('onAppOpened: Skipping activity recreation, last was ${timeSinceLastRecreation.inSeconds}s ago');
-          await checkAndUpdateTimetable(
-              client: client,
-              studentName: studentName,
-              settingsStore: settingsStore
-          );
-          return;
-        }
-      }
-
-      final activeActivities = await LiveActivityManager.getActiveActivities();
-      if (activeActivities.isNotEmpty) {
-        _logger.info(
-          'Ending existing activity to refresh push token (8-hour expiration)',
-        );
-        await LiveActivityManager.endAllActivities();
-        await Future.delayed(const Duration(milliseconds: 500));
-      }
-
-      final todayStart = DateTime(now.year, now.month, now.day);
-      final startOfWeek = todayStart.subtract(Duration(days: now.weekday - 1));
-      final endOfWeek = startOfWeek.add(const Duration(days: 6));
-      final timetableResponse = await client.getTimeTable(
-        startOfWeek,
-        endOfWeek,
-      );
-      final allLessons = timetableResponse.response ?? [];
-
-      await _startPlaceholderActivity(allLessons, studentName);
-      _lastActivityRecreation = now;
-
-      _logger.info('New activity created with fresh push token');
-
-      await checkAndUpdateTimetable(
-        client: client,
-        studentName: studentName,
-        settingsStore: settingsStore,
-      );
-
-      await scheduleBackgroundFetch();
-    } catch (e) {
-      _logger.severe('Error handling onAppOpened for LiveActivity: $e');
     }
   }
 

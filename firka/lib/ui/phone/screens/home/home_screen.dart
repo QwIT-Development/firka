@@ -936,7 +936,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
 
   void _refreshLiveActivityOnResume() async {
     if (!_hasCompletedFirstPrefetch) {
-      logger.info('[Home] Skipping onAppOpened: first prefetch not yet complete');
+      logger.info('[Home] Skipping LiveActivity update: first prefetch not yet complete');
       return;
     }
     try {
@@ -945,13 +945,13 @@ class _HomeScreenState extends FirkaState<HomeScreen>
         settings: widget.data.settings,
       );
       final studentName = token?.studentId ?? "Student";
-      await LiveActivityService.onAppOpened(
+      await LiveActivityService.checkAndUpdateTimetable(
         client: widget.data.client,
         studentName: studentName,
         settingsStore: widget.data.settings,
       );
     } catch (e) {
-      logger.warning('[Home] LiveActivity refresh on resume failed: $e');
+      logger.warning('[Home] LiveActivity timetable update on resume failed: $e');
     }
   }
 
