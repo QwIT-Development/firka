@@ -27,16 +27,8 @@ const TokenModelSchema = CollectionSchema(
       name: r'expiryDate',
       type: IsarType.dateTime,
     ),
-    r'idToken': PropertySchema(
-      id: 2,
-      name: r'idToken',
-      type: IsarType.string,
-    ),
-    r'iss': PropertySchema(
-      id: 3,
-      name: r'iss',
-      type: IsarType.string,
-    ),
+    r'idToken': PropertySchema(id: 2, name: r'idToken', type: IsarType.string),
+    r'iss': PropertySchema(id: 3, name: r'iss', type: IsarType.string),
     r'refreshToken': PropertySchema(
       id: 4,
       name: r'refreshToken',
@@ -56,8 +48,9 @@ const TokenModelSchema = CollectionSchema(
       id: 7,
       name: r'updatedAtMs',
       type: IsarType.long,
-    )
+    ),
   },
+
   estimateSize: _tokenModelEstimateSize,
   serialize: _tokenModelSerialize,
   deserialize: _tokenModelDeserialize,
@@ -66,10 +59,11 @@ const TokenModelSchema = CollectionSchema(
   indexes: {},
   links: {},
   embeddedSchemas: {},
+
   getId: _tokenModelGetId,
   getLinks: _tokenModelGetLinks,
   attach: _tokenModelAttach,
-  version: '3.1.0+1',
+  version: '3.3.0',
 );
 
 int _tokenModelEstimateSize(
@@ -198,17 +192,17 @@ extension TokenModelQueryWhereSort
 extension TokenModelQueryWhere
     on QueryBuilder<TokenModel, TokenModel, QWhereClause> {
   QueryBuilder<TokenModel, TokenModel, QAfterWhereClause> studentIdNormEqualTo(
-      Id studentIdNorm) {
+    Id studentIdNorm,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: studentIdNorm,
-        upper: studentIdNorm,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(lower: studentIdNorm, upper: studentIdNorm),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterWhereClause>
-      studentIdNormNotEqualTo(Id studentIdNorm) {
+  studentIdNormNotEqualTo(Id studentIdNorm) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -217,13 +211,17 @@ extension TokenModelQueryWhere
             )
             .addWhereClause(
               IdWhereClause.greaterThan(
-                  lower: studentIdNorm, includeLower: false),
+                lower: studentIdNorm,
+                includeLower: false,
+              ),
             );
       } else {
         return query
             .addWhereClause(
               IdWhereClause.greaterThan(
-                  lower: studentIdNorm, includeLower: false),
+                lower: studentIdNorm,
+                includeLower: false,
+              ),
             )
             .addWhereClause(
               IdWhereClause.lessThan(upper: studentIdNorm, includeUpper: false),
@@ -233,7 +231,7 @@ extension TokenModelQueryWhere
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterWhereClause>
-      studentIdNormGreaterThan(Id studentIdNorm, {bool include = false}) {
+  studentIdNormGreaterThan(Id studentIdNorm, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: studentIdNorm, includeLower: include),
@@ -242,8 +240,9 @@ extension TokenModelQueryWhere
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterWhereClause> studentIdNormLessThan(
-      Id studentIdNorm,
-      {bool include = false}) {
+    Id studentIdNorm, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: studentIdNorm, includeUpper: include),
@@ -258,12 +257,14 @@ extension TokenModelQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerStudentIdNorm,
-        includeLower: includeLower,
-        upper: upperStudentIdNorm,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerStudentIdNorm,
+          includeLower: includeLower,
+          upper: upperStudentIdNorm,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -271,71 +272,74 @@ extension TokenModelQueryWhere
 extension TokenModelQueryFilter
     on QueryBuilder<TokenModel, TokenModel, QFilterCondition> {
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      accessTokenIsNull() {
+  accessTokenIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'accessToken',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'accessToken'),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      accessTokenIsNotNull() {
+  accessTokenIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'accessToken',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'accessToken'),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      accessTokenEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  accessTokenEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'accessToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'accessToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      accessTokenGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'accessToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      accessTokenLessThan(
+  accessTokenGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'accessToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'accessToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      accessTokenBetween(
+  accessTokenLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'accessToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+  accessTokenBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -343,140 +347,140 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'accessToken',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'accessToken',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      accessTokenStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  accessTokenStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'accessToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'accessToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      accessTokenEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  accessTokenEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'accessToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'accessToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      accessTokenContains(String value, {bool caseSensitive = true}) {
+  accessTokenContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'accessToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'accessToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      accessTokenMatches(String pattern, {bool caseSensitive = true}) {
+  accessTokenMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'accessToken',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'accessToken',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      accessTokenIsEmpty() {
+  accessTokenIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'accessToken',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'accessToken', value: ''),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      accessTokenIsNotEmpty() {
+  accessTokenIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'accessToken',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'accessToken', value: ''),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      expiryDateIsNull() {
+  expiryDateIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'expiryDate',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'expiryDate'),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      expiryDateIsNotNull() {
+  expiryDateIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'expiryDate',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'expiryDate'),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> expiryDateEqualTo(
-      DateTime? value) {
+    DateTime? value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'expiryDate',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'expiryDate', value: value),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      expiryDateGreaterThan(
-    DateTime? value, {
-    bool include = false,
-  }) {
+  expiryDateGreaterThan(DateTime? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'expiryDate',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'expiryDate',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      expiryDateLessThan(
-    DateTime? value, {
-    bool include = false,
-  }) {
+  expiryDateLessThan(DateTime? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'expiryDate',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'expiryDate',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -487,30 +491,32 @@ extension TokenModelQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'expiryDate',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'expiryDate',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> idTokenIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'idToken',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'idToken'),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      idTokenIsNotNull() {
+  idTokenIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'idToken',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'idToken'),
+      );
     });
   }
 
@@ -519,27 +525,31 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'idToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'idToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      idTokenGreaterThan(
+  idTokenGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'idToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'idToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -549,12 +559,14 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'idToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'idToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -566,14 +578,16 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'idToken',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'idToken',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -582,11 +596,13 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'idToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'idToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -595,70 +611,76 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'idToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'idToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> idTokenContains(
-      String value,
-      {bool caseSensitive = true}) {
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'idToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'idToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> idTokenMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'idToken',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'idToken',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> idTokenIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'idToken',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'idToken', value: ''),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      idTokenIsNotEmpty() {
+  idTokenIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'idToken',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'idToken', value: ''),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> issIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'iss',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'iss'),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> issIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'iss',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'iss'),
+      );
     });
   }
 
@@ -667,11 +689,13 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'iss',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'iss',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -681,12 +705,14 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'iss',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'iss',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -696,12 +722,14 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'iss',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'iss',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -713,14 +741,16 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'iss',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'iss',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -729,11 +759,13 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'iss',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'iss',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -742,122 +774,131 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'iss',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'iss',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> issContains(
-      String value,
-      {bool caseSensitive = true}) {
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'iss',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'iss',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> issMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'iss',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'iss',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> issIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'iss',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'iss', value: ''),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> issIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'iss',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'iss', value: ''),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      refreshTokenIsNull() {
+  refreshTokenIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'refreshToken',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'refreshToken'),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      refreshTokenIsNotNull() {
+  refreshTokenIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'refreshToken',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'refreshToken'),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      refreshTokenEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  refreshTokenEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'refreshToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'refreshToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      refreshTokenGreaterThan(
+  refreshTokenGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'refreshToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'refreshToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      refreshTokenLessThan(
+  refreshTokenLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'refreshToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'refreshToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      refreshTokenBetween(
+  refreshTokenBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -865,102 +906,104 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'refreshToken',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'refreshToken',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      refreshTokenStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  refreshTokenStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'refreshToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'refreshToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      refreshTokenEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  refreshTokenEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'refreshToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'refreshToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      refreshTokenContains(String value, {bool caseSensitive = true}) {
+  refreshTokenContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'refreshToken',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'refreshToken',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      refreshTokenMatches(String pattern, {bool caseSensitive = true}) {
+  refreshTokenMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'refreshToken',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'refreshToken',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      refreshTokenIsEmpty() {
+  refreshTokenIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'refreshToken',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'refreshToken', value: ''),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      refreshTokenIsNotEmpty() {
+  refreshTokenIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'refreshToken',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'refreshToken', value: ''),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      studentIdIsNull() {
+  studentIdIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'studentId',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'studentId'),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      studentIdIsNotNull() {
+  studentIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'studentId',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'studentId'),
+      );
     });
   }
 
@@ -969,27 +1012,31 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'studentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'studentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      studentIdGreaterThan(
+  studentIdGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'studentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'studentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -999,12 +1046,14 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'studentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'studentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1016,28 +1065,29 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'studentId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'studentId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      studentIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  studentIdStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'studentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'studentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1046,277 +1096,280 @@ extension TokenModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'studentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'studentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> studentIdContains(
-      String value,
-      {bool caseSensitive = true}) {
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'studentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'studentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition> studentIdMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'studentId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      studentIdIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'studentId',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      studentIdIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'studentId',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      studentIdNormIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'studentIdNorm',
-      ));
-    });
-  }
-
-  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      studentIdNormIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'studentIdNorm',
-      ));
-    });
-  }
-
-  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      studentIdNormEqualTo(Id? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'studentIdNorm',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      studentIdNormGreaterThan(
-    Id? value, {
-    bool include = false,
+    String pattern, {
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'studentIdNorm',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'studentId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      studentIdNormLessThan(
-    Id? value, {
-    bool include = false,
-  }) {
+  studentIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'studentIdNorm',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'studentId', value: ''),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      studentIdNormBetween(
+  studentIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'studentId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+  studentIdNormIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'studentIdNorm'),
+      );
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+  studentIdNormIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'studentIdNorm'),
+      );
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+  studentIdNormEqualTo(Id? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'studentIdNorm', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+  studentIdNormGreaterThan(Id? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'studentIdNorm',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+  studentIdNormLessThan(Id? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'studentIdNorm',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
+  studentIdNormBetween(
     Id? lower,
     Id? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'studentIdNorm',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'studentIdNorm',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      tokenVersionIsNull() {
+  tokenVersionIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'tokenVersion',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'tokenVersion'),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      tokenVersionIsNotNull() {
+  tokenVersionIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'tokenVersion',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'tokenVersion'),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      tokenVersionEqualTo(int? value) {
+  tokenVersionEqualTo(int? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'tokenVersion',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'tokenVersion', value: value),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      tokenVersionGreaterThan(
-    int? value, {
-    bool include = false,
-  }) {
+  tokenVersionGreaterThan(int? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'tokenVersion',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'tokenVersion',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      tokenVersionLessThan(
-    int? value, {
-    bool include = false,
-  }) {
+  tokenVersionLessThan(int? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'tokenVersion',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'tokenVersion',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      tokenVersionBetween(
+  tokenVersionBetween(
     int? lower,
     int? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'tokenVersion',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'tokenVersion',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      updatedAtMsIsNull() {
+  updatedAtMsIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'updatedAtMs',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'updatedAtMs'),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      updatedAtMsIsNotNull() {
+  updatedAtMsIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'updatedAtMs',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'updatedAtMs'),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      updatedAtMsEqualTo(int? value) {
+  updatedAtMsEqualTo(int? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'updatedAtMs',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'updatedAtMs', value: value),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      updatedAtMsGreaterThan(
-    int? value, {
-    bool include = false,
-  }) {
+  updatedAtMsGreaterThan(int? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'updatedAtMs',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'updatedAtMs',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      updatedAtMsLessThan(
-    int? value, {
-    bool include = false,
-  }) {
+  updatedAtMsLessThan(int? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'updatedAtMs',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'updatedAtMs',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<TokenModel, TokenModel, QAfterFilterCondition>
-      updatedAtMsBetween(
+  updatedAtMsBetween(
     int? lower,
     int? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'updatedAtMs',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'updatedAtMs',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -1539,8 +1592,9 @@ extension TokenModelQuerySortThenBy
 
 extension TokenModelQueryWhereDistinct
     on QueryBuilder<TokenModel, TokenModel, QDistinct> {
-  QueryBuilder<TokenModel, TokenModel, QDistinct> distinctByAccessToken(
-      {bool caseSensitive = true}) {
+  QueryBuilder<TokenModel, TokenModel, QDistinct> distinctByAccessToken({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'accessToken', caseSensitive: caseSensitive);
     });
@@ -1552,29 +1606,33 @@ extension TokenModelQueryWhereDistinct
     });
   }
 
-  QueryBuilder<TokenModel, TokenModel, QDistinct> distinctByIdToken(
-      {bool caseSensitive = true}) {
+  QueryBuilder<TokenModel, TokenModel, QDistinct> distinctByIdToken({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'idToken', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<TokenModel, TokenModel, QDistinct> distinctByIss(
-      {bool caseSensitive = true}) {
+  QueryBuilder<TokenModel, TokenModel, QDistinct> distinctByIss({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'iss', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<TokenModel, TokenModel, QDistinct> distinctByRefreshToken(
-      {bool caseSensitive = true}) {
+  QueryBuilder<TokenModel, TokenModel, QDistinct> distinctByRefreshToken({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'refreshToken', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<TokenModel, TokenModel, QDistinct> distinctByStudentId(
-      {bool caseSensitive = true}) {
+  QueryBuilder<TokenModel, TokenModel, QDistinct> distinctByStudentId({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'studentId', caseSensitive: caseSensitive);
     });

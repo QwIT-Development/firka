@@ -21,8 +21,9 @@ const GenericCacheModelSchema = CollectionSchema(
       id: 0,
       name: r'cacheData',
       type: IsarType.string,
-    )
+    ),
   },
+
   estimateSize: _genericCacheModelEstimateSize,
   serialize: _genericCacheModelSerialize,
   deserialize: _genericCacheModelDeserialize,
@@ -31,10 +32,11 @@ const GenericCacheModelSchema = CollectionSchema(
   indexes: {},
   links: {},
   embeddedSchemas: {},
+
   getId: _genericCacheModelGetId,
   getLinks: _genericCacheModelGetLinks,
   attach: _genericCacheModelAttach,
-  version: '3.1.0+1',
+  version: '3.3.0',
 );
 
 int _genericCacheModelEstimateSize(
@@ -92,19 +94,23 @@ Id _genericCacheModelGetId(GenericCacheModel object) {
 }
 
 List<IsarLinkBase<dynamic>> _genericCacheModelGetLinks(
-    GenericCacheModel object) {
+  GenericCacheModel object,
+) {
   return [];
 }
 
 void _genericCacheModelAttach(
-    IsarCollection<dynamic> col, Id id, GenericCacheModel object) {
+  IsarCollection<dynamic> col,
+  Id id,
+  GenericCacheModel object,
+) {
   object.cacheKey = id;
 }
 
 extension GenericCacheModelQueryWhereSort
     on QueryBuilder<GenericCacheModel, GenericCacheModel, QWhere> {
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterWhere>
-      anyCacheKey() {
+  anyCacheKey() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
@@ -114,17 +120,16 @@ extension GenericCacheModelQueryWhereSort
 extension GenericCacheModelQueryWhere
     on QueryBuilder<GenericCacheModel, GenericCacheModel, QWhereClause> {
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterWhereClause>
-      cacheKeyEqualTo(Id cacheKey) {
+  cacheKeyEqualTo(Id cacheKey) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: cacheKey,
-        upper: cacheKey,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(lower: cacheKey, upper: cacheKey),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterWhereClause>
-      cacheKeyNotEqualTo(Id cacheKey) {
+  cacheKeyNotEqualTo(Id cacheKey) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -147,7 +152,7 @@ extension GenericCacheModelQueryWhere
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterWhereClause>
-      cacheKeyGreaterThan(Id cacheKey, {bool include = false}) {
+  cacheKeyGreaterThan(Id cacheKey, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: cacheKey, includeLower: include),
@@ -156,7 +161,7 @@ extension GenericCacheModelQueryWhere
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterWhereClause>
-      cacheKeyLessThan(Id cacheKey, {bool include = false}) {
+  cacheKeyLessThan(Id cacheKey, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: cacheKey, includeUpper: include),
@@ -165,19 +170,21 @@ extension GenericCacheModelQueryWhere
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterWhereClause>
-      cacheKeyBetween(
+  cacheKeyBetween(
     Id lowerCacheKey,
     Id upperCacheKey, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerCacheKey,
-        includeLower: includeLower,
-        upper: upperCacheKey,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerCacheKey,
+          includeLower: includeLower,
+          upper: upperCacheKey,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -185,71 +192,74 @@ extension GenericCacheModelQueryWhere
 extension GenericCacheModelQueryFilter
     on QueryBuilder<GenericCacheModel, GenericCacheModel, QFilterCondition> {
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheDataIsNull() {
+  cacheDataIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'cacheData',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'cacheData'),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheDataIsNotNull() {
+  cacheDataIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'cacheData',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'cacheData'),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheDataEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  cacheDataEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'cacheData',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'cacheData',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheDataGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'cacheData',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheDataLessThan(
+  cacheDataGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'cacheData',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'cacheData',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheDataBetween(
+  cacheDataLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'cacheData',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
+  cacheDataBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -257,158 +267,159 @@ extension GenericCacheModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'cacheData',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'cacheData',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheDataStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  cacheDataStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'cacheData',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'cacheData',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheDataEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  cacheDataEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'cacheData',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'cacheData',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheDataContains(String value, {bool caseSensitive = true}) {
+  cacheDataContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'cacheData',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'cacheData',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheDataMatches(String pattern, {bool caseSensitive = true}) {
+  cacheDataMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'cacheData',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'cacheData',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheDataIsEmpty() {
+  cacheDataIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'cacheData',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'cacheData', value: ''),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheDataIsNotEmpty() {
+  cacheDataIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'cacheData',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'cacheData', value: ''),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheKeyIsNull() {
+  cacheKeyIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'cacheKey',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'cacheKey'),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheKeyIsNotNull() {
+  cacheKeyIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'cacheKey',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'cacheKey'),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheKeyEqualTo(Id? value) {
+  cacheKeyEqualTo(Id? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'cacheKey',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'cacheKey', value: value),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheKeyGreaterThan(
-    Id? value, {
-    bool include = false,
-  }) {
+  cacheKeyGreaterThan(Id? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'cacheKey',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'cacheKey',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheKeyLessThan(
-    Id? value, {
-    bool include = false,
-  }) {
+  cacheKeyLessThan(Id? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'cacheKey',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'cacheKey',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterFilterCondition>
-      cacheKeyBetween(
+  cacheKeyBetween(
     Id? lower,
     Id? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'cacheKey',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'cacheKey',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -422,14 +433,14 @@ extension GenericCacheModelQueryLinks
 extension GenericCacheModelQuerySortBy
     on QueryBuilder<GenericCacheModel, GenericCacheModel, QSortBy> {
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterSortBy>
-      sortByCacheData() {
+  sortByCacheData() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'cacheData', Sort.asc);
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterSortBy>
-      sortByCacheDataDesc() {
+  sortByCacheDataDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'cacheData', Sort.desc);
     });
@@ -439,28 +450,28 @@ extension GenericCacheModelQuerySortBy
 extension GenericCacheModelQuerySortThenBy
     on QueryBuilder<GenericCacheModel, GenericCacheModel, QSortThenBy> {
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterSortBy>
-      thenByCacheData() {
+  thenByCacheData() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'cacheData', Sort.asc);
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterSortBy>
-      thenByCacheDataDesc() {
+  thenByCacheDataDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'cacheData', Sort.desc);
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterSortBy>
-      thenByCacheKey() {
+  thenByCacheKey() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'cacheKey', Sort.asc);
     });
   }
 
   QueryBuilder<GenericCacheModel, GenericCacheModel, QAfterSortBy>
-      thenByCacheKeyDesc() {
+  thenByCacheKeyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'cacheKey', Sort.desc);
     });
@@ -470,7 +481,7 @@ extension GenericCacheModelQuerySortThenBy
 extension GenericCacheModelQueryWhereDistinct
     on QueryBuilder<GenericCacheModel, GenericCacheModel, QDistinct> {
   QueryBuilder<GenericCacheModel, GenericCacheModel, QDistinct>
-      distinctByCacheData({bool caseSensitive = true}) {
+  distinctByCacheData({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'cacheData', caseSensitive: caseSensitive);
     });
@@ -486,7 +497,7 @@ extension GenericCacheModelQueryProperty
   }
 
   QueryBuilder<GenericCacheModel, String?, QQueryOperations>
-      cacheDataProperty() {
+  cacheDataProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'cacheData');
     });

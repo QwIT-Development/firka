@@ -1,28 +1,28 @@
-# hogyan hozz létre upload-keystore-t flutterhez?
+# How to create an upload keystore for Flutter
 
-ha ezt olvasod, akkor valószínűleg szeretnéd a refilc appot build-elni. ha bármi kérdésed lenne, nyugodtan keress minket discordon, vagy akár emailben is!
+If you're reading this, you probably want to build the app for release. If you have any questions, reach out on Discord or by email!
 
-## 1. keystore létrehozása
+## 1. Create the keystore (for v3/v4 signing, EC key)
 
-először, nyiss egy terminált ebben a mappában és futtasd ezt a parancsot:
+Open a terminal in this folder and run:
 
 ```sh
 keytool -genkeypair -v \
   -keystore upload-keystore.jks \
-  -keyalg RSA -keysize 2048 -validity 10000 \
+  -keyalg EC -keysize 256 -validity 10000 \
   -alias upload
 ```
 
-ezután meg kell adnod néhány adatot:
-- egy jelszót a keystore-hoz (ezt jegyezd meg!)
-- nevedet, szervezeted nevét (nyugodtan hagyhatod alapértelmezetten)
-- egy második jelszót az „upload” aliashoz (ajánlott az előzőt használni)
+You will be prompted for:
+- A password for the keystore
+- Your name, organization name (defaults are fine)
+- A second password for the „upload” alias (recommended: same as above)
 
-ha minden jól megy, egy `upload-keystore.jks` fájl létrejön.
+When done, an `upload-keystore.jks` file will be created.
 
-## 3. keystore.properties létrehozása
+## 2. Create keystore.properties
 
-hozz létre egy új fájlt `keystore.properties` néven, és írd bele a következőt:
+Create a new file named `keystore.properties` with:
 
 ```properties
 storeFile=upload-keystore.jks
@@ -31,10 +31,4 @@ keyPassword=password
 keyAlias=upload
 ```
 
-cseréld ki a `password` részeket, természetesen a választott jelszavadra.
-
-## 4. secrets mappa kizárása a gitből
-
-már beleraktuk a .gitignore mappába a kizárását ennek, ezen nem kell aggódnod.
-
-készen is vagy, sok sikert!
+Replace the `password` values with your chosen password(s).

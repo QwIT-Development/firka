@@ -1,15 +1,15 @@
-# hogyan hozz létre upload-keystore-t flutterhez?
+# Hogyan hozz létre upload-keystore-t flutterhez?
 
 ha ezt olvasod, akkor valószínűleg szeretnéd a refilc appot build-elni. ha bármi kérdésed lenne, nyugodtan keress minket discordon, vagy akár emailben is!
 
-## 1. keystore létrehozása
+## 1. keystore létrehozása (v3/v4 aláíráshoz, EC kulccsal)
 
 először, nyiss egy terminált ebben a mappában és futtasd ezt a parancsot:
 
 ```sh
 keytool -genkeypair -v \
   -keystore upload-keystore.jks \
-  -keyalg RSA -keysize 2048 -validity 10000 \
+  -keyalg EC -keysize 256 -validity 10000 \
   -alias upload
 ```
 
@@ -32,9 +32,3 @@ keyAlias=upload
 ```
 
 cseréld ki a `password` részeket, természetesen a választott jelszavadra.
-
-## 4. secrets mappa kizárása a gitből
-
-már beleraktuk a .gitignore mappába a kizárását ennek, ezen nem kell aggódnod.
-
-készen is vagy, sok sikert!

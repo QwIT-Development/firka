@@ -22,8 +22,8 @@ subprojects {
         if (plugins.hasPlugin("com.android.application") || plugins.hasPlugin("com.android.library")) {
             val androidExtension = extensions.getByName("android") as BaseExtension
             androidExtension.apply {
-                compileSdkVersion(35)
-                buildToolsVersion = "35.0.0"
+                compileSdkVersion(36)
+                buildToolsVersion = "36.1.0"
             }
         }
         if (hasProperty("android")) {

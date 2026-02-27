@@ -5,7 +5,7 @@ import 'package:firka/helpers/live_activity_service.dart';
 import 'package:firka/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../helpers/api/client/kreta_client.dart';

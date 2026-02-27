@@ -14,7 +14,7 @@ import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';

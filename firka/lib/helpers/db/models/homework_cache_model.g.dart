@@ -22,8 +22,9 @@ const HomeworkCacheModelSchema = CollectionSchema(
       id: 0,
       name: r'values',
       type: IsarType.stringList,
-    )
+    ),
   },
+
   estimateSize: _homeworkCacheModelEstimateSize,
   serialize: _homeworkCacheModelSerialize,
   deserialize: _homeworkCacheModelDeserialize,
@@ -32,10 +33,11 @@ const HomeworkCacheModelSchema = CollectionSchema(
   indexes: {},
   links: {},
   embeddedSchemas: {},
+
   getId: _homeworkCacheModelGetId,
   getLinks: _homeworkCacheModelGetLinks,
   attach: _homeworkCacheModelAttach,
-  version: '3.1.0+1',
+  version: '3.3.0',
 );
 
 int _homeworkCacheModelEstimateSize(
@@ -99,19 +101,23 @@ Id _homeworkCacheModelGetId(HomeworkCacheModel object) {
 }
 
 List<IsarLinkBase<dynamic>> _homeworkCacheModelGetLinks(
-    HomeworkCacheModel object) {
+  HomeworkCacheModel object,
+) {
   return [];
 }
 
 void _homeworkCacheModelAttach(
-    IsarCollection<dynamic> col, Id id, HomeworkCacheModel object) {
+  IsarCollection<dynamic> col,
+  Id id,
+  HomeworkCacheModel object,
+) {
   object.cacheKey = id;
 }
 
 extension HomeworkCacheModelQueryWhereSort
     on QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QWhere> {
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterWhere>
-      anyCacheKey() {
+  anyCacheKey() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
@@ -121,17 +127,16 @@ extension HomeworkCacheModelQueryWhereSort
 extension HomeworkCacheModelQueryWhere
     on QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QWhereClause> {
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterWhereClause>
-      cacheKeyEqualTo(Id cacheKey) {
+  cacheKeyEqualTo(Id cacheKey) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: cacheKey,
-        upper: cacheKey,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(lower: cacheKey, upper: cacheKey),
+      );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterWhereClause>
-      cacheKeyNotEqualTo(Id cacheKey) {
+  cacheKeyNotEqualTo(Id cacheKey) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -154,7 +159,7 @@ extension HomeworkCacheModelQueryWhere
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterWhereClause>
-      cacheKeyGreaterThan(Id cacheKey, {bool include = false}) {
+  cacheKeyGreaterThan(Id cacheKey, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: cacheKey, includeLower: include),
@@ -163,7 +168,7 @@ extension HomeworkCacheModelQueryWhere
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterWhereClause>
-      cacheKeyLessThan(Id cacheKey, {bool include = false}) {
+  cacheKeyLessThan(Id cacheKey, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: cacheKey, includeUpper: include),
@@ -172,19 +177,21 @@ extension HomeworkCacheModelQueryWhere
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterWhereClause>
-      cacheKeyBetween(
+  cacheKeyBetween(
     Id lowerCacheKey,
     Id upperCacheKey, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerCacheKey,
-        includeLower: includeLower,
-        upper: upperCacheKey,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerCacheKey,
+          includeLower: includeLower,
+          upper: upperCacheKey,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -192,145 +199,147 @@ extension HomeworkCacheModelQueryWhere
 extension HomeworkCacheModelQueryFilter
     on QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QFilterCondition> {
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      cacheKeyIsNull() {
+  cacheKeyIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'cacheKey',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'cacheKey'),
+      );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      cacheKeyIsNotNull() {
+  cacheKeyIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'cacheKey',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'cacheKey'),
+      );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      cacheKeyEqualTo(Id? value) {
+  cacheKeyEqualTo(Id? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'cacheKey',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'cacheKey', value: value),
+      );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      cacheKeyGreaterThan(
-    Id? value, {
-    bool include = false,
-  }) {
+  cacheKeyGreaterThan(Id? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'cacheKey',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'cacheKey',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      cacheKeyLessThan(
-    Id? value, {
-    bool include = false,
-  }) {
+  cacheKeyLessThan(Id? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'cacheKey',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'cacheKey',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      cacheKeyBetween(
+  cacheKeyBetween(
     Id? lower,
     Id? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'cacheKey',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'cacheKey',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesIsNull() {
+  valuesIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'values',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'values'),
+      );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesIsNotNull() {
+  valuesIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'values',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'values'),
+      );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesElementEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  valuesElementEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'values',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'values',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesElementGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'values',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesElementLessThan(
+  valuesElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'values',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'values',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesElementBetween(
+  valuesElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'values',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
+  valuesElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -338,160 +347,126 @@ extension HomeworkCacheModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'values',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesElementStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'values',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesElementEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'values',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesElementContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'values',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesElementMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'values',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesElementIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'values',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesElementIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'values',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'values',
-        length,
-        true,
-        length,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'values',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesIsEmpty() {
+  valuesElementStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'values',
-        0,
-        true,
-        0,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'values',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesIsNotEmpty() {
+  valuesElementEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'values',
-        0,
-        false,
-        999999,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'values',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
+  valuesElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'values',
-        0,
-        true,
-        length,
-        include,
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'values',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
+  valuesElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'values',
-        length,
-        include,
-        999999,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'values',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
-      valuesLengthBetween(
+  valuesElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'values', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
+  valuesElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'values', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
+  valuesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'values', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
+  valuesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'values', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
+  valuesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'values', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
+  valuesLengthLessThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'values', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
+  valuesLengthGreaterThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'values', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterFilterCondition>
+  valuesLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -521,14 +496,14 @@ extension HomeworkCacheModelQuerySortBy
 extension HomeworkCacheModelQuerySortThenBy
     on QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QSortThenBy> {
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterSortBy>
-      thenByCacheKey() {
+  thenByCacheKey() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'cacheKey', Sort.asc);
     });
   }
 
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QAfterSortBy>
-      thenByCacheKeyDesc() {
+  thenByCacheKeyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'cacheKey', Sort.desc);
     });
@@ -538,7 +513,7 @@ extension HomeworkCacheModelQuerySortThenBy
 extension HomeworkCacheModelQueryWhereDistinct
     on QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QDistinct> {
   QueryBuilder<HomeworkCacheModel, HomeworkCacheModel, QDistinct>
-      distinctByValues() {
+  distinctByValues() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'values');
     });
@@ -554,7 +529,7 @@ extension HomeworkCacheModelQueryProperty
   }
 
   QueryBuilder<HomeworkCacheModel, List<String>?, QQueryOperations>
-      valuesProperty() {
+  valuesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'values');
     });

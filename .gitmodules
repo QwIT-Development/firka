@@ -1,12 +1,3 @@
-[submodule "firka/vendor/isar_generator"]
-	path = firka/vendor/isar_generator
-	url = https://git.qwit.cloud/firka/isar_generator
-[submodule "firka/vendor/isar"]
-	path = firka/vendor/isar
-	url = https://git.qwit.cloud/firka/isar
-[submodule "firka/vendor/isar_flutter_libs"]
-	path = firka/vendor/isar_flutter_libs
-	url = https://git.qwit.cloud/firka/isar_flutter_libs
 [submodule "firka/lib/l10n"]
 	path = firka/lib/l10n
 	url = https://github.com/QwIT-Development/firka-localization

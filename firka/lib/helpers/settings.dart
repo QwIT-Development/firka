@@ -8,7 +8,7 @@ import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/widget/firka_icon.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import '../main.dart';
