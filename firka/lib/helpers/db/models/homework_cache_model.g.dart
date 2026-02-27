@@ -547,17 +547,14 @@ const HomeworkDoneModelSchema = CollectionSchema(
   name: r'HomeworkDoneModel',
   id: -864135255844965497,
   properties: {
-    r'doneAt': PropertySchema(
-      id: 0,
-      name: r'doneAt',
-      type: IsarType.dateTime,
-    ),
+    r'doneAt': PropertySchema(id: 0, name: r'doneAt', type: IsarType.dateTime),
     r'homeworkId': PropertySchema(
       id: 1,
       name: r'homeworkId',
       type: IsarType.string,
-    )
+    ),
   },
+
   estimateSize: _homeworkDoneModelEstimateSize,
   serialize: _homeworkDoneModelSerialize,
   deserialize: _homeworkDoneModelDeserialize,
@@ -566,10 +563,11 @@ const HomeworkDoneModelSchema = CollectionSchema(
   indexes: {},
   links: {},
   embeddedSchemas: {},
+
   getId: _homeworkDoneModelGetId,
   getLinks: _homeworkDoneModelGetLinks,
   attach: _homeworkDoneModelAttach,
-  version: '3.1.0+1',
+  version: '3.3.0',
 );
 
 int _homeworkDoneModelEstimateSize(
@@ -626,12 +624,16 @@ Id _homeworkDoneModelGetId(HomeworkDoneModel object) {
 }
 
 List<IsarLinkBase<dynamic>> _homeworkDoneModelGetLinks(
-    HomeworkDoneModel object) {
+  HomeworkDoneModel object,
+) {
   return [];
 }
 
 void _homeworkDoneModelAttach(
-    IsarCollection<dynamic> col, Id id, HomeworkDoneModel object) {
+  IsarCollection<dynamic> col,
+  Id id,
+  HomeworkDoneModel object,
+) {
   object.id = id;
 }
 
@@ -647,17 +649,14 @@ extension HomeworkDoneModelQueryWhereSort
 extension HomeworkDoneModelQueryWhere
     on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QWhereClause> {
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterWhereClause>
-      idEqualTo(Id id) {
+  idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterWhereClause>
-      idNotEqualTo(Id id) {
+  idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -680,7 +679,7 @@ extension HomeworkDoneModelQueryWhere
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterWhereClause>
-      idGreaterThan(Id id, {bool include = false}) {
+  idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -689,7 +688,7 @@ extension HomeworkDoneModelQueryWhere
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterWhereClause>
-      idLessThan(Id id, {bool include = false}) {
+  idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -698,19 +697,21 @@ extension HomeworkDoneModelQueryWhere
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterWhereClause>
-      idBetween(
+  idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -718,109 +719,111 @@ extension HomeworkDoneModelQueryWhere
 extension HomeworkDoneModelQueryFilter
     on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QFilterCondition> {
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      doneAtEqualTo(DateTime value) {
+  doneAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'doneAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'doneAt', value: value),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      doneAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  doneAtGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'doneAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'doneAt',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      doneAtLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  doneAtLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'doneAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'doneAt',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      doneAtBetween(
+  doneAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'doneAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'doneAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      homeworkIdEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  homeworkIdEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'homeworkId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'homeworkId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      homeworkIdGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'homeworkId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      homeworkIdLessThan(
+  homeworkIdGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'homeworkId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'homeworkId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      homeworkIdBetween(
+  homeworkIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'homeworkId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
+  homeworkIdBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -828,158 +831,159 @@ extension HomeworkDoneModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'homeworkId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'homeworkId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      homeworkIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  homeworkIdStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'homeworkId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'homeworkId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      homeworkIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  homeworkIdEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'homeworkId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'homeworkId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      homeworkIdContains(String value, {bool caseSensitive = true}) {
+  homeworkIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'homeworkId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'homeworkId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      homeworkIdMatches(String pattern, {bool caseSensitive = true}) {
+  homeworkIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'homeworkId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'homeworkId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      homeworkIdIsEmpty() {
+  homeworkIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'homeworkId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'homeworkId', value: ''),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      homeworkIdIsNotEmpty() {
+  homeworkIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'homeworkId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'homeworkId', value: ''),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      idIsNull() {
+  idIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'id',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'id'),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      idIsNotNull() {
+  idIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'id',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'id'),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      idEqualTo(Id? value) {
+  idEqualTo(Id? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      idGreaterThan(
-    Id? value, {
-    bool include = false,
-  }) {
+  idGreaterThan(Id? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      idLessThan(
-    Id? value, {
-    bool include = false,
-  }) {
+  idLessThan(Id? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterFilterCondition>
-      idBetween(
+  idBetween(
     Id? lower,
     Id? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -993,28 +997,28 @@ extension HomeworkDoneModelQueryLinks
 extension HomeworkDoneModelQuerySortBy
     on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QSortBy> {
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
-      sortByDoneAt() {
+  sortByDoneAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'doneAt', Sort.asc);
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
-      sortByDoneAtDesc() {
+  sortByDoneAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'doneAt', Sort.desc);
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
-      sortByHomeworkId() {
+  sortByHomeworkId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'homeworkId', Sort.asc);
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
-      sortByHomeworkIdDesc() {
+  sortByHomeworkIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'homeworkId', Sort.desc);
     });
@@ -1024,28 +1028,28 @@ extension HomeworkDoneModelQuerySortBy
 extension HomeworkDoneModelQuerySortThenBy
     on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QSortThenBy> {
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
-      thenByDoneAt() {
+  thenByDoneAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'doneAt', Sort.asc);
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
-      thenByDoneAtDesc() {
+  thenByDoneAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'doneAt', Sort.desc);
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
-      thenByHomeworkId() {
+  thenByHomeworkId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'homeworkId', Sort.asc);
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
-      thenByHomeworkIdDesc() {
+  thenByHomeworkIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'homeworkId', Sort.desc);
     });
@@ -1058,7 +1062,7 @@ extension HomeworkDoneModelQuerySortThenBy
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QAfterSortBy>
-      thenByIdDesc() {
+  thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
@@ -1068,14 +1072,14 @@ extension HomeworkDoneModelQuerySortThenBy
 extension HomeworkDoneModelQueryWhereDistinct
     on QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QDistinct> {
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QDistinct>
-      distinctByDoneAt() {
+  distinctByDoneAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'doneAt');
     });
   }
 
   QueryBuilder<HomeworkDoneModel, HomeworkDoneModel, QDistinct>
-      distinctByHomeworkId({bool caseSensitive = true}) {
+  distinctByHomeworkId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'homeworkId', caseSensitive: caseSensitive);
     });
@@ -1097,7 +1101,7 @@ extension HomeworkDoneModelQueryProperty
   }
 
   QueryBuilder<HomeworkDoneModel, String, QQueryOperations>
-      homeworkIdProperty() {
+  homeworkIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'homeworkId');
     });
