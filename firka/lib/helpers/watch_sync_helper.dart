@@ -468,8 +468,34 @@ class WatchSyncHelper {
         );
         await _handleTokenRecoveredFromiCloud();
         return null;
+      case 'onWatchMessage':
+        _handleWatchMessage(call.arguments);
+        return null;
       default:
         return null;
+    }
+  }
+
+  /// Callback for Watch pairing message events.
+  /// Set by main.dart to handle "ping" messages for Watch pairing flow.
+  static void Function(Map<String, dynamic> message)? onWatchMessage;
+
+  static void _handleWatchMessage(dynamic arguments) {
+    if (arguments == null) return;
+    try {
+      final Map<String, dynamic> message;
+      if (arguments is Map<String, dynamic>) {
+        message = arguments;
+      } else if (arguments is Map) {
+        message = Map<String, dynamic>.from(arguments);
+      } else {
+        debugPrint('[WatchSync] onWatchMessage: unexpected type ${arguments.runtimeType}');
+        return;
+      }
+      debugPrint('[WatchSync] Received Watch message: ${message["id"]}');
+      onWatchMessage?.call(message);
+    } catch (e) {
+      debugPrint('[WatchSync] Error handling Watch message: $e');
     }
   }
 
@@ -549,6 +575,13 @@ class WatchSyncHelper {
 
     debugPrint('[WatchSync] Returning token for Watch');
     return tokenData;
+  }
+
+  /// Send a fire-and-forget message to Watch via WatchSessionManager.
+  /// Replaces direct watch_connectivity plugin usage to avoid WCSession delegate conflict.
+  static Future<void> sendMessageToWatch(Map<String, dynamic> message) async {
+    if (!Platform.isIOS) return;
+    await _invokeMethodWithTimeout('sendMessageToWatch', message);
   }
 
   static Future<void> sendTokenToWatch() async {

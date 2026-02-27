@@ -16,8 +16,6 @@ class SharedKeychainManager {
     private let deviceName = "Watch"
     #endif
 
-    private var changeObserver: ((WatchToken) -> Void)?
-
     private init() {}
 
     var resolvedAccessGroup: String {
@@ -199,15 +197,6 @@ class SharedKeychainManager {
         } else {
             print("[SharedKeychain] Failed to delete token from synced Keychain: \(status)")
         }
-    }
-
-    // MARK: - Observer (for compatibility with old iCloudTokenManager interface)
-    func observeChanges(_ observer: @escaping (WatchToken) -> Void) {
-        self.changeObserver = observer
-    }
-
-    func notifyObservers(with token: WatchToken) {
-        changeObserver?(token)
     }
 
     // MARK: - Migration from KV Store

@@ -31,6 +31,7 @@ class LiveActivityService {
   static Timer? _updateTimer;
   static String? _cachedDeviceToken;
   static bool _isInitialized = false;
+  static DateTime? _lastActivityRecreation;
 
   static Timer? _bellDelayDebounceTimer;
   static double? _pendingBellDelay;
@@ -863,6 +864,7 @@ class LiveActivityService {
       return;
     }
 
+
     final liveActivityEnabled = await isEnabled(settingsStore, client);
     final morningNotificationEnabled =
         _getCurrentMorningNotificationEnabled() ?? false;
@@ -1145,6 +1147,7 @@ class LiveActivityService {
 
         if (liveActivityEnabled) {
           await _startPlaceholderActivity(allLessons, studentName);
+          _lastActivityRecreation = DateTime.now();
         }
 
         await _startTimetableMonitoring(
@@ -1165,7 +1168,6 @@ class LiveActivityService {
   }
 
   /// Called when app is opened - sends timetable to backend, backend handles updates
-  /// IMPORTANT: Recreates Live Activity on every app open to refresh the 8-hour push token
   static Future<void> onAppOpened({
     required KretaClient client,
     required String studentName,
@@ -1181,6 +1183,20 @@ class LiveActivityService {
         return;
       }
 
+      final now = DateTime.now();
+      if (_lastActivityRecreation != null) {
+        final timeSinceLastRecreation = now.difference(_lastActivityRecreation!);
+        if (timeSinceLastRecreation < const Duration(minutes: 5)) {
+          _logger.info('onAppOpened: Skipping activity recreation, last was ${timeSinceLastRecreation.inSeconds}s ago');
+          await checkAndUpdateTimetable(
+              client: client,
+              studentName: studentName,
+              settingsStore: settingsStore
+          );
+          return;
+        }
+      }
+
       final activeActivities = await LiveActivityManager.getActiveActivities();
       if (activeActivities.isNotEmpty) {
         _logger.info(
@@ -1190,7 +1206,6 @@ class LiveActivityService {
         await Future.delayed(const Duration(milliseconds: 500));
       }
 
-      final now = DateTime.now();
       final todayStart = DateTime(now.year, now.month, now.day);
       final startOfWeek = todayStart.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
@@ -1201,6 +1216,7 @@ class LiveActivityService {
       final allLessons = timetableResponse.response ?? [];
 
       await _startPlaceholderActivity(allLessons, studentName);
+      _lastActivityRecreation = now;
 
       _logger.info('New activity created with fresh push token');
 
@@ -1585,8 +1601,16 @@ class LiveActivityService {
   /// Starts a minimal placeholder activity shell - backend will update with real data
   static Future<void> _startPlaceholderActivity(
     List<Lesson> allLessons,
-    String studentName,
-  ) async {
+    String studentName, {
+    bool isBackground = false,
+  }) async {
+    if (isBackground) {
+      _logger.info(
+        '_startPlaceholderActivity: Called from background context, skipping to preserve existing activity',
+      );
+      return;
+    }
+
     // Always end existing activities to ensure fresh token (8-hour expiration)
     final activeActivities = await LiveActivityManager.getActiveActivities();
     if (activeActivities.isNotEmpty) {
@@ -1704,10 +1728,8 @@ class LiveActivityService {
 
   static Future<void> _clearCache() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_deviceTokenKey);
     await prefs.remove(_lastTimetableUpdateKey);
     await prefs.remove(_isRegisteredKey);
-    _cachedDeviceToken = null;
   }
 
   /// Try to get cached token or wait a short period until iOS provides it

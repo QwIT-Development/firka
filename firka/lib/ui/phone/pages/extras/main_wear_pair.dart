@@ -1,9 +1,9 @@
 import 'package:firka/helpers/debug_helper.dart';
 import 'package:firka/helpers/ui/firka_card.dart';
+import 'package:firka/helpers/watch_sync_helper.dart';
 import 'package:firka/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:watch_connectivity/watch_connectivity.dart';
 
 import '../../../model/style.dart';
 
@@ -12,7 +12,6 @@ void showWearBottomSheet(
   AppInitialization data,
   String model,
 ) async {
-  final watch = WatchConnectivity();
   final timetable = await data.client.getTimeTable(
     timeNow(),
     timeNow().add(Duration(days: 7)),
@@ -108,9 +107,8 @@ void showWearBottomSheet(
                           color: appStyle.colors.accent,
                         ),
                         onTap: () {
-                          watch.sendMessage({
+                          WatchSyncHelper.sendMessageToWatch({
                             "id": "init_data",
-                            // "timetable": timetableArray,
                             "auth": {
                               "studentId": data.client.model.studentId,
                               "studentIdNorm": data.client.model.studentIdNorm,

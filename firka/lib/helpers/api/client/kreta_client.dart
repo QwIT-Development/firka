@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -56,7 +57,7 @@ class ApiResponse<T> {
 }
 
 class KretaClient {
-  bool _tokenMutex = false;
+  Completer<void>? _tokenMutexCompleter;
   TokenModel model;
   Isar isar;
 
@@ -328,23 +329,28 @@ class KretaClient {
 
   Future<T> _mutexCallback<T>(Future<T> Function() callback) async {
     const maxWaitTime = Duration(seconds: 30);
-    final startTime = DateTime.now();
 
-    while (_tokenMutex) {
-      if (DateTime.now().difference(startTime) > maxWaitTime) {
-        logger.warning(
-          "[Mutex] Timeout waiting for token mutex, forcing release",
-        );
-        _tokenMutex = false;
-        break;
-      }
-      await Future.delayed(const Duration(milliseconds: 50));
+    if (_tokenMutexCompleter != null) {
+      try {
+        await _tokenMutexCompleter!.future.timeout(maxWaitTime, onTimeout: () {
+          logger.warning(
+              "[Mutex] Timeout waiting for token mutex, forcing release");
+          if (_tokenMutexCompleter != null && !_tokenMutexCompleter!.isCompleted) {
+            _tokenMutexCompleter!.complete();
+          }
+        });
+      } catch (_) {}
     }
-    _tokenMutex = true;
+
+    _tokenMutexCompleter = Completer<void>();
     try {
       return await callback();
     } finally {
-      _tokenMutex = false;
+      final completer = _tokenMutexCompleter;
+      _tokenMutexCompleter = null;
+      if (completer != null && !completer.isCompleted) {
+        completer.complete();
+      }
     }
   }
 

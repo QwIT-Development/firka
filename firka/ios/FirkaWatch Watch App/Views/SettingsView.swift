@@ -69,6 +69,10 @@ struct SettingsView: View {
 
     private func logout() {
         TokenManager.shared.deleteToken()
+        _ = SharedSessionStateManager.shared.publishState(
+            hasAnyAccount: false,
+            activeStudentIdNorm: nil
+        )
         DataStore.shared.clearAll()
     }
 }

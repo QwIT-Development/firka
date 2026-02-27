@@ -106,6 +106,7 @@ class DataStore {
                 lastUpdated = nil
                 error = nil
                 recoveryAttempted = false
+                WatchL10n.shared.resetLanguageVersionTracking()
             }
             setLastHandledSessionActiveStudentIdNorm(activeStudentIdNorm)
         } else {
@@ -322,7 +323,16 @@ class DataStore {
         }
     }
 
+    private var isRecoveryInProgress: Bool = false
+
     func refreshAllWithRecovery() async {
+        guard !isRecoveryInProgress && !isLoading else {
+            print("[Watch] refreshAllWithRecovery() already in progress or refreshAll() running, skipping duplicate call")
+            return
+        }
+        isRecoveryInProgress = true
+        defer { isRecoveryInProgress = false }
+
         reconcileSharedSessionState()
         WatchL10n.shared.refreshFromiPhoneAndSharedState()
 
@@ -334,7 +344,7 @@ class DataStore {
 
         if shouldRequestTokenFromPhone {
             WatchConnectivityManager.shared.requestTokenFromPhone()
-            try? await Task.sleep(nanoseconds: 700_000_000)
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
             checkTokenState()
         }
 
