@@ -57,7 +57,9 @@ class WidgetCacheHelper {
   }
 
   static Future<void> updateWidgetCache(
-      FirkaStyle style, KretaClient client) async {
+    FirkaStyle style,
+    KretaClient client,
+  ) async {
     final dataDir = await getApplicationDocumentsDirectory();
 
     final now = timeNow();
@@ -69,9 +71,12 @@ class WidgetCacheHelper {
     final widgetFile = File(p.join(dataDir.path, "widget_state.json"));
 
     if (lessons.response != null) {
-      debugPrint('Android widget cache: ${lessons.response!.length} lessons (cached: ${lessons.cached})');
+      debugPrint(
+        'Android widget cache: ${lessons.response!.length} lessons (cached: ${lessons.cached})',
+      );
       widgetFile.writeAsString(
-          jsonEncode(WidgetCacheHelper.toJson(style, lessons.response!)));
+        jsonEncode(WidgetCacheHelper.toJson(style, lessons.response!)),
+      );
     } else {
       debugPrint('Android widget cache: No lessons to cache');
     }
@@ -105,13 +110,17 @@ class WidgetCacheHelper {
 
   /// Comprehensive iOS widget refresh that collects all necessary data
   /// Call this on: app open, user switch, data refresh
-  static Future<void> refreshIOSWidgets(KretaClient client, SettingsStore settings) async {
+  static Future<void> refreshIOSWidgets(
+    KretaClient client,
+    SettingsStore settings,
+  ) async {
     if (!Platform.isIOS) return;
 
     try {
-      final langIndex = (settings.group("settings").subGroup("application")["language"]
-              as SettingsItemsRadio)
-          .activeIndex;
+      final langIndex =
+          (settings.group("settings").subGroup("application")["language"]
+                  as SettingsItemsRadio)
+              .activeIndex;
       String locale;
       switch (langIndex) {
         case 1:
@@ -127,9 +136,10 @@ class WidgetCacheHelper {
           locale = 'hu';
       }
 
-      final themeIndex = (settings.group("settings").subGroup("customization")["theme"]
-              as SettingsItemsRadio)
-          .activeIndex;
+      final themeIndex =
+          (settings.group("settings").subGroup("customization")["theme"]
+                  as SettingsItemsRadio)
+              .activeIndex;
       String theme;
       switch (themeIndex) {
         case 1:
@@ -160,7 +170,9 @@ class WidgetCacheHelper {
       final todayLessons = todayResponse.response ?? [];
       final tomorrowLessons = tomorrowResponse.response ?? [];
 
-      debugPrint('iOS widget refresh: ${todayLessons.length} today lessons, ${tomorrowLessons.length} tomorrow lessons');
+      debugPrint(
+        'iOS widget refresh: ${todayLessons.length} today lessons, ${tomorrowLessons.length} tomorrow lessons',
+      );
 
       List<Lesson> nextSchoolDayLessons = [];
       DateTime? nextSchoolDayDate;
@@ -176,7 +188,9 @@ class WidgetCacheHelper {
           if (dayLessons.isNotEmpty) {
             nextSchoolDayLessons = dayLessons;
             nextSchoolDayDate = dayMidnight;
-            debugPrint('iOS widget: Next school day found ${i} days ahead with ${dayLessons.length} lessons');
+            debugPrint(
+              'iOS widget: Next school day found $i days ahead with ${dayLessons.length} lessons',
+            );
             break;
           }
         }
@@ -185,7 +199,9 @@ class WidgetCacheHelper {
       final gradesResponse = await client.getGrades(forceCache: false);
       final grades = gradesResponse.response ?? [];
 
-      debugPrint('iOS widget refresh: ${grades.length} grades fetched (cached: ${gradesResponse.cached})');
+      debugPrint(
+        'iOS widget refresh: ${grades.length} grades fetched (cached: ${gradesResponse.cached})',
+      );
 
       final Map<String, double> subjectAverages = {};
       final Set<String> subjectUids = {};
@@ -198,7 +214,9 @@ class WidgetCacheHelper {
       int validSubjectCount = 0;
 
       for (var uid in subjectUids) {
-        final subjectGrades = grades.where((g) => g.subject.uid == uid).toList();
+        final subjectGrades = grades
+            .where((g) => g.subject.uid == uid)
+            .toList();
         final avg = _calculateWeightedAverage(subjectGrades);
         if (!avg.isNaN && avg > 0) {
           subjectAverages[uid] = avg;

@@ -5,20 +5,22 @@ class Guardian {
   final String? phoneNumber;
   final String uid;
 
-  Guardian(
-      {required this.email,
-      required this.isLegalRepresentative,
-      required this.name,
-      required this.phoneNumber,
-      required this.uid});
+  Guardian({
+    required this.email,
+    required this.isLegalRepresentative,
+    required this.name,
+    required this.phoneNumber,
+    required this.uid,
+  });
 
   factory Guardian.fromJson(Map<String, dynamic> json) {
     return Guardian(
-        email: json['EmailCim'],
-        isLegalRepresentative: json['IsTorvenyesKepviselo'],
-        name: json['Nev'],
-        phoneNumber: json['Telefonszam'],
-        uid: json['Uid']);
+      email: json['EmailCim'],
+      isLegalRepresentative: json['IsTorvenyesKepviselo'],
+      name: json['Nev'],
+      phoneNumber: json['Telefonszam'],
+      uid: json['Uid'],
+    );
   }
 
   @override

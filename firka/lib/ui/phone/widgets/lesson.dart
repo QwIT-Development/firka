@@ -25,9 +25,17 @@ class LessonWidget extends StatelessWidget {
   final Lesson? nextLesson;
   final bool? placeholderMode;
 
-  const LessonWidget(this.data, this.week, this.day, this.lessonNo, this.lesson,
-      this.test, this.nextLesson,
-      {super.key, this.placeholderMode});
+  const LessonWidget(
+    this.data,
+    this.week,
+    this.day,
+    this.lessonNo,
+    this.lesson,
+    this.test,
+    this.nextLesson, {
+    super.key,
+    this.placeholderMode,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +58,10 @@ class LessonWidget extends StatelessWidget {
     if (week.isNotEmpty) {
       showBreak =
           timeNow().isAfter(lesson.start) && timeNow().isBefore(lesson.end) ||
-              timeNow().isAfter(week.last.end) ||
-              lesson.start.getMidnight() != timeNow().getMidnight() || timeNow().isAfter(day.last.end) || timeNow().isBefore(day.first.start);
+          timeNow().isAfter(week.last.end) ||
+          lesson.start.getMidnight() != timeNow().getMidnight() ||
+          timeNow().isAfter(day.last.end) ||
+          timeNow().isBefore(day.first.start);
     }
     var accent = appStyle.colors.accent;
     var secondary = appStyle.colors.secondary;
@@ -81,117 +91,146 @@ class LessonWidget extends StatelessWidget {
       roomName = "${roomName.substring(0, 11 - 3)}...";
     }
 
-    elements.add(GestureDetector(
-      
-      onTap: () {
-        if (lessonNo == null) return;
-        showLessonBottomSheet(
-            context, data, lesson, lessonNo, accent, secondary, bgColor, test);
-      },
-      child: FirkaCard(
-        color: isDismissed
-            ? appStyle.colors.cardTranslucent
-            : appStyle.colors.card,
-        shadow: !isDismissed,
-        left: [
-          showLessonNos == false || lessonNo == null
-              ? SizedBox()
-              : SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        "assets/icons/subtract.svg",
-                        color: bgColor,
-                        width: 18,
-                        height: 18,
-                      ),
-                      Text(
-                        lessonNo.toString(),
-                        style: appStyle.fonts.B_12R.apply(color: secondary),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+    elements.add(
+      GestureDetector(
+        onTap: () {
+          if (lessonNo == null) return;
+          showLessonBottomSheet(
+            context,
+            data,
+            lesson,
+            lessonNo,
+            accent,
+            secondary,
+            bgColor,
+            test,
+          );
+        },
+        child: FirkaCard(
+          color: isDismissed
+              ? appStyle.colors.cardTranslucent
+              : appStyle.colors.card,
+          shadow: !isDismissed,
+          left: [
+            showLessonNos == false || lessonNo == null
+                ? SizedBox()
+                : SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          "assets/icons/subtract.svg",
+                          color: bgColor,
+                          width: 18,
+                          height: 18,
+                        ),
+                        Text(
+                          lessonNo.toString(),
+                          style: appStyle.fonts.B_12R.apply(color: secondary),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
+            Transform.translate(
+              offset: Offset(-4, 0),
+              child: Card(
+                shadowColor: Colors.transparent,
+                color: bgColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-          Transform.translate(
-            offset: Offset(-4, 0),
-            child: Card(
-              shadowColor: Colors.transparent,
-              color: bgColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              child: Stack(children: [
-                Padding(
-                  padding: EdgeInsetsGeometry.all(4),
-                  child: ClassIconWidget(
-                    color: accent,
-                    size: 20,
-                    uid: lesson.uid,
-                    className: lesson.name,
-                    category: lesson.subject?.name != null
-                        ? lesson.subject!.name.firstUpper()
-                        : '',
-                  ),
-                ),
-                !showTests && test != null
-                    ? Transform.translate(
-                        offset: Offset(26, -18),
-                        child: BubbleTest(),
-                      )
-                    : SizedBox(),
-              ]),
-            ),
-          ),
-          SizedBox(width: !showTests && test != null ? 16 : 8),
-          Text(subjectName,
-              style: appStyle.fonts.B_15SB
-                  .apply(color: appStyle.colors.textPrimary)),
-        ],
-        right: [
-          placeholderMode == true
-              ? SizedBox()
-              : Text(
-                  isDismissed
-                      ? data.l10n.class_dismissed
-                      : lesson.start
-                          .toLocal()
-                          .format(data.l10n, FormatMode.hmm),
-                  style: appStyle.fonts.B_14R
-                      .apply(color: appStyle.colors.textPrimary)),
-          placeholderMode == true
-              ? SizedBox()
-              : isDismissed
-                  ? SizedBox()
-                  : Card(
-                      shadowColor: Colors.transparent,
-                      color: appStyle.colors.a15p,
-                      child: Padding(
-                        padding: EdgeInsets.all(5),
-                        child: Text(roomName,
-                            style: appStyle.fonts.B_12R
-                                .apply(color: appStyle.colors.secondary)),
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: EdgeInsetsGeometry.all(4),
+                      child: ClassIconWidget(
+                        color: accent,
+                        size: 20,
+                        uid: lesson.uid,
+                        className: lesson.name,
+                        category: lesson.subject?.name != null
+                            ? lesson.subject!.name.firstUpper()
+                            : '',
                       ),
                     ),
-        ],
+                    !showTests && test != null
+                        ? Transform.translate(
+                            offset: Offset(26, -18),
+                            child: BubbleTest(),
+                          )
+                        : SizedBox(),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(width: !showTests && test != null ? 16 : 8),
+            Text(
+              subjectName,
+              style: appStyle.fonts.B_15SB.apply(
+                color: appStyle.colors.textPrimary,
+              ),
+            ),
+          ],
+          right: [
+            placeholderMode == true
+                ? SizedBox()
+                : Text(
+                    isDismissed
+                        ? data.l10n.class_dismissed
+                        : lesson.start.toLocal().format(
+                            data.l10n,
+                            FormatMode.hmm,
+                          ),
+                    style: appStyle.fonts.B_14R.apply(
+                      color: appStyle.colors.textPrimary,
+                    ),
+                  ),
+            placeholderMode == true
+                ? SizedBox()
+                : isDismissed
+                ? SizedBox()
+                : Card(
+                    shadowColor: Colors.transparent,
+                    color: appStyle.colors.a15p,
+                    child: Padding(
+                      padding: EdgeInsets.all(5),
+                      child: Text(
+                        roomName,
+                        style: appStyle.fonts.B_12R.apply(
+                          color: appStyle.colors.secondary,
+                        ),
+                      ),
+                    ),
+                  ),
+          ],
+        ),
       ),
-    ));
+    );
 
     if (isSubstituted && showSubstitutions) {
-      elements.add(FirkaCard(
-        left: [
-          Text(data.l10n.class_substitution,
-              style: appStyle.fonts.H_16px
-                  .apply(color: appStyle.colors.textPrimary))
-        ],
-        right: [
-          Text(lesson.substituteTeacher!,
-              style: appStyle.fonts.B_16R
-                  .apply(color: appStyle.colors.textSecondary))
-        ],
-      ));
+      elements.add(
+        FirkaCard(
+          left: [
+            Text(
+              data.l10n.class_substitution,
+              style: appStyle.fonts.H_16px.apply(
+                color: appStyle.colors.textPrimary,
+              ),
+            ),
+          ],
+          right: [
+            Text(
+              lesson.substituteTeacher!,
+              style: appStyle.fonts.B_16R.apply(
+                color: appStyle.colors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     if (test != null && showTests) {
@@ -206,29 +245,46 @@ class LessonWidget extends StatelessWidget {
       theme = theme.firstUpper();
       method = method.firstUpper();
 
-      elements.add(GestureDetector(
-      onTap: () {
-        showTestBottomSheet(
-            context, data, lesson, lessonNo, accent, secondary, bgColor, test);
-      },
-      child: FirkaCard(
-        left: [
-          FirkaIconWidget(
-            FirkaIconType.majesticons,
-            Majesticon.editPen4Solid,
-            color: appStyle.colors.accent,
+      elements.add(
+        GestureDetector(
+          onTap: () {
+            showTestBottomSheet(
+              context,
+              data,
+              lesson,
+              lessonNo,
+              accent,
+              secondary,
+              bgColor,
+              test,
+            );
+          },
+          child: FirkaCard(
+            left: [
+              FirkaIconWidget(
+                FirkaIconType.majesticons,
+                Majesticon.editPen4Solid,
+                color: appStyle.colors.accent,
+              ),
+              SizedBox(width: 6),
+              Text(
+                theme,
+                style: appStyle.fonts.B_16SB.apply(
+                  color: appStyle.colors.textSecondary,
+                ),
+              ),
+            ],
+            right: [
+              Text(
+                method,
+                style: appStyle.fonts.B_16R.apply(
+                  color: appStyle.colors.textTertiary,
+                ),
+              ),
+            ],
           ),
-          SizedBox(width: 6),
-          Text(theme,
-              style: appStyle.fonts.B_16SB
-                  .apply(color: appStyle.colors.textSecondary))
-        ],
-        right: [
-          Text(method,
-              style: appStyle.fonts.B_16R
-                  .apply(color: appStyle.colors.textTertiary))
-        ],
-      )));
+        ),
+      );
     }
 
     if (nextLesson != null) {
@@ -237,9 +293,11 @@ class LessonWidget extends StatelessWidget {
 
       if (breakMins > 45) {
         final breakEnd = lesson.end.add(Duration(minutes: breakMins));
-        final emptyClass = seqSchedule.firstWhereOrNull((lesson2) =>
-            lesson2.start.isAfter(lesson.end) &&
-            lesson2.end.isBefore(breakEnd));
+        final emptyClass = seqSchedule.firstWhereOrNull(
+          (lesson2) =>
+              lesson2.start.isAfter(lesson.end) &&
+              lesson2.end.isBefore(breakEnd),
+        );
 
         if (emptyClass != null) {
           final preBreak = emptyClass.start.difference(lesson.end).inMinutes;
@@ -250,136 +308,177 @@ class LessonWidget extends StatelessWidget {
                   .subGroup("timetable_toast")
                   .boolean("breaks") &&
               showBreak) {
-            elements.add(FirkaCard(
-              color: appStyle.colors.cardTranslucent,
-              shadow: false,
+            elements.add(
+              FirkaCard(
+                color: appStyle.colors.cardTranslucent,
+                shadow: false,
+                left: [
+                  Text(
+                    data.l10n.breakTxt,
+                    style: appStyle.fonts.B_16SB.apply(
+                      color: appStyle.colors.textSecondary,
+                    ),
+                  ),
+                ],
+                right: [
+                  Text(
+                    "$preBreak ${preBreak == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
+                    style: appStyle.fonts.B_16R.apply(
+                      color: appStyle.colors.textTertiary,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          elements.add(
+            FirkaCard(
               left: [
-                Text(data.l10n.breakTxt,
-                    style: appStyle.fonts.B_16SB
-                        .apply(color: appStyle.colors.textSecondary))
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: Stack(
+                    children: [
+                      SvgPicture.asset(
+                        "assets/icons/subtract.svg",
+                        color: bgColor,
+                        width: 18,
+                        height: 18,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(left: 5),
+                        child: Text(
+                          emptyClass.lessonNumber.toString(),
+                          style: appStyle.fonts.B_12R.apply(color: secondary),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Transform.translate(
+                  offset: Offset(-4, 0),
+                  child: Card(
+                    shadowColor: Colors.transparent,
+                    color: bgColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsetsGeometry.all(4),
+                      child: FirkaIconWidget(
+                        FirkaIconType.majesticonsLocal,
+                        'cupFilled',
+                        color: appStyle.colors.accent,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  data.l10n.empty_class,
+                  style: appStyle.fonts.B_16SB.apply(
+                    color: appStyle.colors.textPrimary,
+                  ),
+                ),
               ],
               right: [
                 Text(
-                    "$preBreak ${preBreak == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                    style: appStyle.fonts.B_16R
-                        .apply(color: appStyle.colors.textTertiary))
-              ],
-            ));
-          }
-
-          elements.add(FirkaCard(
-            left: [
-              SizedBox(
-                width: 18,
-                height: 18,
-                child: Stack(
-                  children: [
-                    SvgPicture.asset(
-                      "assets/icons/subtract.svg",
-                      color: bgColor,
-                      width: 18,
-                      height: 18,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 5),
-                      child: Text(emptyClass.lessonNumber.toString(),
-                          style: appStyle.fonts.B_12R.apply(color: secondary)),
-                    )
-                  ],
-                ),
-              ),
-              Transform.translate(
-                offset: Offset(-4, 0),
-                child: Card(
-                  shadowColor: Colors.transparent,
-                  color: bgColor,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: EdgeInsetsGeometry.all(4),
-                    child: FirkaIconWidget(
-                        FirkaIconType.majesticonsLocal, 'cupFilled',
-                        color: appStyle.colors.accent, size: 24),
-                  ),
-                ),
-              ),
-              SizedBox(width: 8),
-              Text(data.l10n.empty_class,
-                  style: appStyle.fonts.B_16SB
-                      .apply(color: appStyle.colors.textPrimary)),
-            ],
-            right: [
-              Text(
                   isDismissed
                       ? data.l10n.class_dismissed
                       : "${emptyClass.start.toLocal().format(data.l10n, FormatMode.hmm)} - ${emptyClass.end.toLocal().format(data.l10n, FormatMode.hmm)}",
-                  style: appStyle.fonts.B_16R
-                      .apply(color: appStyle.colors.textPrimary))
-            ],
-          ));
+                  style: appStyle.fonts.B_16R.apply(
+                    color: appStyle.colors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          );
 
           if (data.settings
                   .group("settings")
                   .subGroup("timetable_toast")
                   .boolean("breaks") &&
               showBreak) {
-            elements.add(FirkaCard(
-              color: appStyle.colors.cardTranslucent,
-              shadow: false,
-              left: [
-                Text(data.l10n.breakTxt,
-                    style: appStyle.fonts.B_16SB
-                        .apply(color: appStyle.colors.textSecondary))
-              ],
-              right: [
-                Text(
+            elements.add(
+              FirkaCard(
+                color: appStyle.colors.cardTranslucent,
+                shadow: false,
+                left: [
+                  Text(
+                    data.l10n.breakTxt,
+                    style: appStyle.fonts.B_16SB.apply(
+                      color: appStyle.colors.textSecondary,
+                    ),
+                  ),
+                ],
+                right: [
+                  Text(
                     "$postBreak ${postBreak == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                    style: appStyle.fonts.B_16R
-                        .apply(color: appStyle.colors.textTertiary))
-              ],
-            ));
+                    style: appStyle.fonts.B_16R.apply(
+                      color: appStyle.colors.textTertiary,
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
         } else if (data.settings
                 .group("settings")
                 .subGroup("timetable_toast")
                 .boolean("breaks") &&
             showBreak) {
-          elements.add(FirkaCard(
-            color: appStyle.colors.cardTranslucent,
-            shadow: false,
-            left: [
-              Text(data.l10n.breakTxt,
-                  style: appStyle.fonts.B_16SB
-                      .apply(color: appStyle.colors.textSecondary))
-            ],
-            right: [
-              Text(
+          elements.add(
+            FirkaCard(
+              color: appStyle.colors.cardTranslucent,
+              shadow: false,
+              left: [
+                Text(
+                  data.l10n.breakTxt,
+                  style: appStyle.fonts.B_16SB.apply(
+                    color: appStyle.colors.textSecondary,
+                  ),
+                ),
+              ],
+              right: [
+                Text(
                   "$breakMins ${breakMins == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                  style: appStyle.fonts.B_16R
-                      .apply(color: appStyle.colors.textTertiary))
-            ],
-          ));
+                  style: appStyle.fonts.B_16R.apply(
+                    color: appStyle.colors.textTertiary,
+                  ),
+                ),
+              ],
+            ),
+          );
         }
       } else if (data.settings
               .group("settings")
               .subGroup("timetable_toast")
               .boolean("breaks") &&
           showBreak) {
-        elements.add(FirkaCard(
-          color: appStyle.colors.cardTranslucent,
-          shadow: false,
-          left: [
-            Text(data.l10n.breakTxt,
-                style: appStyle.fonts.B_16SB
-                    .apply(color: appStyle.colors.textSecondary))
-          ],
-          right: [
-            Text(
+        elements.add(
+          FirkaCard(
+            color: appStyle.colors.cardTranslucent,
+            shadow: false,
+            left: [
+              Text(
+                data.l10n.breakTxt,
+                style: appStyle.fonts.B_16SB.apply(
+                  color: appStyle.colors.textSecondary,
+                ),
+              ),
+            ],
+            right: [
+              Text(
                 "$breakMins ${breakMins == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                style: appStyle.fonts.B_16R
-                    .apply(color: appStyle.colors.textTertiary))
-          ],
-        ));
+                style: appStyle.fonts.B_16R.apply(
+                  color: appStyle.colors.textTertiary,
+                ),
+              ),
+            ],
+          ),
+        );
       }
     }
 

@@ -10,10 +10,10 @@ class ReauthToastWidget extends StatefulWidget {
   final Function() onDismiss;
 
   const ReauthToastWidget({
-    Key? key,
+    super.key,
     required this.data,
     required this.onDismiss,
-  }) : super(key: key);
+  });
 
   @override
   State<ReauthToastWidget> createState() => _ReauthToastWidgetState();
@@ -32,7 +32,11 @@ class _ReauthToastWidgetState extends State<ReauthToastWidget> {
       child: Center(
         child: GestureDetector(
           onTap: () {
-            showReauthBottomSheet(context, widget.data, widget.data.l10n.reauth);
+            showReauthBottomSheet(
+              context,
+              widget.data,
+              widget.data.l10n.reauth,
+            );
           },
           onVerticalDragUpdate: (details) {
             setState(() {
@@ -62,8 +66,9 @@ class _ReauthToastWidgetState extends State<ReauthToastWidget> {
                 children: [
                   Text(
                     widget.data.l10n.reauth,
-                    style: appStyle.fonts.B_16SB
-                        .copyWith(color: appStyle.colors.errorText),
+                    style: appStyle.fonts.B_16SB.copyWith(
+                      color: appStyle.colors.errorText,
+                    ),
                   ),
                   SizedBox(width: 8),
                   FirkaIconWidget(
@@ -82,9 +87,10 @@ class _ReauthToastWidgetState extends State<ReauthToastWidget> {
   }
 }
 
-Widget buildReauthToast(BuildContext context, AppInitialization data, Function() onDismiss) {
-  return ReauthToastWidget(
-    data: data,
-    onDismiss: onDismiss,
-  );
+Widget buildReauthToast(
+  BuildContext context,
+  AppInitialization data,
+  Function() onDismiss,
+) {
+  return ReauthToastWidget(data: data, onDismiss: onDismiss);
 }

@@ -21,25 +21,36 @@ class LessonBigWidget extends StatelessWidget {
   final List<Lesson> lessons;
   final List<Test> tests;
 
-  const LessonBigWidget(this.l10n, this.now, this.lessonNo, this.lesson,
-      this.prevLesson, this.nextLesson, this.lessons, this.tests,
-      {super.key});
+  const LessonBigWidget(
+    this.l10n,
+    this.now,
+    this.lessonNo,
+    this.lesson,
+    this.prevLesson,
+    this.nextLesson,
+    this.lessons,
+    this.tests, {
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     var hasLesson = lesson != null;
-    var lessonsLeft =
-      lessons.where((lesson) => lesson.end.isAfter(now)).length;
+    var lessonsLeft = lessons.where((lesson) => lesson.end.isAfter(now)).length;
     var hasPrevLesson = prevLesson != null;
     var hasNextLesson = nextLesson != null;
     // TODO: holnapi órák száma kiszámolás
     var lessonsTomorrow = 0;
-    
-    var testsTomorrow = tests.where((test) =>
-        test.date.isAfter(now) &&
-        test.date.isBefore(DateTime(now.year, now.month, now.day + 2))).length;
-  
-    if (lessonsLeft < 1){
+
+    var testsTomorrow = tests
+        .where(
+          (test) =>
+              test.date.isAfter(now) &&
+              test.date.isBefore(DateTime(now.year, now.month, now.day + 2)),
+        )
+        .length;
+
+    if (lessonsLeft < 1) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -58,7 +69,9 @@ class LessonBigWidget extends StatelessWidget {
                             Card(
                               shadowColor: Colors.transparent,
                               color: appStyle.colors.a15p,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
                               child: Padding(
                                 padding: EdgeInsets.all(6),
                                 child: FirkaIconWidget(
@@ -74,14 +87,16 @@ class LessonBigWidget extends StatelessWidget {
                       ),
                       Text(
                         testsTomorrow == 0
-                        ? l10n.tt_no_classes_l2
-                        : l10n.get_ready,
-                        style: appStyle.fonts.B_16R
-                            .apply(color: appStyle.colors.textPrimary)),
+                            ? l10n.tt_no_classes_l2
+                            : l10n.get_ready,
+                        style: appStyle.fonts.B_16R.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
+                      ),
                     ],
-                  )
+                  ),
                 ],
-              )
+              ),
             ],
             extra: Column(
               children: [
@@ -102,10 +117,10 @@ class LessonBigWidget extends StatelessWidget {
                               Padding(
                                 padding: EdgeInsets.all(2),
                                 child: FirkaIconWidget(
-                                FirkaIconType.majesticons,
-                                Majesticon.editPen4Solid,
-                                size: 32.0,
-                                color: appStyle.colors.accent,
+                                  FirkaIconType.majesticons,
+                                  Majesticon.editPen4Solid,
+                                  size: 32.0,
+                                  color: appStyle.colors.accent,
                                 ),
                               ),
                             ],
@@ -113,24 +128,27 @@ class LessonBigWidget extends StatelessWidget {
                         ),
                         SizedBox(width: 8),
                         Text(
-                            (lessonsTomorrow == 0 && testsTomorrow == 0)
-                            ? l10n.no_tests_tomorrow
-                            : (testsTomorrow > 1)
+                          (lessonsTomorrow == 0 && testsTomorrow == 0)
+                              ? l10n.no_tests_tomorrow
+                              : (testsTomorrow > 1)
                               ? l10n.tests_tomorrow(testsTomorrow.toString())
                               : (testsTomorrow < 1 && lessonsTomorrow > 0)
-                                ? l10n.lessons_tomorrow(lessonsTomorrow.toString())
-                                : l10n.tests_tomorrow(testsTomorrow.toString()),
-                            textAlign: TextAlign.left,
-                            style: appStyle.fonts.B_16R.apply(
+                              ? l10n.lessons_tomorrow(
+                                  lessonsTomorrow.toString(),
+                                )
+                              : l10n.tests_tomorrow(testsTomorrow.toString()),
+                          textAlign: TextAlign.left,
+                          style: appStyle.fonts.B_16R.apply(
                             color: appStyle.colors.textPrimary,
                           ),
                         ),
-                    ])
+                      ],
+                    ),
                   ),
                 ),
               ],
-            )
-          )
+            ),
+          ),
         ],
       );
     }
@@ -152,36 +170,52 @@ class LessonBigWidget extends StatelessWidget {
                           child: Padding(
                             padding: EdgeInsets.all(4),
                             child: FirkaIconWidget(
-                                FirkaIconType.majesticons, 'cupFilled',
-                                color: appStyle.colors.accent, size: 24),
+                              FirkaIconType.majesticons,
+                              'cupFilled',
+                              color: appStyle.colors.accent,
+                              size: 24,
+                            ),
                           ),
                         ),
-                        Text(l10n.breakTxt,
-                            style: appStyle.fonts.B_16SB
-                                .apply(color: appStyle.colors.textPrimary)),
+                        Text(
+                          l10n.breakTxt,
+                          style: appStyle.fonts.B_16SB.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
                       ],
                     ),
                   ],
-                )
+                ),
               ],
               right: [
                 Column(
                   children: [
-                    Row(children: [
-                      Text('-',
-                          style: appStyle.fonts.B_16R
-                              .apply(color: appStyle.colors.textPrimary))
-                    ]),
-                    Row(children: [
-                      Text('-',
-                          style: appStyle.fonts.B_16R
-                              .apply(color: appStyle.colors.textPrimary))
-                    ])
+                    Row(
+                      children: [
+                        Text(
+                          '-',
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          '-',
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
-                )
+                ),
               ],
               extra: SizedBox.shrink(),
-            )
+            ),
           ],
         );
       }
@@ -208,46 +242,65 @@ class LessonBigWidget extends StatelessWidget {
                           child: Padding(
                             padding: EdgeInsets.all(4),
                             child: FirkaIconWidget(
-                                FirkaIconType.majesticonsLocal, 'cupFilled',
-                                color: appStyle.colors.accent, size: 24),
+                              FirkaIconType.majesticonsLocal,
+                              'cupFilled',
+                              color: appStyle.colors.accent,
+                              size: 24,
+                            ),
                           ),
                         ),
-                        Text(l10n.breakTxt,
-                            style: appStyle.fonts.B_16SB
-                                .apply(color: appStyle.colors.textPrimary)),
+                        Text(
+                          l10n.breakTxt,
+                          style: appStyle.fonts.B_16SB.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
                       ],
                     ),
                     Row(
                       children: [
-                        Text(timeLeftStr,
-                            style: appStyle.fonts.B_12R
-                                .apply(color: appStyle.colors.textSecondary)),
+                        Text(
+                          timeLeftStr,
+                          style: appStyle.fonts.B_12R.apply(
+                            color: appStyle.colors.textSecondary,
+                          ),
+                        ),
                       ],
                     ),
                   ],
-                )
+                ),
               ],
               right: [
                 Column(
                   children: [
-                    Row(children: [
-                      Text('-',
-                          style: appStyle.fonts.B_16R
-                              .apply(color: appStyle.colors.textPrimary))
-                    ]),
-                    Row(children: [
-                      Text(
-                          nextLesson!.start
-                              .toLocal()
-                              .format(l10n, FormatMode.hmm),
-                          style: appStyle.fonts.B_16R
-                              .apply(color: appStyle.colors.textPrimary))
-                    ])
+                    Row(
+                      children: [
+                        Text(
+                          '-',
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          nextLesson!.start.toLocal().format(
+                            l10n,
+                            FormatMode.hmm,
+                          ),
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
-                )
+                ),
               ],
               extra: SizedBox.shrink(),
-            )
+            ),
           ],
         );
       }
@@ -302,76 +355,96 @@ class LessonBigWidget extends StatelessWidget {
                             ),
                             Padding(
                               padding: EdgeInsets.only(left: 5),
-                              child: Text(lessonNo.toString(),
-                                  style: appStyle.fonts.B_12R
-                                      .apply(color: appStyle.colors.secondary)),
-                            )
+                              child: Text(
+                                lessonNo.toString(),
+                                style: appStyle.fonts.B_12R.apply(
+                                  color: appStyle.colors.secondary,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
                       Transform.translate(
-                          offset: Offset(-4, 0),
-                          child: Card(
-                            shadowColor: Colors.transparent,
-                            color: appStyle.colors.a15p,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
-                            child: Padding(
-                              padding: EdgeInsets.all(4),
-                              child: ClassIconWidget(
-                                color: appStyle.colors.accent,
-                                size: 24,
-                                uid: lesson!.uid,
-                                className: lesson!.name,
-                                category: lesson!.subject?.name ?? '',
-                              ),
+                        offset: Offset(-4, 0),
+                        child: Card(
+                          shadowColor: Colors.transparent,
+                          color: appStyle.colors.a15p,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(4),
+                            child: ClassIconWidget(
+                              color: appStyle.colors.accent,
+                              size: 24,
+                              uid: lesson!.uid,
+                              className: lesson!.name,
+                              category: lesson!.subject?.name ?? '',
                             ),
-                          )),
-                      Text(lesson!.subject?.name ?? 'N/A',
-                          style: appStyle.fonts.B_16SB
-                              .apply(color: appStyle.colors.textPrimary)),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        lesson!.subject?.name ?? 'N/A',
+                        style: appStyle.fonts.B_16SB.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
+                      ),
                     ],
                   ),
                   Row(
                     children: [
-                      Text(timeLeftStr,
-                          style: appStyle.fonts.B_12R
-                              .apply(color: appStyle.colors.textSecondary)),
+                      Text(
+                        timeLeftStr,
+                        style: appStyle.fonts.B_12R.apply(
+                          color: appStyle.colors.textSecondary,
+                        ),
+                      ),
                     ],
                   ),
                 ],
-              )
+              ),
             ],
             right: [
               Column(
                 children: [
                   Row(
                     children: [
-                      Text(lesson!.start.toLocal().format(l10n, FormatMode.hmm),
-                          style: appStyle.fonts.B_16R
-                              .apply(color: appStyle.colors.textPrimary)),
+                      Text(
+                        lesson!.start.toLocal().format(l10n, FormatMode.hmm),
+                        style: appStyle.fonts.B_16R.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
+                      ),
                       Card(
                         shadowColor: Colors.transparent,
                         color: appStyle.colors.a15p,
                         child: Padding(
                           padding: EdgeInsets.all(4),
-                          child: Text(lesson!.roomName ?? '?',
-                              style: appStyle.fonts.B_12R
-                                  .apply(color: appStyle.colors.secondary)),
+                          child: Text(
+                            lesson!.roomName ?? '?',
+                            style: appStyle.fonts.B_12R.apply(
+                              color: appStyle.colors.secondary,
+                            ),
+                          ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                   Row(
                     children: [
                       SizedBox(width: 18),
-                      Text(lesson!.end.toLocal().format(l10n, FormatMode.hmm),
-                          style: appStyle.fonts.B_12R
-                              .apply(color: appStyle.colors.textSecondary)),
+                      Text(
+                        lesson!.end.toLocal().format(l10n, FormatMode.hmm),
+                        style: appStyle.fonts.B_12R.apply(
+                          color: appStyle.colors.textSecondary,
+                        ),
+                      ),
                     ],
-                  )
+                  ),
                 ],
-              )
+              ),
             ],
             extra: ClipRRect(
               borderRadius: BorderRadius.circular(8),
@@ -382,12 +455,13 @@ class LessonBigWidget extends StatelessWidget {
                 minHeight: 8,
               ),
             ),
-          )
+          ),
         ],
       );
     } else {
-      var duration =
-          nextLesson!.start.difference(prevLesson!.end).inMilliseconds;
+      var duration = nextLesson!.start
+          .difference(prevLesson!.end)
+          .inMilliseconds;
       var progress =
           duration - nextLesson!.start.difference(now).inMilliseconds;
       var timeLeft = nextLesson!.start.difference(now);
@@ -410,24 +484,33 @@ class LessonBigWidget extends StatelessWidget {
                         child: Padding(
                           padding: EdgeInsets.all(4),
                           child: FirkaIconWidget(
-                              FirkaIconType.majesticonsLocal, 'cupFilled',
-                              color: appStyle.colors.accent, size: 24),
+                            FirkaIconType.majesticonsLocal,
+                            'cupFilled',
+                            color: appStyle.colors.accent,
+                            size: 24,
+                          ),
                         ),
                       ),
-                      Text(l10n.breakTxt,
-                          style: appStyle.fonts.B_16SB
-                              .apply(color: appStyle.colors.textPrimary)),
+                      Text(
+                        l10n.breakTxt,
+                        style: appStyle.fonts.B_16SB.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
+                      ),
                     ],
                   ),
                   Row(
                     children: [
-                      Text(timeLeftStr,
-                          style: appStyle.fonts.B_12R
-                              .apply(color: appStyle.colors.textSecondary)),
+                      Text(
+                        timeLeftStr,
+                        style: appStyle.fonts.B_12R.apply(
+                          color: appStyle.colors.textSecondary,
+                        ),
+                      ),
                     ],
                   ),
                 ],
-              )
+              ),
             ],
             right: [
               Column(
@@ -435,25 +518,28 @@ class LessonBigWidget extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                          prevLesson!.end
-                              .toLocal()
-                              .format(l10n, FormatMode.hmm),
-                          style: appStyle.fonts.B_16R
-                              .apply(color: appStyle.colors.textPrimary)),
+                        prevLesson!.end.toLocal().format(l10n, FormatMode.hmm),
+                        style: appStyle.fonts.B_16R.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
+                      ),
                     ],
                   ),
                   Row(
                     children: [
                       Text(
-                          nextLesson!.start
-                              .toLocal()
-                              .format(l10n, FormatMode.hmm),
-                          style: appStyle.fonts.B_16R
-                              .apply(color: appStyle.colors.textPrimary)),
+                        nextLesson!.start.toLocal().format(
+                          l10n,
+                          FormatMode.hmm,
+                        ),
+                        style: appStyle.fonts.B_16R.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
+                      ),
                     ],
-                  )
+                  ),
                 ],
-              )
+              ),
             ],
             extra: LinearProgressIndicator(
               // TODO: Make this rounded
@@ -461,7 +547,7 @@ class LessonBigWidget extends StatelessWidget {
               backgroundColor: appStyle.colors.a15p,
               color: appStyle.colors.accent,
             ),
-          )
+          ),
         ],
       );
     }

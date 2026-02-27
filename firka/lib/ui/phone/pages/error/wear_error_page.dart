@@ -17,31 +17,27 @@ class WearErrorPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error,
-              size: 80,
-              color: Colors.red,
-            ),
+            Icon(Icons.error, size: 80, color: Colors.red),
             const SizedBox(height: 20),
             Text(
               'An error occurred!',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: Colors.red,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(color: Colors.red),
             ),
             const SizedBox(height: 10),
             Text(
               'Details:',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             Text(
               exception,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.redAccent,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.redAccent),
             ),
             const SizedBox(height: 30),
             ElevatedButton(

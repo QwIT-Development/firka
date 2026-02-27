@@ -11,7 +11,7 @@ Future<void> loadDirtyWords() async {
 
   for (final node in document.findAllElements('Word')) {
     final type = node.getAttribute('type');
-    final text = node.text.trim();
+    final text = node.innerText.trim();
 
     if (type == 'f') {
       _nouns.add(text);
@@ -21,8 +21,11 @@ Future<void> loadDirtyWords() async {
   }
 }
 
-String generateSwearSentence(
-    {int words = 3, bool capitalize = true, bool exclamation = true}) {
+String generateSwearSentence({
+  int words = 3,
+  bool capitalize = true,
+  bool exclamation = true,
+}) {
   if (words < 1) {
     throw ArgumentError('Words must be at least 1');
   }

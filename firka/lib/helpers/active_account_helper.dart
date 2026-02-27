@@ -8,8 +8,7 @@ int resolveActiveAccountIndex(dynamic settings) {
     if (accountIndex is int && accountIndex >= 0) {
       return accountIndex;
     }
-  } catch (_) {
-  }
+  } catch (_) {}
 
   return 0;
 }

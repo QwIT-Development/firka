@@ -57,8 +57,10 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
   }
 
   List<Widget> createWidgetTree(
-      Iterable<SettingsItem> items, SettingsStore settings,
-      {bool forceRender = false}) {
+    Iterable<SettingsItem> items,
+    SettingsStore settings, {
+    bool forceRender = false,
+  }) {
     var widgets = List<Widget>.empty(growable: true);
 
     for (var item in items) {
@@ -69,67 +71,80 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         continue;
       }
       if (item is SettingsPadding) {
-        widgets.add(SizedBox(
-          width: item.padding,
-          height: item.padding,
-        ));
+        widgets.add(SizedBox(width: item.padding, height: item.padding));
 
         continue;
       }
       if (item is SettingsBackHeader) {
-        widgets.add(Column(
-          children: [
-            Row(
-              children: [
-                Transform.translate(
-                  offset: const Offset(-4, 0),
-                  child: GestureDetector(
-                    child: FirkaIconWidget(
-                        FirkaIconType.majesticons, Majesticon.chevronLeftLine,
-                        color: appStyle.colors.textSecondary),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
+        widgets.add(
+          Column(
+            children: [
+              Row(
+                children: [
+                  Transform.translate(
+                    offset: const Offset(-4, 0),
+                    child: GestureDetector(
+                      child: FirkaIconWidget(
+                        FirkaIconType.majesticons,
+                        Majesticon.chevronLeftLine,
+                        color: appStyle.colors.textSecondary,
+                      ),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
                   ),
-                ),
-                Transform.translate(
-                  offset: const Offset(-4, 1),
-                  child: Text(
-                    item.title,
-                    style: appStyle.fonts.B_16R
-                        .apply(color: appStyle.colors.textPrimary),
+                  Transform.translate(
+                    offset: const Offset(-4, 1),
+                    child: Text(
+                      item.title,
+                      style: appStyle.fonts.B_16R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
                   ),
-                )
-              ],
-            ),
-            SizedBox(height: 13),
-          ],
-        ));
+                ],
+              ),
+              SizedBox(height: 13),
+            ],
+          ),
+        );
 
         continue;
       }
       if (item is SettingsHeader) {
-        widgets.add(Text(
-          item.title,
-          style: appStyle.fonts.H_H1.apply(color: appStyle.colors.textPrimary),
-        ));
+        widgets.add(
+          Text(
+            item.title,
+            style: appStyle.fonts.H_H1.apply(
+              color: appStyle.colors.textPrimary,
+            ),
+          ),
+        );
 
         continue;
       }
       if (item is SettingsMediumHeader) {
-        widgets.add(Text(
-          item.title,
-          style: appStyle.fonts.H_H2.apply(color: appStyle.colors.textPrimary),
-        ));
+        widgets.add(
+          Text(
+            item.title,
+            style: appStyle.fonts.H_H2.apply(
+              color: appStyle.colors.textPrimary,
+            ),
+          ),
+        );
 
         continue;
       }
       if (item is SettingsHeaderSmall) {
-        widgets.add(Text(
-          item.title,
-          style:
-              appStyle.fonts.H_14px.apply(color: appStyle.colors.textPrimary),
-        ));
+        widgets.add(
+          Text(
+            item.title,
+            style: appStyle.fonts.H_14px.apply(
+              color: appStyle.colors.textPrimary,
+            ),
+          ),
+        );
 
         continue;
       }
@@ -137,50 +152,67 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         List<Widget> cardWidgets = [];
 
         if (item.iconType != null && item.iconData != null) {
-          cardWidgets.add(FirkaIconWidget(
-            item.iconType!,
-            item.iconData!,
-            color: appStyle.colors.accent,
-          ));
+          cardWidgets.add(
+            FirkaIconWidget(
+              item.iconType!,
+              item.iconData!,
+              color: appStyle.colors.accent,
+            ),
+          );
           cardWidgets.add(SizedBox(width: 8));
         }
 
-        cardWidgets.add(Text(item.title,
-            style: appStyle.fonts.B_16SB
-                .apply(color: appStyle.colors.textPrimary)));
+        cardWidgets.add(
+          Text(
+            item.title,
+            style: appStyle.fonts.B_16SB.apply(
+              color: appStyle.colors.textPrimary,
+            ),
+          ),
+        );
 
-        widgets.add(GestureDetector(
-          onTap: () {
-            if (item.redirectTo != null && item.redirectTo == "discord") {
-              launchUrlString(
-                  "https://discord.com/invite/firka-1111649116020285532");
-              return;
-            } else if (item.redirectTo != null &&
-                item.redirectTo == "privacy") {
-              launchUrlString("https://firka.app/privacy");
-              return;
-            } else {
-              Navigator.push(
+        widgets.add(
+          GestureDetector(
+            onTap: () {
+              if (item.redirectTo != null && item.redirectTo == "discord") {
+                launchUrlString(
+                  "https://discord.com/invite/firka-1111649116020285532",
+                );
+                return;
+              } else if (item.redirectTo != null &&
+                  item.redirectTo == "privacy") {
+                launchUrlString("https://firka.app/privacy");
+                return;
+              } else {
+                Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => DefaultAssetBundle(
-                          bundle: FirkaBundle(),
-                          child: SettingsScreen(widget.data, item.children))));
-            }
-          },
-          child: item.redirectTo != null
-              ? FirkaCard(
-                  left: cardWidgets,
-                  right: [
-                    RotationTransition(
+                    builder: (context) => DefaultAssetBundle(
+                      bundle: FirkaBundle(),
+                      child: SettingsScreen(widget.data, item.children),
+                    ),
+                  ),
+                );
+              }
+            },
+            child: item.redirectTo != null
+                ? FirkaCard(
+                    left: cardWidgets,
+                    right: [
+                      RotationTransition(
                         turns: AlwaysStoppedAnimation(-45 / 360),
-                        child: FirkaIconWidget(FirkaIconType.majesticons,
-                            Majesticon.arrowRightSolid,
-                            size: 24, color: appStyle.colors.textSecondary))
-                  ],
-                )
-              : FirkaCard(left: cardWidgets),
-        ));
+                        child: FirkaIconWidget(
+                          FirkaIconType.majesticons,
+                          Majesticon.arrowRightSolid,
+                          size: 24,
+                          color: appStyle.colors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  )
+                : FirkaCard(left: cardWidgets),
+          ),
+        );
 
         continue;
       }
@@ -188,64 +220,86 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
       if (item is SettingsDouble) {
         var v = item.toRoundedString();
 
-        widgets.add(GestureDetector(
-          child: FirkaCard(height: 52 + 12, left: [
-            item.iconType != null
-                ? Row(
-                    children: [
-                      FirkaIconWidget(item.iconType!, item.iconData!,
-                          color: appStyle.colors.accent),
-                      SizedBox(width: 4),
-                    ],
-                  )
-                : SizedBox(),
-            Text(item.title,
-                style: appStyle.fonts.B_16SB
-                    .apply(color: appStyle.colors.textPrimary))
-          ], right: [
-            Text(v == "0.0" ? "0" : v,
-                style: appStyle.fonts.B_16R
-                    .apply(color: appStyle.colors.textPrimary))
-          ]),
-          onTap: () async {
-            showSetDoubleSheet(context, item, widget.data, setState);
-          },
-        ));
+        widgets.add(
+          GestureDetector(
+            child: FirkaCard(
+              height: 52 + 12,
+              left: [
+                item.iconType != null
+                    ? Row(
+                        children: [
+                          FirkaIconWidget(
+                            item.iconType!,
+                            item.iconData!,
+                            color: appStyle.colors.accent,
+                          ),
+                          SizedBox(width: 4),
+                        ],
+                      )
+                    : SizedBox(),
+                Text(
+                  item.title,
+                  style: appStyle.fonts.B_16SB.apply(
+                    color: appStyle.colors.textPrimary,
+                  ),
+                ),
+              ],
+              right: [
+                Text(
+                  v == "0.0" ? "0" : v,
+                  style: appStyle.fonts.B_16R.apply(
+                    color: appStyle.colors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+            onTap: () async {
+              showSetDoubleSheet(context, item, widget.data, setState);
+            },
+          ),
+        );
 
         continue;
       }
       if (item is SettingsBoolean) {
-        widgets.add(FirkaCard(
-          height: 52 + 12,
-          left: [
-            item.iconType != null
-                ? Row(
-                    children: [
-                      FirkaIconWidget(item.iconType!, item.iconData!,
-                          color: appStyle.colors.accent),
-                      SizedBox(width: 4),
-                    ],
-                  )
-                : SizedBox(),
-            Text(item.title,
-                style: appStyle.fonts.B_16SB
-                    .apply(color: appStyle.colors.textPrimary))
-          ],
-          right: [
-            Switch(
+        widgets.add(
+          FirkaCard(
+            height: 52 + 12,
+            left: [
+              item.iconType != null
+                  ? Row(
+                      children: [
+                        FirkaIconWidget(
+                          item.iconType!,
+                          item.iconData!,
+                          color: appStyle.colors.accent,
+                        ),
+                        SizedBox(width: 4),
+                      ],
+                    )
+                  : SizedBox(),
+              Text(
+                item.title,
+                style: appStyle.fonts.B_16SB.apply(
+                  color: appStyle.colors.textPrimary,
+                ),
+              ),
+            ],
+            right: [
+              Switch(
                 value: item.value,
                 // activeColor: appStyle.colors.accent,
                 thumbColor: WidgetStateProperty.fromMap({
                   WidgetState.selected: appStyle.colors.buttonSecondaryFill,
-                  WidgetState.any: appStyle.colors.accent
+                  WidgetState.any: appStyle.colors.accent,
                 }),
                 trackColor: WidgetStateProperty.fromMap({
                   WidgetState.selected: appStyle.colors.accent,
-                  WidgetState.any: appStyle.colors.a10p
+                  WidgetState.any: appStyle.colors.a10p,
                 }),
                 trackOutlineColor: WidgetStateProperty.fromMap({
                   WidgetState.selected: appStyle.colors.accent,
-                  WidgetState.any: appStyle.colors.a15p
+                  WidgetState.any: appStyle.colors.a15p,
                 }),
                 onChanged: (v) async {
                   setState(() {
@@ -257,9 +311,11 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                   });
 
                   await item.postUpdate();
-                })
-          ],
-        ));
+                },
+              ),
+            ],
+          ),
+        );
 
         continue;
       }
@@ -268,56 +324,74 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           var k = item.values[i];
 
           if (item.values[item.activeIndex] == k) {
-            widgets.add(FirkaCard(height: 52 + 12, left: [
-              Text(k,
-                  style: appStyle.fonts.B_16R
-                      .apply(color: appStyle.colors.textPrimary))
-            ], right: [
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: Checkbox(
-                    value: true,
-                    fillColor: WidgetStateProperty.resolveWith<Color>(
-                        (Set<WidgetState> states) {
-                      return appStyle.colors.secondary;
-                    }),
-                    onChanged: (_) async {
-                      setState(() {
-                        item.activeIndex = i;
-                      });
+            widgets.add(
+              FirkaCard(
+                height: 52 + 12,
+                left: [
+                  Text(
+                    k,
+                    style: appStyle.fonts.B_16R.apply(
+                      color: appStyle.colors.textPrimary,
+                    ),
+                  ),
+                ],
+                right: [
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: Checkbox(
+                      value: true,
+                      fillColor: WidgetStateProperty.resolveWith<Color>((
+                        Set<WidgetState> states,
+                      ) {
+                        return appStyle.colors.secondary;
+                      }),
+                      onChanged: (_) async {
+                        setState(() {
+                          item.activeIndex = i;
+                        });
 
-                      await widget.data.isar.writeTxn(() async {
-                        await item.save(widget.data.isar.appSettingsModels);
-                      });
+                        await widget.data.isar.writeTxn(() async {
+                          await item.save(widget.data.isar.appSettingsModels);
+                        });
 
-                      await item.postUpdate();
-                      logger.finest('Settings saved');
-                    }),
+                        await item.postUpdate();
+                        logger.finest('Settings saved');
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                ],
               ),
-              SizedBox(width: 8),
-            ]));
+            );
           } else {
-            widgets.add(GestureDetector(
-              child: FirkaCard(height: 52 + 12, left: [
-                Text(k,
-                    style: appStyle.fonts.B_16R
-                        .apply(color: appStyle.colors.textPrimary))
-              ], right: [
-                SizedBox(height: 16 + 8),
-              ]),
-              onTap: () async {
-                setState(() {
-                  item.activeIndex = i;
-                });
+            widgets.add(
+              GestureDetector(
+                child: FirkaCard(
+                  height: 52 + 12,
+                  left: [
+                    Text(
+                      k,
+                      style: appStyle.fonts.B_16R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
+                  ],
+                  right: [SizedBox(height: 16 + 8)],
+                ),
+                onTap: () async {
+                  setState(() {
+                    item.activeIndex = i;
+                  });
 
-                await widget.data.isar.writeTxn(() async {
-                  await item.save(widget.data.isar.appSettingsModels);
-                });
+                  await widget.data.isar.writeTxn(() async {
+                    await item.save(widget.data.isar.appSettingsModels);
+                  });
 
-                await item.postUpdate();
-              },
-            ));
+                  await item.postUpdate();
+                },
+              ),
+            );
           }
         }
 
@@ -327,127 +401,157 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         widgets.add(
           FutureBuilder<List<LicenseEntry>>(
             future: LicenseRegistry.licenses.toList(),
-            builder: (BuildContext context,
-                AsyncSnapshot<List<LicenseEntry>> snapshot) {
-              if (!snapshot.hasData) {
-                return Center(
-                    child: CircularProgressIndicator(
-                        color: appStyle.colors.accent));
-              }
+            builder:
+                (
+                  BuildContext context,
+                  AsyncSnapshot<List<LicenseEntry>> snapshot,
+                ) {
+                  if (!snapshot.hasData) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: appStyle.colors.accent,
+                      ),
+                    );
+                  }
 
-              final licenses = snapshot.data!;
-              final shownPackages = <String>{};
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: licenses
-                    .where((license) => license.packages
-                        .any((pkg) => !shownPackages.contains(pkg)))
-                    .map((license) {
-                  final packageName = license.packages.firstWhere(
-                    (pkg) => !shownPackages.contains(pkg),
-                    orElse: () => license.packages.first,
-                  );
-                  shownPackages.add(packageName);
-                  final paragraphs =
-                      license.paragraphs.map((p) => p.text).join('\n\n');
+                  final licenses = snapshot.data!;
+                  final shownPackages = <String>{};
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: licenses
+                        .where(
+                          (license) => license.packages.any(
+                            (pkg) => !shownPackages.contains(pkg),
+                          ),
+                        )
+                        .map((license) {
+                          final packageName = license.packages.firstWhere(
+                            (pkg) => !shownPackages.contains(pkg),
+                            orElse: () => license.packages.first,
+                          );
+                          shownPackages.add(packageName);
+                          final paragraphs = license.paragraphs
+                              .map((p) => p.text)
+                              .join('\n\n');
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  backgroundColor: appStyle.colors.card,
-                                  title: Text(
-                                    packageName,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  content: SingleChildScrollView(
-                                    child: Text(
-                                      paragraphs,
-                                      style: appStyle.fonts.B_15SB.apply(
-                                          color: appStyle.colors.textPrimary),
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      child: Text(
-                                        widget.data.l10n.close,
-                                        style: appStyle.fonts.B_14R.apply(
-                                            color:
-                                                appStyle.colors.textSecondary),
-                                      ),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          backgroundColor: appStyle.colors.card,
+                                          title: Text(
+                                            packageName,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          content: SingleChildScrollView(
+                                            child: Text(
+                                              paragraphs,
+                                              style: appStyle.fonts.B_15SB
+                                                  .apply(
+                                                    color: appStyle
+                                                        .colors
+                                                        .textPrimary,
+                                                  ),
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              child: Text(
+                                                widget.data.l10n.close,
+                                                style: appStyle.fonts.B_14R
+                                                    .apply(
+                                                      color: appStyle
+                                                          .colors
+                                                          .textSecondary,
+                                                    ),
+                                              ),
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                            ),
+                                          ],
+                                        );
                                       },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                          child: FirkaCard(left: [
-                            Text(
-                              packageName,
-                              style: appStyle.fonts.B_14R
-                                  .apply(color: appStyle.colors.textPrimary),
+                                    );
+                                  },
+                                  child: FirkaCard(
+                                    left: [
+                                      Text(
+                                        packageName,
+                                        style: appStyle.fonts.B_14R.apply(
+                                          color: appStyle.colors.textPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                          ]),
-                        ),
-                      ],
-                    ),
+                          );
+                        })
+                        .toList(),
                   );
-                }).toList(),
-              );
-            },
+                },
           ),
         );
         continue;
       }
 
       if (item is SettingsAppIconPreview) {
-        widgets.add(Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
+        widgets.add(
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
                 image: PreloadedImageProvider(
-                    FirkaBundle(), ('assets/images/background.webp')),
-                fit: BoxFit.cover),
-            borderRadius: BorderRadius.all(Radius.circular(16)),
-          ),
-          width: MediaQuery.of(context).size.width,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Column(
-              children: [
-                Column(
-                  children: [
-                    ClipRRect(
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(16.0)),
-                      child: Image(
-                        image: PreloadedImageProvider(FirkaBundle(),
-                            "assets/images/icons/$activeIcon.webp"),
-                        width: 74,
-                        height: 74,
+                  FirkaBundle(),
+                  ('assets/images/background.webp'),
+                ),
+                fit: BoxFit.cover,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+            width: MediaQuery.of(context).size.width,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Column(
+                children: [
+                  Column(
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(16.0),
+                        ),
+                        child: Image(
+                          image: PreloadedImageProvider(
+                            FirkaBundle(),
+                            "assets/images/icons/$activeIcon.webp",
+                          ),
+                          width: 74,
+                          height: 74,
+                        ),
                       ),
-                    ),
-                    Text(
-                      settings.appIcons[activeIcon]!,
-                      style: appStyle.fonts.H_12px
-                          .apply(color: appStyle.colors.card),
-                    )
-                  ],
-                )
-              ],
+                      Text(
+                        settings.appIcons[activeIcon]!,
+                        style: appStyle.fonts.H_12px.apply(
+                          color: appStyle.colors.card,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-        ));
+        );
 
         continue;
       }
@@ -472,80 +576,103 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           for (var icon in item.iconGroups[group]!) {
             var active = icon == activeIcon;
 
-            groupIcons.add(Column(
-              children: [
-                GestureDetector(
-                  child: active
-                      ? Container(
-                          decoration: BoxDecoration(
-                            color: appStyle.colors.accent,
-                            borderRadius: BorderRadius.all(Radius.circular(16)),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: ClipRRect(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(12.0)),
-                              child: Image(
-                                image: PreloadedImageProvider(FirkaBundle(),
-                                    "assets/images/icons/$icon.webp"),
-                                width: 48,
-                                height: 48,
+            groupIcons.add(
+              Column(
+                children: [
+                  GestureDetector(
+                    child: active
+                        ? Container(
+                            decoration: BoxDecoration(
+                              color: appStyle.colors.accent,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(16),
                               ),
                             ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: ClipRRect(
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(12.0),
+                                ),
+                                child: Image(
+                                  image: PreloadedImageProvider(
+                                    FirkaBundle(),
+                                    "assets/images/icons/$icon.webp",
+                                  ),
+                                  width: 48,
+                                  height: 48,
+                                ),
+                              ),
+                            ),
+                          )
+                        : ClipRRect(
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(16.0),
+                            ),
+                            child: Image(
+                              image: PreloadedImageProvider(
+                                FirkaBundle(),
+                                "assets/images/icons/$icon.webp",
+                              ),
+                              width: 54,
+                              height: 54,
+                            ),
                           ),
-                        )
-                      : ClipRRect(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(16.0)),
-                          child: Image(
-                            image: PreloadedImageProvider(FirkaBundle(),
-                                "assets/images/icons/$icon.webp"),
-                            width: 54,
-                            height: 54,
-                          ),
-                        ),
-                  onTap: () {
-                    if (settingAppIcon) return;
+                    onTap: () {
+                      if (settingAppIcon) return;
 
-                    setState(() {
-                      activeIcon = icon;
-                    });
-                  },
-                ),
-                Text(
-                  settings.appIcons[icon]!,
-                  style: appStyle.fonts.B_12R.apply(
+                      setState(() {
+                        activeIcon = icon;
+                      });
+                    },
+                  ),
+                  Text(
+                    settings.appIcons[icon]!,
+                    style: appStyle.fonts.B_12R.apply(
                       color: active
                           ? appStyle.colors.textPrimary
-                          : appStyle.colors.textSecondary),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ));
+                          : appStyle.colors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            );
           }
 
-          pWidgets.add(Text(
-            group,
-            style:
-                appStyle.fonts.H_14px.apply(color: appStyle.colors.textPrimary),
-          ));
+          pWidgets.add(
+            Text(
+              group,
+              style: appStyle.fonts.H_14px.apply(
+                color: appStyle.colors.textPrimary,
+              ),
+            ),
+          );
 
           if (group == widget.data.l10n.s_ci_icon_g6) {
-            pWidgets.add(Text(widget.data.l10n.s_ci_icon_g6_desc,
-                style: appStyle.fonts.B_16R
-                    .apply(color: appStyle.colors.textSecondary)));
+            pWidgets.add(
+              Text(
+                widget.data.l10n.s_ci_icon_g6_desc,
+                style: appStyle.fonts.B_16R.apply(
+                  color: appStyle.colors.textSecondary,
+                ),
+              ),
+            );
           }
 
           if (group == widget.data.l10n.s_ci_icon_g7 ||
               group == widget.data.l10n.s_ci_icon_g8) {
-            var settingsWidgets = createWidgetTree([
-              widget.data.settings
-                      .group("settings")
-                      .subGroup("customization")
-                      .subGroup("icon_picker")["child_protection"]
-                  as SettingsBoolean
-            ], settings, forceRender: true);
+            var settingsWidgets = createWidgetTree(
+              [
+                widget.data.settings
+                        .group("settings")
+                        .subGroup("customization")
+                        .subGroup("icon_picker")["child_protection"]
+                    as SettingsBoolean,
+              ],
+              settings,
+              forceRender: true,
+            );
 
             pWidgets.add(SizedBox(height: 12));
             for (var w in settingsWidgets) {
@@ -554,72 +681,84 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           }
 
           pWidgets.add(SizedBox(height: 12));
-          pWidgets.add(SizedBox(
-            height: (groupIcons.length / 4).ceil() * 100,
-            child: GridView.count(
-              crossAxisCount: 4,
-              physics: NeverScrollableScrollPhysics(),
-              children: groupIcons,
+          pWidgets.add(
+            SizedBox(
+              height: (groupIcons.length / 4).ceil() * 100,
+              child: GridView.count(
+                crossAxisCount: 4,
+                physics: NeverScrollableScrollPhysics(),
+                children: groupIcons,
+              ),
             ),
-          ));
+          );
         }
 
-        widgets.add(SizedBox(
-          height: MediaQuery.of(context).size.height / 1.7,
-          child: SingleChildScrollView(
+        widgets.add(
+          SizedBox(
+            height: MediaQuery.of(context).size.height / 1.7,
+            child: SingleChildScrollView(
               child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: pWidgets,
-          )),
-        ));
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: pWidgets,
+              ),
+            ),
+          ),
+        );
 
-        widgets.add(Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              child: FirkaButton(
+        widgets.add(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GestureDetector(
+                child: FirkaButton(
                   text: widget.data.l10n.cancel,
                   bgColor: appStyle.colors.buttonSecondaryFill,
-                  fontStyle: appStyle.fonts.B_16R
-                      .apply(color: appStyle.colors.textSecondary)),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            GestureDetector(
-              child: FirkaButton(
+                  fontStyle: appStyle.fonts.B_16R.apply(
+                    color: appStyle.colors.textSecondary,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              GestureDetector(
+                child: FirkaButton(
                   text: widget.data.l10n.save,
                   bgColor: appStyle.colors.accent,
-                  fontStyle: appStyle.fonts.B_16R
-                      .apply(color: appStyle.colors.textSecondaryLight)),
-              onTap: () async {
-                if (settingAppIcon) return;
-                settingAppIcon = true;
+                  fontStyle: appStyle.fonts.B_16R.apply(
+                    color: appStyle.colors.textSecondaryLight,
+                  ),
+                ),
+                onTap: () async {
+                  if (settingAppIcon) return;
+                  settingAppIcon = true;
 
-                widget.data.settings
-                    .group("settings")
-                    .subGroup("customization")
-                    .subGroup("icon_picker")
-                    .setIconString("icon_picker", activeIcon);
+                  widget.data.settings
+                      .group("settings")
+                      .subGroup("customization")
+                      .subGroup("icon_picker")
+                      .setIconString("icon_picker", activeIcon);
 
-                await widget.data.isar.writeTxn(() async {
-                  await widget.data.settings
-                      .save(widget.data.isar.appSettingsModels);
-                });
+                  await widget.data.isar.writeTxn(() async {
+                    await widget.data.settings.save(
+                      widget.data.isar.appSettingsModels,
+                    );
+                  });
 
-                await Future.delayed(Duration(seconds: 1));
+                  await Future.delayed(Duration(seconds: 1));
 
-                const channel = MethodChannel('firka.app/main');
-                await channel.invokeMethod('set_icon', {
-                  "icon": activeIcon == "original" ? null : activeIcon,
-                  "icons": settings.appIcons.keys
-                      .where((e) => e != "original")
-                      .join(",")
-                });
-              },
-            )
-          ],
-        ));
+                  const channel = MethodChannel('firka.app/main');
+                  await channel.invokeMethod('set_icon', {
+                    "icon": activeIcon == "original" ? null : activeIcon,
+                    "icons": settings.appIcons.keys
+                        .where((e) => e != "original")
+                        .join(","),
+                  });
+                },
+              ),
+            ],
+          ),
+        );
 
         continue;
       }
@@ -634,79 +773,236 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           } else {
             studentRole = payload["role"];
           }
-          widgets.add(GestureDetector(
-            child: SizedBox(
-              height: 52,
-              child: FirkaCard(
-                left: [
-                  Text(
-                    payload["name"],
-                    style: appStyle.fonts.B_16R
-                        .apply(color: appStyle.colors.textPrimary),
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    studentRole,
-                    style: appStyle.fonts.B_16R
-                        .apply(color: appStyle.colors.textTertiary),
-                  )
-                ],
-                right: [
-                  i != item.accountIndex
-                      ? SizedBox()
-                      : Checkbox(
-                          value: true,
-                          fillColor: WidgetStateProperty.resolveWith<Color>(
-                              (Set<WidgetState> states) {
-                            return appStyle.colors.secondary;
-                          }),
-                          onChanged: (_) async {
-                            setState(() {
-                              // item.activeIndex = i;
-                            });
+          widgets.add(
+            GestureDetector(
+              child: SizedBox(
+                height: 52,
+                child: FirkaCard(
+                  left: [
+                    Text(
+                      payload["name"],
+                      style: appStyle.fonts.B_16R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      studentRole,
+                      style: appStyle.fonts.B_16R.apply(
+                        color: appStyle.colors.textTertiary,
+                      ),
+                    ),
+                  ],
+                  right: [
+                    i != item.accountIndex
+                        ? SizedBox()
+                        : Checkbox(
+                            value: true,
+                            fillColor: WidgetStateProperty.resolveWith<Color>((
+                              Set<WidgetState> states,
+                            ) {
+                              return appStyle.colors.secondary;
+                            }),
+                            onChanged: (_) async {
+                              setState(() {
+                                // item.activeIndex = i;
+                              });
 
-                            await widget.data.isar.writeTxn(() async {
-                              await item
-                                  .save(widget.data.isar.appSettingsModels);
-                            });
+                              await widget.data.isar.writeTxn(() async {
+                                await item.save(
+                                  widget.data.isar.appSettingsModels,
+                                );
+                              });
 
-                            await item.postUpdate();
-                            logger.finest('Settings saved');
-                          })
-                ],
+                              await item.postUpdate();
+                              logger.finest('Settings saved');
+                            },
+                          ),
+                  ],
+                ),
               ),
-            ),
-            onTap: () async {
-              if (i != item.accountIndex) {
-                final previousAccountId = widget.data.client.model.studentIdNorm;
-                if (Platform.isIOS) {
-                  await LiveActivityService.onUserLogout();
-                  try {
-                    await WatchSyncHelper.clearSharedLanguageState();
-                  } catch (e) {
-                    logger.warning(
-                        '[Settings] Failed to clear shared language state on account switch: $e');
-                  }
-                  if (previousAccountId != null) {
+              onTap: () async {
+                if (i != item.accountIndex) {
+                  final previousAccountId =
+                      widget.data.client.model.studentIdNorm;
+                  if (Platform.isIOS) {
+                    await LiveActivityService.onUserLogout();
                     try {
-                      await WatchSyncHelper.clearRefreshLeaseForAccount(
-                          previousAccountId);
+                      await WatchSyncHelper.clearSharedLanguageState();
                     } catch (e) {
                       logger.warning(
-                          '[Settings] Failed to clear refresh lease on account switch: $e');
+                        '[Settings] Failed to clear shared language state on account switch: $e',
+                      );
+                    }
+                    if (previousAccountId != null) {
+                      try {
+                        await WatchSyncHelper.clearRefreshLeaseForAccount(
+                          previousAccountId,
+                        );
+                      } catch (e) {
+                        logger.warning(
+                          '[Settings] Failed to clear refresh lease on account switch: $e',
+                        );
+                      }
                     }
                   }
+
+                  await widget.data.isar.writeTxn(() async {
+                    item.accountIndex = i;
+
+                    await item.save(widget.data.isar.appSettingsModels);
+                  });
+
+                  await item.postUpdate();
+
+                  if (Platform.isIOS) {
+                    var watchReachable = false;
+                    try {
+                      watchReachable = await WatchSyncHelper.isWatchReachable(
+                        forceRefreshInstall: true,
+                      );
+                    } catch (e) {
+                      logger.warning(
+                        '[Settings] Failed to query Watch reachability on account switch: $e',
+                      );
+                    }
+
+                    if (watchReachable) {
+                      try {
+                        await WatchSyncHelper.sendTokenModelToWatch(
+                          token,
+                          allowExpiredAccessToken: true,
+                        );
+                      } catch (e) {
+                        logger.warning(
+                          '[Settings] Failed to send switched account token to reachable Watch: $e',
+                        );
+                      }
+                    } else {
+                      try {
+                        await WatchSyncHelper.saveTokenToiCloud(
+                          token,
+                          forceAccountSwitch: true,
+                        );
+                      } catch (e) {
+                        logger.warning(
+                          '[Settings] Failed to sync switched account token to iCloud: $e',
+                        );
+                      }
+                    }
+                  }
+
+                  runApp(InitializationScreen());
                 }
+              },
+            ),
+          );
+          widgets.add(SizedBox(height: 8));
+        }
 
-                await widget.data.isar.writeTxn(() async {
-                  item.accountIndex = i;
+        widgets.add(
+          GestureDetector(
+            child: FirkaCard(
+              left: [
+                Text(
+                  widget.data.l10n.s_acc_add,
+                  style: appStyle.fonts.B_16R.apply(
+                    color: appStyle.colors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+            onTap: () {
+              showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                builder: (BuildContext context) {
+                  return LoginWebviewWidget(widget.data);
+                },
+              );
+            },
+          ),
+        );
+        widgets.add(SizedBox(height: 20));
+        widgets.add(
+          GestureDetector(
+            child: FirkaCard(
+              left: [
+                Row(
+                  children: [
+                    FirkaIconWidget(
+                      FirkaIconType.icons,
+                      "group",
+                      color: appStyle.colors.accent,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      widget.data.l10n.s_acc_logout,
+                      style: appStyle.fonts.B_16R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            onTap: () async {
+              if (Platform.isIOS) {
+                await LiveActivityService.onUserLogout();
+                await WidgetCacheHelper.clearIOSWidgets();
+              }
 
-                  await item.save(widget.data.isar.appSettingsModels);
-                });
+              final active = widget.data.client.model.studentIdNorm!;
+              if (Platform.isIOS) {
+                try {
+                  await WatchSyncHelper.clearRefreshLeaseForAccount(active);
+                } catch (e) {
+                  logger.warning(
+                    '[Settings] Failed to clear refresh lease for active account: $e',
+                  );
+                }
+                try {
+                  await WatchSyncHelper.clearSharedLanguageState();
+                } catch (e) {
+                  logger.warning(
+                    '[Settings] Failed to clear shared language state on logout: $e',
+                  );
+                }
+              }
 
-                await item.postUpdate();
+              await widget.data.isar.writeTxn(() async {
+                await widget.data.isar.tokenModels.delete(active);
 
+                item.accountIndex = 0;
+                await item.save(widget.data.isar.appSettingsModels);
+              });
+
+              final accounts = await widget.data.isar.tokenModels
+                  .where()
+                  .findAll();
+
+              if (accounts.isEmpty) {
                 if (Platform.isIOS) {
+                  try {
+                    await WatchSyncHelper.clearICloudToken(notifyWatch: true);
+                    await WatchSyncHelper.clearAllRefreshLeases();
+                  } catch (e) {
+                    logger.warning(
+                      '[Settings] Failed to clear iCloud token: $e',
+                    );
+                  }
+                  KretaClient.clearReauthFlag();
+                }
+                if (!mounted) return;
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => LoginScreen(widget.data),
+                  ),
+                  (route) => false,
+                );
+              } else {
+                if (Platform.isIOS) {
+                  final nextToken = accounts.first;
                   var watchReachable = false;
                   try {
                     watchReachable = await WatchSyncHelper.isWatchReachable(
@@ -714,189 +1010,73 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                     );
                   } catch (e) {
                     logger.warning(
-                        '[Settings] Failed to query Watch reachability on account switch: $e');
+                      '[Settings] Failed to query Watch reachability after logout: $e',
+                    );
                   }
 
                   if (watchReachable) {
                     try {
                       await WatchSyncHelper.sendTokenModelToWatch(
-                        token,
+                        nextToken,
                         allowExpiredAccessToken: true,
                       );
                     } catch (e) {
                       logger.warning(
-                          '[Settings] Failed to send switched account token to reachable Watch: $e');
+                        '[Settings] Failed to send next account token to reachable Watch after logout: $e',
+                      );
                     }
                   } else {
                     try {
                       await WatchSyncHelper.saveTokenToiCloud(
-                        token,
+                        nextToken,
                         forceAccountSwitch: true,
                       );
                     } catch (e) {
                       logger.warning(
-                          '[Settings] Failed to sync switched account token to iCloud: $e');
+                        '[Settings] Failed to sync next account token to iCloud after logout: $e',
+                      );
                     }
                   }
                 }
 
+                widget.data.tokens = accounts;
                 runApp(InitializationScreen());
               }
             },
-          ));
-          widgets.add(SizedBox(height: 8));
-        }
-
-        widgets.add(GestureDetector(
-          child: FirkaCard(left: [
-            Text(
-              widget.data.l10n.s_acc_add,
-              style: appStyle.fonts.B_16R
-                  .apply(color: appStyle.colors.textPrimary),
-            )
-          ]),
-          onTap: () {
-            showModalBottomSheet<void>(
-              context: context,
-              isScrollControlled: true,
-              builder: (BuildContext context) {
-                return LoginWebviewWidget(widget.data);
-              },
-            );
-          },
-        ));
-        widgets.add(SizedBox(height: 20));
-        widgets.add(GestureDetector(
-          child: FirkaCard(left: [
-            Row(
-              children: [
-                FirkaIconWidget(
-                  FirkaIconType.icons,
-                  "group",
-                  color: appStyle.colors.accent,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  widget.data.l10n.s_acc_logout,
-                  style: appStyle.fonts.B_16R
-                      .apply(color: appStyle.colors.textPrimary),
-                ),
-              ],
-            )
-          ]),
-          onTap: () async {
-            if (Platform.isIOS) {
-              await LiveActivityService.onUserLogout();
-              await WidgetCacheHelper.clearIOSWidgets();
-            }
-
-            final active = widget.data.client.model.studentIdNorm!;
-            if (Platform.isIOS) {
-              try {
-                await WatchSyncHelper.clearRefreshLeaseForAccount(active);
-              } catch (e) {
-                logger.warning(
-                    '[Settings] Failed to clear refresh lease for active account: $e');
-              }
-              try {
-                await WatchSyncHelper.clearSharedLanguageState();
-              } catch (e) {
-                logger.warning(
-                    '[Settings] Failed to clear shared language state on logout: $e');
-              }
-            }
-
-            await widget.data.isar.writeTxn(() async {
-              await widget.data.isar.tokenModels.delete(active);
-
-              item.accountIndex = 0;
-              await item.save(widget.data.isar.appSettingsModels);
-            });
-
-            final accounts =
-                await widget.data.isar.tokenModels.where().findAll();
-
-            if (accounts.isEmpty) {
-              if (Platform.isIOS) {
-                try {
-                  await WatchSyncHelper.clearICloudToken(notifyWatch: true);
-                  await WatchSyncHelper.clearAllRefreshLeases();
-                } catch (e) {
-                  logger.warning('[Settings] Failed to clear iCloud token: $e');
-                }
-                KretaClient.clearReauthFlag();
-              }
-              if (!mounted) return;
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                    builder: (context) => LoginScreen(widget.data)),
-                (route) => false,
-              );
-            } else {
-              if (Platform.isIOS) {
-                final nextToken = accounts.first;
-                var watchReachable = false;
-                try {
-                  watchReachable = await WatchSyncHelper.isWatchReachable(
-                    forceRefreshInstall: true,
-                  );
-                } catch (e) {
-                  logger.warning(
-                      '[Settings] Failed to query Watch reachability after logout: $e');
-                }
-
-                if (watchReachable) {
-                  try {
-                    await WatchSyncHelper.sendTokenModelToWatch(
-                      nextToken,
-                      allowExpiredAccessToken: true,
-                    );
-                  } catch (e) {
-                    logger.warning(
-                        '[Settings] Failed to send next account token to reachable Watch after logout: $e');
-                  }
-                } else {
-                  try {
-                    await WatchSyncHelper.saveTokenToiCloud(
-                      nextToken,
-                      forceAccountSwitch: true,
-                    );
-                  } catch (e) {
-                    logger.warning(
-                        '[Settings] Failed to sync next account token to iCloud after logout: $e');
-                  }
-                }
-              }
-
-              widget.data.tokens = accounts;
-              runApp(InitializationScreen());
-            }
-          },
-        ));
+          ),
+        );
         continue;
       }
       if (item is SettingsButton) {
-        widgets.add(GestureDetector(
-          child: FirkaCard(
-            left: [
-              item.iconType != null
-                  ? Row(
-                      children: [
-                        FirkaIconWidget(item.iconType!, item.iconData!,
-                            color: appStyle.colors.accent),
-                        SizedBox(width: 8),
-                      ],
-                    )
-                  : SizedBox(),
-              Text(item.title,
-                  style: appStyle.fonts.B_16SB
-                      .apply(color: appStyle.colors.textPrimary))
-            ],
+        widgets.add(
+          GestureDetector(
+            child: FirkaCard(
+              left: [
+                item.iconType != null
+                    ? Row(
+                        children: [
+                          FirkaIconWidget(
+                            item.iconType!,
+                            item.iconData!,
+                            color: appStyle.colors.accent,
+                          ),
+                          SizedBox(width: 8),
+                        ],
+                      )
+                    : SizedBox(),
+                Text(
+                  item.title,
+                  style: appStyle.fonts.B_16SB.apply(
+                    color: appStyle.colors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+            onTap: () async {
+              await item.onTap();
+            },
           ),
-          onTap: () async {
-            await item.onTap();
-          },
-        ));
+        );
 
         continue;
       }
@@ -909,63 +1089,76 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           final m = logFileRegex.firstMatch(name);
           if (m == null) continue;
 
-          widgets.add(GestureDetector(
-            child: SizedBox(
-              height: 52,
-              child: FirkaCard(
-                left: [
-                  FirkaIconWidget(
-                    FirkaIconType.majesticons,
-                    Majesticon.noteTextSolid,
-                    color: appStyle.colors.accent,
-                  ),
-                  Text(
-                    name,
-                    style: appStyle.fonts.B_16R
-                        .apply(color: appStyle.colors.textPrimary),
-                  ),
-                ],
+          widgets.add(
+            GestureDetector(
+              child: SizedBox(
+                height: 52,
+                child: FirkaCard(
+                  left: [
+                    FirkaIconWidget(
+                      FirkaIconType.majesticons,
+                      Majesticon.noteTextSolid,
+                      color: appStyle.colors.accent,
+                    ),
+                    Text(
+                      name,
+                      style: appStyle.fonts.B_16R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            onTap: () async {
-              try {
-                logger.info("Compressing log file: ${entity.path}");
-                final original = File(entity.path);
-                final originalBytes = await original.readAsBytes();
-                final gzBytes = GZipCodec().encode(originalBytes);
-                final tempDir = await Directory.systemTemp.createTemp('firka');
-                final gzPath =
-                    p.join(tempDir.path, '${p.basename(entity.path)}.gz');
-                final gzFile =
-                    await File(gzPath).writeAsBytes(gzBytes, flush: true);
+              onTap: () async {
+                try {
+                  logger.info("Compressing log file: ${entity.path}");
+                  final original = File(entity.path);
+                  final originalBytes = await original.readAsBytes();
+                  final gzBytes = GZipCodec().encode(originalBytes);
+                  final tempDir = await Directory.systemTemp.createTemp(
+                    'firka',
+                  );
+                  final gzPath = p.join(
+                    tempDir.path,
+                    '${p.basename(entity.path)}.gz',
+                  );
+                  final gzFile = await File(
+                    gzPath,
+                  ).writeAsBytes(gzBytes, flush: true);
 
-                final params = ShareParams(
-                  text: name,
-                  files: [XFile(gzFile.path, mimeType: 'application/gzip')],
-                );
+                  final params = ShareParams(
+                    text: name,
+                    files: [XFile(gzFile.path, mimeType: 'application/gzip')],
+                  );
 
-                await SharePlus.instance.share(params);
+                  await SharePlus.instance.share(params);
 
-                await gzFile.delete();
-                await tempDir.delete();
-              } catch (ex) {
-                if (ex is Error) {
-                  logger.shout("Failed to compress log file", ex.toString(),
-                      ex.stackTrace);
-                } else {
-                  logger.shout("Failed to compress log file", ex.toString());
+                  await gzFile.delete();
+                  await tempDir.delete();
+                } catch (ex) {
+                  if (ex is Error) {
+                    logger.shout(
+                      "Failed to compress log file",
+                      ex.toString(),
+                      ex.stackTrace,
+                    );
+                  } else {
+                    logger.shout("Failed to compress log file", ex.toString());
+                  }
+
+                  logger.info(
+                    "Sharing regular log file instead: ${entity.path}",
+                  );
+                  final params = ShareParams(
+                    text: name,
+                    files: [XFile(entity.path, mimeType: 'text/plain')],
+                  );
+
+                  await SharePlus.instance.share(params);
                 }
-
-                logger.info("Sharing regular log file instead: ${entity.path}");
-                final params = ShareParams(
-                  text: name,
-                  files: [XFile(entity.path, mimeType: 'text/plain')],
-                );
-
-                await SharePlus.instance.share(params);
-              }
-            },
-          ));
+              },
+            ),
+          );
           widgets.add(SizedBox(height: 8));
         }
         continue;
@@ -980,31 +1173,38 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
     var body = createWidgetTree(widget.items.values, widget.data.settings);
 
     return DefaultAssetBundle(
-        bundle: FirkaBundle(),
-        child: Scaffold(
-          backgroundColor: appStyle.colors.background,
-          body: SafeArea(
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height,
-              child: Stack(
-                children: [
-                  Padding(
-                    padding: EdgeInsetsGeometry.all(20),
-                    child: SingleChildScrollView(
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: body)),
-                  )
-                ],
-              ),
+      bundle: FirkaBundle(),
+      child: Scaffold(
+        backgroundColor: appStyle.colors.background,
+        body: SafeArea(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height,
+            child: Stack(
+              children: [
+                Padding(
+                  padding: EdgeInsetsGeometry.all(20),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: body,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
 
-void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
-    AppInitialization data, void Function(VoidCallback fn) setStateOuter) {
+void showSetDoubleSheet(
+  BuildContext context,
+  SettingsDouble setting,
+  AppInitialization data,
+  void Function(VoidCallback fn) setStateOuter,
+) {
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -1017,96 +1217,111 @@ void showSetDoubleSheet(BuildContext context, SettingsDouble setting,
     ),
     builder: (BuildContext context) {
       return StatefulBuilder(
-          builder: (BuildContext context, setState) => Stack(
-                children: [
-                  Positioned.fill(
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(color: Colors.transparent),
-                    ),
+        builder: (BuildContext context, setState) => Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                behavior: HitTestBehavior.opaque,
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: appStyle.colors.card,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 18.0,
+                    right: 16.0,
+                    bottom: 30.0,
+                    top: 20.0,
                   ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: appStyle.colors.card,
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(16)),
+                  child: Column(
+                    children: [
+                      Center(
+                        child: Text(
+                          setting.title,
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            left: 18.0, right: 16.0, bottom: 30.0, top: 20.0),
-                        child: Column(
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 0,
+                          horizontal: 40,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
                           children: [
-                            Center(
-                                child: Text(
-                              setting.title,
-                              style: appStyle.fonts.B_16R
-                                  .apply(color: appStyle.colors.textPrimary),
-                            )),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 0, horizontal: 40),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Expanded(
-                                    // TODO: Make a firka slider
-                                    child: Slider(
-                                        min: setting.minValue,
-                                        value: setting.value,
-                                        max: setting.maxValue,
-                                        divisions: setting.step != null
-                                            ? ((setting.maxValue -
-                                                        setting.minValue) /
-                                                    setting.step!)
-                                                .round()
-                                            : null,
-                                        thumbColor: appStyle.colors.accent,
-                                        activeColor: appStyle.colors.secondary,
-                                        inactiveColor: appStyle.colors.a15p,
-                                        onChanged: (v) async {
-                                          setState(() {
-                                            if (setting.step != null) {
-                                              setting.value =
-                                                  (v / setting.step!).round() *
-                                                      setting.step!;
-                                            } else {
-                                              setting.value = v;
-                                            }
-                                            setting.value =
-                                                setting.toRoundedDouble();
-                                          });
+                            Expanded(
+                              // TODO: Make a firka slider
+                              child: Slider(
+                                min: setting.minValue,
+                                value: setting.value,
+                                max: setting.maxValue,
+                                divisions: setting.step != null
+                                    ? ((setting.maxValue - setting.minValue) /
+                                              setting.step!)
+                                          .round()
+                                    : null,
+                                thumbColor: appStyle.colors.accent,
+                                activeColor: appStyle.colors.secondary,
+                                inactiveColor: appStyle.colors.a15p,
+                                onChanged: (v) async {
+                                  setState(() {
+                                    if (setting.step != null) {
+                                      setting.value =
+                                          (v / setting.step!).round() *
+                                          setting.step!;
+                                    } else {
+                                      setting.value = v;
+                                    }
+                                    setting.value = setting.toRoundedDouble();
+                                  });
 
-                                          await data.isar.writeTxn(() async {
-                                            await setting.save(
-                                                data.isar.appSettingsModels);
+                                  await data.isar.writeTxn(() async {
+                                    await setting.save(
+                                      data.isar.appSettingsModels,
+                                    );
 
-                                            setStateOuter(() {});
-                                          });
-                                          await setting.postUpdate();
-                                        }),
-                                  ),
-                                  Text(setting.toRoundedString(),
-                                      style: appStyle.fonts.B_16R.apply(
-                                          color: appStyle.colors.textPrimary))
-                                ],
+                                    setStateOuter(() {});
+                                  });
+                                  await setting.postUpdate();
+                                },
+                              ),
+                            ),
+                            Text(
+                              setting.toRoundedString(),
+                              style: appStyle.fonts.B_16R.apply(
+                                color: appStyle.colors.textPrimary,
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ));
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
     },
   );
 }
 
-void showSettingsSheet(BuildContext context, double height,
-    AppInitialization data, LinkedHashMap<String, SettingsItem> items) {
+void showSettingsSheet(
+  BuildContext context,
+  double height,
+  AppInitialization data,
+  LinkedHashMap<String, SettingsItem> items,
+) {
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -1114,9 +1329,7 @@ void showSettingsSheet(BuildContext context, double height,
     enableDrag: true,
     backgroundColor: Colors.transparent,
     barrierColor: appStyle.colors.a15p,
-    constraints: BoxConstraints(
-      maxHeight: height,
-    ),
+    constraints: BoxConstraints(maxHeight: height),
     builder: (BuildContext context) {
       return Stack(
         children: [

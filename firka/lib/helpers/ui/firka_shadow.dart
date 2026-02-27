@@ -14,16 +14,18 @@ class FirkaShadow extends StatelessWidget {
     final borderRadius = BorderRadius.circular(8.0);
 
     final shadowBox = BoxDecoration(
-        color: Colors.transparent,
-        shape: BoxShape.rectangle,
-        boxShadow: [
-          BoxShadow(
-              color: appStyle.colors.shadowColor,
-              spreadRadius: -4,
-              blurRadius: 0,
-              offset: Offset(0, 2))
-        ],
-        borderRadius: BorderRadius.all(Radius.circular(16)));
+      color: Colors.transparent,
+      shape: BoxShape.rectangle,
+      boxShadow: [
+        BoxShadow(
+          color: appStyle.colors.shadowColor,
+          spreadRadius: -4,
+          blurRadius: 0,
+          offset: Offset(0, 2),
+        ),
+      ],
+      borderRadius: BorderRadius.all(Radius.circular(16)),
+    );
 
     if (!shadow) {
       return ClipRRect(borderRadius: borderRadius, child: child);

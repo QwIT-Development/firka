@@ -8,14 +8,20 @@ import 'package:watch_connectivity/watch_connectivity.dart';
 import '../../../model/style.dart';
 
 void showWearBottomSheet(
-    BuildContext context, AppInitialization data, String model) async {
+  BuildContext context,
+  AppInitialization data,
+  String model,
+) async {
   final watch = WatchConnectivity();
-  final timetable = await data.client
-      .getTimeTable(timeNow(), timeNow().add(Duration(days: 7)));
+  final timetable = await data.client.getTimeTable(
+    timeNow(),
+    timeNow().add(Duration(days: 7)),
+  );
 
   if (timetable.err != null) {
     return;
   }
+  if (!context.mounted) return;
 
   List<Map<String, dynamic>> timetableArray = List.empty(growable: true);
 
@@ -58,22 +64,29 @@ void showWearBottomSheet(
                     SvgPicture.asset("assets/images/wear_pair.svg"),
                     SizedBox(height: 32),
                     Center(
-                      child: Text(data.l10n.pairing,
-                          style: appStyle.fonts.H_14px
-                              .apply(color: appStyle.colors.secondary)),
+                      child: Text(
+                        data.l10n.pairing,
+                        style: appStyle.fonts.H_14px.apply(
+                          color: appStyle.colors.secondary,
+                        ),
+                      ),
                     ),
                     Center(
-                      child: Text(model,
-                          style: appStyle.fonts.H_H2
-                              .apply(color: appStyle.colors.textPrimary)),
+                      child: Text(
+                        model,
+                        style: appStyle.fonts.H_H2.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
+                      ),
                     ),
                     Center(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6),
                         child: Text(
                           data.l10n.pairing_description,
-                          style: appStyle.fonts.B_16R
-                              .apply(color: appStyle.colors.textPrimary),
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -87,9 +100,10 @@ void showWearBottomSheet(
                           center: [
                             Text(
                               data.l10n.pair,
-                              style: appStyle.fonts.B_16R
-                                  .apply(color: appStyle.colors.textSecondary),
-                            )
+                              style: appStyle.fonts.B_16R.apply(
+                                color: appStyle.colors.textSecondary,
+                              ),
+                            ),
                           ],
                           color: appStyle.colors.accent,
                         ),
@@ -104,7 +118,10 @@ void showWearBottomSheet(
                               "idToken": data.client.model.idToken,
                               "accessToken": data.client.model.accessToken,
                               "refreshToken": data.client.model.refreshToken,
-                              "expiryDate": data.client.model.expiryDate!
+                              "expiryDate": data
+                                  .client
+                                  .model
+                                  .expiryDate!
                                   .millisecondsSinceEpoch,
                             },
                           });
@@ -120,9 +137,10 @@ void showWearBottomSheet(
                           center: [
                             Text(
                               data.l10n.cancel,
-                              style: appStyle.fonts.B_16R
-                                  .apply(color: appStyle.colors.textSecondary),
-                            )
+                              style: appStyle.fonts.B_16R.apply(
+                                color: appStyle.colors.textSecondary,
+                              ),
+                            ),
                           ],
                           color: appStyle.colors.buttonSecondaryFill,
                         ),

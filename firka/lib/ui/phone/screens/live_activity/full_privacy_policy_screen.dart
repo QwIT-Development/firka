@@ -12,10 +12,12 @@ class FullPrivacyPolicyScreen extends StatefulWidget {
   const FullPrivacyPolicyScreen({required this.data, super.key});
 
   @override
-  State<FullPrivacyPolicyScreen> createState() => _FullPrivacyPolicyScreenState();
+  State<FullPrivacyPolicyScreen> createState() =>
+      _FullPrivacyPolicyScreenState();
 }
 
-class _FullPrivacyPolicyScreenState extends FirkaState<FullPrivacyPolicyScreen> {
+class _FullPrivacyPolicyScreenState
+    extends FirkaState<FullPrivacyPolicyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,8 +43,9 @@ class _FullPrivacyPolicyScreenState extends FirkaState<FullPrivacyPolicyScreen> 
                   Expanded(
                     child: Text(
                       widget.data.l10n.la_privacy_header,
-                      style: appStyle.fonts.H_H2
-                          .apply(color: appStyle.colors.textPrimary),
+                      style: appStyle.fonts.H_H2.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
                     ),
                   ),
                 ],
@@ -58,8 +61,9 @@ class _FullPrivacyPolicyScreenState extends FirkaState<FullPrivacyPolicyScreen> 
                     children: [
                       Text(
                         widget.data.l10n.la_privacy_intro,
-                        style: appStyle.fonts.B_16R
-                            .apply(color: appStyle.colors.textSecondary),
+                        style: appStyle.fonts.B_16R.apply(
+                          color: appStyle.colors.textSecondary,
+                        ),
                       ),
                       SizedBox(height: 24),
                       _buildPrivacySection(
@@ -85,14 +89,16 @@ class _FullPrivacyPolicyScreenState extends FirkaState<FullPrivacyPolicyScreen> 
                       SizedBox(height: 16),
                       Text(
                         widget.data.l10n.la_privacy_footer,
-                        style: appStyle.fonts.B_12R
-                            .apply(color: appStyle.colors.textTertiary),
+                        style: appStyle.fonts.B_12R.apply(
+                          color: appStyle.colors.textTertiary,
+                        ),
                       ),
                       SizedBox(height: 8),
                       Text(
                         widget.data.l10n.la_privacy_contact,
-                        style: appStyle.fonts.B_12R
-                            .apply(color: appStyle.colors.textTertiary),
+                        style: appStyle.fonts.B_12R.apply(
+                          color: appStyle.colors.textTertiary,
+                        ),
                       ),
                       SizedBox(height: 24),
                     ],
@@ -114,14 +120,16 @@ class _FullPrivacyPolicyScreenState extends FirkaState<FullPrivacyPolicyScreen> 
         children: [
           Text(
             title,
-            style:
-                appStyle.fonts.H_16px.apply(color: appStyle.colors.textPrimary),
+            style: appStyle.fonts.H_16px.apply(
+              color: appStyle.colors.textPrimary,
+            ),
           ),
           SizedBox(height: 10),
           Text(
             body,
-            style: appStyle.fonts.B_16R
-                .apply(color: appStyle.colors.textSecondary),
+            style: appStyle.fonts.B_16R.apply(
+              color: appStyle.colors.textSecondary,
+            ),
           ),
         ],
       ),

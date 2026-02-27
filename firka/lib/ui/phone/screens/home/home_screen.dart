@@ -44,11 +44,18 @@ class PageNavData {
   String subjectName;
   String? subjectId;
   String? subjectCategory;
-  PageNavData(this.page, this.subPageParams, this.subjectName, {this.subjectId, this.subjectCategory});
+  PageNavData(
+    this.page,
+    this.subPageParams,
+    this.subjectName, {
+    this.subjectId,
+    this.subjectCategory,
+  });
 }
 
-final ValueNotifier<PageNavData> pageNavNotifier =
-    ValueNotifier(PageNavData(HomePage.home, null, ""));
+final ValueNotifier<PageNavData> pageNavNotifier = ValueNotifier(
+  PageNavData(HomePage.home, null, ""),
+);
 bool forcedNavPage = false; // TODO: this is a hack!
 
 class HomeScreen extends StatefulWidget {
@@ -89,8 +96,9 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
   bool _preloadDone = false;
   int forcedNav = 0;
   bool _didRunSecondaryICloudRecovery = false;
-  final RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
+  final RefreshController _refreshController = RefreshController(
+    initialRefresh: false,
+  );
 
   ActiveToastType activeToast = ActiveToastType.none;
 
@@ -214,7 +222,8 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     );
 
     final now = DateTime.now();
-    final shouldRunRecovery = KretaClient.needsReauth ||
+    final shouldRunRecovery =
+        KretaClient.needsReauth ||
         activeToken == null ||
         activeToken.expiryDate == null ||
         activeToken.expiryDate!.isBefore(now.add(const Duration(seconds: 60)));
@@ -224,7 +233,8 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
     }
 
     logger.info(
-        '[Home] Secondary iCloud recovery scheduled (5s delay, startup safety pass)');
+      '[Home] Secondary iCloud recovery scheduled (5s delay, startup safety pass)',
+    );
     await Future.delayed(const Duration(seconds: 5));
     if (_disposed) return;
 
@@ -282,12 +292,15 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
       if (Platform.isAndroid) {
         await WidgetCacheHelper.updateWidgetCache(appStyle, widget.data.client);
         await HomeWidget.updateWidget(
-            qualifiedAndroidName: "app.firka.naplo.glance.TimetableWidget");
+          qualifiedAndroidName: "app.firka.naplo.glance.TimetableWidget",
+        );
       }
 
       if (Platform.isIOS) {
         await WidgetCacheHelper.refreshIOSWidgets(
-            widget.data.client, widget.data.settings);
+          widget.data.client,
+          widget.data.settings,
+        );
 
         final token = pickActiveToken(
           tokens: widget.data.tokens,
@@ -372,14 +385,18 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                   children: [
                     Text(
                       widget.data.l10n.api_error,
-                      style: appStyle.fonts.B_16SB
-                          .copyWith(color: appStyle.colors.errorText),
+                      style: appStyle.fonts.B_16SB.copyWith(
+                        color: appStyle.colors.errorText,
+                      ),
                     ),
                     SizedBox(width: 8),
                     GestureDetector(
-                      child: FirkaIconWidget(FirkaIconType.majesticons,
-                          Majesticon.questionCircleSolid,
-                          color: appStyle.colors.errorAccent, size: 24),
+                      child: FirkaIconWidget(
+                        FirkaIconType.majesticons,
+                        Majesticon.questionCircleSolid,
+                        color: appStyle.colors.errorAccent,
+                        size: 24,
+                      ),
                       onTap: () {
                         var stackTrace = "";
                         if (e is Error && e.stackTrace != null) {
@@ -419,11 +436,13 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
 
     widget.data.client
         .getTimeTableStream(
-            midnight, midnight.add(Duration(hours: 23, minutes: 59)),
-            cacheOnly: false)
+          midnight,
+          midnight.add(Duration(hours: 23, minutes: 59)),
+          cacheOnly: false,
+        )
         .forEach((lessons) {
-      lessonsFetched++;
-    });
+          lessonsFetched++;
+        });
 
     widget.data.client.getNoticeBoardStream(cacheOnly: false).forEach((items) {
       noticeBoardFetched++;
@@ -617,9 +636,10 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                     SizedBox(width: 16),
                     Text(
                       widget.data.l10n.refreshing,
-                      style: appStyle.fonts.B_16SB
-                          .copyWith(color: appStyle.colors.textPrimary),
-                    )
+                      style: appStyle.fonts.B_16SB.copyWith(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -631,111 +651,118 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     return DefaultAssetBundle(
-        bundle: FirkaBundle(),
-        child: PopScope(
-          canPop: canPop || subPageActive.value,
-          child: Scaffold(
-            backgroundColor: appStyle.colors.background,
-            body: SafeArea(
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height,
-                child: Stack(
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: RefreshConfiguration(
-                              springDescription: SpringDescription(
-                                  mass: 1.9, stiffness: 85, damping: 16),
-                              child: SmartScroll(
-                                  controller: _refreshController,
-                                  onLoading: _onLoading,
-                                  onRefresh: _onRefresh,
-                                  header: MaterialClassicHeader(
-                                    color: appStyle.colors.accent,
-                                    backgroundColor: appStyle.colors.background,
-                                    offset: 24,
-                                  ),
-                                  physics: ClampingScrollPhysics(),
-                                  child: PageView(
-                                    controller: _pageController,
-                                    physics: ClampingScrollPhysics(),
-                                    onPageChanged: (index) {
-                                      HapticFeedback.heavyImpact();
+      bundle: FirkaBundle(),
+      child: PopScope(
+        canPop: canPop || subPageActive.value,
+        child: Scaffold(
+          backgroundColor: appStyle.colors.background,
+          body: SafeArea(
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height,
+              child: Stack(
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: RefreshConfiguration(
+                          springDescription: SpringDescription(
+                            mass: 1.9,
+                            stiffness: 85,
+                            damping: 16,
+                          ),
+                          child: SmartScroll(
+                            controller: _refreshController,
+                            onLoading: _onLoading,
+                            onRefresh: _onRefresh,
+                            header: MaterialClassicHeader(
+                              color: appStyle.colors.accent,
+                              backgroundColor: appStyle.colors.background,
+                              offset: 24,
+                            ),
+                            physics: ClampingScrollPhysics(),
+                            child: PageView(
+                              controller: _pageController,
+                              physics: ClampingScrollPhysics(),
+                              onPageChanged: (index) {
+                                HapticFeedback.heavyImpact();
 
-                                      if (forcedNav > 0) {
-                                        forcedNav--;
+                                if (forcedNav > 0) {
+                                  forcedNav--;
 
-                                        if (previousPages.isEmpty) {
-                                          canPop = true;
-                                        }
-                                        return;
-                                      }
+                                  if (previousPages.isEmpty) {
+                                    canPop = true;
+                                  }
+                                  return;
+                                }
 
-                                      setState(() {
-                                        previousPages.add(homeScreenPage);
-                                        canPop = false;
-                                        homeScreenPage = HomePage.values[index];
-                                      });
-                                    },
-                                    children: [
-                                      HomeSubPage(
-                                        HomePage.home,
-                                        widget.data,
-                                        widget.updateNotifier,
-                                        widget.updateFinishedNotifier,
-                                      ),
-                                      HomeSubPage(
-                                        HomePage.grades,
-                                        widget.data,
-                                        widget.updateNotifier,
-                                        widget.updateFinishedNotifier,
-                                      ),
-                                      HomeSubPage(
-                                        HomePage.timetable,
-                                        widget.data,
-                                        widget.updateNotifier,
-                                        widget.updateFinishedNotifier,
-                                      ),
-                                    ],
-                                  ))),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                appStyle.colors.background,
-                                appStyle.colors.background
-                                    .withValues(alpha: 0.0),
+                                setState(() {
+                                  previousPages.add(homeScreenPage);
+                                  canPop = false;
+                                  homeScreenPage = HomePage.values[index];
+                                });
+                              },
+                              children: [
+                                HomeSubPage(
+                                  HomePage.home,
+                                  widget.data,
+                                  widget.updateNotifier,
+                                  widget.updateFinishedNotifier,
+                                ),
+                                HomeSubPage(
+                                  HomePage.grades,
+                                  widget.data,
+                                  widget.updateNotifier,
+                                  widget.updateFinishedNotifier,
+                                ),
+                                HomeSubPage(
+                                  HomePage.timetable,
+                                  widget.data,
+                                  widget.updateNotifier,
+                                  widget.updateFinishedNotifier,
+                                ),
                               ],
-                              stops: const [0.0, 1.0],
                             ),
                           ),
-                          width: MediaQuery.of(context).size.width,
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(55, 0, 55, 12),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                // Home Button
-                                BottomNavIconWidget(() {
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              appStyle.colors.background,
+                              appStyle.colors.background.withValues(alpha: 0.0),
+                            ],
+                            stops: const [0.0, 1.0],
+                          ),
+                        ),
+                        width: MediaQuery.of(context).size.width,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(55, 0, 55, 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Home Button
+                              BottomNavIconWidget(
+                                () {
                                   if (homeScreenPage != HomePage.home) {
                                     if (previousPages.length > 1 &&
                                         forcedNavPage) {
                                       forcedNavPage = false;
-                                      _pageController.jumpToPage(previousPages[
-                                              previousPages.length - 2]
-                                          .index);
+                                      _pageController.jumpToPage(
+                                        previousPages[previousPages.length - 2]
+                                            .index,
+                                      );
                                     }
                                     if (previousPages.length > 1 &&
                                         forcedNavPage) {
                                       forcedNavPage = false;
-                                      _pageController.jumpToPage(previousPages[
-                                              previousPages.length - 2]
-                                          .index);
+                                      _pageController.jumpToPage(
+                                        previousPages[previousPages.length - 2]
+                                            .index,
+                                      );
                                     }
                                     _pageController.animateToPage(
                                       HomePage.home.index,
@@ -744,24 +771,27 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                                     );
                                   }
                                 },
-                                    homeScreenPage == HomePage.home,
-                                    homeScreenPage == HomePage.home
-                                        ? Majesticon.homeSolid
-                                        : Majesticon.homeLine,
-                                    widget.data.l10n.home,
-                                    homeScreenPage == HomePage.home
-                                        ? appStyle.colors.accent
-                                        : appStyle.colors.secondary,
-                                    appStyle.colors.textPrimary),
-                                // Grades Button
-                                BottomNavIconWidget(() {
+                                homeScreenPage == HomePage.home,
+                                homeScreenPage == HomePage.home
+                                    ? Majesticon.homeSolid
+                                    : Majesticon.homeLine,
+                                widget.data.l10n.home,
+                                homeScreenPage == HomePage.home
+                                    ? appStyle.colors.accent
+                                    : appStyle.colors.secondary,
+                                appStyle.colors.textPrimary,
+                              ),
+                              // Grades Button
+                              BottomNavIconWidget(
+                                () {
                                   if (homeScreenPage != HomePage.grades) {
                                     if (previousPages.length > 1 &&
                                         forcedNavPage) {
                                       forcedNavPage = false;
-                                      _pageController.jumpToPage(previousPages[
-                                              previousPages.length - 2]
-                                          .index);
+                                      _pageController.jumpToPage(
+                                        previousPages[previousPages.length - 2]
+                                            .index,
+                                      );
                                     }
                                     _pageController.animateToPage(
                                       HomePage.grades.index,
@@ -770,24 +800,27 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                                     );
                                   }
                                 },
-                                    homeScreenPage == HomePage.grades,
-                                    homeScreenPage == HomePage.grades
-                                        ? Majesticon.bookmarkSolid
-                                        : Majesticon.bookmarkLine,
-                                    widget.data.l10n.grades,
-                                    homeScreenPage == HomePage.grades
-                                        ? appStyle.colors.accent
-                                        : appStyle.colors.secondary,
-                                    appStyle.colors.textPrimary),
-                                // Timetable Button
-                                BottomNavIconWidget(() {
+                                homeScreenPage == HomePage.grades,
+                                homeScreenPage == HomePage.grades
+                                    ? Majesticon.bookmarkSolid
+                                    : Majesticon.bookmarkLine,
+                                widget.data.l10n.grades,
+                                homeScreenPage == HomePage.grades
+                                    ? appStyle.colors.accent
+                                    : appStyle.colors.secondary,
+                                appStyle.colors.textPrimary,
+                              ),
+                              // Timetable Button
+                              BottomNavIconWidget(
+                                () {
                                   if (homeScreenPage != HomePage.timetable) {
                                     if (previousPages.length > 1 &&
                                         forcedNavPage) {
                                       forcedNavPage = false;
-                                      _pageController.jumpToPage(previousPages[
-                                              previousPages.length - 2]
-                                          .index);
+                                      _pageController.jumpToPage(
+                                        previousPages[previousPages.length - 2]
+                                            .index,
+                                      );
                                     }
                                     _pageController.animateToPage(
                                       HomePage.timetable.index,
@@ -796,73 +829,76 @@ class _HomeScreenState extends FirkaState<HomeScreen> {
                                     );
                                   }
                                 },
-                                    homeScreenPage == HomePage.timetable,
-                                    homeScreenPage == HomePage.timetable
-                                        ? Majesticon.calendarSolid
-                                        : Majesticon.calendarLine,
-                                    widget.data.l10n.timetable,
-                                    homeScreenPage == HomePage.timetable
-                                        ? appStyle.colors.accent
-                                        : appStyle.colors.secondary,
-                                    appStyle.colors.textPrimary),
-                                // More Button
-                                BottomNavIconWidget(
-                                  () {
-                                    HapticFeedback.lightImpact();
-                                    showExtrasBottomSheet(context, widget.data);
-                                  },
-                                  false,
-                                  widget.data.profilePicture != null
-                                      ? widget.data.profilePicture!
-                                      : Majesticon.menuLine,
-                                  widget.data.l10n.other,
-                                  appStyle.colors.secondary,
-                                  appStyle.colors.textPrimary,
-                                  isProfilePicture:
-                                      widget.data.profilePicture != null,
-                                ),
-                              ],
-                            ),
+                                homeScreenPage == HomePage.timetable,
+                                homeScreenPage == HomePage.timetable
+                                    ? Majesticon.calendarSolid
+                                    : Majesticon.calendarLine,
+                                widget.data.l10n.timetable,
+                                homeScreenPage == HomePage.timetable
+                                    ? appStyle.colors.accent
+                                    : appStyle.colors.secondary,
+                                appStyle.colors.textPrimary,
+                              ),
+                              // More Button
+                              BottomNavIconWidget(
+                                () {
+                                  HapticFeedback.lightImpact();
+                                  showExtrasBottomSheet(context, widget.data);
+                                },
+                                false,
+                                widget.data.profilePicture != null
+                                    ? widget.data.profilePicture!
+                                    : Majesticon.menuLine,
+                                widget.data.l10n.other,
+                                appStyle.colors.secondary,
+                                appStyle.colors.textPrimary,
+                                isProfilePicture:
+                                    widget.data.profilePicture != null,
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                    toast ?? SizedBox(),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                  toast ?? SizedBox(),
+                ],
               ),
             ),
           ),
-          onPopInvokedWithResult: (_, __) {
-            if (subPageActive.value) {
-              subPageBack.update();
-              return;
-            }
+        ),
+        onPopInvokedWithResult: (bool didPop, dynamic result) {
+          if (subPageActive.value) {
+            subPageBack.update();
+            return;
+          }
 
-            if (previousPages.isNotEmpty &&
-                homeScreenPage != previousPages.last) {
-              setState(() {
-                homeScreenPage = previousPages.removeLast();
+          if (previousPages.isNotEmpty &&
+              homeScreenPage != previousPages.last) {
+            setState(() {
+              homeScreenPage = previousPages.removeLast();
 
-                forcedNav++;
-                _pageController.animateToPage(
-                  homeScreenPage.index,
-                  duration: Duration(milliseconds: 175),
-                  curve: Curves.easeInOut,
-                );
-                canPop = previousPages.isEmpty;
-              });
-            }
-          },
-        ));
+              forcedNav++;
+              _pageController.animateToPage(
+                homeScreenPage.index,
+                duration: Duration(milliseconds: 175),
+                curve: Curves.easeInOut,
+              );
+              canPop = previousPages.isEmpty;
+            });
+          }
+        },
+      ),
+    );
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     widget.data.settingsUpdateNotifier.removeListener(settingsUpdateListener);
-    widget.data.profilePictureUpdateNotifier
-        .removeListener(settingsUpdateListener);
+    widget.data.profilePictureUpdateNotifier.removeListener(
+      settingsUpdateListener,
+    );
 
     widget.data.profilePictureUpdateNotifier.removeListener(() {
       if (mounted) setState(() {});
@@ -886,8 +922,12 @@ class HomeSubPage extends StatefulWidget {
   final UpdateNotifier _updateFinishNotifier;
 
   const HomeSubPage(
-      this.page, this.data, this._updateNotifier, this._updateFinishNotifier,
-      {super.key});
+    this.page,
+    this.data,
+    this._updateNotifier,
+    this._updateFinishNotifier, {
+    super.key,
+  });
 
   @override
   State<HomeSubPage> createState() => _HomeSubPage();
@@ -910,43 +950,101 @@ class _HomeSubPage extends State<HomeSubPage> {
       if (subPageData == null) {
         switch (p) {
           case HomePage.home:
-            return HomeMainScreen(widget.data, widget._updateNotifier,
-                widget._updateFinishNotifier);
+            return HomeMainScreen(
+              widget.data,
+              widget._updateNotifier,
+              widget._updateFinishNotifier,
+            );
           case HomePage.grades:
-            return PageWithSubPages([
-              (cb) => HomeGradesScreen(widget.data, widget._updateNotifier,
-                  widget._updateFinishNotifier, cb),
-              (cb) => HomeGradesSubjectScreen(widget.data, widget._updateNotifier,
-                  widget._updateFinishNotifier, cb),
-            ], subPageActive, subPageBack, pageIndex: 0);
+            return PageWithSubPages(
+              [
+                (cb) => HomeGradesScreen(
+                  widget.data,
+                  widget._updateNotifier,
+                  widget._updateFinishNotifier,
+                  cb,
+                ),
+                (cb) => HomeGradesSubjectScreen(
+                  widget.data,
+                  widget._updateNotifier,
+                  widget._updateFinishNotifier,
+                  cb,
+                ),
+              ],
+              subPageActive,
+              subPageBack,
+              pageIndex: 0,
+            );
           case HomePage.timetable:
-            return PageWithSubPages([
-              (cb) => HomeTimetableScreen(widget.data, widget._updateNotifier,
-                  widget._updateFinishNotifier, cb),
-              (cb) => HomeTimetableMonthlyScreen(widget.data,
-                  widget._updateNotifier, widget._updateFinishNotifier, cb)
-            ], subPageActive, subPageBack, pageIndex: 0);
+            return PageWithSubPages(
+              [
+                (cb) => HomeTimetableScreen(
+                  widget.data,
+                  widget._updateNotifier,
+                  widget._updateFinishNotifier,
+                  cb,
+                ),
+                (cb) => HomeTimetableMonthlyScreen(
+                  widget.data,
+                  widget._updateNotifier,
+                  widget._updateFinishNotifier,
+                  cb,
+                ),
+              ],
+              subPageActive,
+              subPageBack,
+              pageIndex: 0,
+            );
         }
       } else {
         switch (p) {
           case HomePage.home:
-            return HomeMainScreen(widget.data, widget._updateNotifier,
-                widget._updateFinishNotifier);
+            return HomeMainScreen(
+              widget.data,
+              widget._updateNotifier,
+              widget._updateFinishNotifier,
+            );
           case HomePage.grades:
             activeSubjectUid = subPageData!;
-            return PageWithSubPages([
-              (cb) => HomeGradesSubjectScreen(widget.data, widget._updateNotifier,
-                  widget._updateFinishNotifier, cb),
-              (cb) => HomeGradesScreen(widget.data, widget._updateNotifier,
-                  widget._updateFinishNotifier, cb),
-            ], subPageActive, subPageBack, pageIndex: 0);
+            return PageWithSubPages(
+              [
+                (cb) => HomeGradesSubjectScreen(
+                  widget.data,
+                  widget._updateNotifier,
+                  widget._updateFinishNotifier,
+                  cb,
+                ),
+                (cb) => HomeGradesScreen(
+                  widget.data,
+                  widget._updateNotifier,
+                  widget._updateFinishNotifier,
+                  cb,
+                ),
+              ],
+              subPageActive,
+              subPageBack,
+              pageIndex: 0,
+            );
           case HomePage.timetable:
-            return PageWithSubPages([
-              (cb) => HomeTimetableMonthlyScreen(widget.data,
-                  widget._updateNotifier, widget._updateFinishNotifier, cb),
-              (cb) => HomeTimetableScreen(widget.data, widget._updateNotifier,
-                  widget._updateFinishNotifier, cb)
-            ], subPageActive, subPageBack, pageIndex: 0);
+            return PageWithSubPages(
+              [
+                (cb) => HomeTimetableMonthlyScreen(
+                  widget.data,
+                  widget._updateNotifier,
+                  widget._updateFinishNotifier,
+                  cb,
+                ),
+                (cb) => HomeTimetableScreen(
+                  widget.data,
+                  widget._updateNotifier,
+                  widget._updateFinishNotifier,
+                  cb,
+                ),
+              ],
+              subPageActive,
+              subPageBack,
+              pageIndex: 0,
+            );
         }
       }
     }
@@ -954,21 +1052,50 @@ class _HomeSubPage extends State<HomeSubPage> {
     switch (widget.page) {
       case HomePage.home:
         return HomeMainScreen(
-            widget.data, widget._updateNotifier, widget._updateFinishNotifier);
+          widget.data,
+          widget._updateNotifier,
+          widget._updateFinishNotifier,
+        );
       case HomePage.grades:
-        return PageWithSubPages([
-          (cb) => HomeGradesScreen(widget.data, widget._updateNotifier,
-              widget._updateFinishNotifier, cb),
-          (cb) => HomeGradesSubjectScreen(widget.data, widget._updateNotifier,
-              widget._updateFinishNotifier, cb),
-        ], subPageActive, subPageBack, pageIndex: 0);
+        return PageWithSubPages(
+          [
+            (cb) => HomeGradesScreen(
+              widget.data,
+              widget._updateNotifier,
+              widget._updateFinishNotifier,
+              cb,
+            ),
+            (cb) => HomeGradesSubjectScreen(
+              widget.data,
+              widget._updateNotifier,
+              widget._updateFinishNotifier,
+              cb,
+            ),
+          ],
+          subPageActive,
+          subPageBack,
+          pageIndex: 0,
+        );
       case HomePage.timetable:
-        return PageWithSubPages([
-          (cb) => HomeTimetableScreen(widget.data, widget._updateNotifier,
-              widget._updateFinishNotifier, cb),
-          (cb) => HomeTimetableMonthlyScreen(widget.data,
-              widget._updateNotifier, widget._updateFinishNotifier, cb)
-        ], subPageActive, subPageBack, pageIndex: 0);
+        return PageWithSubPages(
+          [
+            (cb) => HomeTimetableScreen(
+              widget.data,
+              widget._updateNotifier,
+              widget._updateFinishNotifier,
+              cb,
+            ),
+            (cb) => HomeTimetableMonthlyScreen(
+              widget.data,
+              widget._updateNotifier,
+              widget._updateFinishNotifier,
+              cb,
+            ),
+          ],
+          subPageActive,
+          subPageBack,
+          pageIndex: 0,
+        );
     }
   }
 
@@ -986,7 +1113,7 @@ class _HomeSubPage extends State<HomeSubPage> {
       forcedHomePage = pageNavNotifier.value.page;
       subPageData = pageNavNotifier.value.subPageParams;
       subjectName = pageNavNotifier.value.subjectName;
-      subjectId = pageNavNotifier.value.subjectId ?? ""; 
+      subjectId = pageNavNotifier.value.subjectId ?? "";
       subjectCategory = pageNavNotifier.value.subjectCategory ?? "";
       previousPages.add(homeScreenPage);
       homeScreenPage = forcedHomePage!;

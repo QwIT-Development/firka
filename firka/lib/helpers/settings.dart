@@ -89,403 +89,496 @@ class SettingsStore {
 
   SettingsStore(AppLocalizations l10n) {
     items["settings"] = SettingsGroup(
-        0,
-        LinkedHashMap.of({
-          "back": SettingsBackHeader(0, l10n.s_a, always),
-          "settings_header": SettingsHeader(0, l10n.s_settings, always),
-          "settings_padding": SettingsPadding(0, 20, always),
-          "application": SettingsSubGroup(
+      0,
+      LinkedHashMap.of({
+        "back": SettingsBackHeader(0, l10n.s_a, always),
+        "settings_header": SettingsHeader(0, l10n.s_settings, always),
+        "settings_padding": SettingsPadding(0, 20, always),
+        "application": SettingsSubGroup(
+          0,
+          FirkaIconType.majesticons,
+          Majesticon.settingsCogSolid,
+          l10n.s_a,
+          LinkedHashMap.of({
+            "back": SettingsBackHeader(0, l10n.s_settings, always),
+            "settings_header": SettingsHeader(0, l10n.s_ag, always),
+            "settings_padding": SettingsPadding(0, 23, always),
+            "bell_delay": SettingsDouble(
+              bellRing,
+              FirkaIconType.majesticons,
+              Majesticon.bellSolid,
+              l10n.s_ag_bell_delay,
+              0,
+              0,
+              120,
+              0,
+              always,
+            ),
+            "rounding": SettingsSubGroup(
               0,
               FirkaIconType.majesticons,
-              Majesticon.settingsCogSolid,
-              l10n.s_a,
+              Majesticon.ruler2Solid,
+              l10n.s_ag_rounding,
               LinkedHashMap.of({
-                "back": SettingsBackHeader(0, l10n.s_settings, always),
-                "settings_header": SettingsHeader(0, l10n.s_ag, always),
-                "settings_padding": SettingsPadding(0, 23, always),
-                "bell_delay": SettingsDouble(
-                    bellRing,
-                    FirkaIconType.majesticons,
-                    Majesticon.bellSolid,
-                    l10n.s_ag_bell_delay,
-                    0,
-                    0,
-                    120,
-                    0,
-                    always),
-                "rounding": SettingsSubGroup(
-                    0,
-                    FirkaIconType.majesticons,
-                    Majesticon.ruler2Solid,
-                    l10n.s_ag_rounding,
-                    LinkedHashMap.of({
-                      "back": SettingsBackHeader(0, l10n.s_ag_rounding, always),
-                      "1": SettingsDouble(rounding1, null, null, l10n.s_ag_r1,
-                          0.1, 0.5, 0.99, 2, always),
-                      "2": SettingsDouble(rounding2, null, null, l10n.s_ag_r2,
-                          0.1, 0.5, 0.99, 2, always),
-                      "3": SettingsDouble(rounding3, null, null, l10n.s_ag_r3,
-                          0.1, 0.5, 0.99, 2, always),
-                      "4": SettingsDouble(rounding4, null, null, l10n.s_ag_r4,
-                          0.1, 0.5, 0.99, 2, always),
-                    }),
-                    always,
-                    null),
-                "class_avg_on_graph": SettingsBoolean(classAvgOnGraph, null,
-                    null, l10n.s_ag_class_avg_on_graph, true, never),
-                "navbar": SettingsSubGroup(
-                    0,
-                    null, // TODO: icon
-                    null,
-                    l10n.s_ag_navbar,
-                    LinkedHashMap.of({}),
-                    never,
-                    null),
-                "left_handed_mode": SettingsBoolean(leftHandedMode, null, null,
-                    l10n.s_ag_left_handed_mode, false, never),
-                "live_activity_privacy_ever_declined": SettingsBoolean(
-                    liveActivityPrivacyEverDeclined,
-                    null,
-                    null,
-                    "Privacy Ever Declined",
-                    false,
-                    never),
-                "language_header":
-                    SettingsHeaderSmall(0, l10n.s_ag_language_header, always),
-                "language": SettingsItemsRadio(
-                    language,
-                    null,
-                    null,
-                    [
-                      l10n.s_ag_language_auto,
-                      l10n.s_ag_language_hu,
-                      l10n.s_ag_language_en,
-                      l10n.s_ag_language_de
-                    ],
-                    0,
-                    always, () async {
-                  await initLang(initData);
-                  initData.settings = SettingsStore(initData.l10n);
-                  await initData.settings.load(initData.isar.appSettingsModels);
+                "back": SettingsBackHeader(0, l10n.s_ag_rounding, always),
+                "1": SettingsDouble(
+                  rounding1,
+                  null,
+                  null,
+                  l10n.s_ag_r1,
+                  0.1,
+                  0.5,
+                  0.99,
+                  2,
+                  always,
+                ),
+                "2": SettingsDouble(
+                  rounding2,
+                  null,
+                  null,
+                  l10n.s_ag_r2,
+                  0.1,
+                  0.5,
+                  0.99,
+                  2,
+                  always,
+                ),
+                "3": SettingsDouble(
+                  rounding3,
+                  null,
+                  null,
+                  l10n.s_ag_r3,
+                  0.1,
+                  0.5,
+                  0.99,
+                  2,
+                  always,
+                ),
+                "4": SettingsDouble(
+                  rounding4,
+                  null,
+                  null,
+                  l10n.s_ag_r4,
+                  0.1,
+                  0.5,
+                  0.99,
+                  2,
+                  always,
+                ),
+              }),
+              always,
+              null,
+            ),
+            "class_avg_on_graph": SettingsBoolean(
+              classAvgOnGraph,
+              null,
+              null,
+              l10n.s_ag_class_avg_on_graph,
+              true,
+              never,
+            ),
+            "navbar": SettingsSubGroup(
+              0,
+              null, // TODO: icon
+              null,
+              l10n.s_ag_navbar,
+              LinkedHashMap.of({}),
+              never,
+              null,
+            ),
+            "left_handed_mode": SettingsBoolean(
+              leftHandedMode,
+              null,
+              null,
+              l10n.s_ag_left_handed_mode,
+              false,
+              never,
+            ),
+            "live_activity_privacy_ever_declined": SettingsBoolean(
+              liveActivityPrivacyEverDeclined,
+              null,
+              null,
+              "Privacy Ever Declined",
+              false,
+              never,
+            ),
+            "language_header": SettingsHeaderSmall(
+              0,
+              l10n.s_ag_language_header,
+              always,
+            ),
+            "language": SettingsItemsRadio(
+              language,
+              null,
+              null,
+              [
+                l10n.s_ag_language_auto,
+                l10n.s_ag_language_hu,
+                l10n.s_ag_language_en,
+                l10n.s_ag_language_de,
+              ],
+              0,
+              always,
+              () async {
+                await initLang(initData);
+                initData.settings = SettingsStore(initData.l10n);
+                await initData.settings.load(initData.isar.appSettingsModels);
 
-                  globalUpdate.update();
-                  runApp(InitializationScreen());
-                })
-              }),
-              always,
-              null),
-          "customization": SettingsSubGroup(
+                globalUpdate.update();
+                runApp(InitializationScreen());
+              },
+            ),
+          }),
+          always,
+          null,
+        ),
+        "customization": SettingsSubGroup(
+          0,
+          FirkaIconType.majesticons,
+          Majesticon.flower2Solid,
+          l10n.s_c,
+          LinkedHashMap.of({
+            "back": SettingsBackHeader(0, l10n.s_settings, always),
+            "settings_header": SettingsHeader(0, l10n.s_customization, always),
+            "icon_header": SettingsHeaderSmall(0, l10n.s_c_icon_header, always),
+            "icon_header_preview_padding": SettingsPadding(0, 16, always),
+            "icon_preview": SettingsAppIconPreview(0, always),
+            "icon_picker": SettingsSubGroup(
               0,
-              FirkaIconType.majesticons,
-              Majesticon.flower2Solid,
-              l10n.s_c,
+              null,
+              null,
+              l10n.s_c_replace_icon,
               LinkedHashMap.of({
-                "back": SettingsBackHeader(0, l10n.s_settings, always),
-                "settings_header":
-                    SettingsHeader(0, l10n.s_customization, always),
-                "icon_header":
-                    SettingsHeaderSmall(0, l10n.s_c_icon_header, always),
-                "icon_header_preview_padding": SettingsPadding(0, 16, always),
+                "icon_header": SettingsHeader(0, l10n.s_ci_icon_header, always),
+                "warning_header": SettingsHeader(
+                  0,
+                  l10n.s_ci_warning_header,
+                  isDebug,
+                ),
+                "icon_subtitle": SettingsSubtitle(
+                  0,
+                  l10n.s_ci_icon_subtitle,
+                  always,
+                ),
+                "settings_padding": SettingsPadding(0, 24, always),
                 "icon_preview": SettingsAppIconPreview(0, always),
-                "icon_picker": SettingsSubGroup(
-                    0,
-                    null,
-                    null,
-                    l10n.s_c_replace_icon,
-                    LinkedHashMap.of({
-                      "icon_header":
-                          SettingsHeader(0, l10n.s_ci_icon_header, always),
-                      "warning_header":
-                          SettingsHeader(0, l10n.s_ci_warning_header, isDebug),
-                      "icon_subtitle":
-                          SettingsSubtitle(0, l10n.s_ci_icon_subtitle, always),
-                      "settings_padding": SettingsPadding(0, 24, always),
-                      "icon_preview": SettingsAppIconPreview(0, always),
-                      "settings_padding2": SettingsPadding(0, 24, always),
-                      "child_protection": SettingsBoolean(
-                          childProtection,
-                          FirkaIconType.majesticons,
-                          Majesticon.shieldSolid,
-                          l10n.s_ci_child_protection,
-                          true,
-                          never),
-                      "icon_picker": SettingsAppIconPicker(
-                          0,
-                          "original",
-                          {
-                            l10n.s_ci_icon_g1: ["original", "proto", "pride"],
-                            l10n.s_ci_icon_g2: [
-                              "pixel",
-                              "galaxy",
-                              "cactus",
-                            ],
-                            l10n.s_ci_icon_g3: [
-                              "old",
-                              "refilc",
-                              "filc",
-                              "szivacs"
-                            ],
-                            l10n.s_ci_icon_g4: [
-                              "modern",
-                              "cc",
-                              "paper",
-                              "filco",
-                              "o1g",
-                              "pear",
-                              "half_firka_2",
-                              "nuke",
-                              "refulc"
-                            ],
-                            l10n.s_ci_icon_g5: [
-                              "kreta",
-                              "cc",
-                              "repont",
-                              "void_icon",
-                              "pixelized",
-                              "mkkp",
-                              "fidesz",
-                              "tisza"
-                            ],
-                            l10n.s_ci_icon_g6: ["xmas1", "xmas2", "xmas3"],
-                            l10n.s_ci_icon_g7: [
-                              "lgbtq",
-                              "lgbtqp",
-                              "trans",
-                              "enby",
-                              "ace",
-                              "gay",
-                              "lesb",
-                              "bi"
-                            ],
-                            l10n.s_ci_icon_g8: [
-                              "lgbtq_f",
-                              "lgbtqp_f",
-                              "trans_f",
-                              "enby_f",
-                              "ace_f",
-                              "gay_f",
-                              "lesb_f",
-                              "bi_f"
-                            ]
-                          },
-                          always),
-                    }),
-                    isAndroid,
-                    null),
-                "icon_theme_padding": SettingsPadding(0, 16, always),
-                "theme_header":
-                    SettingsHeaderSmall(0, l10n.s_c_theme_header, always),
-                "theme": SettingsItemsRadio(
-                    themeBrightness,
-                    null,
-                    null,
-                    [
-                      l10n.s_c_theme_auto,
-                      l10n.s_c_theme_light,
-                      l10n.s_c_theme_dark
-                    ],
-                    0,
-                    always, () async {
-                  initTheme(initData);
-                  globalUpdate.update();
-                })
+                "settings_padding2": SettingsPadding(0, 24, always),
+                "child_protection": SettingsBoolean(
+                  childProtection,
+                  FirkaIconType.majesticons,
+                  Majesticon.shieldSolid,
+                  l10n.s_ci_child_protection,
+                  true,
+                  never,
+                ),
+                "icon_picker": SettingsAppIconPicker(0, "original", {
+                  l10n.s_ci_icon_g1: ["original", "proto", "pride"],
+                  l10n.s_ci_icon_g2: ["pixel", "galaxy", "cactus"],
+                  l10n.s_ci_icon_g3: ["old", "refilc", "filc", "szivacs"],
+                  l10n.s_ci_icon_g4: [
+                    "modern",
+                    "cc",
+                    "paper",
+                    "filco",
+                    "o1g",
+                    "pear",
+                    "half_firka_2",
+                    "nuke",
+                    "refulc",
+                  ],
+                  l10n.s_ci_icon_g5: [
+                    "kreta",
+                    "cc",
+                    "repont",
+                    "void_icon",
+                    "pixelized",
+                    "mkkp",
+                    "fidesz",
+                    "tisza",
+                  ],
+                  l10n.s_ci_icon_g6: ["xmas1", "xmas2", "xmas3"],
+                  l10n.s_ci_icon_g7: [
+                    "lgbtq",
+                    "lgbtqp",
+                    "trans",
+                    "enby",
+                    "ace",
+                    "gay",
+                    "lesb",
+                    "bi",
+                  ],
+                  l10n.s_ci_icon_g8: [
+                    "lgbtq_f",
+                    "lgbtqp_f",
+                    "trans_f",
+                    "enby_f",
+                    "ace_f",
+                    "gay_f",
+                    "lesb_f",
+                    "bi_f",
+                  ],
+                }, always),
               }),
+              isAndroid,
+              null,
+            ),
+            "icon_theme_padding": SettingsPadding(0, 16, always),
+            "theme_header": SettingsHeaderSmall(
+              0,
+              l10n.s_c_theme_header,
               always,
-              null),
-          "notifications": SettingsSubGroup(
+            ),
+            "theme": SettingsItemsRadio(
+              themeBrightness,
+              null,
+              null,
+              [l10n.s_c_theme_auto, l10n.s_c_theme_light, l10n.s_c_theme_dark],
+              0,
+              always,
+              () async {
+                initTheme(initData);
+                globalUpdate.update();
+              },
+            ),
+          }),
+          always,
+          null,
+        ),
+        "notifications": SettingsSubGroup(
+          0,
+          FirkaIconType.majesticons,
+          Majesticon.bellSolid,
+          l10n.s_n,
+          LinkedHashMap.of({
+            "back": SettingsBackHeader(0, l10n.s_settings, always),
+            "settings_header": SettingsHeader(0, l10n.s_n, always),
+            "settings_padding": SettingsPadding(0, 23, always),
+            "morning_notification_enabled": SettingsBoolean(
+              morningNotificationEnabled,
+              FirkaIconType.majesticons,
+              Majesticon.bellSolid,
+              l10n.s_n_morning,
+              true,
+              always,
+              () async {
+                final setting =
+                    initData.settings
+                            .group("settings")
+                            .subGroup(
+                              "notifications",
+                            )["morning_notification_enabled"]
+                        as SettingsBoolean;
+
+                LiveActivityService.onMorningNotificationEnabledChanged(
+                  setting.value,
+                );
+              },
+            ),
+            "morning_notification_time": SettingsDouble(
+              morningNotificationTime,
+              FirkaIconType.majesticons,
+              Majesticon.clockSolid,
+              l10n.s_n_morning_time,
+              30, // minValue
+              120, // defaultValue
+              240, // maxValue
+              0, // precision (0 = whole numbers)
+              isMorningNotificationEnabled,
+              step: 15,
+            ), // 15 minute steps
+            "live_activity_enabled": SettingsBoolean(
+              liveActivityEnabled,
+              FirkaIconType.majesticons,
+              Majesticon.clockSolid,
+              l10n.s_n_live_activity,
+              false,
+              always,
+              () async {
+                final globalSetting =
+                    initData.settings
+                            .group("settings")
+                            .subGroup("notifications")["live_activity_enabled"]
+                        as SettingsBoolean;
+
+                final enabled = globalSetting.value;
+
+                await LiveActivityService.handleEnabledChange(
+                  enabled,
+                  isManual: true,
+                );
+
+                await LiveActivityService.syncGlobalSettingWithCurrentUser();
+              },
+            ),
+            "test_notification": SettingsButton(
               0,
               FirkaIconType.majesticons,
               Majesticon.bellSolid,
-              l10n.s_n,
-              LinkedHashMap.of({
-                "back": SettingsBackHeader(0, l10n.s_settings, always),
-                "settings_header": SettingsHeader(0, l10n.s_n, always),
-                "settings_padding": SettingsPadding(0, 23, always),
-                "morning_notification_enabled": SettingsBoolean(
-                    morningNotificationEnabled,
-                    FirkaIconType.majesticons,
-                    Majesticon.bellSolid,
-                    l10n.s_n_morning,
-                    true,
-                    always,
-                    () async {
-                      final setting = initData.settings
-                          .group("settings")
-                          .subGroup("notifications")["morning_notification_enabled"] as SettingsBoolean;
+              l10n.s_n_test,
+              isDebugIOS,
+              () async {
+                await LiveActivityService.sendTestNotification();
+              },
+            ),
+          }),
+          isIOS,
+          null,
+        ),
+        "extras": SettingsSubGroup(
+          0,
+          FirkaIconType.majesticons,
+          Majesticon.lightningBoltSolid,
+          "Extrák",
+          LinkedHashMap.of({
+            "back": SettingsBackHeader(0, l10n.s_settings, always),
+          }),
+          never,
+          null,
+        ),
+        "settings_other_padding": SettingsPadding(0, 20, never),
+        "settings_other_header": SettingsHeaderSmall(0, "Egyéb", never),
 
-                      LiveActivityService.onMorningNotificationEnabledChanged(setting.value);
-                    }),
-                "morning_notification_time": SettingsDouble(
-                    morningNotificationTime,
-                    FirkaIconType.majesticons,
-                    Majesticon.clockSolid,
-                    l10n.s_n_morning_time,
-                    30,   // minValue
-                    120,  // defaultValue
-                    240,  // maxValue
-                    0,    // precision (0 = whole numbers)
-                    isMorningNotificationEnabled,
-                    step: 15), // 15 minute steps
-                "live_activity_enabled": SettingsBoolean(
-                    liveActivityEnabled,
-                    FirkaIconType.majesticons,
-                    Majesticon.clockSolid,
-                    l10n.s_n_live_activity,
-                    false,
-                    always,
-                    () async {
-                      final globalSetting = initData.settings
-                          .group("settings")
-                          .subGroup("notifications")["live_activity_enabled"] as SettingsBoolean;
-
-                      final enabled = globalSetting.value;
-
-                      await LiveActivityService.handleEnabledChange(enabled, isManual: true);
-
-                      await LiveActivityService.syncGlobalSettingWithCurrentUser();
-                    }),
-                "test_notification": SettingsButton(
-                    0,
-                    FirkaIconType.majesticons,
-                    Majesticon.bellSolid,
-                    l10n.s_n_test,
-                    isDebugIOS,
-                    () async {
-                      await LiveActivityService.sendTestNotification();
-                    }),
-              }),
-              isIOS,
-              null),
-          "extras": SettingsSubGroup(
-              0,
-              FirkaIconType.majesticons,
-              Majesticon.lightningBoltSolid,
-              "Extrák",
-              LinkedHashMap.of({
-                "back": SettingsBackHeader(0, l10n.s_settings, always),
-              }),
-              never,
-              null),
-          "settings_other_padding": SettingsPadding(0, 20, never),
-          "settings_other_header": SettingsHeaderSmall(0, "Egyéb", never),
-
-          "developer": SettingsSubGroup(
-              0,
+        "developer": SettingsSubGroup(
+          0,
+          FirkaIconType.majesticonsLocal,
+          "wrenchSolid",
+          'Developer',
+          LinkedHashMap.of({
+            "back": SettingsBackHeader(0, l10n.s_settings, always),
+            "stats_for_nerds": SettingsBoolean(
+              statsForNerds,
               FirkaIconType.majesticonsLocal,
               "wrenchSolid",
-              'Developer',
-              LinkedHashMap.of({
-                "back": SettingsBackHeader(0, l10n.s_settings, always),
-                "stats_for_nerds": SettingsBoolean(
-                    statsForNerds,
-                    FirkaIconType.majesticonsLocal,
-                    "wrenchSolid",
-                    l10n.s_stats_for_nerds,
-                    false,
-                    always),
-                "logs": SettingsLogs(0, always),
-              }),
-              isDeveloper,
-              null),
+              l10n.s_stats_for_nerds,
+              false,
+              always,
+            ),
+            "logs": SettingsLogs(0, always),
+          }),
+          isDeveloper,
+          null,
+        ),
 
-          // misc
-          "beta_warning": SettingsBoolean(
-              betaWarning, null, null, "Beta warning", false, never),
-          "timetable_toast": SettingsSubGroup(
+        // misc
+        "beta_warning": SettingsBoolean(
+          betaWarning,
+          null,
+          null,
+          "Beta warning",
+          false,
+          never,
+        ),
+        "timetable_toast": SettingsSubGroup(
+          0,
+          null,
+          null,
+          l10n.tt_settings_toast,
+          LinkedHashMap.of({
+            "header": SettingsMediumHeader(0, l10n.tt_settings_toast, always),
+            "padding": SettingsPadding(0, 16, always),
+            "lesson_no": SettingsBoolean(
+              ttToastLessonNo,
+              FirkaIconType.majesticons,
+              Majesticon.clockSolid,
+              l10n.tt_settings_toast_lesson_nos,
+              true,
+              always,
+            ),
+            "tests_and_homework": SettingsBoolean(
+              ttToastTestsAndHw,
+              FirkaIconType.majesticons,
+              Majesticon.editPen4Solid,
+              l10n.tt_settings_toast_lesson_tests,
+              true,
+              always,
+            ),
+            "substitution": SettingsBoolean(
+              ttToastSubstitution,
+              FirkaIconType.majesticons,
+              Majesticon.usersSolid,
+              l10n.tt_settings_toast_lesson_substitution,
+              true,
+              always,
+            ),
+            "breaks": SettingsBoolean(
+              ttToastBreaks,
+              FirkaIconType.majesticons,
+              Majesticon.viewRowsLine,
+              l10n.tt_settings_toast_lesson_breaks,
+              true,
+              always,
+            ),
+            "ab_timetable": SettingsBoolean(
+              ttToastABTimetable,
+              FirkaIconType.majesticons,
+              Majesticon.calendarSolid,
+              l10n.tt_settings_toast_lesson_ab_timetable,
+              true,
+              always,
+            ),
+          }),
+          never,
+          null,
+        ),
+        "settings_about_padding": SettingsPadding(0, 20, always),
+        "settings_about_header": SettingsHeaderSmall(0, "Névjegy", always),
+        "discord_button": SettingsSubGroup(
+          0,
+          FirkaIconType.majesticons,
+          Majesticon.chatSolid,
+          "Discord",
+          LinkedHashMap.of({}),
+          always,
+          "discord",
+        ),
+        "privacy_policy_button": SettingsSubGroup(
+          0,
+          FirkaIconType.majesticons,
+          Majesticon.lockSolid,
+          l10n.privacyLabel,
+          LinkedHashMap.of({}),
+          always,
+          "privacy",
+        ),
+        "license_page": SettingsSubGroup(
+          0,
+          FirkaIconType.majesticons,
+          Majesticon.awardSolid,
+          l10n.licensesLabel,
+          LinkedHashMap.of({
+            "back": SettingsBackHeader(0, l10n.s_settings, always),
+            "header": SettingsMediumHeader(0, l10n.licensesLabel, always),
+            "licenses_header": SettingsHeaderSmall(
               0,
-              null,
-              null,
-              l10n.tt_settings_toast,
-              LinkedHashMap.of({
-                "header":
-                    SettingsMediumHeader(0, l10n.tt_settings_toast, always),
-                "padding": SettingsPadding(0, 16, always),
-                "lesson_no": SettingsBoolean(
-                    ttToastLessonNo,
-                    FirkaIconType.majesticons,
-                    Majesticon.clockSolid,
-                    l10n.tt_settings_toast_lesson_nos,
-                    true,
-                    always),
-                "tests_and_homework": SettingsBoolean(
-                    ttToastTestsAndHw,
-                    FirkaIconType.majesticons,
-                    Majesticon.editPen4Solid,
-                    l10n.tt_settings_toast_lesson_tests,
-                    true,
-                    always),
-                "substitution": SettingsBoolean(
-                    ttToastSubstitution,
-                    FirkaIconType.majesticons,
-                    Majesticon.usersSolid,
-                    l10n.tt_settings_toast_lesson_substitution,
-                    true,
-                    always),
-                "breaks": SettingsBoolean(
-                    ttToastBreaks,
-                    FirkaIconType.majesticons,
-                    Majesticon.viewRowsLine,
-                    l10n.tt_settings_toast_lesson_breaks,
-                    true,
-                    always),
-                "ab_timetable": SettingsBoolean(
-                    ttToastABTimetable,
-                    FirkaIconType.majesticons,
-                    Majesticon.calendarSolid,
-                    l10n.tt_settings_toast_lesson_ab_timetable,
-                    true,
-                    always),
-              }),
-              never,
-              null),
-              "settings_about_padding": SettingsPadding(0, 20, always),
-              "settings_about_header": SettingsHeaderSmall(0, "Névjegy", always),
-              "discord_button": SettingsSubGroup(
-                0,
-                FirkaIconType.majesticons,
-                Majesticon.chatSolid,
-                "Discord",
-                LinkedHashMap.of({}),
-                always,
-                "discord"
-              ),
-              "privacy_policy_button": SettingsSubGroup(
-                0,
-                FirkaIconType.majesticons,
-                Majesticon.lockSolid,
-                l10n.privacyLabel,
-                LinkedHashMap.of({}),
-                always,
-                "privacy"
-              ),
-              "license_page": SettingsSubGroup(
-                0,
-                FirkaIconType.majesticons,
-                Majesticon.awardSolid,
-                l10n.licensesLabel,
-                LinkedHashMap.of({
-                  "back": SettingsBackHeader(0, l10n.s_settings, always),
-                  "header": SettingsMediumHeader(0, l10n.licensesLabel, always),
-                  "licenses_header":
-                      SettingsHeaderSmall(0, l10n.licenseDescription, always),
-                  "show_license": ShowLicensePage(),
-                }),
-                always,
-                null
-              ),
-          "developer_enabled": SettingsBoolean(
-              developerOptsEnabled, null, null, "Developer", false, never),
-        }),
-        always);
+              l10n.licenseDescription,
+              always,
+            ),
+            "show_license": ShowLicensePage(),
+          }),
+          always,
+          null,
+        ),
+        "developer_enabled": SettingsBoolean(
+          developerOptsEnabled,
+          null,
+          null,
+          "Developer",
+          false,
+          never,
+        ),
+      }),
+      always,
+    );
     items["profile_settings"] = SettingsGroup(
-        0,
-        LinkedHashMap.of({
-          "back": SettingsBackHeader(0, l10n.s_your_account, always),
-          "e_kreta_accounts": SettingsHeaderSmall(0, l10n.s_acc_kreta, always),
-          "e_padding": SettingsPadding(0, 8, always),
-          "e_kreta_account_picker": SettingsKretenAccountPicker(0, always),
-        }),
-        never);
+      0,
+      LinkedHashMap.of({
+        "back": SettingsBackHeader(0, l10n.s_your_account, always),
+        "e_kreta_accounts": SettingsHeaderSmall(0, l10n.s_acc_kreta, always),
+        "e_padding": SettingsPadding(0, 8, always),
+        "e_kreta_account_picker": SettingsKretenAccountPicker(0, always),
+      }),
+      never,
+    );
     appIcons = {
       "ace": l10n.ic_ace,
       "ace_f": l10n.ic_ace_f,
@@ -531,20 +624,26 @@ class SettingsStore {
       "void_icon": l10n.ic_void_icon,
       "xmas1": l10n.ic_xmas1,
       "xmas2": l10n.ic_xmas2,
-      "xmas3": l10n.ic_xmas3
+      "xmas3": l10n.ic_xmas3,
     };
 
     if (Platform.isIOS) {
-      final bellDelaySetting = group("settings")
-          .subGroup("application")["bell_delay"] as SettingsDouble;
+      final bellDelaySetting =
+          group("settings").subGroup("application")["bell_delay"]
+              as SettingsDouble;
       bellDelaySetting.postUpdate = () async {
         LiveActivityService.onBellDelayChanged(bellDelaySetting.value);
       };
 
-      final morningNotificationTimeSetting = group("settings")
-          .subGroup("notifications")["morning_notification_time"] as SettingsDouble;
+      final morningNotificationTimeSetting =
+          group(
+                "settings",
+              ).subGroup("notifications")["morning_notification_time"]
+              as SettingsDouble;
       morningNotificationTimeSetting.postUpdate = () async {
-        LiveActivityService.onMorningNotificationTimeChanged(morningNotificationTimeSetting.value);
+        LiveActivityService.onMorningNotificationTimeChanged(
+          morningNotificationTimeSetting.value,
+        );
       };
     }
   }
@@ -671,8 +770,15 @@ class SettingsSubGroup implements SettingsItem {
   LinkedHashMap<String, SettingsItem> children;
   String? redirectTo;
 
-  SettingsSubGroup(this.key, this.iconType, this.iconData, this.title,
-      this.children, this.visibilityProvider, this.redirectTo);
+  SettingsSubGroup(
+    this.key,
+    this.iconType,
+    this.iconData,
+    this.title,
+    this.children,
+    this.visibilityProvider,
+    this.redirectTo,
+  );
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -814,7 +920,7 @@ class ShowLicensePage implements SettingsItem {
   Future<void> Function() postUpdate = () async {};
 
   ShowLicensePage();
-  
+
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {}
 
@@ -945,7 +1051,11 @@ class SettingsAppIconPicker implements SettingsItem {
   Map<String, List<String>> iconGroups;
 
   SettingsAppIconPicker(
-      this.key, this.defaultValue, this.iconGroups, this.visibilityProvider);
+    this.key,
+    this.defaultValue,
+    this.iconGroups,
+    this.visibilityProvider,
+  );
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -984,8 +1094,15 @@ class SettingsBoolean implements SettingsItem {
   bool value = false;
   bool defaultValue;
 
-  SettingsBoolean(this.key, this.iconType, this.iconData, this.title,
-      this.defaultValue, this.visibilityProvider, [Future<void> Function()? postUpdateFn]) {
+  SettingsBoolean(
+    this.key,
+    this.iconType,
+    this.iconData,
+    this.title,
+    this.defaultValue,
+    this.visibilityProvider, [
+    Future<void> Function()? postUpdateFn,
+  ]) {
     if (postUpdateFn != null) {
       postUpdate = postUpdateFn;
     }
@@ -1028,8 +1145,15 @@ class SettingsItemsRadio implements SettingsItem {
   int activeIndex = 0;
   int defaultIndex;
 
-  SettingsItemsRadio(this.key, this.iconType, this.iconData, this.values,
-      this.defaultIndex, this.visibilityProvider, this.postUpdate);
+  SettingsItemsRadio(
+    this.key,
+    this.iconType,
+    this.iconData,
+    this.values,
+    this.defaultIndex,
+    this.visibilityProvider,
+    this.postUpdate,
+  );
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -1073,16 +1197,17 @@ class SettingsDouble implements SettingsItem {
   double? step;
 
   SettingsDouble(
-      this.key,
-      this.iconType,
-      this.iconData,
-      this.title,
-      this.minValue,
-      this.defaultValue,
-      this.maxValue,
-      this.precision,
-      this.visibilityProvider,
-      {this.step});
+    this.key,
+    this.iconType,
+    this.iconData,
+    this.title,
+    this.minValue,
+    this.defaultValue,
+    this.maxValue,
+    this.precision,
+    this.visibilityProvider, {
+    this.step,
+  });
 
   double toRoundedDouble() {
     return double.parse(toRoundedString());
@@ -1092,8 +1217,8 @@ class SettingsDouble implements SettingsItem {
     return precision == 0
         ? value.toString().split(".")[0]
         : value.toStringAsPrecision(precision) == "0.0"
-            ? "0"
-            : value.toStringAsPrecision(precision);
+        ? "0"
+        : value.toStringAsPrecision(precision);
   }
 
   @override
@@ -1133,8 +1258,14 @@ class SettingsString implements SettingsItem {
   String value = "";
   String defaultValue;
 
-  SettingsString(this.key, this.iconType, this.iconData, this.title,
-      this.defaultValue, this.visibilityProvider);
+  SettingsString(
+    this.key,
+    this.iconType,
+    this.iconData,
+    this.title,
+    this.defaultValue,
+    this.visibilityProvider,
+  );
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -1172,8 +1303,14 @@ class SettingsButton implements SettingsItem {
   String title;
   Future<void> Function() onTap;
 
-  SettingsButton(this.key, this.iconType, this.iconData, this.title,
-      this.visibilityProvider, this.onTap);
+  SettingsButton(
+    this.key,
+    this.iconType,
+    this.iconData,
+    this.title,
+    this.visibilityProvider,
+    this.onTap,
+  );
 
   @override
   Future<void> load(IsarCollection<AppSettingsModel> model) async {}

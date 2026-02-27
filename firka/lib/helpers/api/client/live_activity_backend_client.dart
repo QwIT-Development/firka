@@ -55,7 +55,8 @@ class LiveActivityBackendClient {
           'roomName': lesson.roomName,
           'isSubstitution': lesson.substituteTeacher != null,
           'substituteTeacher': lesson.substituteTeacher,
-          'isCancelled': lesson.state.name?.toLowerCase().contains('elmarad') ?? false,
+          'isCancelled':
+              lesson.state.name?.toLowerCase().contains('elmarad') ?? false,
           'lastModified': validLastModified.toIso8601String(),
         };
       }).toList();
@@ -86,7 +87,9 @@ class LiveActivityBackendClient {
         requestData['liveActivityEnabled'] = liveActivityEnabled;
       }
 
-      _logger.info('Registering device with backend. Sending ${lessonsData.length} lessons.');
+      _logger.info(
+        'Registering device with backend. Sending ${lessonsData.length} lessons.',
+      );
       if (_logger.isLoggable(Level.FINE)) {
         for (var lesson in lessonsData) {
           _logger.fine('  Lesson data: $lesson');
@@ -99,7 +102,9 @@ class LiveActivityBackendClient {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        _logger.info('Device registered successfully with ${timetable.length} lessons');
+        _logger.info(
+          'Device registered successfully with ${timetable.length} lessons',
+        );
         return true;
       }
 
@@ -136,12 +141,15 @@ class LiveActivityBackendClient {
           'roomName': lesson.roomName,
           'isSubstitution': lesson.substituteTeacher != null,
           'substituteTeacher': lesson.substituteTeacher,
-          'isCancelled': lesson.state.name?.toLowerCase().contains('elmarad') ?? false,
+          'isCancelled':
+              lesson.state.name?.toLowerCase().contains('elmarad') ?? false,
           'lastModified': validLastModified.toIso8601String(),
         };
       }).toList();
 
-      _logger.info('Updating timetable with backend. Sending ${lessonsData.length} lessons.');
+      _logger.info(
+        'Updating timetable with backend. Sending ${lessonsData.length} lessons.',
+      );
       if (_logger.isLoggable(Level.FINE)) {
         for (var lesson in lessonsData) {
           _logger.fine('  Lesson data: $lesson');
@@ -177,15 +185,11 @@ class LiveActivityBackendClient {
   }
 
   /// Unregister device (called when user logs out)
-  Future<bool> unregisterDevice({
-    required String deviceToken,
-  }) async {
+  Future<bool> unregisterDevice({required String deviceToken}) async {
     try {
       final response = await _dio.delete(
         '/live-activity/unregister',
-        data: {
-          'deviceToken': deviceToken,
-        },
+        data: {'deviceToken': deviceToken},
       );
 
       if (response.statusCode == 200) {
@@ -228,15 +232,11 @@ class LiveActivityBackendClient {
   }
 
   /// Get current timetable from backend
-  Future<List<Lesson>?> getTimetable({
-    required String deviceToken,
-  }) async {
+  Future<List<Lesson>?> getTimetable({required String deviceToken}) async {
     try {
       final response = await _dio.get(
         '/live-activity/timetable',
-        queryParameters: {
-          'deviceToken': deviceToken,
-        },
+        queryParameters: {'deviceToken': deviceToken},
       );
 
       if (response.statusCode == 200 && response.data is Map) {
@@ -261,10 +261,7 @@ class LiveActivityBackendClient {
     try {
       final response = await _dio.post(
         '/live-activity/push-token',
-        data: {
-          'deviceToken': deviceToken,
-          'pushToken': pushToken,
-        },
+        data: {'deviceToken': deviceToken, 'pushToken': pushToken},
       );
 
       if (response.statusCode == 200) {
@@ -288,10 +285,7 @@ class LiveActivityBackendClient {
     try {
       final response = await _dio.post(
         '/live-activity/apns-token',
-        data: {
-          'deviceToken': deviceToken,
-          'apnsPushToken': apnsPushToken,
-        },
+        data: {'deviceToken': deviceToken, 'apnsPushToken': apnsPushToken},
       );
 
       if (response.statusCode == 200) {
@@ -299,7 +293,9 @@ class LiveActivityBackendClient {
         return true;
       }
 
-      _logger.warning('Failed to update APNs push token: ${response.statusCode}');
+      _logger.warning(
+        'Failed to update APNs push token: ${response.statusCode}',
+      );
       return false;
     } catch (e) {
       _logger.severe('Error updating APNs push token: $e');
@@ -308,15 +304,11 @@ class LiveActivityBackendClient {
   }
 
   /// Send a test notification (for debugging)
-  Future<bool> sendTestNotification({
-    required String deviceToken,
-  }) async {
+  Future<bool> sendTestNotification({required String deviceToken}) async {
     try {
       final response = await _dio.post(
         '/live-activity/test-notification',
-        data: {
-          'deviceToken': deviceToken,
-        },
+        data: {'deviceToken': deviceToken},
       );
 
       if (response.statusCode == 200) {
@@ -324,7 +316,9 @@ class LiveActivityBackendClient {
         return true;
       }
 
-      _logger.warning('Failed to send test notification: ${response.statusCode}');
+      _logger.warning(
+        'Failed to send test notification: ${response.statusCode}',
+      );
       return false;
     } catch (e) {
       _logger.severe('Error sending test notification: $e');
@@ -340,10 +334,7 @@ class LiveActivityBackendClient {
     try {
       final response = await _dio.put(
         '/live-activity/language',
-        data: {
-          'deviceToken': deviceToken,
-          'language': language,
-        },
+        data: {'deviceToken': deviceToken, 'language': language},
       );
 
       if (response.statusCode == 200) {
@@ -367,10 +358,7 @@ class LiveActivityBackendClient {
     try {
       final response = await _dio.put(
         '/live-activity/bell-delay',
-        data: {
-          'deviceToken': deviceToken,
-          'bellDelay': bellDelay,
-        },
+        data: {'deviceToken': deviceToken, 'bellDelay': bellDelay},
       );
 
       if (response.statusCode == 200) {
@@ -397,17 +385,25 @@ class LiveActivityBackendClient {
         '/live-activity/morning-notification',
         data: {
           'deviceToken': deviceToken,
-          if (morningNotificationTime != null) 'morningNotificationTime': morningNotificationTime,
-          if (morningNotificationEnabled != null) 'morningNotificationEnabled': morningNotificationEnabled,
+          ...?(morningNotificationTime != null
+              ? {'morningNotificationTime': morningNotificationTime}
+              : null),
+          ...?(morningNotificationEnabled != null
+              ? {'morningNotificationEnabled': morningNotificationEnabled}
+              : null),
         },
       );
 
       if (response.statusCode == 200) {
-        _logger.info('Morning notification settings updated successfully: enabled=$morningNotificationEnabled, time=$morningNotificationTime');
+        _logger.info(
+          'Morning notification settings updated successfully: enabled=$morningNotificationEnabled, time=$morningNotificationTime',
+        );
         return true;
       }
 
-      _logger.warning('Failed to update morning notification settings: ${response.statusCode}');
+      _logger.warning(
+        'Failed to update morning notification settings: ${response.statusCode}',
+      );
       return false;
     } catch (e) {
       _logger.severe('Error updating morning notification settings: $e');
@@ -430,7 +426,9 @@ class LiveActivityBackendClient {
       );
 
       if (response.statusCode == 200) {
-        _logger.info('Live Activity ${liveActivityEnabled ? "enabled" : "disabled"} successfully');
+        _logger.info(
+          'Live Activity ${liveActivityEnabled ? "enabled" : "disabled"} successfully',
+        );
         return true;
       }
 
@@ -442,4 +440,3 @@ class LiveActivityBackendClient {
     }
   }
 }
-

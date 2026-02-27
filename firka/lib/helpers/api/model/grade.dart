@@ -20,24 +20,25 @@ class Grade {
   final UidObj? classGroup;
   final int sortIndex;
 
-  Grade(
-      {required this.uid,
-      required this.recordDate,
-      required this.creationDate,
-      this.ackDate,
-      required this.subject,
-      this.topic,
-      required this.type,
-      this.mode,
-      required this.valueType,
-      required this.teacher,
-      this.kind,
-      this.numericValue,
-      required this.strValue,
-      this.weightPercentage,
-      this.shortStrValue,
-      this.classGroup,
-      required this.sortIndex});
+  Grade({
+    required this.uid,
+    required this.recordDate,
+    required this.creationDate,
+    this.ackDate,
+    required this.subject,
+    this.topic,
+    required this.type,
+    this.mode,
+    required this.valueType,
+    required this.teacher,
+    this.kind,
+    this.numericValue,
+    required this.strValue,
+    this.weightPercentage,
+    this.shortStrValue,
+    this.classGroup,
+    required this.sortIndex,
+  });
 
   factory Grade.fromJson(Map<String, dynamic> json) {
     return Grade(

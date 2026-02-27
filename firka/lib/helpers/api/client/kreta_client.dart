@@ -42,12 +42,7 @@ class ApiResponse<T> {
   String? err;
   bool cached;
 
-  ApiResponse(
-    this.response,
-    this.statusCode,
-    this.err,
-    this.cached,
-  );
+  ApiResponse(this.response, this.statusCode, this.err, this.cached);
 
   @override
   String toString() {
@@ -85,7 +80,8 @@ class KretaClient {
   KretaClient(this.model, this.isar);
 
   Future<TokenModel> _refreshModelWithCrossDeviceLease(
-      TokenModel sourceToken) async {
+    TokenModel sourceToken,
+  ) async {
     final studentIdNorm = sourceToken.studentIdNorm;
     String? leaseOperationId;
 
@@ -111,9 +107,7 @@ class KretaClient {
       final extended = await extendToken(sourceToken);
       return TokenModel.fromResp(extended);
     } finally {
-      if (Platform.isIOS &&
-          studentIdNorm != null &&
-          leaseOperationId != null) {
+      if (Platform.isIOS && studentIdNorm != null && leaseOperationId != null) {
         await WatchSyncHelper.releaseIPhoneRefreshLease(
           studentIdNorm: studentIdNorm,
           operationId: leaseOperationId,
@@ -133,7 +127,8 @@ class KretaClient {
     final watchInstalled = await WatchSyncHelper.isWatchAppInstalled();
     if (!watchInstalled) {
       debugPrint(
-          '[KretaClient] Skipping Apple token sync because no paired Watch app is installed');
+        '[KretaClient] Skipping Apple token sync because no paired Watch app is installed',
+      );
       return;
     }
 
@@ -186,7 +181,8 @@ class KretaClient {
     if (localExpiry != null &&
         localExpiry.isAfter(now.add(const Duration(seconds: 60)))) {
       logger.info(
-          "[Recovery] Existing token is still valid, skipping recovery steps");
+        "[Recovery] Existing token is still valid, skipping recovery steps",
+      );
       clearReauthFlag();
       return true;
     }
@@ -209,8 +205,9 @@ class KretaClient {
     }
 
     if (!Platform.isIOS || !initDone) {
-      logger
-          .warning("[Recovery] Not iOS or not initialized, cannot try iCloud");
+      logger.warning(
+        "[Recovery] Not iOS or not initialized, cannot try iCloud",
+      );
       return false;
     }
 
@@ -227,12 +224,14 @@ class KretaClient {
           break;
         }
         logger.info(
-            "[Recovery] Waiting ${delay}s before attempt ${attempt + 1}...");
+          "[Recovery] Waiting ${delay}s before attempt ${attempt + 1}...",
+        );
         await Future.delayed(Duration(seconds: delay));
       }
 
       logger.info(
-          "[Recovery] iCloud attempt ${attempt + 1}/${retryDelays.length}...");
+        "[Recovery] iCloud attempt ${attempt + 1}/${retryDelays.length}...",
+      );
 
       final recovered = await WatchSyncHelper.checkAndRecoverFromiCloud(
         isar: isar,
@@ -244,20 +243,24 @@ class KretaClient {
       if (recovered) {
         iCloudHasToken = true;
         await _reloadActiveTokenModel(
-            preferredStudentIdNorm: model.studentIdNorm);
+          preferredStudentIdNorm: model.studentIdNorm,
+        );
 
         final recoveredExpiry = model.expiryDate;
         if (recoveredExpiry != null &&
-            recoveredExpiry
-                .isAfter(timeNow().add(const Duration(seconds: 60)))) {
+            recoveredExpiry.isAfter(
+              timeNow().add(const Duration(seconds: 60)),
+            )) {
           logger.info(
-              "[Recovery] Step 2 SUCCESS on attempt ${attempt + 1}: usable iCloud token applied without immediate refresh");
+            "[Recovery] Step 2 SUCCESS on attempt ${attempt + 1}: usable iCloud token applied without immediate refresh",
+          );
           clearReauthFlag();
           return true;
         }
 
         logger.info(
-            "[Recovery] Found iCloud token close to expiry, trying refresh...");
+          "[Recovery] Found iCloud token close to expiry, trying refresh...",
+        );
         try {
           var tokenModel = await _refreshModelWithCrossDeviceLease(model);
 
@@ -272,12 +275,14 @@ class KretaClient {
           return true;
         } catch (e) {
           logger.warning(
-              "[Recovery] iCloud token refresh failed on attempt ${attempt + 1}: $e");
+            "[Recovery] iCloud token refresh failed on attempt ${attempt + 1}: $e",
+          );
           iCloudHasToken = true;
         }
       } else {
         logger.info(
-            "[Recovery] No fresh token in iCloud on attempt ${attempt + 1}");
+          "[Recovery] No fresh token in iCloud on attempt ${attempt + 1}",
+        );
         if (attempt == 0) {
           iCloudHasToken = false;
         }
@@ -295,7 +300,8 @@ class KretaClient {
     if (model.expiryDate == null ||
         model.expiryDate!.isBefore(fiveMinutesFromNow)) {
       logger.info(
-          "[Proactive] Token expired or expiring soon, starting recovery...");
+        "[Proactive] Token expired or expiring soon, starting recovery...",
+      );
 
       final recovered = await recoverToken();
       if (recovered) {
@@ -315,7 +321,8 @@ class KretaClient {
     }
 
     logger.fine(
-        "[Proactive] Token still valid until ${model.expiryDate}, no refresh needed");
+      "[Proactive] Token still valid until ${model.expiryDate}, no refresh needed",
+    );
     return true;
   }
 
@@ -326,7 +333,8 @@ class KretaClient {
     while (_tokenMutex) {
       if (DateTime.now().difference(startTime) > maxWaitTime) {
         logger.warning(
-            "[Mutex] Timeout waiting for token mutex, forcing release");
+          "[Mutex] Timeout waiting for token mutex, forcing release",
+        );
         _tokenMutex = false;
         break;
       }
@@ -347,7 +355,8 @@ class KretaClient {
       if (now.millisecondsSinceEpoch >=
           model.expiryDate!.millisecondsSinceEpoch) {
         logger.info(
-            "Token expired at ${model.expiryDate}, starting recovery for user: ${model.studentId}");
+          "Token expired at ${model.expiryDate}, starting recovery for user: ${model.studentId}",
+        );
 
         final recovered = await recoverToken();
         if (!recovered) {
@@ -364,15 +373,21 @@ class KretaClient {
       "accept": "*/*",
       "user-agent": Constants.userAgent,
       "authorization": "Bearer $localToken",
-      "apiKey": "21ff6c25-d1da-4a68-a811-c881a6057463"
+      "apiKey": "21ff6c25-d1da-4a68-a811-c881a6057463",
     };
 
-    return await dio.get(url,
-        options: Options(method: method, headers: headers), data: data);
+    return await dio.get(
+      url,
+      options: Options(method: method, headers: headers),
+      data: data,
+    );
   }
 
-  Future<(dynamic, int)> _authJson(String method, String url,
-      [Object? data]) async {
+  Future<(dynamic, int)> _authJson(
+    String method,
+    String url, [
+    Object? data,
+  ]) async {
     Response<dynamic> resp;
 
     try {
@@ -388,13 +403,17 @@ class KretaClient {
             (responseData is List && responseData.isEmpty) ||
             (responseData is Map && responseData.isEmpty)) {
           logger.warning(
-              "API returned ${resp.statusCode} with empty data for: $url - possible stale session");
+            "API returned ${resp.statusCode} with empty data for: $url - possible stale session",
+          );
         }
       }
     } catch (ex) {
       if (ex is Error) {
         logger.shout(
-            "Request to url: $url failed", ex.toString(), ex.stackTrace);
+          "Request to url: $url failed",
+          ex.toString(),
+          ex.stackTrace,
+        );
       } else {
         logger.shout("Request to url: $url failed", ex.toString());
       }
@@ -406,7 +425,11 @@ class KretaClient {
   }
 
   Future<(dynamic, int, Object?, bool)> _cachingGet(
-      CacheId id, String url, bool forceCache, int counter) async {
+    CacheId id,
+    String url,
+    bool forceCache,
+    int counter,
+  ) async {
     // it would be *ideal* to use xor and left shift here, however
     // binary operations seem to round the number down to
     // 32 bits for some reason???
@@ -418,7 +441,8 @@ class KretaClient {
     try {
       if (forceCache && cache != null) {
         logger.finest(
-            "_cachingGet(forceCache: $forceCache}): decoding cached response for: $url");
+          "_cachingGet(forceCache: $forceCache}): decoding cached response for: $url",
+        );
         return (jsonDecode(cache.cacheData!), 200, null, true);
       }
 
@@ -428,14 +452,18 @@ class KretaClient {
         if (statusCode >= 400) {
           if (cache != null) {
             logger.finest(
-                "_cachingGet(forceCache: $forceCache}): decoding uncached response for: $url");
+              "_cachingGet(forceCache: $forceCache}): decoding uncached response for: $url",
+            );
             return (jsonDecode(cache.cacheData!), statusCode, null, true);
           }
         }
       } catch (ex) {
         if (ex is Error) {
           logger.finest(
-              "Request failed for $url", ex.toString(), ex.stackTrace);
+            "Request failed for $url",
+            ex.toString(),
+            ex.stackTrace,
+          );
         } else {
           logger.finest("Request failed for $url", ex.toString());
         }
@@ -494,8 +522,12 @@ class KretaClient {
     } else if (studentCache != null) {
       return studentCache!;
     }
-    var (resp, status, ex, cached) = await _cachingGet(CacheId.getStudent,
-        KretaEndpoints.getStudentUrl(model.iss!), forceCache, 0);
+    var (resp, status, ex, cached) = await _cachingGet(
+      CacheId.getStudent,
+      KretaEndpoints.getStudentUrl(model.iss!),
+      forceCache,
+      0,
+    );
 
     Student? student;
     String? err;
@@ -516,15 +548,20 @@ class KretaClient {
 
   ApiResponse<List<ClassGroup>>? classGroupCache;
 
-  Future<ApiResponse<List<ClassGroup>>> getClassGroups(
-      {bool forceCache = true}) async {
+  Future<ApiResponse<List<ClassGroup>>> getClassGroups({
+    bool forceCache = true,
+  }) async {
     if (!forceCache) {
       classGroupCache = null;
     } else {
       if (classGroupCache != null) return classGroupCache!;
     }
-    var (resp, status, ex, cached) = await _cachingGet(CacheId.getClassGroup,
-        KretaEndpoints.getClassGroups(model.iss!), forceCache, 0);
+    var (resp, status, ex, cached) = await _cachingGet(
+      CacheId.getClassGroup,
+      KretaEndpoints.getClassGroups(model.iss!),
+      forceCache,
+      0,
+    );
 
     final classGroups = List<ClassGroup>.empty(growable: true);
     String? err;
@@ -548,15 +585,20 @@ class KretaClient {
 
   ApiResponse<List<NoticeBoardItem>>? noticeBoardCache;
 
-  Future<ApiResponse<List<NoticeBoardItem>>> getNoticeBoard(
-      {bool forceCache = true}) async {
+  Future<ApiResponse<List<NoticeBoardItem>>> getNoticeBoard({
+    bool forceCache = true,
+  }) async {
     if (!forceCache) {
       noticeBoardCache = null;
     } else if (noticeBoardCache != null) {
       return noticeBoardCache!;
     }
-    var (resp, status, ex, cached) = await _cachingGet(CacheId.getNoticeBoard,
-        KretaEndpoints.getNoticeBoard(model.iss!), forceCache, 0);
+    var (resp, status, ex, cached) = await _cachingGet(
+      CacheId.getNoticeBoard,
+      KretaEndpoints.getNoticeBoard(model.iss!),
+      forceCache,
+      0,
+    );
 
     var items = List<NoticeBoardItem>.empty(growable: true);
     String? err;
@@ -580,11 +622,16 @@ class KretaClient {
 
   ApiResponse<List<InfoBoardItem>>? infoBoardCache;
 
-  Future<ApiResponse<List<InfoBoardItem>>> getInfoBoard(
-      {bool forceCache = true}) async {
+  Future<ApiResponse<List<InfoBoardItem>>> getInfoBoard({
+    bool forceCache = true,
+  }) async {
     if (forceCache && infoBoardCache != null) return infoBoardCache!;
-    var (resp, status, ex, cached) = await _cachingGet(CacheId.getInfoBoard,
-        KretaEndpoints.getInfoBoard(model.iss!), forceCache, 0);
+    var (resp, status, ex, cached) = await _cachingGet(
+      CacheId.getInfoBoard,
+      KretaEndpoints.getInfoBoard(model.iss!),
+      forceCache,
+      0,
+    );
 
     var items = List<InfoBoardItem>.empty(growable: true);
     String? err;
@@ -615,7 +662,11 @@ class KretaClient {
       return gradeCache!;
     }
     var (resp, status, ex, cached) = await _cachingGet(
-        CacheId.getGrades, KretaEndpoints.getGrades(model.iss!), forceCache, 0);
+      CacheId.getGrades,
+      KretaEndpoints.getGrades(model.iss!),
+      forceCache,
+      0,
+    );
 
     var items = List<Grade>.empty(growable: true);
     String? err;
@@ -642,14 +693,19 @@ class KretaClient {
   ApiResponse<List<SubjectAverage>>? subjectAverageCache;
 
   Future<ApiResponse<List<SubjectAverage>>> getSubjectAverage(
-      ClassGroup classGroup,
-      {bool forceCache = true}) async {
+    ClassGroup classGroup, {
+    bool forceCache = true,
+  }) async {
     String? err;
     if (classGroup.studyTask == null) {
       err = "classGroup.studyTask is null";
       logger.warning(err);
       return ApiResponse(
-          List<SubjectAverage>.empty(growable: true), 0, err, false);
+        List<SubjectAverage>.empty(growable: true),
+        0,
+        err,
+        false,
+      );
     }
     if (!forceCache) {
       subjectAverageCache = null;
@@ -657,8 +713,12 @@ class KretaClient {
       return subjectAverageCache!;
     }
     var studyTaskUid = classGroup.studyTask!.uid.toString().split(",").first;
-    var (resp, status, ex, cached) = await _cachingGet(CacheId.getSubjectAvg,
-        KretaEndpoints.getSubjectAvg(model.iss!, studyTaskUid), forceCache, 0);
+    var (resp, status, ex, cached) = await _cachingGet(
+      CacheId.getSubjectAvg,
+      KretaEndpoints.getSubjectAvg(model.iss!, studyTaskUid),
+      forceCache,
+      0,
+    );
 
     var items = List<SubjectAverage>.empty(growable: true);
     try {
@@ -679,14 +739,15 @@ class KretaClient {
   }
 
   Future<(List<dynamic>, int, Object?, bool)>
-      _timedCachingGet<T extends DatedCacheEntry>(
-          IsarCollection<T> cacheModel,
-          String endpoint,
-          DateTime from,
-          DateTime? to,
-          bool forceCache,
-          int counter,
-          Future<void> Function(dynamic, int) storeCache) async {
+  _timedCachingGet<T extends DatedCacheEntry>(
+    IsarCollection<T> cacheModel,
+    String endpoint,
+    DateTime from,
+    DateTime? to,
+    bool forceCache,
+    int counter,
+    Future<void> Function(dynamic, int) storeCache,
+  ) async {
     var cacheKey = genCacheKey(from, model.studentIdNorm!);
     var cache = await cacheModel.get(cacheKey);
     var formatter = DateFormat('yyyy-MM-dd');
@@ -712,14 +773,16 @@ class KretaClient {
       try {
         if (toStr == null) {
           (resp, statusCode) = await _authJson(
-              "GET",
-              "$endpoint?"
-                  "datumTol=$fromStr");
+            "GET",
+            "$endpoint?"
+                "datumTol=$fromStr",
+          );
         } else {
           (resp, statusCode) = await _authJson(
-              "GET",
-              "$endpoint?"
-                  "datumTol=$fromStr&datumIg=$toStr");
+            "GET",
+            "$endpoint?"
+                "datumTol=$fromStr&datumIg=$toStr",
+          );
         }
 
         if (statusCode >= 400) {
@@ -739,16 +802,25 @@ class KretaClient {
         }
 
         await Future.delayed(
-            Duration(milliseconds: backoffMin + (counter * backoffStep)));
+          Duration(milliseconds: backoffMin + (counter * backoffStep)),
+        );
 
-        return _timedCachingGet(cacheModel, endpoint, from, to, forceCache,
-            counter + 1, storeCache);
+        return _timedCachingGet(
+          cacheModel,
+          endpoint,
+          from,
+          to,
+          forceCache,
+          counter + 1,
+          storeCache,
+        );
       }
     } catch (ex) {
       if (_isTokenExpired(ex)) {
         await _setReauthFlag();
         logger.warning(
-            "Token expired in timed request, setting needsReauth flag");
+          "Token expired in timed request, setting needsReauth flag",
+        );
       }
 
       if (cache != null) {
@@ -779,27 +851,36 @@ class KretaClient {
 
   /// Expects from and to to be 7 days apart
   Future<ApiResponse<List<Lesson>>> _getTimeTable(
-      DateTime from, DateTime to, bool forceCache) async {
-    var (resp, status, ex, cached) =
-        await _timedCachingGet<TimetableCacheModel>(
-            isar.timetableCacheModels,
-            KretaEndpoints.getTimeTable(model.iss!),
-            from,
-            to,
-            forceCache,
-            0, (dynamic resp, int cacheKey) async {
-      TimetableCacheModel cache = TimetableCacheModel();
-      var rawClasses = List<String>.empty(growable: true);
+    DateTime from,
+    DateTime to,
+    bool forceCache,
+  ) async {
+    var (
+      resp,
+      status,
+      ex,
+      cached,
+    ) = await _timedCachingGet<TimetableCacheModel>(
+      isar.timetableCacheModels,
+      KretaEndpoints.getTimeTable(model.iss!),
+      from,
+      to,
+      forceCache,
+      0,
+      (dynamic resp, int cacheKey) async {
+        TimetableCacheModel cache = TimetableCacheModel();
+        var rawClasses = List<String>.empty(growable: true);
 
-      for (var obj in resp) {
-        rawClasses.add(jsonEncode(obj));
-      }
+        for (var obj in resp) {
+          rawClasses.add(jsonEncode(obj));
+        }
 
-      cache.cacheKey = cacheKey;
-      cache.values = rawClasses;
+        cache.cacheKey = cacheKey;
+        cache.values = rawClasses;
 
-      await isar.timetableCacheModels.put(cache as dynamic);
-    });
+        await isar.timetableCacheModels.put(cache as dynamic);
+      },
+    );
 
     var items = List<Lesson>.empty(growable: true);
     String? err;
@@ -819,16 +900,18 @@ class KretaClient {
     return ApiResponse(items, status, err, cached);
   }
 
-  Future<ApiResponse<List<Homework>>> getHomework(
-      {bool forceCache = true}) async {
+  Future<ApiResponse<List<Homework>>> getHomework({
+    bool forceCache = true,
+  }) async {
     final now = timeNow().subtract(Duration(days: 365));
     var formatter = DateFormat('yyyy-MM-dd');
     var start = formatter.format(now);
     var (resp, status, ex, cached) = await _cachingGet(
-        CacheId.getHomework,
-        "${KretaEndpoints.getHomework(model.iss!)}?datumTol=$start",
-        forceCache,
-        0);
+      CacheId.getHomework,
+      "${KretaEndpoints.getHomework(model.iss!)}?datumTol=$start",
+      forceCache,
+      0,
+    );
 
     var items = List<Homework>.empty(growable: true);
     String? err;
@@ -851,15 +934,20 @@ class KretaClient {
   }
 
   /// Automatically aligns requests to start at Monday and end at Sunday
-  Future<ApiResponse<List<Lesson>>> getTimeTable(DateTime from, DateTime to,
-      {bool forceCache = true}) async {
+  Future<ApiResponse<List<Lesson>>> getTimeTable(
+    DateTime from,
+    DateTime to, {
+    bool forceCache = true,
+  }) async {
     var lessons = List<Lesson>.empty(growable: true);
     String? err;
     bool cached = true;
 
-    for (var i = from.millisecondsSinceEpoch;
-        i < to.millisecondsSinceEpoch;
-        i += 604800000) {
+    for (
+      var i = from.millisecondsSinceEpoch;
+      i < to.millisecondsSinceEpoch;
+      i += 604800000
+    ) {
       var from = DateTime.fromMillisecondsSinceEpoch(i);
       var start = from.subtract(Duration(days: from.weekday - 1));
       var end = start.add(Duration(days: 6));
@@ -881,14 +969,16 @@ class KretaClient {
     lessons.sort((a, b) => a.start.compareTo(b.start));
     lessons = lessons
         .where(
-            (lesson) => lesson.start.isAfter(from) && lesson.end.isBefore(to))
+          (lesson) => lesson.start.isAfter(from) && lesson.end.isBefore(to),
+        )
         .toList();
 
     return ApiResponse(lessons, 200, err, cached);
   }
 
-  Future<ApiResponse<List<AllLessons>>> getLessons(
-      {bool forceCache = true}) async {
+  Future<ApiResponse<List<AllLessons>>> getLessons({
+    bool forceCache = true,
+  }) async {
     var (resp, status, ex, cached) = await _cachingGet(
       CacheId.getLessons,
       KretaEndpoints.getLessons(model.iss!),
@@ -925,7 +1015,11 @@ class KretaClient {
 
   Future<ApiResponse<List<Test>>> getTests({bool forceCache = true}) async {
     var (resp, status, ex, cached) = await _cachingGet(
-        CacheId.getTests, KretaEndpoints.getTests(model.iss!), forceCache, 0);
+      CacheId.getTests,
+      KretaEndpoints.getTests(model.iss!),
+      forceCache,
+      0,
+    );
 
     var items = List<Test>.empty(growable: true);
     String? err;
@@ -949,15 +1043,20 @@ class KretaClient {
 
   ApiResponse<List<Omission>>? omissionsCache;
 
-  Future<ApiResponse<List<Omission>>> getOmissions(
-      {bool forceCache = true}) async {
+  Future<ApiResponse<List<Omission>>> getOmissions({
+    bool forceCache = true,
+  }) async {
     if (!forceCache) {
       omissionsCache = null;
     } else {
       if (omissionsCache != null) return omissionsCache!;
     }
-    var (resp, status, ex, cached) = await _cachingGet(CacheId.getOmissions,
-        KretaEndpoints.getOmissions(model.iss!), forceCache, 0);
+    var (resp, status, ex, cached) = await _cachingGet(
+      CacheId.getOmissions,
+      KretaEndpoints.getOmissions(model.iss!),
+      forceCache,
+      0,
+    );
 
     var items = List<Omission>.empty(growable: true);
     String? err;

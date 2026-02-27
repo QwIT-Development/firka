@@ -25,22 +25,23 @@ class Student {
 
   final Institution institution;
 
-  Student(
-      {required this.addressDataList,
-      required this.bankAccount,
-      // required this.yearOfBirth,
-      // required this.monthOfBirth,
-      // required this.dayOfBirth,
-      required this.birthdate,
-      required this.emailAddress,
-      required this.name,
-      required this.phoneNumber,
-      required this.schoolYearUID,
-      required this.uid,
-      required this.guardianList,
-      required this.instituteCode,
-      required this.instituteName,
-      required this.institution});
+  Student({
+    required this.addressDataList,
+    required this.bankAccount,
+    // required this.yearOfBirth,
+    // required this.monthOfBirth,
+    // required this.dayOfBirth,
+    required this.birthdate,
+    required this.emailAddress,
+    required this.name,
+    required this.phoneNumber,
+    required this.schoolYearUID,
+    required this.uid,
+    required this.guardianList,
+    required this.instituteCode,
+    required this.instituteName,
+    required this.institution,
+  });
 
   factory Student.fromJson(Map<String, dynamic> json) {
     var guardianList = List<Guardian>.empty(growable: true);
@@ -50,19 +51,21 @@ class Student {
     }
 
     return Student(
-        addressDataList: listToTyped<String>(json['Cimek']),
-        bankAccount: BankAccount.fromJson(json['Bankszamla']),
-        birthdate: DateFormat('yyyy-M-d').parse(
-            "${json['SzuletesiEv']}-${json['SzuletesiHonap']}-${json['SzuletesiNap']}"),
-        emailAddress: json['EmailCim'],
-        name: json['Nev'],
-        phoneNumber: json['Telefonszam'],
-        schoolYearUID: json['TanevUid'],
-        uid: json['Uid'],
-        guardianList: guardianList,
-        instituteCode: json['IntezmenyAzonosito'],
-        instituteName: json['IntezmenyNev'],
-        institution: Institution.fromJson(json['Intezmeny']));
+      addressDataList: listToTyped<String>(json['Cimek']),
+      bankAccount: BankAccount.fromJson(json['Bankszamla']),
+      birthdate: DateFormat('yyyy-M-d').parse(
+        "${json['SzuletesiEv']}-${json['SzuletesiHonap']}-${json['SzuletesiNap']}",
+      ),
+      emailAddress: json['EmailCim'],
+      name: json['Nev'],
+      phoneNumber: json['Telefonszam'],
+      schoolYearUID: json['TanevUid'],
+      uid: json['Uid'],
+      guardianList: guardianList,
+      instituteCode: json['IntezmenyAzonosito'],
+      instituteName: json['IntezmenyNev'],
+      institution: Institution.fromJson(json['Intezmeny']),
+    );
   }
 
   @override
@@ -89,18 +92,20 @@ class BankAccount {
   final String? ownerName;
   final int? ownerType;
 
-  BankAccount(
-      {required this.accountNumber,
-      required this.isReadOnly,
-      required this.ownerName,
-      required this.ownerType});
+  BankAccount({
+    required this.accountNumber,
+    required this.isReadOnly,
+    required this.ownerName,
+    required this.ownerType,
+  });
 
   factory BankAccount.fromJson(Map<String, dynamic> json) {
     return BankAccount(
-        accountNumber: json['BankszamlaSzam'],
-        isReadOnly: json['IsReadOnly'],
-        ownerName: json['BankszamlaTulajdonosNeve'],
-        ownerType: json['BankszamlaTulajdonosTipusId']);
+      accountNumber: json['BankszamlaSzam'],
+      isReadOnly: json['IsReadOnly'],
+      ownerName: json['BankszamlaTulajdonosNeve'],
+      ownerType: json['BankszamlaTulajdonosTipusId'],
+    );
   }
 
   @override

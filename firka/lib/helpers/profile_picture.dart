@@ -7,7 +7,9 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 Future<void> pickProfilePicture(
-    AppInitialization data, ImagePicker picker) async {
+  AppInitialization data,
+  ImagePicker picker,
+) async {
   var imageFile = await picker.pickImage(source: ImageSource.gallery);
   if (imageFile == null) return;
 

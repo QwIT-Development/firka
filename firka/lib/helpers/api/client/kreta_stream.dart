@@ -21,8 +21,9 @@ bool getTestsStreamFL = false;
 bool getOmissionsStreamFL = false;
 
 extension KretaStream on KretaClient {
-  Stream<ApiResponse<Student>> getStudentStream(
-      {bool cacheOnly = true}) async* {
+  Stream<ApiResponse<Student>> getStudentStream({
+    bool cacheOnly = true,
+  }) async* {
     while (getStudentFL) {
       await Future.delayed(Duration(milliseconds: 10));
     }
@@ -35,8 +36,9 @@ extension KretaStream on KretaClient {
     getStudentFL = false;
   }
 
-  Stream<ApiResponse<List<ClassGroup>>> getClassGroupsStream(
-      {bool cacheOnly = true}) async* {
+  Stream<ApiResponse<List<ClassGroup>>> getClassGroupsStream({
+    bool cacheOnly = true,
+  }) async* {
     while (getClassGroupsFL) {
       await Future.delayed(Duration(milliseconds: 10));
     }
@@ -49,8 +51,9 @@ extension KretaStream on KretaClient {
     getClassGroupsFL = false;
   }
 
-  Stream<ApiResponse<List<NoticeBoardItem>>> getNoticeBoardStream(
-      {bool cacheOnly = true}) async* {
+  Stream<ApiResponse<List<NoticeBoardItem>>> getNoticeBoardStream({
+    bool cacheOnly = true,
+  }) async* {
     while (getNoticeBoardStreamFL) {
       await Future.delayed(Duration(milliseconds: 10));
     }
@@ -63,8 +66,9 @@ extension KretaStream on KretaClient {
     getNoticeBoardStreamFL = false;
   }
 
-  Stream<ApiResponse<List<InfoBoardItem>>> getInfoBoardStream(
-      {bool cacheOnly = true}) async* {
+  Stream<ApiResponse<List<InfoBoardItem>>> getInfoBoardStream({
+    bool cacheOnly = true,
+  }) async* {
     while (getInfoBoardStreamFL) {
       await Future.delayed(Duration(milliseconds: 10));
     }
@@ -77,8 +81,9 @@ extension KretaStream on KretaClient {
     getInfoBoardStreamFL = false;
   }
 
-  Stream<ApiResponse<List<Grade>>> getGradesStream(
-      {bool cacheOnly = true}) async* {
+  Stream<ApiResponse<List<Grade>>> getGradesStream({
+    bool cacheOnly = true,
+  }) async* {
     while (getGradesStreamFL) {
       await Future.delayed(Duration(milliseconds: 10));
     }
@@ -92,8 +97,9 @@ extension KretaStream on KretaClient {
   }
 
   Stream<ApiResponse<List<SubjectAverage>>> getSubjectAverageStream(
-      ClassGroup classGroup,
-      {bool cacheOnly = true}) async* {
+    ClassGroup classGroup, {
+    bool cacheOnly = true,
+  }) async* {
     while (getSubjectAverageStreamFL) {
       await Future.delayed(Duration(milliseconds: 10));
     }
@@ -106,8 +112,9 @@ extension KretaStream on KretaClient {
     getSubjectAverageStreamFL = false;
   }
 
-  Stream<ApiResponse<List<Homework>>> getHomeworkStream(
-      {bool cacheOnly = true}) async* {
+  Stream<ApiResponse<List<Homework>>> getHomeworkStream({
+    bool cacheOnly = true,
+  }) async* {
     while (getHomeworkStreamFL) {
       await Future.delayed(Duration(milliseconds: 10));
     }
@@ -121,8 +128,10 @@ extension KretaStream on KretaClient {
   }
 
   Stream<ApiResponse<List<Lesson>>> getTimeTableStream(
-      DateTime from, DateTime to,
-      {bool cacheOnly = true}) async* {
+    DateTime from,
+    DateTime to, {
+    bool cacheOnly = true,
+  }) async* {
     while (getTimeTableStreamFL) {
       await Future.delayed(Duration(milliseconds: 10));
     }
@@ -135,8 +144,9 @@ extension KretaStream on KretaClient {
     getTimeTableStreamFL = false;
   }
 
-  Stream<ApiResponse<List<Test>>> getTestsStream(
-      {bool cacheOnly = true}) async* {
+  Stream<ApiResponse<List<Test>>> getTestsStream({
+    bool cacheOnly = true,
+  }) async* {
     while (getTestsStreamFL) {
       await Future.delayed(Duration(milliseconds: 10));
     }
@@ -149,8 +159,9 @@ extension KretaStream on KretaClient {
     getTestsStreamFL = false;
   }
 
-  Stream<ApiResponse<List<Omission>>> getOmissionsStream(
-      {bool cacheOnly = true}) async* {
+  Stream<ApiResponse<List<Omission>>> getOmissionsStream({
+    bool cacheOnly = true,
+  }) async* {
     while (getOmissionsStreamFL) {
       await Future.delayed(Duration(milliseconds: 10));
     }

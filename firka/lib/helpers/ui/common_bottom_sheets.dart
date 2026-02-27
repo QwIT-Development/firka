@@ -25,25 +25,24 @@ import 'grade.dart';
 import '../../helpers/api/model/test.dart';
 
 Future<void> showLessonBottomSheet(
-    BuildContext context,
-    AppInitialization data,
-    Lesson lesson,
-    int? lessonNo,
-    Color accent,
-    Color secondary,
-    Color bgColor,
-    Test? test,
-
-    ) async {
+  BuildContext context,
+  AppInitialization data,
+  Lesson lesson,
+  int? lessonNo,
+  Color accent,
+  Color secondary,
+  Color bgColor,
+  Test? test,
+) async {
   final statsForNerdsEnabled = data.settings
       .group("settings")
       .subGroup("developer")
       .boolean("stats_for_nerds");
 
   final showTests = data.settings
-        .group("settings")
-        .subGroup("timetable_toast")
-        .boolean("tests_and_homework");
+      .group("settings")
+      .subGroup("timetable_toast")
+      .boolean("tests_and_homework");
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -61,11 +60,12 @@ Future<void> showLessonBottomSheet(
             "${data.l10n.stats_date}: ${lesson.start.isAfter(y2k) ? lesson.start.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
             "${data.l10n.stats_created_at}: ${lesson.createdAt.isAfter(y2k) ? lesson.createdAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
             "${data.l10n.stats_last_mod}: ${lesson.lastModifiedAt.isAfter(y2k) ? lesson.lastModifiedAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}";
-        statsForNerds = Text(stats,
-            style:
-                appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary));
+        statsForNerds = Text(
+          stats,
+          style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
+        );
       }
-      
+
       return Stack(
         children: [
           Positioned.fill(
@@ -104,7 +104,9 @@ Future<void> showLessonBottomSheet(
                               ),
                               Text(
                                 lessonNo.toString(),
-                                style: appStyle.fonts.B_12R.apply(color: secondary),
+                                style: appStyle.fonts.B_12R.apply(
+                                  color: secondary,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                             ],
@@ -116,7 +118,8 @@ Future<void> showLessonBottomSheet(
                             shadowColor: Colors.transparent,
                             color: bgColor,
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             child: Padding(
                               padding: EdgeInsetsGeometry.all(4),
                               child: ClassIconWidget(
@@ -138,63 +141,75 @@ Future<void> showLessonBottomSheet(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(children: [
-                            Text(
-                              "${lesson.name} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
-                              style: appStyle.fonts.H_18px
-                                  .apply(color: appStyle.colors.textPrimary),
-                            ),
-                            Card(
-                              shadowColor: Colors.transparent,
-                              color: appStyle.colors.a15p,
-                              child: Padding(
-                                padding: EdgeInsets.all(5),
-                                child: Text(lesson.roomName ?? 'N/A',
-                                    style: appStyle.fonts.B_12R.apply(
-                                        color: appStyle.colors.secondary)),
+                          Row(
+                            children: [
+                              Text(
+                                "${lesson.name} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
+                                style: appStyle.fonts.H_18px.apply(
+                                  color: appStyle.colors.textPrimary,
+                                ),
                               ),
-                            ),
-                          ]),
+                              Card(
+                                shadowColor: Colors.transparent,
+                                color: appStyle.colors.a15p,
+                                child: Padding(
+                                  padding: EdgeInsets.all(5),
+                                  child: Text(
+                                    lesson.roomName ?? 'N/A',
+                                    style: appStyle.fonts.B_12R.apply(
+                                      color: appStyle.colors.secondary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                           Text(
                             lesson.teacher ?? 'N/A',
-                            style: appStyle.fonts.B_16R
-                                .apply(color: appStyle.colors.textPrimary),
+                            style: appStyle.fonts.B_16R.apply(
+                              color: appStyle.colors.textPrimary,
+                            ),
                           ),
                           Text(
                             '${lesson.start.format(data.l10n, FormatMode.hmm)} - ${lesson.end.format(data.l10n, FormatMode.hmm)}',
-                            style: appStyle.fonts.B_16R
-                                .apply(color: appStyle.colors.textSecondary),
+                            style: appStyle.fonts.B_16R.apply(
+                              color: appStyle.colors.textSecondary,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     SizedBox(height: 8),
-                    FirkaCard(left: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            data.l10n.lesson_subject,
-                            style: appStyle.fonts.H_14px
-                                .apply(color: appStyle.colors.textPrimary),
-                          ),
-                          SizedBox(height: 4),
+                    FirkaCard(
+                      left: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              data.l10n.lesson_subject,
+                              style: appStyle.fonts.H_14px.apply(
+                                color: appStyle.colors.textPrimary,
+                              ),
+                            ),
+                            SizedBox(height: 4),
                             SizedBox(
                               width: MediaQuery.of(context).size.width * 0.7,
                               child: Text(
                                 lesson.theme ?? 'N/A',
-                                style: appStyle.fonts.B_16R
-                                  .apply(color: appStyle.colors.textPrimary),
+                                style: appStyle.fonts.B_16R.apply(
+                                  color: appStyle.colors.textPrimary,
+                                ),
                                 maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          SizedBox(height: 4),
-                          statsForNerds
-                        ],
-                      )
-                    ]),
-                    if (test != null && showTests) 
+                            SizedBox(height: 4),
+                            statsForNerds,
+                          ],
+                        ),
+                      ],
+                    ),
+                    if (test != null && showTests)
                       FirkaCard(
                         left: [
                           Container(
@@ -217,26 +232,32 @@ Future<void> showLessonBottomSheet(
                             alignment: Alignment.centerLeft,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
+                              children: [
                                 SizedBox(
-                                  width: MediaQuery.of(context).size.width * 0.6,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.6,
                                   child: Text(
                                     test.theme,
-                                    style: appStyle.fonts.B_16SB.apply(color: appStyle.colors.textPrimary),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  )
-                                ),
-                                SizedBox(height: 4),
-                                SizedBox(
-                                  width: MediaQuery.of(context).size.width * 0.6,
-                                  child: Text(
-                                    test.method.description ?? 'N/A',
-                                    style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textSecondary),
+                                    style: appStyle.fonts.B_16SB.apply(
+                                      color: appStyle.colors.textPrimary,
+                                    ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                )
+                                ),
+                                SizedBox(height: 4),
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.6,
+                                  child: Text(
+                                    test.method.description ?? 'N/A',
+                                    style: appStyle.fonts.B_16R.apply(
+                                      color: appStyle.colors.textSecondary,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -255,7 +276,8 @@ Future<void> showLessonBottomSheet(
                               ),
                             ),
                           ),
-                      ]),
+                        ],
+                      ),
                     SizedBox(height: 8),
                     SizedBox(
                       width: MediaQuery.of(context).size.width / 1.1,
@@ -265,15 +287,20 @@ Future<void> showLessonBottomSheet(
                           center: [
                             Text(
                               data.l10n.view_subject_btn,
-                              style: appStyle.fonts.B_16R
-                                  .apply(color: appStyle.colors.textSecondary),
-                            )
+                              style: appStyle.fonts.B_16R.apply(
+                                color: appStyle.colors.textSecondary,
+                              ),
+                            ),
                           ],
                           color: appStyle.colors.buttonSecondaryFill,
                         ),
                         onTap: () {
                           Navigator.pop(context);
-                          pageNavNotifier.value = PageNavData(HomePage.grades, lesson.subject!.uid, lesson.subject!.name);
+                          pageNavNotifier.value = PageNavData(
+                            HomePage.grades,
+                            lesson.subject!.uid,
+                            lesson.subject!.name,
+                          );
                         },
                       ),
                     ),
@@ -289,19 +316,24 @@ Future<void> showLessonBottomSheet(
 }
 
 Future<void> showTestBottomSheet(
-    BuildContext context,
-    AppInitialization data,
-    Lesson lesson,
-    int? lessonNo,
-    Color accent,
-    Color secondary,
-    Color bgColor,
-    Test? test,
-
-    ) async {
+  BuildContext context,
+  AppInitialization data,
+  Lesson lesson,
+  int? lessonNo,
+  Color accent,
+  Color secondary,
+  Color bgColor,
+  Test? test,
+) async {
   final date = lesson.start;
-  final formattedDate = DateFormat('MMMM d, EEEE', data.l10n.localeName).format(date);
-  final formattedTime = DateFormat('MMMM d, HH:mm', data.l10n.localeName).format(date);
+  final formattedDate = DateFormat(
+    'MMMM d, EEEE',
+    data.l10n.localeName,
+  ).format(date);
+  final formattedTime = DateFormat(
+    'MMMM d, HH:mm',
+    data.l10n.localeName,
+  ).format(date);
 
   final statsForNerdsEnabled = data.settings
       .group("settings")
@@ -309,9 +341,9 @@ Future<void> showTestBottomSheet(
       .boolean("stats_for_nerds");
 
   final showTests = data.settings
-        .group("settings")
-        .subGroup("timetable_toast")
-        .boolean("tests_and_homework");
+      .group("settings")
+      .subGroup("timetable_toast")
+      .boolean("tests_and_homework");
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -328,11 +360,12 @@ Future<void> showTestBottomSheet(
             "${data.l10n.stats_date}: ${lesson.start.isAfter(y2k) ? lesson.start.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
             "${data.l10n.stats_created_at}: ${lesson.createdAt.isAfter(y2k) ? lesson.createdAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
             "${data.l10n.stats_last_mod}: ${lesson.lastModifiedAt.isAfter(y2k) ? lesson.lastModifiedAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}";
-        statsForNerds = Text(stats,
-            style:
-                appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary));
+        statsForNerds = Text(
+          stats,
+          style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
+        );
       }
-      
+
       return Stack(
         children: [
           Positioned.fill(
@@ -376,47 +409,54 @@ Future<void> showTestBottomSheet(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(children: [
-                            Expanded(
-                              child: Text(
-                                "${test?.theme ?? 'N/A'} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
-                                style: appStyle.fonts.H_18px
-                                    .apply(color: appStyle.colors.textPrimary),
-                                maxLines: 4,
-                                overflow: TextOverflow.ellipsis,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  "${test?.theme ?? 'N/A'} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
+                                  style: appStyle.fonts.H_18px.apply(
+                                    color: appStyle.colors.textPrimary,
+                                  ),
+                                  maxLines: 4,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
-                          ]),
+                            ],
+                          ),
                           Text(
                             test?.method.description ?? 'N/A',
-                            style: appStyle.fonts.B_16R
-                                .apply(color: appStyle.colors.textSecondary),
+                            style: appStyle.fonts.B_16R.apply(
+                              color: appStyle.colors.textSecondary,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     SizedBox(height: 8),
-                    FirkaCard(left: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 4),
+                    FirkaCard(
+                      left: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 4),
                             SizedBox(
                               width: MediaQuery.of(context).size.width * 0.7,
                               child: Text(
                                 "${data.l10n.data}: $formattedDate",
-                                style: appStyle.fonts.B_16R
-                                  .apply(color: appStyle.colors.textPrimary),
+                                style: appStyle.fonts.B_16R.apply(
+                                  color: appStyle.colors.textPrimary,
+                                ),
                                 maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          SizedBox(height: 4),
-                          statsForNerds
-                        ],
-                      )
-                    ]),
-                    if (test != null && showTests) 
+                            SizedBox(height: 4),
+                            statsForNerds,
+                          ],
+                        ),
+                      ],
+                    ),
+                    if (test != null && showTests)
                       FirkaCard(
                         left: [
                           Row(
@@ -434,10 +474,13 @@ Future<void> showTestBottomSheet(
                                     ),
                                     Padding(
                                       padding: EdgeInsets.only(left: 8, top: 4),
-                                      child: Text(lessonNo.toString(),
-                                          style: appStyle.fonts.B_12R
-                                              .apply(color: secondary)),
-                                    )
+                                      child: Text(
+                                        lessonNo.toString(),
+                                        style: appStyle.fonts.B_12R.apply(
+                                          color: secondary,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -447,7 +490,8 @@ Future<void> showTestBottomSheet(
                                   shadowColor: Colors.transparent,
                                   color: bgColor,
                                   shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16)),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
                                   child: Padding(
                                     padding: EdgeInsetsGeometry.all(4),
                                     child: ClassIconWidget(
@@ -469,26 +513,31 @@ Future<void> showTestBottomSheet(
                             alignment: Alignment.centerLeft,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
+                              children: [
                                 SizedBox(
-                                  width: MediaQuery.of(context).size.width * 0.3,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.3,
                                   child: Text(
                                     lesson.name,
-                                    style: appStyle.fonts.B_16SB.apply(color: appStyle.colors.textPrimary),
+                                    style: appStyle.fonts.B_16SB.apply(
+                                      color: appStyle.colors.textPrimary,
+                                    ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                  )
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                      ],
-                      right: [
+                        ],
+                        right: [
                           Text(
-                              formattedTime,
-                              style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
-                          )
-                      ],
+                            formattedTime,
+                            style: appStyle.fonts.B_14R.apply(
+                              color: appStyle.colors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     SizedBox(height: 8),
                     SizedBox(
@@ -499,14 +548,24 @@ Future<void> showTestBottomSheet(
                           center: [
                             Text(
                               data.l10n.view_lesson_btn,
-                              style: appStyle.fonts.B_16R
-                                  .apply(color: appStyle.colors.textSecondary),
-                            )
+                              style: appStyle.fonts.B_16R.apply(
+                                color: appStyle.colors.textSecondary,
+                              ),
+                            ),
                           ],
                           color: appStyle.colors.buttonSecondaryFill,
                         ),
                         onTap: () {
-                          showLessonBottomSheet(context, data, lesson, lessonNo, accent, secondary, bgColor, test);
+                          showLessonBottomSheet(
+                            context,
+                            data,
+                            lesson,
+                            lessonNo,
+                            accent,
+                            secondary,
+                            bgColor,
+                            test,
+                          );
                         },
                       ),
                     ),
@@ -522,7 +581,10 @@ Future<void> showTestBottomSheet(
 }
 
 Future<void> showGradeBottomSheet(
-    BuildContext context, AppInitialization data, Grade grade) async {
+  BuildContext context,
+  AppInitialization data,
+  Grade grade,
+) async {
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -535,7 +597,10 @@ Future<void> showGradeBottomSheet(
     ),
     builder: (BuildContext context) {
       final gradeCreationDate = grade.creationDate;
-      final formattedDate = DateFormat('yyyy. MMMM d., EEEE', data.l10n.localeName).format(gradeCreationDate);
+      final formattedDate = DateFormat(
+        'yyyy. MMMM d., EEEE',
+        data.l10n.localeName,
+      ).format(gradeCreationDate);
 
       return Stack(
         children: [
@@ -559,18 +624,19 @@ Future<void> showGradeBottomSheet(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      children: [GradeWidget(grade)],
-                    ),
+                    Row(children: [GradeWidget(grade)]),
                     SizedBox(height: 4),
                     Padding(
                       padding: const EdgeInsets.only(left: 6),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(grade.topic ?? grade.type.description!,
-                              style: appStyle.fonts.H_18px
-                                  .apply(color: appStyle.colors.textPrimary)),
+                          Text(
+                            grade.topic ?? grade.type.description!,
+                            style: appStyle.fonts.H_18px.apply(
+                              color: appStyle.colors.textPrimary,
+                            ),
+                          ),
                           grade.mode?.description != null
                               ? SizedBox(
                                   width:
@@ -578,61 +644,73 @@ Future<void> showGradeBottomSheet(
                                   child: Text(
                                     grade.mode!.description!,
                                     style: appStyle.fonts.B_16R.apply(
-                                        color: appStyle.colors.textSecondary),
+                                      color: appStyle.colors.textSecondary,
+                                    ),
                                   ),
                                 )
                               : SizedBox(),
-                          SizedBox(
-                            height: 20,
-                          ),
+                          SizedBox(height: 20),
                           LessonWidget(
                             data,
                             [],
-                            [], 
+                            [],
                             null,
                             Lesson(
-                                uid: "-2",
-                                date: "",
-                                start: grade.creationDate,
-                                end: grade.creationDate,
-                                name: grade.subject.name,
-                                type: NameUidDesc(
-                                    uid: "", name: "", description: ""),
-                                state: NameUidDesc(
-                                    uid: "", name: "", description: ""),
-                                canStudentEditHomework: false,
-                                isHomeworkComplete: false,
-                                attachments: [],
-                                isDigitalLesson: false,
-                                digitalSupportDeviceTypeList: [],
-                                createdAt: timeNow(),
-                                subject: grade.subject,
-                                lastModifiedAt: timeNow()),
+                              uid: "-2",
+                              date: "",
+                              start: grade.creationDate,
+                              end: grade.creationDate,
+                              name: grade.subject.name,
+                              type: NameUidDesc(
+                                uid: "",
+                                name: "",
+                                description: "",
+                              ),
+                              state: NameUidDesc(
+                                uid: "",
+                                name: "",
+                                description: "",
+                              ),
+                              canStudentEditHomework: false,
+                              isHomeworkComplete: false,
+                              attachments: [],
+                              isDigitalLesson: false,
+                              digitalSupportDeviceTypeList: [],
+                              createdAt: timeNow(),
+                              subject: grade.subject,
+                              lastModifiedAt: timeNow(),
+                            ),
                             null,
                             null,
                             placeholderMode: true,
                           ),
-                          FirkaCard(left: [
-                            Column(
+                          FirkaCard(
+                            left: [
+                              Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     "${data.l10n.tt_added}$formattedDate",
                                     style: appStyle.fonts.B_16R.apply(
-                                        color: appStyle.colors.textPrimary),
+                                      color: appStyle.colors.textPrimary,
+                                    ),
                                   ),
                                   Text(
                                     "${data.l10n.grade_teacherName}${grade.teacher}",
                                     style: appStyle.fonts.B_16R.apply(
-                                        color: appStyle.colors.textPrimary),
+                                      color: appStyle.colors.textPrimary,
+                                    ),
                                   ),
                                   Text(
                                     "${data.l10n.grade_strValue}${grade.strValue}",
                                     style: appStyle.fonts.B_16R.apply(
-                                        color: appStyle.colors.textPrimary),
-                                  )
-                                ])
-                          ]),
+                                      color: appStyle.colors.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                           SizedBox(height: 8),
                           SizedBox(
                             width: MediaQuery.of(context).size.width / 1.1,
@@ -642,15 +720,20 @@ Future<void> showGradeBottomSheet(
                                 center: [
                                   Text(
                                     data.l10n.view_subject_btn,
-                                    style: appStyle.fonts.B_16R
-                                        .apply(color: appStyle.colors.textSecondary),
-                                  )
+                                    style: appStyle.fonts.B_16R.apply(
+                                      color: appStyle.colors.textSecondary,
+                                    ),
+                                  ),
                                 ],
                                 color: appStyle.colors.buttonSecondaryFill,
                               ),
                               onTap: () {
                                 Navigator.pop(context);
-                                pageNavNotifier.value = PageNavData(HomePage.grades, grade.subject.uid, grade.subject.name);
+                                pageNavNotifier.value = PageNavData(
+                                  HomePage.grades,
+                                  grade.subject.uid,
+                                  grade.subject.name,
+                                );
                               },
                             ),
                           ),
@@ -669,7 +752,10 @@ Future<void> showGradeBottomSheet(
 }
 
 Future<void> showHomeworkBottomSheet(
-    BuildContext context, AppInitialization data, Homework homework) async {
+  BuildContext context,
+  AppInitialization data,
+  Homework homework,
+) async {
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -681,8 +767,10 @@ Future<void> showHomeworkBottomSheet(
       minHeight: MediaQuery.of(context).size.height * 0.34,
     ),
     builder: (BuildContext context) {
-
-      final formattedDate = DateFormat('yyyy. MMMM d.', data.l10n.localeName).format(homework.dueDate);
+      final formattedDate = DateFormat(
+        'yyyy. MMMM d.',
+        data.l10n.localeName,
+      ).format(homework.dueDate);
 
       return Stack(
         children: [
@@ -711,17 +799,21 @@ Future<void> showHomeworkBottomSheet(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(children: [
-                            Text(
-                              data.l10n.homework,
-                              style: appStyle.fonts.H_18px
-                                  .apply(color: appStyle.colors.textPrimary),
-                            ),
-                          ]),
+                          Row(
+                            children: [
+                              Text(
+                                data.l10n.homework,
+                                style: appStyle.fonts.H_18px.apply(
+                                  color: appStyle.colors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
                           Text(
                             formattedDate,
-                            style: appStyle.fonts.B_16R
-                                .apply(color: appStyle.colors.textSecondary),
+                            style: appStyle.fonts.B_16R.apply(
+                              color: appStyle.colors.textSecondary,
+                            ),
                           ),
                         ],
                       ),
@@ -730,26 +822,25 @@ Future<void> showHomeworkBottomSheet(
                     LessonWidget(
                       data,
                       [],
-                      [], 
+                      [],
                       null,
                       Lesson(
-                          uid: "-1",
-                          date: "",
-                          start: homework.startDate,
-                          end: homework.dueDate ,
-                          name: homework.subjectName,
-                          type: NameUidDesc(
-                              uid: "", name: "", description: ""),
-                          state: NameUidDesc(
-                              uid: "", name: "", description: ""),
-                          canStudentEditHomework: false,
-                          isHomeworkComplete: false,
-                          attachments: [],
-                          isDigitalLesson: false,
-                          digitalSupportDeviceTypeList: [],
-                          createdAt: timeNow(),
-                          subject: homework.subject,
-                          lastModifiedAt: timeNow()),
+                        uid: "-1",
+                        date: "",
+                        start: homework.startDate,
+                        end: homework.dueDate,
+                        name: homework.subjectName,
+                        type: NameUidDesc(uid: "", name: "", description: ""),
+                        state: NameUidDesc(uid: "", name: "", description: ""),
+                        canStudentEditHomework: false,
+                        isHomeworkComplete: false,
+                        attachments: [],
+                        isDigitalLesson: false,
+                        digitalSupportDeviceTypeList: [],
+                        createdAt: timeNow(),
+                        subject: homework.subject,
+                        lastModifiedAt: timeNow(),
+                      ),
                       null,
                       null,
                       placeholderMode: true,
@@ -760,11 +851,16 @@ Future<void> showHomeworkBottomSheet(
                         shadow: true,
                         child: Card(
                           color: appStyle.colors.card,
-                          shadowColor: isLightMode.value ? null : Colors.transparent,
+                          shadowColor: isLightMode.value
+                              ? null
+                              : Colors.transparent,
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20.0,
+                                vertical: 20.0,
+                              ),
                               child: Html(
                                 data: homework.description,
                                 style: {
@@ -778,11 +874,11 @@ Future<void> showHomeworkBottomSheet(
                                     textAlign: TextAlign.start,
                                   ),
                                 },
-                              ), 
+                              ),
                             ),
                           ),
                         ),
-                      )
+                      ),
                     ),
                     FutureBuilder<bool>(
                       future: isHomeworkDone(data.isar, homework.uid),
@@ -805,8 +901,9 @@ Future<void> showHomeworkBottomSheet(
                                       Text(
                                         data.l10n.mark_as_done,
                                         style: appStyle.fonts.B_16SB.apply(
-                                            color: appStyle.colors.textSecondary),
-                                      )
+                                          color: appStyle.colors.textSecondary,
+                                        ),
+                                      ),
                                     ],
                                     color: appStyle.colors.accent,
                                   ),
@@ -826,8 +923,9 @@ Future<void> showHomeworkBottomSheet(
                                       Text(
                                         data.l10n.mark_as_not_done,
                                         style: appStyle.fonts.B_16SB.apply(
-                                            color: appStyle.colors.textSecondary),
-                                      )
+                                          color: appStyle.colors.textSecondary,
+                                        ),
+                                      ),
                                     ],
                                     color: appStyle.colors.accent,
                                   ),
@@ -849,15 +947,20 @@ Future<void> showHomeworkBottomSheet(
                           center: [
                             Text(
                               data.l10n.view_subject_btn,
-                              style: appStyle.fonts.B_16R
-                                  .apply(color: appStyle.colors.textSecondary),
-                            )
+                              style: appStyle.fonts.B_16R.apply(
+                                color: appStyle.colors.textSecondary,
+                              ),
+                            ),
                           ],
                           color: appStyle.colors.buttonSecondaryFill,
                         ),
                         onTap: () {
                           Navigator.pop(context);
-                          pageNavNotifier.value = PageNavData(HomePage.grades, homework.subject.uid, homework.subjectName);
+                          pageNavNotifier.value = PageNavData(
+                            HomePage.grades,
+                            homework.subject.uid,
+                            homework.subjectName,
+                          );
                         },
                       ),
                     ),
@@ -873,7 +976,10 @@ Future<void> showHomeworkBottomSheet(
 }
 
 Future<void> showSubjectBottomSheetSettings(
-    BuildContext context, AppInitialization data, Subject subject) async {
+  BuildContext context,
+  AppInitialization data,
+  Subject subject,
+) async {
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -882,8 +988,6 @@ Future<void> showSubjectBottomSheetSettings(
     backgroundColor: Colors.transparent,
     barrierColor: appStyle.colors.a15p,
     builder: (BuildContext context) {
-
-
       return Stack(
         children: [
           Align(
@@ -904,13 +1008,16 @@ Future<void> showSubjectBottomSheetSettings(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(children: [
-                            Text(
-                              subject.name,
-                              style: appStyle.fonts.H_18px
-                                  .apply(color: appStyle.colors.textPrimary),
-                            ),
-                          ]),
+                          Row(
+                            children: [
+                              Text(
+                                subject.name,
+                                style: appStyle.fonts.H_18px.apply(
+                                  color: appStyle.colors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -924,19 +1031,23 @@ Future<void> showSubjectBottomSheetSettings(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Row(children: [
-                                  FirkaIconWidget(
-                                    FirkaIconType.majesticons,
-                                    Majesticon.editPen4Solid,
-                                    size: 24.0,
-                                    color: appStyle.colors.accent,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    "Tantárgy átnevezése",
-                                    style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
-                                  ),
-                                ])
+                                Row(
+                                  children: [
+                                    FirkaIconWidget(
+                                      FirkaIconType.majesticons,
+                                      Majesticon.editPen4Solid,
+                                      size: 24.0,
+                                      color: appStyle.colors.accent,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      "Tantárgy átnevezése",
+                                      style: appStyle.fonts.B_16R.apply(
+                                        color: appStyle.colors.textPrimary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
@@ -946,7 +1057,7 @@ Future<void> showSubjectBottomSheetSettings(
                         logger.finest("Tantárgy átnevezése");
                         // Navigator.pop(context);
                       },
-                    )
+                    ),
                   ],
                 ),
               ),

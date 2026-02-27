@@ -25,8 +25,12 @@ class HomeTimetableMonthlyScreen extends StatefulWidget {
   final void Function(int) pageController;
 
   const HomeTimetableMonthlyScreen(
-      this.data, this.updateNotifier, this.finishNotifier, this.pageController,
-      {super.key});
+    this.data,
+    this.updateNotifier,
+    this.finishNotifier,
+    this.pageController, {
+    super.key,
+  });
 
   @override
   State<HomeTimetableMonthlyScreen> createState() =>
@@ -49,20 +53,28 @@ class _HomeTimetableMonthlyScreen
 
   Future<void> initForMonth(DateTime now, {bool forceCache = true}) async {
     final monthStart = DateTime.utc(now.year, now.month, 1);
-    final monthEnd =
-        DateTime.utc(now.year, now.month + 1).subtract(Duration(days: 1));
+    final monthEnd = DateTime.utc(
+      now.year,
+      now.month + 1,
+    ).subtract(Duration(days: 1));
 
     final start = monthStart.subtract(Duration(days: 7)).getMonday();
-    var end =
-        monthEnd.add(Duration(days: 7)).getMonday().add(Duration(days: 7));
+    var end = monthEnd
+        .add(Duration(days: 7))
+        .getMonday()
+        .add(Duration(days: 7));
 
     var days = end.difference(start).inDays;
 
-    var lessonsResp = await widget.data.client
-        .getTimeTable(monthStart, monthEnd, forceCache: forceCache);
+    var lessonsResp = await widget.data.client.getTimeTable(
+      monthStart,
+      monthEnd,
+      forceCache: forceCache,
+    );
     var testsResp = await widget.data.client.getTests(forceCache: forceCache);
-    var omissionsResp =
-        await widget.data.client.getOmissions(forceCache: forceCache);
+    var omissionsResp = await widget.data.client.getOmissions(
+      forceCache: forceCache,
+    );
     List<DateTime> dates = List.empty(growable: true);
 
     for (var i = 0; i < days; i++) {
@@ -127,8 +139,10 @@ class _HomeTimetableMonthlyScreen
 
       final meow = dates![20];
       final currentMonthStart = DateTime.utc(meow.year, meow.month, 1);
-      final currentMonthEnd =
-          DateTime.utc(meow.year, meow.month + 1).subtract(Duration(days: 1));
+      final currentMonthEnd = DateTime.utc(
+        meow.year,
+        meow.month + 1,
+      ).subtract(Duration(days: 1));
 
       // column-major -> row-major
       for (var day = 0; day < 7; day++) {
@@ -136,56 +150,73 @@ class _HomeTimetableMonthlyScreen
           final d = dates![week * 7 + day];
 
           if (d.isBefore(currentMonthStart) || d.isAfter(currentMonthEnd)) {
-            ttDays.add(Column(
-              children: [
-                Container(
+            ttDays.add(
+              Column(
+                children: [
+                  Container(
                     width: 40,
                     height: 40,
                     clipBehavior: Clip.antiAlias,
                     decoration: ShapeDecoration(
                       color: appStyle.colors.cardTranslucent,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    )),
-                SizedBox(height: 4),
-                Text(d.format(widget.data.l10n, FormatMode.d),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    d.format(widget.data.l10n, FormatMode.d),
                     style: appStyle.fonts.B_16R.apply(
-                        color: (d.weekday == DateTime.saturday ||
-                                d.weekday == DateTime.sunday)
-                            ? appStyle.colors.errorText
-                            : appStyle.colors.textTertiary)),
-              ],
-            ));
+                      color:
+                          (d.weekday == DateTime.saturday ||
+                              d.weekday == DateTime.sunday)
+                          ? appStyle.colors.errorText
+                          : appStyle.colors.textTertiary,
+                    ),
+                  ),
+                ],
+              ),
+            );
           } else {
             Widget body = SizedBox();
             Color bodyBgColor = appStyle.colors.a15p;
 
-            var lessonsToday = lessons!.where((lesson) =>
-                lesson.start.isAfter(d.getMidnight()) &&
-                lesson.end.isBefore(
-                    d.getMidnight().add(Duration(hours: 23, minutes: 59))));
+            var lessonsToday = lessons!.where(
+              (lesson) =>
+                  lesson.start.isAfter(d.getMidnight()) &&
+                  lesson.end.isBefore(
+                    d.getMidnight().add(Duration(hours: 23, minutes: 59)),
+                  ),
+            );
 
-            var omissionType = lessonsToday.firstWhereOrNull((lesson) =>
-                lesson.studentPresence != null &&
-                lesson.studentPresence?.name != OmissionConsts.na &&
-                lesson.studentPresence?.name != OmissionConsts.present);
+            var omissionType = lessonsToday.firstWhereOrNull(
+              (lesson) =>
+                  lesson.studentPresence != null &&
+                  lesson.studentPresence?.name != OmissionConsts.na &&
+                  lesson.studentPresence?.name != OmissionConsts.present,
+            );
 
             switch (activeFilter) {
               case ActiveFilter.lessonNo:
                 if (lessonsToday.isNotEmpty) {
                   body = Center(
-                    child: Text(lessonsToday.length.toString(),
-                        style: appStyle.fonts.H_16px.apply(
-                            color: omissionType != null &&
-                                    (omissionType.studentPresence!.name ==
-                                            OmissionConsts.absence ||
-                                        omissionType.studentPresence!.name ==
-                                            OmissionConsts.na)
-                                ? appStyle.colors.errorText
-                                : timeNow().day == d.day &&
-                                        timeNow().month == d.month
-                                    ? appStyle.colors.accent
-                                    : appStyle.colors.secondary)),
+                    child: Text(
+                      lessonsToday.length.toString(),
+                      style: appStyle.fonts.H_16px.apply(
+                        color:
+                            omissionType != null &&
+                                (omissionType.studentPresence!.name ==
+                                        OmissionConsts.absence ||
+                                    omissionType.studentPresence!.name ==
+                                        OmissionConsts.na)
+                            ? appStyle.colors.errorText
+                            : timeNow().day == d.day &&
+                                  timeNow().month == d.month
+                            ? appStyle.colors.accent
+                            : appStyle.colors.secondary,
+                      ),
+                    ),
                   );
 
                   if (omissionType != null &&
@@ -198,13 +229,18 @@ class _HomeTimetableMonthlyScreen
                 }
                 break;
               case ActiveFilter.tests:
-                if (lessonsToday.firstWhereOrNull((lesson) => tests!.any(
+                if (lessonsToday.firstWhereOrNull(
+                      (lesson) => tests!.any(
                         (test) =>
                             test.lessonNumber == lesson.lessonNumber &&
                             lesson.start.isAfter(test.date.getMidnight()) &&
-                            lesson.end.isBefore(test.date
-                                .getMidnight()
-                                .add(Duration(hours: 23, minutes: 59))))) !=
+                            lesson.end.isBefore(
+                              test.date.getMidnight().add(
+                                Duration(hours: 23, minutes: 59),
+                              ),
+                            ),
+                      ),
+                    ) !=
                     null) {
                   body = Center(
                     child: FirkaIconWidget(
@@ -265,7 +301,8 @@ class _HomeTimetableMonthlyScreen
                       break;
                     default:
                       logger.fine(
-                          "omission: ${omissionType.studentPresence!.name}");
+                        "omission: ${omissionType.studentPresence!.name}",
+                      );
                       body = Center(
                         child: FirkaIconWidget(
                           FirkaIconType.majesticons,
@@ -279,30 +316,37 @@ class _HomeTimetableMonthlyScreen
                 break;
             }
 
-            ttDays.add(Column(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: ShapeDecoration(
-                    color: bodyBgColor,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+            ttDays.add(
+              Column(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: ShapeDecoration(
+                      color: bodyBgColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: body,
                   ),
-                  child: body,
-                ),
-                SizedBox(height: 4),
-                Text(d.format(widget.data.l10n, FormatMode.d),
+                  SizedBox(height: 4),
+                  Text(
+                    d.format(widget.data.l10n, FormatMode.d),
                     style: appStyle.fonts.B_16R.apply(
-                        color: (d.weekday == DateTime.saturday ||
-                                    d.weekday == DateTime.sunday) &&
-                                lessonsToday.isEmpty
-                            ? appStyle.colors.errorText
-                            : appStyle.colors.textSecondary)),
-                SizedBox(height: 12),
-              ],
-            ));
+                      color:
+                          (d.weekday == DateTime.saturday ||
+                                  d.weekday == DateTime.sunday) &&
+                              lessonsToday.isEmpty
+                          ? appStyle.colors.errorText
+                          : appStyle.colors.textSecondary,
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                ],
+              ),
+            );
 
             if (timeNow().getMidnight().millisecondsSinceEpoch ==
                 d.toLocal().getMidnight().millisecondsSinceEpoch) {
@@ -313,8 +357,9 @@ class _HomeTimetableMonthlyScreen
       }
 
       return Scaffold(
-          backgroundColor: appStyle.colors.background,
-          body: Stack(children: [
+        backgroundColor: appStyle.colors.background,
+        body: Stack(
+          children: [
             SizedBox(
               width: MediaQuery.of(context).size.width,
               height: 74 + 16,
@@ -327,8 +372,9 @@ class _HomeTimetableMonthlyScreen
                       children: [
                         Text(
                           widget.data.l10n.timetable,
-                          style: appStyle.fonts.H_H2
-                              .apply(color: appStyle.colors.textPrimary),
+                          style: appStyle.fonts.H_H2.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
                         ),
                         Row(
                           children: [
@@ -377,12 +423,13 @@ class _HomeTimetableMonthlyScreen
                               ),
                               onTap: () {
                                 showSettingsSheet(
-                                    context,
-                                    MediaQuery.of(context).size.height * 0.4,
-                                    widget.data,
-                                    widget.data.settings
-                                        .group("settings")
-                                        .subGroup("timetable_toast"));
+                                  context,
+                                  MediaQuery.of(context).size.height * 0.4,
+                                  widget.data,
+                                  widget.data.settings
+                                      .group("settings")
+                                      .subGroup("timetable_toast"),
+                                );
                               },
                             ),
                           ],
@@ -419,11 +466,13 @@ class _HomeTimetableMonthlyScreen
                           },
                         ),
                         Text(
-                            now!
-                                .format(widget.data.l10n, FormatMode.yyyymmmm)
-                                .toLowerCase(),
-                            style: appStyle.fonts.B_16R
-                                .apply(color: appStyle.colors.textPrimary)),
+                          now!
+                              .format(widget.data.l10n, FormatMode.yyyymmmm)
+                              .toLowerCase(),
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
                         GestureDetector(
                           child: FirkaIconWidget(
                             FirkaIconType.icons,
@@ -445,31 +494,30 @@ class _HomeTimetableMonthlyScreen
                           },
                         ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ),
             ),
             TransparentPointer(
-                child: Padding(
-              padding: const EdgeInsets.only(top: 74 + 16 + 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  StaggeredGrid.count(
-                    crossAxisCount: 7,
-                    mainAxisSpacing: 8,
-                    children: ttDays,
-                  )
-                ],
+              child: Padding(
+                padding: const EdgeInsets.only(top: 74 + 16 + 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    StaggeredGrid.count(
+                      crossAxisCount: 7,
+                      mainAxisSpacing: 8,
+                      children: ttDays,
+                    ),
+                  ],
+                ),
               ),
-            )),
+            ),
             TransparentPointer(
               child: Column(
                 children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height / 1.3,
-                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height / 1.3),
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
                     child: Row(
@@ -479,70 +527,99 @@ class _HomeTimetableMonthlyScreen
                         Row(
                           children: [
                             _StatusToast(
-                                FirkaIconWidget(FirkaIconType.majesticons,
-                                    Majesticon.clockSolid,
-                                    color: appStyle.colors.accent, size: 16),
-                                lessons!
-                                    .where((lesson) =>
-                                        lesson.start
-                                            .isAfter(currentMonthStart) &&
-                                        lesson.end.isBefore(currentMonthEnd))
-                                    .length,
-                                activeFilter == ActiveFilter.lessonNo, () {
-                              setState(() {
-                                activeFilter = ActiveFilter.lessonNo;
-                              });
-                            }),
+                              FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.clockSolid,
+                                color: appStyle.colors.accent,
+                                size: 16,
+                              ),
+                              lessons!
+                                  .where(
+                                    (lesson) =>
+                                        lesson.start.isAfter(
+                                          currentMonthStart,
+                                        ) &&
+                                        lesson.end.isBefore(currentMonthEnd),
+                                  )
+                                  .length,
+                              activeFilter == ActiveFilter.lessonNo,
+                              () {
+                                setState(() {
+                                  activeFilter = ActiveFilter.lessonNo;
+                                });
+                              },
+                            ),
                             _StatusToast(
-                                FirkaIconWidget(FirkaIconType.majesticons,
-                                    Majesticon.editPen4Solid,
-                                    color: appStyle.colors.accent, size: 16),
-                                lessons!
-                                    .where((lesson) => tests!.any((test) =>
-                                        test.lessonNumber ==
-                                            lesson.lessonNumber &&
-                                        lesson.start
-                                            .isAfter(test.date.getMidnight()) &&
-                                        lesson.end.isBefore(test.date
-                                            .getMidnight()
-                                            .add(Duration(
-                                                hours: 23, minutes: 59)))))
-                                    .length,
-                                activeFilter == ActiveFilter.tests, () {
-                              setState(() {
-                                activeFilter = ActiveFilter.tests;
-                              });
-                            }),
+                              FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.editPen4Solid,
+                                color: appStyle.colors.accent,
+                                size: 16,
+                              ),
+                              lessons!
+                                  .where(
+                                    (lesson) => tests!.any(
+                                      (test) =>
+                                          test.lessonNumber ==
+                                              lesson.lessonNumber &&
+                                          lesson.start.isAfter(
+                                            test.date.getMidnight(),
+                                          ) &&
+                                          lesson.end.isBefore(
+                                            test.date.getMidnight().add(
+                                              Duration(hours: 23, minutes: 59),
+                                            ),
+                                          ),
+                                    ),
+                                  )
+                                  .length,
+                              activeFilter == ActiveFilter.tests,
+                              () {
+                                setState(() {
+                                  activeFilter = ActiveFilter.tests;
+                                });
+                              },
+                            ),
                             _StatusToast(
-                                FirkaIconWidget(FirkaIconType.majesticons,
-                                    Majesticon.timerLine,
-                                    color: appStyle.colors.accent, size: 16),
-                                lessons!
-                                    .where((lesson) =>
-                                        lesson.start
-                                            .isAfter(currentMonthStart) &&
+                              FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.timerLine,
+                                color: appStyle.colors.accent,
+                                size: 16,
+                              ),
+                              lessons!
+                                  .where(
+                                    (lesson) =>
+                                        lesson.start.isAfter(
+                                          currentMonthStart,
+                                        ) &&
                                         lesson.end.isBefore(currentMonthEnd) &&
                                         lesson.studentPresence != null &&
                                         lesson.studentPresence?.name !=
                                             OmissionConsts.na &&
                                         lesson.studentPresence?.name !=
-                                            OmissionConsts.present)
-                                    .length,
-                                activeFilter == ActiveFilter.omissions, () {
-                              setState(() {
-                                activeFilter = ActiveFilter.omissions;
-                              });
-                            }),
+                                            OmissionConsts.present,
+                                  )
+                                  .length,
+                              activeFilter == ActiveFilter.omissions,
+                              () {
+                                setState(() {
+                                  activeFilter = ActiveFilter.omissions;
+                                });
+                              },
+                            ),
                           ],
                         ),
-                        SizedBox()
+                        SizedBox(),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
-          ]));
+          ],
+        ),
+      );
     } else {
       return Scaffold(
         backgroundColor: appStyle.colors.background,
@@ -552,7 +629,7 @@ class _HomeTimetableMonthlyScreen
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [DelayedSpinnerWidget()],
-            )
+            ),
           ],
         ),
       );
@@ -578,8 +655,9 @@ class _StatusToast extends StatelessWidget {
           color: _active
               ? appStyle.colors.buttonSecondaryFill
               : appStyle.colors.cardTranslucent,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -587,9 +665,12 @@ class _StatusToast extends StatelessWidget {
             children: [
               _icon,
               SizedBox(width: 6),
-              Text(_count.toString(),
-                  style: appStyle.fonts.H_16px
-                      .apply(color: appStyle.colors.textPrimary))
+              Text(
+                _count.toString(),
+                style: appStyle.fonts.H_16px.apply(
+                  color: appStyle.colors.textPrimary,
+                ),
+              ),
             ],
           ),
         ),

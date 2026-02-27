@@ -5,7 +5,9 @@ import 'package:firka/helpers/api/model/timetable.dart';
 import 'package:logging/logging.dart';
 
 class LiveActivityManager {
-  static const MethodChannel _channel = MethodChannel('firka.app/live_activity');
+  static const MethodChannel _channel = MethodChannel(
+    'firka.app/live_activity',
+  );
   static final Logger _logger = Logger('LiveActivityManager');
 
   static String? _activityId;
@@ -31,7 +33,9 @@ class LiveActivityManager {
       if (activeActivities.isNotEmpty) {
         _activityId = activeActivities.first;
         _isActivityActive = true;
-        _logger.info('Synced activity state: Found existing activity $_activityId');
+        _logger.info(
+          'Synced activity state: Found existing activity $_activityId',
+        );
       } else {
         _activityId = null;
         _isActivityActive = false;
@@ -48,7 +52,9 @@ class LiveActivityManager {
         final args = call.arguments as Map;
         final activityId = args['activityId'] as String;
         final pushToken = args['pushToken'] as String;
-        _logger.info('Received LiveActivity push token: ${pushToken.substring(0, 10)}...');
+        _logger.info(
+          'Received LiveActivity push token: ${pushToken.substring(0, 10)}...',
+        );
         _onPushTokenReceived?.call(activityId, pushToken);
         break;
       default:
@@ -56,7 +62,9 @@ class LiveActivityManager {
     }
   }
 
-  static void setOnPushTokenReceived(Function(String activityId, String pushToken) callback) {
+  static void setOnPushTokenReceived(
+    Function(String activityId, String pushToken) callback,
+  ) {
     _onPushTokenReceived = callback;
   }
 
@@ -92,7 +100,9 @@ class LiveActivityManager {
     try {
       await _syncActivityState();
       if (_isActivityActive) {
-        _logger.info('Activity already exists, ending it to create new one with fresh token');
+        _logger.info(
+          'Activity already exists, ending it to create new one with fresh token',
+        );
         await endAllActivities();
         await Future.delayed(const Duration(milliseconds: 500));
       }
@@ -217,18 +227,23 @@ class LiveActivityManager {
 
     final payload = {
       'isBreak': isBeforeSchool ? false : isBreak,
-      'lessonName': isBeforeSchool ? currentLesson.name : (isBreak ? 'Szünet' : currentLesson.name),
+      'lessonName': isBeforeSchool
+          ? currentLesson.name
+          : (isBreak ? 'Szünet' : currentLesson.name),
       'lessonTheme': (isBeforeSchool || isBreak) ? null : currentLesson.theme,
       'roomName': (isBeforeSchool || isBreak) ? null : currentLesson.roomName,
       'teacherName': (isBeforeSchool || isBreak) ? null : currentLesson.teacher,
       'startTime': startTimeForActivity.toUtc().toIso8601String(),
       'endTime': endTimeForActivity.toUtc().toIso8601String(),
-      'lessonNumber': (isBeforeSchool || isBreak) ? null : currentLesson.lessonNumber,
+      'lessonNumber': (isBeforeSchool || isBreak)
+          ? null
+          : currentLesson.lessonNumber,
       'nextLessonName': isBeforeSchool ? null : nextLesson?.name,
       'nextRoomName': isBeforeSchool ? null : nextLesson?.roomName,
       'nextStartTime': nextStartTimeForActivity?.toUtc().toIso8601String(),
       'isSubstitution': currentLesson.substituteTeacher != null,
-      'isCancelled': currentLesson.state.name?.toLowerCase().contains('elmarad') ?? false,
+      'isCancelled':
+          currentLesson.state.name?.toLowerCase().contains('elmarad') ?? false,
       'substituteTeacher': currentLesson.substituteTeacher,
       'currentTime': now.toUtc().toIso8601String(),
       'mode': mode,

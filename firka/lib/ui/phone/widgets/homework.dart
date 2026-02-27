@@ -41,40 +41,45 @@ class HomeworkWidget extends StatelessWidget {
                           color: appStyle.colors.accent,
                           size: 24,
                         );
-                  }
+                },
               ),
-              SizedBox(
-                width: 8,
-              ),
+              SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                    FutureBuilder<bool>(
-                      future: isHomeworkDone(data.isar, item.uid),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return SizedBox();
-                        }
-                        final done = snapshot.data!;
-                        return done
-                            ? Text(data.l10n.homework,
-                                style: appStyle.fonts.B_16SB
-                                .apply(color: appStyle.colors.textPrimary, decoration: TextDecoration.lineThrough))
-                            : Text(data.l10n.homework,
-                                style: appStyle.fonts.B_16SB
-                                .apply(color: appStyle.colors.textPrimary));
-                      },
+                  FutureBuilder<bool>(
+                    future: isHomeworkDone(data.isar, item.uid),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return SizedBox();
+                      }
+                      final done = snapshot.data!;
+                      return done
+                          ? Text(
+                              data.l10n.homework,
+                              style: appStyle.fonts.B_16SB.apply(
+                                color: appStyle.colors.textPrimary,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            )
+                          : Text(
+                              data.l10n.homework,
+                              style: appStyle.fonts.B_16SB.apply(
+                                color: appStyle.colors.textPrimary,
+                              ),
+                            );
+                    },
+                  ),
+                  Text(
+                    item.subjectName,
+                    style: appStyle.fonts.B_16R.apply(
+                      color: appStyle.colors.textPrimary,
                     ),
-                    Text(
-                      item.subjectName,
-                      style: appStyle.fonts.B_16R
-                          .apply(color: appStyle.colors.textPrimary),
-                    )
-
-                  ],
+                  ),
+                ],
               ),
             ],
-          )
+          ),
         ],
       ),
       onTap: () {

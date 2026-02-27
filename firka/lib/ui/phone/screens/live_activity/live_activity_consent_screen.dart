@@ -14,10 +14,7 @@ import '../../../../helpers/firka_state.dart';
 class LiveActivityConsentScreen extends StatefulWidget {
   final AppInitialization data;
 
-  const LiveActivityConsentScreen({
-    required this.data,
-    super.key,
-  });
+  const LiveActivityConsentScreen({required this.data, super.key});
 
   @override
   State<LiveActivityConsentScreen> createState() =>
@@ -48,8 +45,9 @@ class _LiveActivityConsentScreenState
                   Expanded(
                     child: Text(
                       widget.data.l10n.la_title,
-                      style: appStyle.fonts.H_H1
-                          .apply(color: appStyle.colors.textPrimary),
+                      style: appStyle.fonts.H_H1.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
                     ),
                   ),
                 ],
@@ -59,8 +57,9 @@ class _LiveActivityConsentScreenState
                 width: double.infinity,
                 child: Text(
                   widget.data.l10n.la_subtitle,
-                  style: appStyle.fonts.B_16R
-                      .apply(color: appStyle.colors.textSecondary),
+                  style: appStyle.fonts.B_16R.apply(
+                    color: appStyle.colors.textSecondary,
+                  ),
                   maxLines: null,
                   softWrap: true,
                 ),
@@ -89,8 +88,9 @@ class _LiveActivityConsentScreenState
                           Expanded(
                             child: Text(
                               widget.data.l10n.la_privacy_title,
-                              style: appStyle.fonts.H_16px
-                                  .apply(color: appStyle.colors.warningText),
+                              style: appStyle.fonts.H_16px.apply(
+                                color: appStyle.colors.warningText,
+                              ),
                             ),
                           ),
                         ],
@@ -98,8 +98,9 @@ class _LiveActivityConsentScreenState
                       SizedBox(height: 8),
                       Text(
                         widget.data.l10n.la_privacy_required,
-                        style: appStyle.fonts.B_14R
-                            .apply(color: appStyle.colors.warningText),
+                        style: appStyle.fonts.B_14R.apply(
+                          color: appStyle.colors.warningText,
+                        ),
                         softWrap: true,
                       ),
                     ],
@@ -115,8 +116,9 @@ class _LiveActivityConsentScreenState
                     children: [
                       Text(
                         widget.data.l10n.la_privacy_intro,
-                        style: appStyle.fonts.B_16R
-                            .apply(color: appStyle.colors.textPrimary),
+                        style: appStyle.fonts.B_16R.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
                       ),
                       SizedBox(height: 20),
                       _buildPrivacySummaryItem(
@@ -138,10 +140,12 @@ class _LiveActivityConsentScreenState
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      FullPrivacyPolicyScreen(data: widget.data)));
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  FullPrivacyPolicyScreen(data: widget.data),
+                            ),
+                          );
                         },
                         child: FirkaCard(
                           color: appStyle.colors.buttonSecondaryFill,
@@ -149,8 +153,9 @@ class _LiveActivityConsentScreenState
                           center: [
                             Text(
                               widget.data.l10n.la_learn_more,
-                              style: appStyle.fonts.B_16SB
-                                  .apply(color: appStyle.colors.textSecondary),
+                              style: appStyle.fonts.B_16SB.apply(
+                                color: appStyle.colors.textSecondary,
+                              ),
                             ),
                             SizedBox(width: 8),
                             FirkaIconWidget(
@@ -179,7 +184,8 @@ class _LiveActivityConsentScreenState
                       text: widget.data.l10n.la_accept,
                       bgColor: appStyle.colors.accent,
                       fontStyle: appStyle.fonts.B_16R.apply(
-                          color: appStyle.colors.textPrimary),
+                        color: appStyle.colors.textPrimary,
+                      ),
                     ),
                   ),
                   SizedBox(height: 12),
@@ -190,8 +196,9 @@ class _LiveActivityConsentScreenState
                     child: FirkaButton(
                       text: widget.data.l10n.la_decline,
                       bgColor: appStyle.colors.buttonSecondaryFill,
-                      fontStyle: appStyle.fonts.B_16R
-                          .apply(color: appStyle.colors.textSecondary),
+                      fontStyle: appStyle.fonts.B_16R.apply(
+                        color: appStyle.colors.textSecondary,
+                      ),
                     ),
                   ),
                 ],
@@ -226,14 +233,16 @@ class _LiveActivityConsentScreenState
               children: [
                 Text(
                   title,
-                  style: appStyle.fonts.B_16SB
-                      .apply(color: appStyle.colors.textPrimary),
+                  style: appStyle.fonts.B_16SB.apply(
+                    color: appStyle.colors.textPrimary,
+                  ),
                 ),
                 SizedBox(height: 6),
                 Text(
                   description,
-                  style: appStyle.fonts.B_16R
-                      .apply(color: appStyle.colors.textSecondary),
+                  style: appStyle.fonts.B_16R.apply(
+                    color: appStyle.colors.textSecondary,
+                  ),
                 ),
               ],
             ),

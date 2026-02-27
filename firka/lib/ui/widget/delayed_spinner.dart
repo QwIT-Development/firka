@@ -30,9 +30,7 @@ class _DelayedSpinner extends FirkaState<DelayedSpinnerWidget> {
   @override
   Widget build(BuildContext context) {
     if (showSpinner) {
-      return CircularProgressIndicator(
-        color: appStyle.colors.accent,
-      );
+      return CircularProgressIndicator(color: appStyle.colors.accent);
     } else {
       return SizedBox();
     }

@@ -14,7 +14,9 @@ class IOSWidgetHelper {
     if (!Platform.isIOS) return null;
 
     try {
-      final result = await _channel.invokeMethod<String>('getAppGroupDirectory');
+      final result = await _channel.invokeMethod<String>(
+        'getAppGroupDirectory',
+      );
       if (result != null) {
         return Directory(result);
       }
@@ -39,8 +41,12 @@ class IOSWidgetHelper {
     if (!Platform.isIOS) return;
 
     debugPrint('[IOSWidget] Starting updateWidgetData...');
-    debugPrint('[IOSWidget] todayLessons: ${todayLessons.length}, tomorrowLessons: ${tomorrowLessons.length}');
-    debugPrint('[IOSWidget] grades: ${grades.length}, subjectAverages: ${subjectAverages.length}');
+    debugPrint(
+      '[IOSWidget] todayLessons: ${todayLessons.length}, tomorrowLessons: ${tomorrowLessons.length}',
+    );
+    debugPrint(
+      '[IOSWidget] grades: ${grades.length}, subjectAverages: ${subjectAverages.length}',
+    );
 
     final dir = await _getAppGroupDirectory();
     if (dir == null) {
@@ -56,23 +62,31 @@ class IOSWidgetHelper {
       'timetable': {
         'today': todayLessons.map((l) => _lessonToJson(l)).toList(),
         'tomorrow': tomorrowLessons.map((l) => _lessonToJson(l)).toList(),
-        'nextSchoolDay': nextSchoolDayLessons.map((l) => _lessonToJson(l)).toList(),
+        'nextSchoolDay': nextSchoolDayLessons
+            .map((l) => _lessonToJson(l))
+            .toList(),
         'nextSchoolDayDate': nextSchoolDayDate?.toIso8601String(),
-        'currentBreak': currentBreak != null ? {
-          'name': currentBreak.name,
-          'nameKey': currentBreak.nameKey,
-          'endDate': currentBreak.endDate.toIso8601String(),
-        } : null,
+        'currentBreak': currentBreak != null
+            ? {
+                'name': currentBreak.name,
+                'nameKey': currentBreak.nameKey,
+                'endDate': currentBreak.endDate.toIso8601String(),
+              }
+            : null,
       },
       'grades': grades.take(20).map((g) => _gradeToJson(g)).toList(),
       'averages': {
         'overall': overallAverage,
-        'subjects': subjectAverages.entries.map((e) => {
-          'uid': e.key,
-          'name': _getSubjectNameFromGrades(e.key, grades),
-          'average': e.value,
-          'gradeCount': _getGradeCount(e.key, grades),
-        }).toList(),
+        'subjects': subjectAverages.entries
+            .map(
+              (e) => {
+                'uid': e.key,
+                'name': _getSubjectNameFromGrades(e.key, grades),
+                'average': e.value,
+                'gradeCount': _getGradeCount(e.key, grades),
+              },
+            )
+            .toList(),
       },
     };
 
@@ -118,26 +132,29 @@ class IOSWidgetHelper {
       'name': lesson.name,
       'lessonNumber': lesson.lessonNumber,
       'teacher': lesson.teacher,
-      'subject': subject != null ? {
-        'uid': subject.uid,
-        'name': subject.name,
-        'category': subject.category != null ? {
-          'uid': subject.category!.uid,
-          'name': subject.category!.name,
-          'description': subject.category!.description,
-        } : null,
-        'sortIndex': subject.sortIndex,
-        'teacherName': subject.teacherName,
-      } : {
-        'uid': '',
-        'name': lesson.name,
-        'category': null,
-        'sortIndex': 0,
-        'teacherName': null,
-      },
+      'subject': subject != null
+          ? {
+              'uid': subject.uid,
+              'name': subject.name,
+              'category': {
+                'uid': subject.category.uid,
+                'name': subject.category.name,
+                'description': subject.category.description,
+              },
+              'sortIndex': subject.sortIndex,
+              'teacherName': subject.teacherName,
+            }
+          : {
+              'uid': '',
+              'name': lesson.name,
+              'category': null,
+              'sortIndex': 0,
+              'teacherName': null,
+            },
       'theme': lesson.theme,
       'roomName': lesson.roomName,
-      'isCancelled': lesson.state.name?.toLowerCase().contains('elmarad') ?? false,
+      'isCancelled':
+          lesson.state.name?.toLowerCase().contains('elmarad') ?? false,
       'isSubstitution': lesson.substituteTeacher != null,
     };
   }
@@ -149,11 +166,11 @@ class IOSWidgetHelper {
       'subject': {
         'uid': grade.subject.uid,
         'name': grade.subject.name,
-        'category': grade.subject.category != null ? {
-          'uid': grade.subject.category!.uid,
-          'name': grade.subject.category!.name,
-          'description': grade.subject.category!.description,
-        } : null,
+        'category': {
+          'uid': grade.subject.category.uid,
+          'name': grade.subject.category.name,
+          'description': grade.subject.category.description,
+        },
         'sortIndex': grade.subject.sortIndex,
         // Use the grade's teacher field, not subject.teacherName (which is usually null for grades)
         'teacherName': grade.teacher,

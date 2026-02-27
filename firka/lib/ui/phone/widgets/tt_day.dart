@@ -16,11 +16,18 @@ class TimeTableDayWidget extends StatelessWidget {
   final List<Lesson> lessons;
   final List<Lesson> events;
   final List<Test> tests;
-  final List<Lesson> day; 
+  final List<Lesson> day;
 
   const TimeTableDayWidget(
-      this.data, this.date, this.week, this.lessons, this.events, this.tests, this.day,
-      {super.key});
+    this.data,
+    this.date,
+    this.week,
+    this.lessons,
+    this.events,
+    this.tests,
+    this.day, {
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,47 +36,72 @@ class TimeTableDayWidget extends StatelessWidget {
 
     if (lessons.isEmpty) {
       noLessonsWidget = Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SvgPicture.asset("assets/images/logos/dave.svg",
-                width: 48, height: 48),
-            SizedBox(height: 12),
-            Text(data.l10n.tt_no_classes_l1,
-                style: appStyle.fonts.B_16R
-                    .apply(color: appStyle.colors.textSecondary)),
-            Text(data.l10n.tt_no_classes_l2,
-                style: appStyle.fonts.B_16R
-                    .apply(color: appStyle.colors.textSecondary)),
-            if (events.isNotEmpty)
-              ...events.map((event) => 
-              Center(
-                child: Text(event.name.replaceAll(" (Nem órarendi nap)", ""),
-                    style: appStyle.fonts.B_16R
-                        .apply(color: appStyle.colors.textSecondary)),
-              ))
-          ]);
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SvgPicture.asset(
+            "assets/images/logos/dave.svg",
+            width: 48,
+            height: 48,
+          ),
+          SizedBox(height: 12),
+          Text(
+            data.l10n.tt_no_classes_l1,
+            style: appStyle.fonts.B_16R.apply(
+              color: appStyle.colors.textSecondary,
+            ),
+          ),
+          Text(
+            data.l10n.tt_no_classes_l2,
+            style: appStyle.fonts.B_16R.apply(
+              color: appStyle.colors.textSecondary,
+            ),
+          ),
+          if (events.isNotEmpty)
+            ...events.map(
+              (event) => Center(
+                child: Text(
+                  event.name.replaceAll(" (Nem órarendi nap)", ""),
+                  style: appStyle.fonts.B_16R.apply(
+                    color: appStyle.colors.textSecondary,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      );
     } else {
       for (var i = 0; i < events.length; i++) {
         var event = events[i];
-        ttBody.add(FirkaCard(left: [
-          Text(event.name,
-              style: appStyle.fonts.B_16R
-                  .apply(color: appStyle.colors.textPrimary))
-        ]));
+        ttBody.add(
+          FirkaCard(
+            left: [
+              Text(
+                event.name,
+                style: appStyle.fonts.B_16R.apply(
+                  color: appStyle.colors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        );
       }
       for (var i = 0; i < lessons.length; i++) {
         var lesson = lessons[i];
         Lesson? nextLesson = lessons.length > i + 1 ? lessons[i + 1] : null;
-        ttBody.add(LessonWidget(
+        ttBody.add(
+          LessonWidget(
             data,
             week,
             day,
             lessons.getLessonNo(lesson),
             lesson,
             tests.firstWhereOrNull(
-                (test) => test.lessonNumber == lesson.lessonNumber),
-            nextLesson));
+              (test) => test.lessonNumber == lesson.lessonNumber,
+            ),
+            nextLesson,
+          ),
+        );
       }
     }
 
@@ -78,18 +110,16 @@ class TimeTableDayWidget extends StatelessWidget {
       child: ttBody.isEmpty
           ? noLessonsWidget
           : Padding(
-              padding:
-                  const EdgeInsets.only(top: 70 + 16 + 20, left: 4, right: 4),
+              padding: const EdgeInsets.only(
+                top: 70 + 16 + 20,
+                left: 4,
+                right: 4,
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ...ttBody,
-                    SizedBox(
-                      height: 24,
-                    )
-                  ],
+                  children: [...ttBody, SizedBox(height: 24)],
                 ),
               ),
             ),

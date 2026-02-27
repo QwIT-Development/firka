@@ -12,29 +12,43 @@ extension TimetableExtension on Iterable<Lesson> {
       if (lesson.lessonNumber == null) continue;
 
       if (lessons.firstWhereOrNull(
-              (lesson2) => lesson.lessonNumber == lesson2.lessonNumber) ==
+            (lesson2) => lesson.lessonNumber == lesson2.lessonNumber,
+          ) ==
           null) {
         final ref = reference.start;
-        final newStart = DateTime(ref.year, ref.month, ref.day,
-            lesson.start.hour, lesson.start.minute, lesson.start.second);
-        final newEnd = DateTime(ref.year, ref.month, ref.day, lesson.end.hour,
-            lesson.end.minute, lesson.end.second);
+        final newStart = DateTime(
+          ref.year,
+          ref.month,
+          ref.day,
+          lesson.start.hour,
+          lesson.start.minute,
+          lesson.start.second,
+        );
+        final newEnd = DateTime(
+          ref.year,
+          ref.month,
+          ref.day,
+          lesson.end.hour,
+          lesson.end.minute,
+          lesson.end.second,
+        );
         final lessonCopy = Lesson(
-            uid: lesson.uid,
-            date: lesson.date,
-            start: newStart,
-            end: newEnd,
-            name: lesson.name,
-            type: lesson.type,
-            state: lesson.state,
-            canStudentEditHomework: lesson.canStudentEditHomework,
-            isHomeworkComplete: lesson.isHomeworkComplete,
-            attachments: lesson.attachments,
-            lessonNumber: lesson.lessonNumber,
-            isDigitalLesson: lesson.isDigitalLesson,
-            digitalSupportDeviceTypeList: lesson.digitalSupportDeviceTypeList,
-            createdAt: lesson.createdAt,
-            lastModifiedAt: lesson.lastModifiedAt);
+          uid: lesson.uid,
+          date: lesson.date,
+          start: newStart,
+          end: newEnd,
+          name: lesson.name,
+          type: lesson.type,
+          state: lesson.state,
+          canStudentEditHomework: lesson.canStudentEditHomework,
+          isHomeworkComplete: lesson.isHomeworkComplete,
+          attachments: lesson.attachments,
+          lessonNumber: lesson.lessonNumber,
+          isDigitalLesson: lesson.isDigitalLesson,
+          digitalSupportDeviceTypeList: lesson.digitalSupportDeviceTypeList,
+          createdAt: lesson.createdAt,
+          lastModifiedAt: lesson.lastModifiedAt,
+        );
         lessons.add(lessonCopy);
       }
     }
@@ -85,7 +99,7 @@ enum FormatMode {
   yyyymmddwedd,
   yyyymmmm,
   yyyymmdd,
-  yyyymmddhhmmss
+  yyyymmddhhmmss,
 }
 
 enum Cycle { morning, day, afternoon, night }
@@ -105,7 +119,10 @@ extension DateExtension on DateTime {
     switch (mode) {
       case FormatMode.grades:
         if (isBefore(yesterdayLim)) {
-          final month = DateFormat('MMMM', l10n.localeName).format(this).firstUpper();
+          final month = DateFormat(
+            'MMMM',
+            l10n.localeName,
+          ).format(this).firstUpper();
           final day = DateFormat('d', l10n.localeName).format(this);
           return "$month $day";
         }
@@ -125,17 +142,23 @@ extension DateExtension on DateTime {
       case FormatMode.hmm:
         return DateFormat('H:mm', l10n.localeName).format(this);
       case FormatMode.welcome:
-        final dayName = DateFormat('EEEE', l10n.localeName).format(this).firstUpper();
-        final monthAbbr = DateFormat('MMM', l10n.localeName).format(this).firstUpper();
+        final dayName = DateFormat(
+          'EEEE',
+          l10n.localeName,
+        ).format(this).firstUpper();
+        final monthAbbr = DateFormat(
+          'MMM',
+          l10n.localeName,
+        ).format(this).firstUpper();
         final day = DateFormat('d', l10n.localeName).format(this);
         return "$dayName, $monthAbbr $day";
       case FormatMode.d:
         return DateFormat('d', l10n.localeName).format(this);
       case FormatMode.da:
-        return DateFormat('EEEE', l10n.localeName)
-            .format(this)
-            .substring(0, 2)
-            .firstUpper();
+        return DateFormat(
+          'EEEE',
+          l10n.localeName,
+        ).format(this).substring(0, 2).firstUpper();
       case FormatMode.dd:
         return DateFormat('dd', l10n.localeName).format(this);
       case FormatMode.yyyymmddwedd:
@@ -167,12 +190,15 @@ extension DateExtension on DateTime {
   }
 
   DateTime getMidnight() {
-    return subtract(Duration(
+    return subtract(
+      Duration(
         hours: hour,
         minutes: minute,
         seconds: second,
         milliseconds: millisecond,
-        microseconds: microsecond));
+        microseconds: microsecond,
+      ),
+    );
   }
 
   Cycle getDayCycle() {
@@ -199,22 +225,28 @@ extension DateGrouper<T> on Iterable<T> {
     Map<DateTime, List<T>> newList = {};
 
     var today = timeNow();
-    today = today.subtract(Duration(
+    today = today.subtract(
+      Duration(
         hours: today.hour,
         minutes: today.minute,
         seconds: today.second,
-        milliseconds: today.millisecond));
+        milliseconds: today.millisecond,
+      ),
+    );
 
     var tomorrow = today.add(Duration(days: 1));
     var yesterday = today.subtract(Duration(days: 1));
 
     for (var elem in this) {
       var date = getDate(elem);
-      var day = date.subtract(Duration(
+      var day = date.subtract(
+        Duration(
           hours: date.hour,
           minutes: date.minute,
           seconds: date.second,
-          milliseconds: date.millisecond));
+          milliseconds: date.millisecond,
+        ),
+      );
 
       if (date.isAfter(tomorrow.add(Duration(days: 1)))) {
         if (newList[day] == null) {
@@ -260,17 +292,20 @@ extension LessonExtension on List<Lesson> {
 
   Lesson? getCurrentLesson(DateTime now) {
     return firstWhereOrNull(
-        (lesson) => now.isAfter(lesson.start) && now.isBefore(lesson.end));
+      (lesson) => now.isAfter(lesson.start) && now.isBefore(lesson.end),
+    );
   }
 
   Lesson? getPrevLesson(DateTime now) {
     return firstWhereOrNull(
-        (lesson) => lesson.end.isBefore(now.add(Duration(milliseconds: 1))));
+      (lesson) => lesson.end.isBefore(now.add(Duration(milliseconds: 1))),
+    );
   }
 
   Lesson? getNextLesson(DateTime now) {
     return firstWhereOrNull(
-        (lesson) => lesson.start.isAfter(now.add(Duration(milliseconds: 1))));
+      (lesson) => lesson.start.isAfter(now.add(Duration(milliseconds: 1))),
+    );
   }
 }
 

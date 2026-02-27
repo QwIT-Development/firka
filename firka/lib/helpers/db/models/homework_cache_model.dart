@@ -28,7 +28,7 @@ Future<void> resetOldHomeworkCache(Isar isar) async {
   });
 }
 
-@collection 
+@collection
 class HomeworkDoneModel {
   Id? id;
 
@@ -36,13 +36,15 @@ class HomeworkDoneModel {
   late DateTime doneAt;
 
   HomeworkDoneModel();
-
 }
+
 Future<void> markAsDone(Isar isar, String homeWorkUid) async {
   await isar.writeTxn(() async {
-    await isar.homeworkDoneModels.put(HomeworkDoneModel()
-      ..homeworkId = homeWorkUid
-      ..doneAt = DateTime.now());
+    await isar.homeworkDoneModels.put(
+      HomeworkDoneModel()
+        ..homeworkId = homeWorkUid
+        ..doneAt = DateTime.now(),
+    );
   });
 }
 
@@ -63,4 +65,4 @@ Future<bool> isHomeworkDone(Isar isar, String homeWorkUid) async {
       .homeworkIdEqualTo(homeWorkUid)
       .findFirst();
   return existing != null;
-} 
+}

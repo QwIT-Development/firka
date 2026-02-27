@@ -49,10 +49,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Debug'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Debug'), centerTitle: true),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -60,10 +57,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
             children: [
               const Text(
                 'Debug Screen',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
               Row(
@@ -76,7 +70,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                         useCache = value;
                       });
                     },
-                  )
+                  ),
                 ],
               ),
               const SizedBox(height: 5),
@@ -90,7 +84,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                         debugTimeAdvance = value;
                       });
                     },
-                  )
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
@@ -111,17 +105,22 @@ class _DebugScreen extends FirkaState<DebugScreen> {
               ElevatedButton(
                 onPressed: () async {
                   var d = await showDatePicker(
-                      context: context,
-                      firstDate: DateTime.now().subtract(Duration(days: 365)),
-                      lastDate: DateTime.now().add(Duration(days: 365)));
+                    context: context,
+                    firstDate: DateTime.now().subtract(Duration(days: 365)),
+                    lastDate: DateTime.now().add(Duration(days: 365)),
+                  );
 
+                  if (!context.mounted) return;
                   var t = await showTimePicker(
-                      context: context, initialTime: TimeOfDay.now());
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  );
 
+                  if (!context.mounted) return;
                   if (d != null && t != null) {
-                    debugFakeTime = d
-                        .getMidnight()
-                        .add(Duration(hours: t.hour, minutes: t.minute));
+                    debugFakeTime = d.getMidnight().add(
+                      Duration(hours: t.hour, minutes: t.minute),
+                    );
 
                     debugSetAt = DateTime.now();
                   }
@@ -140,21 +139,24 @@ class _DebugScreen extends FirkaState<DebugScreen> {
               ElevatedButton(
                 onPressed: () async {
                   logger.finest(
-                      "getStudent(): ${await widget.data.client.getStudent(forceCache: useCache)}");
+                    "getStudent(): ${await widget.data.client.getStudent(forceCache: useCache)}",
+                  );
                 },
                 child: const Text('getStudent()'),
               ),
               ElevatedButton(
                 onPressed: () async {
                   logger.finest(
-                      "getNoticeBoard(): ${await widget.data.client.getNoticeBoard(forceCache: useCache)}");
+                    "getNoticeBoard(): ${await widget.data.client.getNoticeBoard(forceCache: useCache)}",
+                  );
                 },
                 child: const Text('getNoticeBoard()'),
               ),
               ElevatedButton(
                 onPressed: () async {
                   logger.finest(
-                      "getGrades(): ${await widget.data.client.getGrades(forceCache: useCache)}");
+                    "getGrades(): ${await widget.data.client.getGrades(forceCache: useCache)}",
+                  );
                 },
                 child: const Text('getGrades()'),
               ),
@@ -166,28 +168,32 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                   var end = now.add(Duration(days: 7));
 
                   logger.finest(
-                      "getLessons(): ${await widget.data.client.getTimeTable(start, end, forceCache: useCache)}");
+                    "getLessons(): ${await widget.data.client.getTimeTable(start, end, forceCache: useCache)}",
+                  );
                 },
                 child: const Text('getLessons()'),
               ),
               ElevatedButton(
                 onPressed: () async {
                   logger.finest(
-                      "getHomework(): ${await widget.data.client.getHomework(forceCache: useCache)}");
+                    "getHomework(): ${await widget.data.client.getHomework(forceCache: useCache)}",
+                  );
                 },
                 child: const Text('getHomework()'),
               ),
               ElevatedButton(
                 onPressed: () async {
                   logger.finest(
-                      "getTests(): ${await widget.data.client.getTests(forceCache: useCache)}");
+                    "getTests(): ${await widget.data.client.getTests(forceCache: useCache)}",
+                  );
                 },
                 child: const Text('getTests()'),
               ),
               ElevatedButton(
                 onPressed: () async {
                   logger.finest(
-                      "getOmissions(): ${await widget.data.client.getOmissions(forceCache: useCache)}");
+                    "getOmissions(): ${await widget.data.client.getOmissions(forceCache: useCache)}",
+                  );
                 },
                 child: const Text('getOmissions()'),
               ),
@@ -199,10 +205,11 @@ class _DebugScreen extends FirkaState<DebugScreen> {
               ),
               ElevatedButton(
                 style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty<
-                      Color>.fromMap(<WidgetStatesConstraint, Color>{
-                    WidgetState.any: Colors.red,
-                  }),
+                  backgroundColor: WidgetStateProperty<Color>.fromMap(
+                    <WidgetStatesConstraint, Color>{
+                      WidgetState.any: Colors.red,
+                    },
+                  ),
                 ),
                 onPressed: () async {
                   var isar = widget.data.isar;
@@ -213,12 +220,16 @@ class _DebugScreen extends FirkaState<DebugScreen> {
 
                   widget.data.tokens = List.empty(growable: true);
 
+                  if (!context.mounted) return;
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => DefaultAssetBundle(
-                              bundle: FirkaBundle(),
-                              child: LoginScreen(widget.data))));
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DefaultAssetBundle(
+                        bundle: FirkaBundle(),
+                        child: LoginScreen(widget.data),
+                      ),
+                    ),
+                  );
                 },
                 child: const Text('wipe users'),
               ),
@@ -237,9 +248,11 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                         ),
                         Center(
                           child: FirkaIconWidget(
-                              FirkaIconType.majesticons, getIconData(e),
-                              color: Colors.black),
-                        )
+                            FirkaIconType.majesticons,
+                            getIconData(e),
+                            color: Colors.black,
+                          ),
+                        ),
                       ],
                     );
                   }).toList(),

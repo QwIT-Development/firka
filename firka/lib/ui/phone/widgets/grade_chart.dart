@@ -1,5 +1,4 @@
 import 'package:firka/helpers/api/model/grade.dart';
-import 'package:firka/helpers/average_helper.dart';
 import 'package:firka/helpers/ui/grade_helpers.dart';
 import 'package:firka/ui/model/style.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -25,7 +24,7 @@ class _GradeChartState extends State<GradeChart> {
     appStyle.colors.grade2,
     appStyle.colors.grade1,
   ];
-  
+
   late final List<FlSpot> spots;
 
   @override
@@ -60,7 +59,6 @@ class _GradeChartState extends State<GradeChart> {
     spots.add(FlSpot(9, 4.00));
     spots.add(FlSpot(10, 4.89));
 
-
     if (spots.isEmpty) {
       spots = [const FlSpot(0, 0)];
     }
@@ -71,9 +69,7 @@ class _GradeChartState extends State<GradeChart> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: appStyle.colors.card,
-        ),
+        decoration: BoxDecoration(color: appStyle.colors.card),
         child: AspectRatio(
           aspectRatio: 1.90,
           child: Padding(
@@ -114,11 +110,12 @@ class _GradeChartState extends State<GradeChart> {
       child: Text(text, style: style),
     );
   }
+
   Widget buildCircle({
     required String text,
     required Color bgColor,
     required Color textColor,
-    }) {
+  }) {
     return SizedBox(
       width: 24,
       height: 24,
@@ -140,8 +137,8 @@ class _GradeChartState extends State<GradeChart> {
       ),
     );
   }
-  Widget leftTitleWidgets(double value, TitleMeta meta) {
 
+  Widget leftTitleWidgets(double value, TitleMeta meta) {
     String text = switch (value.toInt()) {
       1 => '1',
       2 => '2',
@@ -151,7 +148,7 @@ class _GradeChartState extends State<GradeChart> {
       _ => '',
     };
     Color gradeColor;
-    if (text != ""){
+    if (text != "") {
       gradeColor = getGradeColor(int.parse(text).toDouble());
     } else {
       gradeColor = getGradeColor(0);
@@ -233,14 +230,14 @@ class _GradeChartState extends State<GradeChart> {
           getTooltipColor: (touchedSpot) => appStyle.colors.buttonSecondaryFill,
           tooltipBorderRadius: BorderRadius.circular(90),
           fitInsideVertically: true,
-          
+
           showOnTopOfTheChartBoxArea: true,
           getTooltipItems: (touchedSpots) {
             return touchedSpots.map((LineBarSpot touchedSpot) {
               final textStyle = TextStyle(
                 color: colorForY(touchedSpot.y),
                 fontWeight: FontWeight.bold,
-                fontSize: 14
+                fontSize: 14,
               );
               return LineTooltipItem(touchedSpot.y.toString(), textStyle);
             }).toList();
@@ -248,15 +245,10 @@ class _GradeChartState extends State<GradeChart> {
         ),
         getTouchedSpotIndicator: (barData, spotIndexes) {
           return spotIndexes.map((index) {
-            final touchedSpot = barData.spots[index]; 
+            final touchedSpot = barData.spots[index];
             return TouchedSpotIndicatorData(
-              FlLine(
-                color: colorForY(touchedSpot.y),
-                strokeWidth: 3,
-              ),
-              FlDotData(
-                show: false,
-              ),
+              FlLine(color: colorForY(touchedSpot.y), strokeWidth: 3),
+              FlDotData(show: false),
             );
           }).toList();
         },
@@ -282,18 +274,18 @@ class _GradeChartState extends State<GradeChart> {
             //   color: const Color(0xFFC8C8C8),
             //   strokeWidth: 1.2,
             // );
-                    return FlLine(
+            return FlLine(
               color: const Color(0xFFC8C8C8),
               strokeWidth: 1.0,
               dashArray: [8, 12],
             );
           }
           return FlLine(
-              color: const Color(0xFFC8C8C8),
-              strokeWidth: 1.0,
-              dashArray: [8, 12],
-            );
-        }
+            color: const Color(0xFFC8C8C8),
+            strokeWidth: 1.0,
+            dashArray: [8, 12],
+          );
+        },
       ),
       titlesData: FlTitlesData(
         show: true,
@@ -313,9 +305,7 @@ class _GradeChartState extends State<GradeChart> {
             interval: 1,
           ),
         ),
-        topTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
+        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         rightTitles: const AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
@@ -331,9 +321,8 @@ class _GradeChartState extends State<GradeChart> {
         LineChartBarData(
           spots: spots,
           isCurved: false,
-          
-          showingIndicators:
-            _touchedIndex != null ? [_touchedIndex!] : [],
+
+          showingIndicators: _touchedIndex != null ? [_touchedIndex!] : [],
           gradient: LinearGradient(
             colors: [for (final s in spots) colorForY(s.y)],
           ),
@@ -344,8 +333,7 @@ class _GradeChartState extends State<GradeChart> {
             show: true,
             gradient: LinearGradient(
               colors: [
-                for (final s in spots)
-                  colorForY(s.y).withValues(alpha: 0.1),
+                for (final s in spots) colorForY(s.y).withValues(alpha: 0.1),
               ],
             ),
           ),

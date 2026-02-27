@@ -18,8 +18,9 @@ class GradeWidget extends StatelessWidget {
     if (grade.valueType.name == "Szazalekos") {
       gradeStr = grade.strValue.replaceAll("%", "");
       if (grade.numericValue != null) {
-        gradeColor =
-            getGradeColor(percentageToGrade(grade.numericValue!).toDouble());
+        gradeColor = getGradeColor(
+          percentageToGrade(grade.numericValue!).toDouble(),
+        );
       }
 
       if (grade.numericValue != null && grade.numericValue == 100) {
@@ -29,10 +30,14 @@ class GradeWidget extends StatelessWidget {
           color: gradeColor.withAlpha(38),
           child: Padding(
             padding: EdgeInsets.only(left: 8, right: 8),
-            child: Row(children: [
-              Text("100", // TODO: Make this curved
-                  style: appStyle.fonts.P_14.copyWith(color: gradeColor))
-            ]),
+            child: Row(
+              children: [
+                Text(
+                  "100", // TODO: Make this curved
+                  style: appStyle.fonts.P_14.copyWith(color: gradeColor),
+                ),
+              ],
+            ),
           ),
         );
       } else {
@@ -42,11 +47,18 @@ class GradeWidget extends StatelessWidget {
           color: gradeColor.withAlpha(38),
           child: Padding(
             padding: EdgeInsets.only(left: 8, right: 8),
-            child: Row(children: [
-              Text(gradeStr,
-                  style: appStyle.fonts.P_14.copyWith(color: gradeColor)),
-              Text("%", style: appStyle.fonts.P_12.copyWith(color: gradeColor))
-            ]),
+            child: Row(
+              children: [
+                Text(
+                  gradeStr,
+                  style: appStyle.fonts.P_14.copyWith(color: gradeColor),
+                ),
+                Text(
+                  "%",
+                  style: appStyle.fonts.P_12.copyWith(color: gradeColor),
+                ),
+              ],
+            ),
           ),
         );
       }
@@ -54,26 +66,36 @@ class GradeWidget extends StatelessWidget {
       if (grade.numericValue != null) {
         gradeColor = getGradeColor(grade.numericValue!.toDouble());
       }
-      if (gradeStr == "0"){
+      if (gradeStr == "0") {
         return Card(
           shadowColor: Colors.transparent,
           color: gradeColor.withAlpha(38),
           child: Padding(
-              padding: EdgeInsets.only(left: 8, right: 8, top:2, bottom:2),
-              child: Text(grade.strValue,
-                  style: appStyle.fonts.H_H1
-                      .copyWith(fontSize: 16, color: gradeColor))),
+            padding: EdgeInsets.only(left: 8, right: 8, top: 2, bottom: 2),
+            child: Text(
+              grade.strValue,
+              style: appStyle.fonts.H_H1.copyWith(
+                fontSize: 16,
+                color: gradeColor,
+              ),
+            ),
+          ),
         );
-      }else {
+      } else {
         return Card(
           shape: CircleBorder(eccentricity: eccentricity),
           shadowColor: Colors.transparent,
           color: gradeColor.withAlpha(38),
           child: Padding(
-              padding: EdgeInsets.only(left: 8, right: 8),
-              child: Text(gradeStr,
-                  style: appStyle.fonts.H_H1
-                      .copyWith(fontSize: 24, color: gradeColor))),
+            padding: EdgeInsets.only(left: 8, right: 8),
+            child: Text(
+              gradeStr,
+              style: appStyle.fonts.H_H1.copyWith(
+                fontSize: 24,
+                color: gradeColor,
+              ),
+            ),
+          ),
         );
       }
     }

@@ -34,8 +34,12 @@ class HomeMainScreen extends StatefulWidget {
   final UpdateNotifier updateNotifier;
   final UpdateNotifier finishNotifier;
 
-  const HomeMainScreen(this.data, this.updateNotifier, this.finishNotifier,
-      {super.key});
+  const HomeMainScreen(
+    this.data,
+    this.updateNotifier,
+    this.finishNotifier, {
+    super.key,
+  });
 
   @override
   State<HomeMainScreen> createState() => _HomeMainScreen();
@@ -81,21 +85,23 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
 
     widget.data.client
         .getTimeTableStream(
-            midnight, midnight.add(Duration(hours: 23, minutes: 59)),
-            cacheOnly: cacheOnly)
+          midnight,
+          midnight.add(Duration(hours: 23, minutes: 59)),
+          cacheOnly: cacheOnly,
+        )
         .forEach((lessons) {
-      lessonsFetched++;
+          lessonsFetched++;
 
-      if (mounted) {
-        setState(() {
-          this.lessons = lessons.response;
+          if (mounted) {
+            setState(() {
+              this.lessons = lessons.response;
+            });
+          }
         });
-      }
-    });
 
-    widget.data.client
-        .getNoticeBoardStream(cacheOnly: cacheOnly)
-        .forEach((items) {
+    widget.data.client.getNoticeBoardStream(cacheOnly: cacheOnly).forEach((
+      items,
+    ) {
       noticeBoardFetched++;
 
       if (mounted) {
@@ -105,9 +111,9 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
       }
     });
 
-    widget.data.client
-        .getInfoBoardStream(cacheOnly: cacheOnly)
-        .forEach((items) {
+    widget.data.client.getInfoBoardStream(cacheOnly: cacheOnly).forEach((
+      items,
+    ) {
       infoBoardFetched++;
 
       if (mounted) {
@@ -117,9 +123,9 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
       }
     });
 
-    widget.data.client
-        .getStudentStream(cacheOnly: cacheOnly)
-        .forEach((student) {
+    widget.data.client.getStudentStream(cacheOnly: cacheOnly).forEach((
+      student,
+    ) {
       studentFetched++;
 
       if (mounted) {
@@ -149,9 +155,9 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
       }
     });
 
-    widget.data.client
-        .getHomeworkStream(cacheOnly: cacheOnly)
-        .forEach((homework) {
+    widget.data.client.getHomeworkStream(cacheOnly: cacheOnly).forEach((
+      homework,
+    ) {
       homeworkFetched++;
 
       if (mounted) {
@@ -222,7 +228,8 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         welcomeWidget = StartingSoonWidget(widget.data.l10n, now, lessons!);
       } else {
         var currentLesson = lessons!.firstWhereOrNull(
-            (lesson) => now.isAfter(lesson.start) && now.isBefore(lesson.end));
+          (lesson) => now.isAfter(lesson.start) && now.isBefore(lesson.end),
+        );
         // "fun" fact if your clock was exactly when the class ends then isBefore
         // and isAfter would fail, so to work around that we just add 1ms to the
         // current time
@@ -235,26 +242,43 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
           lessonActive = true;
         }
 
-        welcomeWidget = LessonBigWidget(widget.data.l10n, now, lessonIndex,
-            currentLesson, prevLesson, nextLesson, lessons!, tests!);
+        welcomeWidget = LessonBigWidget(
+          widget.data.l10n,
+          now,
+          lessonIndex,
+          currentLesson,
+          prevLesson,
+          nextLesson,
+          lessons!,
+          tests!,
+        );
       }
     }
     if (lessons != null && lessons!.isNotEmpty) {
       var nextLesson = lessons!.getNextLesson(now);
       if (nextLesson != null) {
-        nextClass =
-            LessonSmallWidget(widget.data.l10n, nextLesson, lessonActive);
+        nextClass = LessonSmallWidget(
+          widget.data.l10n,
+          nextLesson,
+          lessonActive,
+        );
 
         if (tests != null) {
           final testsOnDate = tests!
-              .where((test) =>
-                  test.date.isAfter(nextLesson.start
-                      .getMidnight()
-                      .subtract(Duration(seconds: 1))) &&
-                  test.date.isBefore(nextLesson.end
-                      .getMidnight()
-                      .add(Duration(hours: 23, minutes: 59))) &&
-                  test.subject.uid == nextLesson.subject?.uid)
+              .where(
+                (test) =>
+                    test.date.isAfter(
+                      nextLesson.start.getMidnight().subtract(
+                        Duration(seconds: 1),
+                      ),
+                    ) &&
+                    test.date.isBefore(
+                      nextLesson.end.getMidnight().add(
+                        Duration(hours: 23, minutes: 59),
+                      ),
+                    ) &&
+                    test.subject.uid == nextLesson.subject?.uid,
+              )
               .toList();
 
           if (testsOnDate.isNotEmpty) {
@@ -268,14 +292,20 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
                   color: appStyle.colors.accent,
                 ),
                 SizedBox(width: 6),
-                Text(test.theme,
-                    style: appStyle.fonts.B_16SB
-                        .apply(color: appStyle.colors.textSecondary))
+                Text(
+                  test.theme,
+                  style: appStyle.fonts.B_16SB.apply(
+                    color: appStyle.colors.textSecondary,
+                  ),
+                ),
               ],
               right: [
-                Text(test.method.description ?? "N/A",
-                    style: appStyle.fonts.B_16R
-                        .apply(color: appStyle.colors.textTertiary))
+                Text(
+                  test.method.description ?? "N/A",
+                  style: appStyle.fonts.B_16R.apply(
+                    color: appStyle.colors.textTertiary,
+                  ),
+                ),
               ],
             );
           }
@@ -296,11 +326,14 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
           GestureDetector(
             child: InfoBoardItemWidget(item),
             onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => MessageScreen(widget.data, item)));
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => MessageScreen(widget.data, item),
+                ),
+              );
             },
           ),
-          item.date
+          item.date,
         ));
       }
 
@@ -319,10 +352,12 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
                         SizedBox(
                           width: MediaQuery.of(context).size.width / 1.45,
                           child: Text(
-                              (grade.topic ?? grade.type.description!)
-                                  .firstUpper(),
-                              style: appStyle.fonts.B_16SB
-                                  .apply(color: appStyle.colors.textPrimary)),
+                            (grade.topic ?? grade.type.description!)
+                                .firstUpper(),
+                            style: appStyle.fonts.B_16SB.apply(
+                              color: appStyle.colors.textPrimary,
+                            ),
+                          ),
                         ),
                         grade.mode?.description != null
                             ? SizedBox(
@@ -330,38 +365,38 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
                                 child: Text(
                                   grade.mode!.description!.firstUpper(),
                                   style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.textSecondary),
+                                    color: appStyle.colors.textSecondary,
+                                  ),
                                 ),
                               )
                             : SizedBox(),
                       ],
-                    )
+                    ),
                   ],
-                )
+                ),
               ],
             ),
             onTap: () {
               showGradeBottomSheet(context, widget.data, grade);
             },
           ),
-          grade.recordDate
+          grade.recordDate,
         ));
       }
 
       for (final entry in homework!) {
-        noticeBoardWidgets
-            .add((HomeworkWidget(widget.data, entry), entry.creationDate));
+        noticeBoardWidgets.add((
+          HomeworkWidget(widget.data, entry),
+          entry.creationDate,
+        ));
       }
 
-      noticeBoardWidgets
-          .sort((item1, item2) => item2.$2.difference(item1.$2).inMilliseconds);
+      noticeBoardWidgets.sort(
+        (item1, item2) => item2.$2.difference(item1.$2).inMilliseconds,
+      );
 
       return Padding(
-        padding: const EdgeInsets.only(
-          left: 20.0,
-          top: 24.0,
-          right: 20.0,
-        ),
+        padding: const EdgeInsets.only(left: 20.0, top: 24.0, right: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -377,7 +412,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
               child: ListView(
                 children: noticeBoardWidgets.map((e) => e.$1).toList(),
               ),
-            )
+            ),
           ],
         ),
       );
@@ -390,7 +425,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [DelayedSpinnerWidget()],
-            )
+            ),
           ],
         ),
       );

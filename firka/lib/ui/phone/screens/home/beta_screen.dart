@@ -45,28 +45,32 @@ class _BetaScreenState extends FirkaState<BetaScreen> {
     return Scaffold(
       backgroundColor: appStyle.colors.background,
       body: SafeArea(
-          child: Column(
-        children: [
-          Spacer(),
-          Center(
-            child: Text(widget.data.l10n.beta_title,
-                style: appStyle.fonts.H_H1
-                    .apply(color: appStyle.colors.textPrimary)),
-          ),
-          SizedBox(height: 32),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: [
+            Spacer(),
+            Center(
               child: Text(
-                widget.data.l10n.beta_body,
-                style: appStyle.fonts.B_16R
-                    .apply(color: appStyle.colors.textPrimary),
-                textAlign: TextAlign.center,
+                widget.data.l10n.beta_title,
+                style: appStyle.fonts.H_H1.apply(
+                  color: appStyle.colors.textPrimary,
+                ),
               ),
             ),
-          ),
-          Spacer(),
-          Padding(
+            SizedBox(height: 32),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  widget.data.l10n.beta_body,
+                  style: appStyle.fonts.B_16R.apply(
+                    color: appStyle.colors.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+            Spacer(),
+            Padding(
               padding: const EdgeInsets.only(left: 32, right: 32, bottom: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -75,10 +79,13 @@ class _BetaScreenState extends FirkaState<BetaScreen> {
                     child: FirkaButton(
                       text: widget.data.l10n.cancel,
                       bgColor: appStyle.colors.buttonSecondaryFill,
-                      fontStyle: appStyle.fonts.B_16R
-                          .apply(color: appStyle.colors.textPrimaryLight),
-                      icon: Icon(Icons.close,
-                          color: appStyle.colors.textPrimaryLight),
+                      fontStyle: appStyle.fonts.B_16R.apply(
+                        color: appStyle.colors.textPrimaryLight,
+                      ),
+                      icon: Icon(
+                        Icons.close,
+                        color: appStyle.colors.textPrimaryLight,
+                      ),
                     ),
                     onTap: () {
                       exit(0);
@@ -92,10 +99,13 @@ class _BetaScreenState extends FirkaState<BetaScreen> {
                       bgColor: counter == 0
                           ? appStyle.colors.accent
                           : appStyle.colors.secondary,
-                      fontStyle: appStyle.fonts.B_16R
-                          .apply(color: appStyle.colors.textPrimaryLight),
-                      icon: Icon(Icons.check,
-                          color: appStyle.colors.textPrimaryLight),
+                      fontStyle: appStyle.fonts.B_16R.apply(
+                        color: appStyle.colors.textPrimaryLight,
+                      ),
+                      icon: Icon(
+                        Icons.check,
+                        color: appStyle.colors.textPrimaryLight,
+                      ),
                     ),
                     onTap: () async {
                       if (counter != 0) return;
@@ -112,18 +122,21 @@ class _BetaScreenState extends FirkaState<BetaScreen> {
                       await widget.data.settings
                           .group("settings")["beta_warning"]!
                           .postUpdate();
+                      if (!context.mounted) return;
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(
-                            builder: (context) =>
-                                HomeScreen(widget.data, false)),
+                          builder: (context) => HomeScreen(widget.data, false),
+                        ),
                         (route) => false,
                       );
                     },
                   ),
                 ],
-              )),
-        ],
-      )),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

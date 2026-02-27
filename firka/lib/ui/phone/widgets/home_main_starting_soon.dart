@@ -38,60 +38,74 @@ class StartingSoonWidget extends StatelessWidget {
                     SizedBox(width: 6),
                     Text(
                       l10n.starting_soon,
-                      style: appStyle.fonts.H_16px
-                          .apply(color: appStyle.colors.textPrimary),
+                      style: appStyle.fonts.H_16px.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
                     ),
                   ],
                 ),
                 Row(
                   children: [
                     CounterDigitWidget(
-                        hour.toString(),
-                        appStyle.fonts.H_16px
-                            .apply(color: appStyle.colors.textPrimary)),
+                      hour.toString(),
+                      appStyle.fonts.H_16px.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
                     SizedBox(width: 2),
                     Text(
                       hourTxt,
-                      style: appStyle.fonts.B_16R
-                          .apply(color: appStyle.colors.textPrimary),
+                      style: appStyle.fonts.B_16R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
                     ),
                     SizedBox(width: 4),
                     CounterDigitWidget(
-                        (min / 10).floor().toString(),
-                        appStyle.fonts.H_16px
-                            .apply(color: appStyle.colors.textPrimary)),
+                      (min / 10).floor().toString(),
+                      appStyle.fonts.H_16px.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
                     CounterDigitWidget(
-                        ((min % 10)).toString(),
-                        appStyle.fonts.H_16px
-                            .apply(color: appStyle.colors.textPrimary)),
+                      ((min % 10)).toString(),
+                      appStyle.fonts.H_16px.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
                     SizedBox(width: 2),
                     Text(
                       minTxt,
-                      style: appStyle.fonts.B_16R
-                          .apply(color: appStyle.colors.textPrimary),
+                      style: appStyle.fonts.B_16R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
                     ),
                     SizedBox(width: 4),
                     CounterDigitWidget(
-                        (sec / 10).floor().toString(),
-                        appStyle.fonts.H_16px
-                            .apply(color: appStyle.colors.textPrimary)),
+                      (sec / 10).floor().toString(),
+                      appStyle.fonts.H_16px.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
                     CounterDigitWidget(
-                        ((sec % 10)).toString(),
-                        appStyle.fonts.H_16px
-                            .apply(color: appStyle.colors.textPrimary)),
+                      ((sec % 10)).toString(),
+                      appStyle.fonts.H_16px.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
                     SizedBox(width: 2),
                     Text(
                       secTxt,
-                      style: appStyle.fonts.B_16R
-                          .apply(color: appStyle.colors.textPrimary),
+                      style: appStyle.fonts.B_16R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
                     ),
                   ],
-                )
+                ),
               ],
-            )
+            ),
           ],
           right: [],
-        )
+        ),
       ],
     );
   }

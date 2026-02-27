@@ -18,14 +18,19 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
   logger.finest("showExtrasBottomSheet() developer mode: ${isDeveloper()}");
 
   if (isDeveloper()) {
-    debugBtn = (double itemWidth) => GestureDetector( // Fejlesztői menü
+    debugBtn = (double itemWidth) => GestureDetector(
+      // Fejlesztői menü
       onTap: () => {
         Navigator.pop(context),
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => DefaultAssetBundle(
-                    bundle: FirkaBundle(), child: DebugScreen(data))))
+          context,
+          MaterialPageRoute(
+            builder: (context) => DefaultAssetBundle(
+              bundle: FirkaBundle(),
+              child: DebugScreen(data),
+            ),
+          ),
+        ),
       },
       child: SizedBox(
         height: 60,
@@ -51,7 +56,9 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                     Text(
                       data.l10n.debug_screen,
                       textAlign: TextAlign.right,
-                      style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
+                      style: appStyle.fonts.B_16R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
                     ),
                   ],
                 ),
@@ -97,34 +104,44 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                 child: Stack(
                   children: [
                     Column(
-                        children: [
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
                             data.l10n.other,
-                            style: appStyle.fonts.H_H2.apply(color: appStyle.colors.textPrimary),
+                            style: appStyle.fonts.H_H2.apply(
+                              color: appStyle.colors.textPrimary,
                             ),
                           ),
-                          SizedBox(height: 8),
-                          LayoutBuilder(builder: (context, constraints) {
+                        ),
+                        SizedBox(height: 8),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
                             final itemWidth = (constraints.maxWidth - 8) / 2;
                             return Wrap(
                               spacing: 2,
                               runSpacing: 2,
                               children: [
                                 debugBtn(itemWidth),
-                                GestureDetector( // Fiókod
+                                GestureDetector(
+                                  // Fiókod
                                   onTap: () {
                                     Navigator.pop(context);
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => DefaultAssetBundle(
-                                          bundle: FirkaBundle(),
-                                          child: SettingsScreen(
-                                            data,
-                                            data.settings.items
-                                              .group("profile_settings")))));
+                                        builder: (context) =>
+                                            DefaultAssetBundle(
+                                              bundle: FirkaBundle(),
+                                              child: SettingsScreen(
+                                                data,
+                                                data.settings.items.group(
+                                                  "profile_settings",
+                                                ),
+                                              ),
+                                            ),
+                                      ),
+                                    );
                                   },
                                   child: SizedBox(
                                     height: 60,
@@ -133,11 +150,15 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                       shadow: true,
                                       child: Card(
                                         color: appStyle.colors.card,
-                                        shadowColor: isLightMode.value ? null : Colors.transparent,
+                                        shadowColor: isLightMode.value
+                                            ? null
+                                            : Colors.transparent,
                                         child: Align(
                                           alignment: Alignment.centerLeft,
                                           child: Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12.0,
+                                            ),
                                             child: Row(
                                               children: [
                                                 FirkaIconWidget(
@@ -150,7 +171,12 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                                 Text(
                                                   data.l10n.s_your_account,
                                                   textAlign: TextAlign.right,
-                                                  style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
+                                                  style: appStyle.fonts.B_16R
+                                                      .apply(
+                                                        color: appStyle
+                                                            .colors
+                                                            .textPrimary,
+                                                      ),
                                                 ),
                                               ],
                                             ),
@@ -160,16 +186,23 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                     ),
                                   ),
                                 ),
-                                GestureDetector( // Beállítás
+                                GestureDetector(
+                                  // Beállítás
                                   onTap: () {
                                     Navigator.pop(context);
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => DefaultAssetBundle(
-                                          bundle: FirkaBundle(),
-                                          child: SettingsScreen(
-                                            data, data.settings.items))));
+                                        builder: (context) =>
+                                            DefaultAssetBundle(
+                                              bundle: FirkaBundle(),
+                                              child: SettingsScreen(
+                                                data,
+                                                data.settings.items,
+                                              ),
+                                            ),
+                                      ),
+                                    );
                                   },
                                   child: SizedBox(
                                     height: 60,
@@ -178,11 +211,15 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                       shadow: true,
                                       child: Card(
                                         color: appStyle.colors.card,
-                                        shadowColor: isLightMode.value ? null : Colors.transparent,
+                                        shadowColor: isLightMode.value
+                                            ? null
+                                            : Colors.transparent,
                                         child: Align(
                                           alignment: Alignment.centerLeft,
                                           child: Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12.0,
+                                            ),
                                             child: Row(
                                               children: [
                                                 FirkaIconWidget(
@@ -195,7 +232,12 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                                 Text(
                                                   data.l10n.settings_screen,
                                                   textAlign: TextAlign.right,
-                                                  style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
+                                                  style: appStyle.fonts.B_16R
+                                                      .apply(
+                                                        color: appStyle
+                                                            .colors
+                                                            .textPrimary,
+                                                      ),
                                                 ),
                                               ],
                                             ),
@@ -208,7 +250,8 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                 // Ide jön a többi gomb majd
                               ],
                             );
-                          }),
+                          },
+                        ),
                       ],
                     ),
                     Padding(
@@ -219,17 +262,22 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                           SizedBox(),
                           GestureDetector(
                             child: Text(
-                                "v${data.packageInfo.version} ${isBeta ? "beta" : ""}",
-                                style: appStyle.fonts.B_16R.apply(
-                                    color: appStyle.colors.textTertiary)),
+                              "v${data.packageInfo.version} ${isBeta ? "beta" : ""}",
+                              style: appStyle.fonts.B_16R.apply(
+                                color: appStyle.colors.textTertiary,
+                              ),
+                            ),
                             onTap: () async {
                               if (isDebug()) return;
                               if (debugCounter == 10) {
-                                data.settings.group("settings").setBoolean(
-                                    "developer_enabled",
-                                    !data.settings
-                                        .group("settings")
-                                        .boolean("developer_enabled"));
+                                data.settings
+                                    .group("settings")
+                                    .setBoolean(
+                                      "developer_enabled",
+                                      !data.settings
+                                          .group("settings")
+                                          .boolean("developer_enabled"),
+                                    );
 
                                 await data.isar.writeTxn(() async {
                                   await data.settings
@@ -241,18 +289,21 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                     .group("settings")["developer_enabled"]!
                                     .postUpdate();
 
-                                Navigator.of(navigatorKey.currentContext!)
-                                    .popUntil((route) => false);
+                                Navigator.of(
+                                  navigatorKey.currentContext!,
+                                ).popUntil((route) => false);
                                 Navigator.push(
                                   navigatorKey.currentContext!,
                                   MaterialPageRoute(
-                                      builder: (context) => DefaultAssetBundle(
-                                          bundle: FirkaBundle(),
-                                          child: HomeScreen(
-                                            data,
-                                            false,
-                                            key: ValueKey('homeScreen'),
-                                          ))),
+                                    builder: (context) => DefaultAssetBundle(
+                                      bundle: FirkaBundle(),
+                                      child: HomeScreen(
+                                        data,
+                                        false,
+                                        key: ValueKey('homeScreen'),
+                                      ),
+                                    ),
+                                  ),
                                 );
                               } else if (debugCounter < 10) {
                                 debugCounter++;

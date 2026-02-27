@@ -11,34 +11,36 @@ class ClassGroup {
   final bool isActive;
   final String type;
 
-  ClassGroup(
-      {required this.uid,
-      required this.name,
-      required this.headTeacher,
-      required this.substituteHeadTeacher,
-      required this.studyGroup,
-      required this.studyGroupSortIndex,
-      required this.studyTask,
-      required this.isActive,
-      required this.type});
+  ClassGroup({
+    required this.uid,
+    required this.name,
+    required this.headTeacher,
+    required this.substituteHeadTeacher,
+    required this.studyGroup,
+    required this.studyGroupSortIndex,
+    required this.studyTask,
+    required this.isActive,
+    required this.type,
+  });
 
   factory ClassGroup.fromJson(Map<String, dynamic> json) {
     return ClassGroup(
-        uid: json['Uid'],
-        name: json['Nev'],
-        headTeacher: json['OsztalyFonok'] != null
-            ? UidObj.fromJson(json['OsztalyFonok'])
-            : null,
-        substituteHeadTeacher: json['OsztalyFonokHelyettes'] != null
-            ? UidObj.fromJson(json['OsztalyFonokHelyettes'])
-            : null,
-        studyGroup: NameUidDesc.fromJson(json['OktatasNevelesiKategoria']),
-        studyGroupSortIndex: json['OktatasNevelesiKategoriaSortIndex'],
-        studyTask: json['OktatasNevelesiFeladat'] != null
-            ? NameUidDesc.fromJson(json['OktatasNevelesiFeladat'])
-            : null,
-        isActive: json['IsAktiv'],
-        type: json['Tipus']);
+      uid: json['Uid'],
+      name: json['Nev'],
+      headTeacher: json['OsztalyFonok'] != null
+          ? UidObj.fromJson(json['OsztalyFonok'])
+          : null,
+      substituteHeadTeacher: json['OsztalyFonokHelyettes'] != null
+          ? UidObj.fromJson(json['OsztalyFonokHelyettes'])
+          : null,
+      studyGroup: NameUidDesc.fromJson(json['OktatasNevelesiKategoria']),
+      studyGroupSortIndex: json['OktatasNevelesiKategoriaSortIndex'],
+      studyTask: json['OktatasNevelesiFeladat'] != null
+          ? NameUidDesc.fromJson(json['OktatasNevelesiFeladat'])
+          : null,
+      isActive: json['IsAktiv'],
+      type: json['Tipus'],
+    );
   }
 
   @override

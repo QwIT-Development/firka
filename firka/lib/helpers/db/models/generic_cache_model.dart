@@ -12,7 +12,7 @@ enum CacheId {
   getClassGroup,
   getSubjectAvg,
   getLessons,
-  getHomework
+  getHomework,
 }
 
 @collection

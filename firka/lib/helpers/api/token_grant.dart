@@ -23,8 +23,11 @@ Future<TokenGrantResponse> getAccessToken(String code) async {
   };
 
   try {
-    final response = await dio.post(KretaEndpoints.tokenGrantUrl,
-        options: Options(headers: headers), data: formData);
+    final response = await dio.post(
+      KretaEndpoints.tokenGrantUrl,
+      options: Options(headers: headers),
+      data: formData,
+    );
 
     switch (response.statusCode) {
       case 200:
@@ -33,7 +36,8 @@ Future<TokenGrantResponse> getAccessToken(String code) async {
         throw Exception("Invalid grant");
       default:
         throw Exception(
-            "Failed to get access token, response code: ${response.statusCode}");
+          "Failed to get access token, response code: ${response.statusCode}",
+        );
     }
   } catch (e) {
     rethrow;
@@ -44,7 +48,8 @@ const _tokenRefreshRetryDelays = [1000, 3000, 5000];
 
 Future<TokenGrantResponse> extendToken(TokenModel model) async {
   logger.info(
-      "Extending token for user: ${model.studentId}, institute: ${model.iss}");
+    "Extending token for user: ${model.studentId}, institute: ${model.iss}",
+  );
 
   final headers = <String, String>{
     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -66,30 +71,38 @@ Future<TokenGrantResponse> extendToken(TokenModel model) async {
       if (attempt > 0) {
         final delay = _tokenRefreshRetryDelays[attempt - 1];
         logger.info(
-            "Token refresh attempt ${attempt + 1}, waiting ${delay}ms...");
+          "Token refresh attempt ${attempt + 1}, waiting ${delay}ms...",
+        );
         await Future.delayed(Duration(milliseconds: delay));
       }
 
-      final response = await dio.post(KretaEndpoints.tokenGrantUrl,
-          options: Options(headers: headers), data: formData);
+      final response = await dio.post(
+        KretaEndpoints.tokenGrantUrl,
+        options: Options(headers: headers),
+        data: formData,
+      );
 
       switch (response.statusCode) {
         case 200:
-          logger
-              .info("Token extended successfully for user: ${model.studentId}");
+          logger.info(
+            "Token extended successfully for user: ${model.studentId}",
+          );
           return TokenGrantResponse.fromJson(response.data);
         case 400:
         case 401:
           logger.warning(
-              "Token refresh failed (${response.statusCode}) - refresh token invalid for user: ${model.studentId}");
+            "Token refresh failed (${response.statusCode}) - refresh token invalid for user: ${model.studentId}",
+          );
           throw response.statusCode == 400
               ? TokenExpiredException()
               : InvalidGrantException();
         default:
           logger.warning(
-              "Token refresh failed (${response.statusCode}) for user: ${model.studentId}, attempt ${attempt + 1}");
+            "Token refresh failed (${response.statusCode}) for user: ${model.studentId}, attempt ${attempt + 1}",
+          );
           lastError = Exception(
-              "Failed to get access token, response code: ${response.statusCode}");
+            "Failed to get access token, response code: ${response.statusCode}",
+          );
           // Continue to retry for network errors
           continue;
       }
@@ -99,7 +112,8 @@ Future<TokenGrantResponse> extendToken(TokenModel model) async {
       rethrow;
     } on DioException catch (e) {
       logger.warning(
-          "Token refresh network error for user: ${model.studentId}, attempt ${attempt + 1}: $e");
+        "Token refresh network error for user: ${model.studentId}, attempt ${attempt + 1}: $e",
+      );
       lastError = e;
       continue;
     } catch (e) {
@@ -109,7 +123,8 @@ Future<TokenGrantResponse> extendToken(TokenModel model) async {
     }
   }
 
-  logger
-      .severe("All token refresh attempts failed for user: ${model.studentId}");
+  logger.severe(
+    "All token refresh attempts failed for user: ${model.studentId}",
+  );
   throw lastError ?? Exception("Token refresh failed after all retries");
 }

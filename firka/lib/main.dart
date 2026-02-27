@@ -131,7 +131,7 @@ Future<void> initLang(AppInitialization data) async {
       languageCode = 'de';
       break;
     default: // auto
-      switch (ui.window.locale.languageCode) {
+      switch (ui.PlatformDispatcher.instance.locale.languageCode) {
         case 'hu':
           data.l10n = AppLocalizationsHu();
           languageCode = 'hu';
@@ -218,7 +218,8 @@ Future<void> _initData(AppInitialization init) async {
       final nextLocale = init.l10n.localeName;
       if (previousLocale != nextLocale) {
         logger.info(
-            "[Init] System locale changed in auto mode: $previousLocale -> $nextLocale");
+          "[Init] System locale changed in auto mode: $previousLocale -> $nextLocale",
+        );
       }
       globalUpdate.update();
     }());
@@ -234,7 +235,8 @@ Future<void> _initData(AppInitialization init) async {
           await WatchSyncHelper.runFreshInstallCleanupIfNeeded(isar: init.isar);
       if (didRunFreshInstallCleanup) {
         logger.info(
-            '[Init] Fresh-install cleanup completed; skipping startup iCloud recovery on this launch');
+          '[Init] Fresh-install cleanup completed; skipping startup iCloud recovery on this launch',
+        );
       } else {
         await WatchSyncHelper.checkAndRecoverFromiCloud(
           isar: init.isar,
@@ -253,7 +255,8 @@ Future<void> _initData(AppInitialization init) async {
     final token = pickActiveToken(tokens: allTokens, settings: init.settings);
     if (token == null) {
       logger.warning(
-          "[Init] Tokens disappeared during initialization; skipping client setup");
+        "[Init] Tokens disappeared during initialization; skipping client setup",
+      );
       return;
     }
     logger.fine("Initializing kréta client as: ${token.studentId}");
@@ -305,8 +308,8 @@ Future<AppInitialization> initializeApp() async {
   try {
     if (Platform.isAndroid) {
       const channel = MethodChannel("firka.app/main");
-      final rawInfo =
-          ((await channel.invokeMethod("get_info")) as String).split(";");
+      final rawInfo = ((await channel.invokeMethod("get_info")) as String)
+          .split(";");
 
       devInfo = DeviceInfo(rawInfo[0], rawInfo[1], rawInfo[2]);
       devInfoFetched = true;
@@ -335,8 +338,9 @@ Future<AppInitialization> initializeApp() async {
 
   if (Platform.isIOS) {
     try {
-      await LiveActivityService.initialize()
-          .timeout(const Duration(seconds: 8));
+      await LiveActivityService.initialize().timeout(
+        const Duration(seconds: 8),
+      );
     } on TimeoutException catch (e, st) {
       logger.warning('LiveActivity init timed out: $e', e, st);
     } catch (e, st) {
@@ -359,131 +363,142 @@ void main() async {
   dio.options.receiveTimeout = Duration(seconds: 3);
   dio.options.validateStatus = (status) => status != null && status < 500;
 
-  runZonedGuarded(() async {
-    logger.finest("Initializing app");
-    WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  runZonedGuarded(
+    () async {
+      logger.finest("Initializing app");
+      WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+      FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-    try {
-      await dotenv.load(fileName: ".env");
-      logger.info("Environment variables loaded");
-    } catch (e, st) {
-      logger.severe("Failed to load .env: $e", e, st);
-    }
+      try {
+        await dotenv.load(fileName: ".env");
+        logger.info("Environment variables loaded");
+      } catch (e, st) {
+        logger.severe("Failed to load .env: $e", e, st);
+      }
 
-    {
-      final jwtPattern =
-          RegExp(r'([A-Za-z0-9-_]+)\.([A-Za-z0-9-_]+)\.([A-Za-z0-9-_]+)');
-      final omPattern = RegExp(r'(\d{3})(\d{6})([A-Za-z0-9]?)');
-      final refreshTokenPattern =
-          RegExp(r'"(?=.{21,}$)([A-Z0-9]+-[A-Z0-9_\-.~+]*)"');
+      {
+        final jwtPattern = RegExp(
+          r'([A-Za-z0-9-_]+)\.([A-Za-z0-9-_]+)\.([A-Za-z0-9-_]+)',
+        );
+        final omPattern = RegExp(r'(\d{3})(\d{6})([A-Za-z0-9]?)');
+        final refreshTokenPattern = RegExp(
+          r'"(?=.{21,}$)([A-Z0-9]+-[A-Z0-9_\-.~+]*)"',
+        );
 
-      final docs = await getApplicationDocumentsDirectory();
-
-      Future<void> deleteOldLogFiles() async {
         final docs = await getApplicationDocumentsDirectory();
-        final dir = Directory(docs.path);
-        if (!dir.existsSync()) return;
 
-        final now = DateTime.now();
-        final cutoff = now.subtract(Duration(days: 30));
+        Future<void> deleteOldLogFiles() async {
+          final docs = await getApplicationDocumentsDirectory();
+          final dir = Directory(docs.path);
+          if (!dir.existsSync()) return;
 
-        final logFileRegex = RegExp(r'^(\d{4})_(\d{2})_(\d{2})\.log$');
+          final now = DateTime.now();
+          final cutoff = now.subtract(Duration(days: 30));
 
-        for (final entity in dir.listSync()) {
-          if (entity is! File) continue;
-          final name = entity.uri.pathSegments.last;
-          final m = logFileRegex.firstMatch(name);
-          if (m == null) continue;
+          final logFileRegex = RegExp(r'^(\d{4})_(\d{2})_(\d{2})\.log$');
 
-          try {
-            final y = int.parse(m.group(1)!);
-            final mo = int.parse(m.group(2)!);
-            final d = int.parse(m.group(3)!);
-            final fileDate = DateTime(y, mo, d);
-            if (fileDate
-                .isBefore(DateTime(cutoff.year, cutoff.month, cutoff.day))) {
-              logger.info("Removing old log file: $name");
-              await entity.delete();
+          for (final entity in dir.listSync()) {
+            if (entity is! File) continue;
+            final name = entity.uri.pathSegments.last;
+            final m = logFileRegex.firstMatch(name);
+            if (m == null) continue;
+
+            try {
+              final y = int.parse(m.group(1)!);
+              final mo = int.parse(m.group(2)!);
+              final d = int.parse(m.group(3)!);
+              final fileDate = DateTime(y, mo, d);
+              if (fileDate.isBefore(
+                DateTime(cutoff.year, cutoff.month, cutoff.day),
+              )) {
+                logger.info("Removing old log file: $name");
+                await entity.delete();
+              }
+            } catch (_) {
+              // ignore parse/delete errors
             }
-          } catch (_) {
-            // ignore parse/delete errors
           }
         }
-      }
 
-      String logFilePathForDate(DateTime dt) {
-        final fileName = "${DateFormat("yyyy_MM_dd").format(dt)}.log";
-        return Directory(docs.path).uri.resolve(fileName).toFilePath();
-      }
-
-      File fileForDate(DateTime dt) {
-        final path = logFilePathForDate(dt);
-        final file = File(path);
-        if (!file.existsSync()) file.createSync(recursive: true);
-        return file;
-      }
-
-      String censorLog(String msg) {
-        return msg.replaceAll(jwtPattern, '***').replaceAllMapped(omPattern,
-            (match) {
-          return "${match.group(1)}******${match.group(3)}";
-        }).replaceAll(refreshTokenPattern, '"***"');
-      }
-
-      hierarchicalLoggingEnabled = true;
-      logger.level = Level.ALL;
-
-      DateTime currentDate = DateTime.now();
-      IOSink sink = fileForDate(currentDate).openWrite(mode: FileMode.append);
-
-      logger.onRecord.listen((record) {
-        final now = DateTime.now();
-        if (now.year != currentDate.year ||
-            now.month != currentDate.month ||
-            now.day != currentDate.day) {
-          sink.flush();
-          sink.close();
-          currentDate = now;
-          sink = fileForDate(currentDate).openWrite(mode: FileMode.append);
+        String logFilePathForDate(DateTime dt) {
+          final fileName = "${DateFormat("yyyy_MM_dd").format(dt)}.log";
+          return Directory(docs.path).uri.resolve(fileName).toFilePath();
         }
 
-        final censored = censorLog(record.message);
-        final timestamp = DateFormat('yyyy-MM-dd HH:mm:ss.SSS').format(now);
-        final level = record.level.name;
-        final line = '[$timestamp] [$level] [$censored]';
-        sink.writeln(line);
+        File fileForDate(DateTime dt) {
+          final path = logFilePathForDate(dt);
+          final file = File(path);
+          if (!file.existsSync()) file.createSync(recursive: true);
+          return file;
+        }
 
-        debugPrint(
-            "[Firka] [${record.level.name}] ${kDebugMode ? record.message : censored}");
-      });
+        String censorLog(String msg) {
+          return msg
+              .replaceAll(jwtPattern, '***')
+              .replaceAllMapped(omPattern, (match) {
+                return "${match.group(1)}******${match.group(3)}";
+              })
+              .replaceAll(refreshTokenPattern, '"***"');
+        }
 
-      (() async {
-        await deleteOldLogFiles();
-      })();
-    }
+        hierarchicalLoggingEnabled = true;
+        logger.level = Level.ALL;
 
-    try {
-      logger.finest('loading dirty words');
-      await loadDirtyWords();
-      logger.finest('loaded dirty words');
-    } catch (e, st) {
-      logger.severe('Failed to load dirty words: $e', e, st);
-    }
+        DateTime currentDate = DateTime.now();
+        IOSink sink = fileForDate(currentDate).openWrite(mode: FileMode.append);
 
-    // Run App Initialization
-    runApp(InitializationScreen());
-  }, (error, stackTrace) {
-    logger.shout('Caught error: $error');
-    logger.shout('Stack trace: $stackTrace');
+        logger.onRecord.listen((record) {
+          final now = DateTime.now();
+          if (now.year != currentDate.year ||
+              now.month != currentDate.month ||
+              now.day != currentDate.day) {
+            sink.flush();
+            sink.close();
+            currentDate = now;
+            sink = fileForDate(currentDate).openWrite(mode: FileMode.append);
+          }
 
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(
-        builder: (context) =>
-            ErrorPage(key: ValueKey('errorPage'), exception: error.toString()),
-      ),
-    );
-  });
+          final censored = censorLog(record.message);
+          final timestamp = DateFormat('yyyy-MM-dd HH:mm:ss.SSS').format(now);
+          final level = record.level.name;
+          final line = '[$timestamp] [$level] [$censored]';
+          sink.writeln(line);
+
+          debugPrint(
+            "[Firka] [${record.level.name}] ${kDebugMode ? record.message : censored}",
+          );
+        });
+
+        (() async {
+          await deleteOldLogFiles();
+        })();
+      }
+
+      try {
+        logger.finest('loading dirty words');
+        await loadDirtyWords();
+        logger.finest('loaded dirty words');
+      } catch (e, st) {
+        logger.severe('Failed to load dirty words: $e', e, st);
+      }
+
+      // Run App Initialization
+      runApp(InitializationScreen());
+    },
+    (error, stackTrace) {
+      logger.shout('Caught error: $error');
+      logger.shout('Stack trace: $stackTrace');
+
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (context) => ErrorPage(
+            key: ValueKey('errorPage'),
+            exception: error.toString(),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 final ValueNotifier<bool> isLightMode = ValueNotifier<bool>(true);
@@ -492,8 +507,9 @@ final UpdateNotifier globalUpdate = UpdateNotifier();
 class InitializationScreen extends StatelessWidget {
   InitializationScreen({super.key});
 
-  final Future<AppInitialization> _init =
-      initializeApp().timeout(const Duration(seconds: 20));
+  final Future<AppInitialization> _init = initializeApp().timeout(
+    const Duration(seconds: 20),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -503,8 +519,11 @@ class InitializationScreen extends StatelessWidget {
         // Check if initialization is complete
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasError) {
-            logger.shout("Error in InitializationScreen",
-                snapshot.error.toString(), snapshot.stackTrace);
+            logger.shout(
+              "Error in InitializationScreen",
+              snapshot.error.toString(),
+              snapshot.stackTrace,
+            );
 
             FlutterNativeSplash.remove();
 
@@ -512,15 +531,16 @@ class InitializationScreen extends StatelessWidget {
             return MaterialApp(
               key: ValueKey('errorPage'),
               home: DefaultAssetBundle(
-                  bundle: FirkaBundle(),
-                  child: Scaffold(
-                    body: Center(
-                      child: Text(
-                        'Error initializing app: ${snapshot.error}',
-                        style: TextStyle(color: Colors.red),
-                      ),
+                bundle: FirkaBundle(),
+                child: Scaffold(
+                  body: Center(
+                    child: Text(
+                      'Error initializing app: ${snapshot.error}',
+                      style: TextStyle(color: Colors.red),
                     ),
-                  )),
+                  ),
+                ),
+              ),
             );
           }
 
@@ -540,7 +560,8 @@ class InitializationScreen extends StatelessWidget {
                 await WatchSyncHelper.sendLanguageToWatch();
               } catch (e) {
                 logger.warning(
-                    '[Init] Failed to publish language to Watch after sync init: $e');
+                  '[Init] Failed to publish language to Watch after sync init: $e',
+                );
               }
             }());
           }
@@ -562,8 +583,11 @@ class InitializationScreen extends StatelessWidget {
                     watch.sendMessage({"id": "pong"});
                     navigatorKey.currentState?.push(
                       MaterialPageRoute(
-                        builder: (context) => HomeScreen(initData, true,
-                            model: msg["model"] as String),
+                        builder: (context) => HomeScreen(
+                          initData,
+                          true,
+                          model: msg["model"] as String,
+                        ),
                       ),
                     );
                   }
@@ -572,16 +596,9 @@ class InitializationScreen extends StatelessWidget {
           }
 
           if (snapshot.data!.tokens.isEmpty) {
-            screen = LoginScreen(
-              initData,
-              key: ValueKey('loginScreen'),
-            );
+            screen = LoginScreen(initData, key: ValueKey('loginScreen'));
           } else {
-            screen = HomeScreen(
-              initData,
-              false,
-              key: ValueKey('homeScreen'),
-            );
+            screen = HomeScreen(initData, false, key: ValueKey('homeScreen'));
           }
 
           return MaterialApp(
@@ -606,10 +623,12 @@ class InitializationScreen extends StatelessWidget {
                 builder: (context, isLight, _) {
                   final overlay = SystemUiOverlayStyle(
                     statusBarColor: Colors.transparent,
-                    statusBarIconBrightness:
-                        isLight ? Brightness.dark : Brightness.light,
-                    statusBarBrightness:
-                        isLight ? Brightness.light : Brightness.dark,
+                    statusBarIconBrightness: isLight
+                        ? Brightness.dark
+                        : Brightness.light,
+                    statusBarBrightness: isLight
+                        ? Brightness.light
+                        : Brightness.dark,
                     systemStatusBarContrastEnforced: false,
                   );
 
@@ -625,27 +644,17 @@ class InitializationScreen extends StatelessWidget {
             ),
             routes: {
               '/login': (context) => DefaultAssetBundle(
-                    bundle: FirkaBundle(),
-                    child: LoginScreen(
-                      initData,
-                      key: ValueKey('loginScreen'),
-                    ),
-                  ),
+                bundle: FirkaBundle(),
+                child: LoginScreen(initData, key: ValueKey('loginScreen')),
+              ),
               '/home': (context) => DefaultAssetBundle(
-                    bundle: FirkaBundle(),
-                    child: HomeScreen(
-                      initData,
-                      false,
-                      key: ValueKey('homeScreen'),
-                    ),
-                  ),
+                bundle: FirkaBundle(),
+                child: HomeScreen(initData, false, key: ValueKey('homeScreen')),
+              ),
               '/debug': (context) => DefaultAssetBundle(
-                    bundle: FirkaBundle(),
-                    child: DebugScreen(
-                      initData,
-                      key: ValueKey('debugScreen'),
-                    ),
-                  ),
+                bundle: FirkaBundle(),
+                child: DebugScreen(initData, key: ValueKey('debugScreen')),
+              ),
             },
           );
         }

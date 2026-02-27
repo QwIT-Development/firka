@@ -10,7 +10,9 @@ class ImagePreloader {
   static final Map<String, Future<ui.Image>> _loadingFutures = {};
 
   static Future<ui.Image> preloadAssetImage(
-      AssetBundle bundle, String assetPath) async {
+    AssetBundle bundle,
+    String assetPath,
+  ) async {
     if (_cache.containsKey(assetPath)) {
       return _cache[assetPath]!;
     }
@@ -32,9 +34,12 @@ class ImagePreloader {
   }
 
   static Future<List<ui.Image>> preloadMultipleAssets(
-      AssetBundle bundle, List<String> assetPaths) async {
-    final futures =
-        assetPaths.map((path) => preloadAssetImage(bundle, path)).toList();
+    AssetBundle bundle,
+    List<String> assetPaths,
+  ) async {
+    final futures = assetPaths
+        .map((path) => preloadAssetImage(bundle, path))
+        .toList();
     return await Future.wait(futures);
   }
 
@@ -91,7 +96,9 @@ class ImagePreloader {
   }
 
   static Future<ui.Image> _loadAssetImage(
-      AssetBundle bundle, String assetPath) async {
+    AssetBundle bundle,
+    String assetPath,
+  ) async {
     logger.finest("Caching: $assetPath");
     final ByteData data = await bundle.load(assetPath);
     final Uint8List bytes = data.buffer.asUint8List();
@@ -119,7 +126,9 @@ class PreloadedImageProvider extends ImageProvider<PreloadedImageProvider> {
 
   @override
   ImageStreamCompleter loadImage(
-      PreloadedImageProvider key, ImageDecoderCallback decode) {
+    PreloadedImageProvider key,
+    ImageDecoderCallback decode,
+  ) {
     return OneFrameImageStreamCompleter(_loadAsync(key));
   }
 
@@ -133,8 +142,10 @@ class PreloadedImageProvider extends ImageProvider<PreloadedImageProvider> {
     }
 
     try {
-      final image =
-          await ImagePreloader.preloadAssetImage(assetBundle, key.assetPath);
+      final image = await ImagePreloader.preloadAssetImage(
+        assetBundle,
+        key.assetPath,
+      );
       return ImageInfo(image: image.clone());
     } catch (e) {
       final ByteData data = await assetBundle.load(key.assetPath);

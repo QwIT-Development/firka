@@ -22,8 +22,12 @@ class HomeGradesSubjectScreen extends StatefulWidget {
   final void Function(int) pageController;
 
   const HomeGradesSubjectScreen(
-      this.data, this.updateNotifier, this.finishNotifier, this.pageController,
-      {super.key});
+    this.data,
+    this.updateNotifier,
+    this.finishNotifier,
+    this.pageController, {
+    super.key,
+  });
 
   @override
   State<StatefulWidget> createState() => _HomeGradesSubjectScreen();
@@ -41,8 +45,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
   }
 
   void updateListener() async {
-    grades = (await widget.data.client.getGrades(forceCache: false))
-        .response!
+    grades = (await widget.data.client.getGrades(forceCache: false)).response!
         .where((grade) => grade.subject.uid == activeSubjectUid)
         .where((grade) => grade.type.name != "felevi_jegy_ertekeles");
 
@@ -58,8 +61,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
     widget.updateNotifier.addListener(updateListener);
 
     (() async {
-      grades = (await widget.data.client.getGrades())
-          .response!
+      grades = (await widget.data.client.getGrades()).response!
           .where((grade) => grade.subject.uid == activeSubjectUid)
           .where((grade) => grade.type.name != "felevi_jegy_ertekeles");
 
@@ -82,64 +84,66 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
       var gradeWidgets = List<Widget>.empty(growable: true);
 
       for (var group in groups.entries) {
-        gradeWidgets.add(SizedBox(
-          height: 8,
-        ));
-        gradeWidgets.add(Text(
-          group.key.format(widget.data.l10n, FormatMode.grades),
-          style:
-              appStyle.fonts.H_14px.apply(color: appStyle.colors.textPrimary),
-        ));
-        gradeWidgets.add(SizedBox(
-          height: 8,
-        ));
+        gradeWidgets.add(SizedBox(height: 8));
+        gradeWidgets.add(
+          Text(
+            group.key.format(widget.data.l10n, FormatMode.grades),
+            style: appStyle.fonts.H_14px.apply(
+              color: appStyle.colors.textPrimary,
+            ),
+          ),
+        );
+        gradeWidgets.add(SizedBox(height: 8));
         for (var grade in group.value) {
-          gradeWidgets.add(GestureDetector(
-            child: FirkaCard(
-              left: [
-                Row(
-                  children: [
-                    GradeWidget(grade),
-                    SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width / 1.45,
-                          child: Text(
+          gradeWidgets.add(
+            GestureDetector(
+              child: FirkaCard(
+                left: [
+                  Row(
+                    children: [
+                      GradeWidget(grade),
+                      SizedBox(width: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width / 1.45,
+                            child: Text(
                               (grade.topic ?? grade.type.description!)
                                   .firstUpper(),
-                              style: appStyle.fonts.B_16SB
-                                  .apply(color: appStyle.colors.textPrimary)),
-                        ),
-                        grade.mode?.description != null
-                            ? SizedBox(
-                                width: MediaQuery.of(context).size.width / 1.45,
-                                child: Text(
-                                  grade.mode!.description!.firstUpper(),
-                                  style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.textSecondary),
-                                ),
-                              )
-                            : SizedBox(),
-                      ],
-                    )
-                  ],
-                )
-              ],
+                              style: appStyle.fonts.B_16SB.apply(
+                                color: appStyle.colors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          grade.mode?.description != null
+                              ? SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width / 1.45,
+                                  child: Text(
+                                    grade.mode!.description!.firstUpper(),
+                                    style: appStyle.fonts.B_16R.apply(
+                                      color: appStyle.colors.textSecondary,
+                                    ),
+                                  ),
+                                )
+                              : SizedBox(),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              onTap: () {
+                showGradeBottomSheet(context, widget.data, grade);
+              },
             ),
-            onTap: () {
-              showGradeBottomSheet(context, widget.data, grade);
-            },
-          ));
+          );
         }
       }
 
       return Padding(
-        padding: const EdgeInsets.only(
-          left: 16.0,
-          right: 16.0,
-        ),
+        padding: const EdgeInsets.only(left: 16.0, right: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -149,52 +153,54 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                  Row(
-                    children: [
-                      Transform.translate(
-                        offset: const Offset(-4, 0),
-                        child: GestureDetector(
-                          child: FirkaIconWidget(
-                            FirkaIconType.majesticons, Majesticon.chevronLeftLine,
-                            color: appStyle.colors.textSecondary
+                    Row(
+                      children: [
+                        Transform.translate(
+                          offset: const Offset(-4, 0),
+                          child: GestureDetector(
+                            child: FirkaIconWidget(
+                              FirkaIconType.majesticons,
+                              Majesticon.chevronLeftLine,
+                              color: appStyle.colors.textSecondary,
+                            ),
+                            onTap: () {
+                              widget.pageController(0);
+                            },
                           ),
-                          onTap: () {
-                            widget.pageController(0);
-                          }
                         ),
-                      ),
-                      Transform.translate(
-                        offset: const Offset(-4, 0),
-                        child: Text(
-                          widget.data.l10n.subjects,
-                          style: appStyle.fonts.B_16R
-                            .apply(color: appStyle.colors.textPrimary),
+                        Transform.translate(
+                          offset: const Offset(-4, 0),
+                          child: Text(
+                            widget.data.l10n.subjects,
+                            style: appStyle.fonts.B_16R.apply(
+                              color: appStyle.colors.textPrimary,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  GestureDetector(
-                    child: Card(
-                      color: appStyle.colors.buttonSecondaryFill,
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: FirkaIconWidget(
-                          FirkaIconType.majesticons,
-                          Majesticon.menuSolid,
-                          size: 26.0,
-                          color: appStyle.colors.accent,
-                        ),
-                      ),
+                      ],
                     ),
-                    onTap: () {
-                      // Navigator.push(context, Settings)
-                      // showSubjectBottomSheetSettings(
-                      //   context,
-                      //   widget.data,
-                      //   aGrade.subject,
-                      // );  
-                     },
-                    )
+                    GestureDetector(
+                      child: Card(
+                        color: appStyle.colors.buttonSecondaryFill,
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: FirkaIconWidget(
+                            FirkaIconType.majesticons,
+                            Majesticon.menuSolid,
+                            size: 26.0,
+                            color: appStyle.colors.accent,
+                          ),
+                        ),
+                      ),
+                      onTap: () {
+                        // Navigator.push(context, Settings)
+                        // showSubjectBottomSheetSettings(
+                        //   context,
+                        //   widget.data,
+                        //   aGrade.subject,
+                        // );
+                      },
+                    ),
                   ],
                 ),
               ],
@@ -202,7 +208,8 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
             // SizedBox(height: 16),
             // GradeChart(grades: grades?.toList() ?? []),
             SizedBox(
-              height: MediaQuery.of(context).size.height -
+              height:
+                  MediaQuery.of(context).size.height -
                   MediaQuery.of(context).padding.top -
                   230,
               child: ListView(
@@ -214,7 +221,8 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                         shadowColor: const Color.fromRGBO(0, 0, 0, 0),
                         color: appStyle.colors.a15p,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         child: Padding(
                           padding: EdgeInsetsGeometry.all(6),
                           child: ClassIconWidget(
@@ -228,24 +236,27 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                       SizedBox(height: 8),
                       Text(
                         aGrade.subject.name,
-                        style: appStyle.fonts.H_H2
-                            .apply(color: appStyle.colors.textPrimary),
+                        style: appStyle.fonts.H_H2.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
                       ),
                       SizedBox(height: 2),
                       Text(
                         aGrade.teacher,
-                        style: appStyle.fonts.B_16R
-                            .apply(color: appStyle.colors.textSecondary),
+                        style: appStyle.fonts.B_16R.apply(
+                          color: appStyle.colors.textSecondary,
+                        ),
                       ),
-                      SizedBox(height: 15)
-                  ]),
+                      SizedBox(height: 15),
+                    ],
+                  ),
                   Padding(
                     padding: EdgeInsets.only(left: 4),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: gradeWidgets,
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -254,10 +265,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
       );
     } else {
       return Padding(
-        padding: const EdgeInsets.only(
-          left: 16.0,
-          right: 16.0,
-        ),
+        padding: const EdgeInsets.only(left: 16.0, right: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -269,8 +277,10 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                       offset: const Offset(-4, 0),
                       child: GestureDetector(
                         child: FirkaIconWidget(
-                            FirkaIconType.majesticons, Majesticon.chevronLeftLine,
-                            color: appStyle.colors.textSecondary),
+                          FirkaIconType.majesticons,
+                          Majesticon.chevronLeftLine,
+                          color: appStyle.colors.textSecondary,
+                        ),
                         onTap: () {
                           widget.pageController(0);
                         },
@@ -280,17 +290,19 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                       offset: const Offset(-4, 1),
                       child: Text(
                         widget.data.l10n.subjects,
-                        style: appStyle.fonts.B_16R
-                            .apply(color: appStyle.colors.textPrimary),
+                        style: appStyle.fonts.B_16R.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ],
             ),
             SizedBox(height: 16),
             SizedBox(
-              height: MediaQuery.of(context).size.height -
+              height:
+                  MediaQuery.of(context).size.height -
                   MediaQuery.of(context).padding.top -
                   230,
               child: ListView(
@@ -302,7 +314,8 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                         shadowColor: const Color.fromRGBO(0, 0, 0, 0),
                         color: appStyle.colors.a15p,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         child: Padding(
                           padding: EdgeInsetsGeometry.all(6),
                           child: ClassIconWidget(
@@ -316,28 +329,40 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                       SizedBox(height: 8),
                       Text(
                         subjectName,
-                        style: appStyle.fonts.H_H2
-                            .apply(color: appStyle.colors.textPrimary),
+                        style: appStyle.fonts.H_H2.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
                       ),
                       SizedBox(height: 2),
                       Text(
                         widget.data.l10n.unknown_teacher,
-                        style: appStyle.fonts.B_16R
-                            .apply(color: appStyle.colors.textSecondary),
+                        style: appStyle.fonts.B_16R.apply(
+                          color: appStyle.colors.textSecondary,
+                        ),
                       ),
-                  ]),
+                    ],
+                  ),
                   SizedBox(
-                    height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - 320,
+                    height:
+                        MediaQuery.of(context).size.height -
+                        MediaQuery.of(context).padding.top -
+                        320,
                     child: Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                        SvgPicture.asset("assets/images/logos/dave.svg",
-                          width: 48, height: 48),
-                        SizedBox(height: 12),
-                        Text(widget.data.l10n.no_grades,
-                          style: appStyle.fonts.B_16R
-                            .apply(color: appStyle.colors.textSecondary)),
+                          SvgPicture.asset(
+                            "assets/images/logos/dave.svg",
+                            width: 48,
+                            height: 48,
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            widget.data.l10n.no_grades,
+                            style: appStyle.fonts.B_16R.apply(
+                              color: appStyle.colors.textSecondary,
+                            ),
+                          ),
                         ],
                       ),
                     ),

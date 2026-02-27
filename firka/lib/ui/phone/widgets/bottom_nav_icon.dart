@@ -14,9 +14,16 @@ class BottomNavIconWidget extends StatelessWidget {
   final Color textColor;
   final bool isProfilePicture;
 
-  const BottomNavIconWidget(this.onTap, this.active, this.icon, this.text,
-      this.iconColor, this.textColor,
-      {this.isProfilePicture = false, super.key});
+  const BottomNavIconWidget(
+    this.onTap,
+    this.active,
+    this.icon,
+    this.text,
+    this.iconColor,
+    this.textColor, {
+    this.isProfilePicture = false,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,17 +51,22 @@ class BottomNavIconWidget extends StatelessWidget {
                   ),
                 )
               else
-                FirkaIconWidget(FirkaIconType.majesticons, icon as Uint8List,
-                      color: iconColor, size: 24)
-                  .build(context),
+                FirkaIconWidget(
+                  FirkaIconType.majesticons,
+                  icon as Uint8List,
+                  color: iconColor,
+                  size: 24,
+                ).build(context),
               const SizedBox(height: 4),
               Text(
                 text,
                 style: active
-                    ? appStyle.fonts.B_12SB
-                        .apply(color: appStyle.colors.textPrimary)
-                    : appStyle.fonts.B_12R
-                        .apply(color: appStyle.colors.textSecondary),
+                    ? appStyle.fonts.B_12SB.apply(
+                        color: appStyle.colors.textPrimary,
+                      )
+                    : appStyle.fonts.B_12R.apply(
+                        color: appStyle.colors.textSecondary,
+                      ),
               ),
             ],
           ),

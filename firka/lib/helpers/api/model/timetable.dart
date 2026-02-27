@@ -83,8 +83,9 @@ class Lesson {
           ? NameUid.fromJson(json['OsztalyCsoport'])
           : null,
       teacher: json['TanarNeve'],
-      subject:
-          json['Tantargy'] != null ? Subject.fromJson(json['Tantargy']) : null,
+      subject: json['Tantargy'] != null
+          ? Subject.fromJson(json['Tantargy'])
+          : null,
       theme: json['Tema'],
       roomName: json['TeremNeve'],
       type: NameUidDesc.fromJson(json['Tipus']),
@@ -105,8 +106,8 @@ class Lesson {
       digitalPlatformType: json['DigitalisPlatformTipus'],
       digitalSupportDeviceTypeList:
           json['DigitalisTamogatoEszkozTipusList'] != null
-              ? List<String>.from(json['DigitalisTamogatoEszkozTipusList'])
-              : List<String>.empty(),
+          ? List<String>.from(json['DigitalisTamogatoEszkozTipusList'])
+          : List<String>.empty(),
       createdAt: DateTime.parse(json['Letrehozas']).toLocal(),
       lastModifiedAt: DateTime.parse(json['UtolsoModositas']).toLocal(),
     );

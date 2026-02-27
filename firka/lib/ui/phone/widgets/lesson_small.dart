@@ -12,8 +12,12 @@ class LessonSmallWidget extends StatelessWidget {
   final Lesson lesson;
   final bool lessonActive;
 
-  const LessonSmallWidget(this.l10n, this.lesson, this.lessonActive,
-      {super.key});
+  const LessonSmallWidget(
+    this.l10n,
+    this.lesson,
+    this.lessonActive, {
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,9 +48,12 @@ class LessonSmallWidget extends StatelessWidget {
                   : '',
             ),
             SizedBox(width: 8),
-            Text(subjectName,
-                style: appStyle.fonts.B_16SB
-                    .apply(color: appStyle.colors.textPrimary)),
+            Text(
+              subjectName,
+              style: appStyle.fonts.B_16SB.apply(
+                color: appStyle.colors.textPrimary,
+              ),
+            ),
           ],
           right: [
             Card(
@@ -54,17 +61,22 @@ class LessonSmallWidget extends StatelessWidget {
               color: appStyle.colors.a15p,
               child: Padding(
                 padding: EdgeInsets.all(4),
-                child: Text(roomName,
-                    style: appStyle.fonts.B_12R
-                        .apply(color: appStyle.colors.secondary)),
+                child: Text(
+                  roomName,
+                  style: appStyle.fonts.B_12R.apply(
+                    color: appStyle.colors.secondary,
+                  ),
+                ),
               ),
             ),
             Text(
-                "${lesson.start.toLocal().format(l10n, FormatMode.hmm)} - ${lesson.end.toLocal().format(l10n, FormatMode.hmm)}",
-                style: appStyle.fonts.B_16R
-                    .apply(color: appStyle.colors.textPrimary)),
+              "${lesson.start.toLocal().format(l10n, FormatMode.hmm)} - ${lesson.end.toLocal().format(l10n, FormatMode.hmm)}",
+              style: appStyle.fonts.B_16R.apply(
+                color: appStyle.colors.textPrimary,
+              ),
+            ),
           ],
-        )
+        ),
       ],
     );
   }

@@ -64,7 +64,8 @@ class TokenModel {
       // you would expect all usernames to be numeric
       // and for them be the student's student id, but NO
       final hash = sha256.convert(utf8.encode(username));
-      final value = ((hash.bytes[0] << 24) |
+      final value =
+          ((hash.bytes[0] << 24) |
               (hash.bytes[1] << 16) |
               (hash.bytes[2] << 8) |
               (hash.bytes[3])) >>>

@@ -11,15 +11,19 @@ class PageWithSubPages extends StatefulWidget {
   final ValueNotifier<bool> subPageActive;
   final UpdateNotifier back;
 
-  const PageWithSubPages(this.subPages, this.subPageActive, this.back,
-      {Key? key, required this.pageIndex})
-      : super(key: key);
+  const PageWithSubPages(
+    this.subPages,
+    this.subPageActive,
+    this.back, {
+    super.key,
+    required this.pageIndex,
+  });
 
   @override
-  _PageWithSubPagesState createState() => _PageWithSubPagesState();
+  PageWithSubPagesState createState() => PageWithSubPagesState();
 }
 
-class _PageWithSubPagesState extends FirkaState<PageWithSubPages> {
+class PageWithSubPagesState extends FirkaState<PageWithSubPages> {
   int _currentSubPage = 0;
 
   @override

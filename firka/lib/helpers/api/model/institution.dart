@@ -4,11 +4,12 @@ class Institution {
   final List<SystemModule> systemModuleList;
   final String uid;
 
-  Institution(
-      {required this.customizationSettings,
-      required this.shortName,
-      required this.systemModuleList,
-      required this.uid});
+  Institution({
+    required this.customizationSettings,
+    required this.shortName,
+    required this.systemModuleList,
+    required this.uid,
+  });
 
   factory Institution.fromJson(Map<String, dynamic> json) {
     var systemModuleList = List<SystemModule>.empty(growable: true);
@@ -18,8 +19,9 @@ class Institution {
     }
 
     return Institution(
-      customizationSettings:
-          CustomizationSettings.fromJson(json['TestreszabasBeallitasok']),
+      customizationSettings: CustomizationSettings.fromJson(
+        json['TestreszabasBeallitasok'],
+      ),
       shortName: json['RovidNev'],
       systemModuleList: systemModuleList,
       uid: json['Uid'],
@@ -33,19 +35,21 @@ class CustomizationSettings {
   final bool isLessonsThemeVisible;
   final String nextServerDeployAsString;
 
-  CustomizationSettings(
-      {required this.delayForNotifications,
-      required this.isClassAverageVisible,
-      required this.isLessonsThemeVisible,
-      required this.nextServerDeployAsString});
+  CustomizationSettings({
+    required this.delayForNotifications,
+    required this.isClassAverageVisible,
+    required this.isLessonsThemeVisible,
+    required this.nextServerDeployAsString,
+  });
 
   factory CustomizationSettings.fromJson(Map<String, dynamic> json) {
     return CustomizationSettings(
-        delayForNotifications:
-            json['ErtekelesekMegjelenitesenekKesleltetesenekMerteke'],
-        isClassAverageVisible: json['IsOsztalyAtlagMegjeleniteseEllenorzoben'],
-        isLessonsThemeVisible: json['IsTanorakTemajaMegtekinthetoEllenorzoben'],
-        nextServerDeployAsString: json['KovetkezoTelepitesDatuma']);
+      delayForNotifications:
+          json['ErtekelesekMegjelenitesenekKesleltetesenekMerteke'],
+      isClassAverageVisible: json['IsOsztalyAtlagMegjeleniteseEllenorzoben'],
+      isLessonsThemeVisible: json['IsTanorakTemajaMegtekinthetoEllenorzoben'],
+      nextServerDeployAsString: json['KovetkezoTelepitesDatuma'],
+    );
   }
 
   @override
@@ -68,7 +72,10 @@ class SystemModule {
 
   factory SystemModule.fromJson(Map<String, dynamic> json) {
     return SystemModule(
-        isActive: json['IsAktiv'], type: json['Tipus'], url: json['Url']);
+      isActive: json['IsAktiv'],
+      type: json['Tipus'],
+      url: json['Url'],
+    );
   }
 
   @override

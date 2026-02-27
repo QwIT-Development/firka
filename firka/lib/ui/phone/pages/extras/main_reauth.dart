@@ -4,12 +4,17 @@ import 'package:firka/ui/model/style.dart';
 import 'package:firka/ui/phone/widgets/login_webview.dart';
 import 'package:flutter/material.dart';
 
-void showReauthBottomSheet(BuildContext context, AppInitialization data, String message) {
-  final accountPicker = (data.settings
-      .group("profile_settings")["e_kreta_account_picker"]
-  as SettingsKretenAccountPicker);
+void showReauthBottomSheet(
+  BuildContext context,
+  AppInitialization data,
+  String message,
+) {
+  final accountPicker =
+      (data.settings.group("profile_settings")["e_kreta_account_picker"]
+          as SettingsKretenAccountPicker);
 
-  final currentToken = data.tokens.isNotEmpty && accountPicker.accountIndex < data.tokens.length
+  final currentToken =
+      data.tokens.isNotEmpty && accountPicker.accountIndex < data.tokens.length
       ? data.tokens[accountPicker.accountIndex]
       : null;
 

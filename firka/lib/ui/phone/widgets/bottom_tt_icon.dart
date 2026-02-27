@@ -11,8 +11,12 @@ class BottomTimeTableNavIconWidget extends StatelessWidget {
   final DateTime date;
 
   const BottomTimeTableNavIconWidget(
-      this.l10n, this.onTap, this.active, this.date,
-      {super.key});
+    this.l10n,
+    this.onTap,
+    this.active,
+    this.date, {
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,25 +26,31 @@ class BottomTimeTableNavIconWidget extends StatelessWidget {
         onTap();
       },
       child: Card(
-        color:
-            active ? appStyle.colors.buttonSecondaryFill : Colors.transparent,
+        color: active
+            ? appStyle.colors.buttonSecondaryFill
+            : Colors.transparent,
         shadowColor: active ? appStyle.colors.shadowColor : Colors.transparent,
         child: SizedBox(
-            width: 40,
-            height: 54,
-            child: Column(
-              children: [
-                SizedBox(height: 6),
-                Text(date.format(l10n, FormatMode.da),
-                    style: appStyle.fonts.H_16px
-                        .apply(color: appStyle.colors.textPrimary)),
-                Text(
-                  date.format(l10n, FormatMode.dd),
-                  style: appStyle.fonts.B_16R
-                      .apply(color: appStyle.colors.textSecondary),
-                )
-              ],
-            )),
+          width: 40,
+          height: 54,
+          child: Column(
+            children: [
+              SizedBox(height: 6),
+              Text(
+                date.format(l10n, FormatMode.da),
+                style: appStyle.fonts.H_16px.apply(
+                  color: appStyle.colors.textPrimary,
+                ),
+              ),
+              Text(
+                date.format(l10n, FormatMode.dd),
+                style: appStyle.fonts.B_16R.apply(
+                  color: appStyle.colors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

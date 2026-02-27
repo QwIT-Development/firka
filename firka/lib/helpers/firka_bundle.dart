@@ -34,8 +34,9 @@ class FirkaBundle extends CachingAssetBundle {
   @override
   Future<ByteData> load(String key) async {
     if (!_compressedBundle) {
-      logger
-          .finest("Loading asset from root bundle: assets/flutter_assets/$key");
+      logger.finest(
+        "Loading asset from root bundle: assets/flutter_assets/$key",
+      );
       return rootBundle.load(key);
     } else {
       index ??= await loadIndex();
@@ -43,7 +44,8 @@ class FirkaBundle extends CachingAssetBundle {
       final gzip = GZipCodec();
 
       logger.finest(
-          "Loading asset from firka bundle: assets/flutter_assets/$key");
+        "Loading asset from firka bundle: assets/flutter_assets/$key",
+      );
       switch (index!["assets/flutter_assets/$key"]!) {
         case "b": // brotli
           return decode(brotli, await rootBundle.load(key));

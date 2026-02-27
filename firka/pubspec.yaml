@@ -50,6 +50,7 @@ dependencies:
   confetti: ^0.8.0
   flutter_html: ^3.0.0
   fl_chart: ^1.1.1
+  flutter_native_splash: ^2.4.7
 
 dev_dependencies:
   flutter_test:
@@ -59,7 +60,6 @@ dev_dependencies:
   android_notification_icons: ^0.0.1
   integration_test:
     sdk: flutter
-  flutter_native_splash: ^2.4.7
 
 android_notification_icons:
   image_path: 'assets/images/logos/dave_monochrome.png'

@@ -12,8 +12,10 @@ import '../../../../helpers/firka_state.dart';
 import '../../../../helpers/image_preloader.dart';
 import '../../../model/style.dart';
 import '../../../widget/delayed_spinner.dart';
+
 // TODO: Replace these with actual privacy policy URLs
-const String _privacyUrlHungarian = 'https://github.com/QwIT-Development/privacy-policy/blob/master/README.md';
+const String _privacyUrlHungarian =
+    'https://github.com/QwIT-Development/privacy-policy/blob/master/README.md';
 const String _privacyUrlOther = 'https://firka.app/privacy';
 
 class LoginScreen extends StatefulWidget {
@@ -107,7 +109,8 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
 
     final carousel = isLightMode.value ? "carousel" : "carousel_dark";
 
-    final paddingWidthHorizontal = MediaQuery.of(context).size.width -
+    final paddingWidthHorizontal =
+        MediaQuery.of(context).size.width -
         MediaQuery.of(context).size.width * 0.95;
     List<Map<String, Object>> slides = [
       {
@@ -155,7 +158,7 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
         'scale': 1.35,
         'x': -5.00,
         'y': 80.00,
-      }
+      },
       //TODO: implement simulated physics so that the little boxes can move like the phone moves
     ];
 
@@ -163,260 +166,286 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
       home: Scaffold(
         backgroundColor: appStyle.colors.background,
         body: SafeArea(
-            child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
-                Padding(
-                  padding: EdgeInsets.only(left: paddingWidthHorizontal),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 30,
-                        height: 30,
-                        clipBehavior: Clip.antiAlias,
-                        decoration: ShapeDecoration(
-                          image: DecorationImage(
-                            image: PreloadedImageProvider(
-                                DefaultAssetBundle.of(context),
-                                'assets/images/logos/colored_logo.webp'),
-                            fit: BoxFit.cover,
-                          ),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Firka Napló',
-                        style: appStyle.fonts.H_18px
-                            .copyWith(color: appStyle.colors.textPrimary),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: CarouselSlider.builder(
-                    itemCount: slides.length,
-                    itemBuilder: (context, index, realIndex) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
+          child: Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: EdgeInsets.only(left: paddingWidthHorizontal),
+                    child: Row(
                       children: [
-                        Padding(
-                          padding: EdgeInsetsGeometry.symmetric(
-                              horizontal: paddingWidthHorizontal),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Text(
-                                slides[index]['title']! as String,
-                                style: appStyle.fonts.H_18px.copyWith(
-                                    color: appStyle.colors.textPrimary),
-                                softWrap: true,
-                                overflow: TextOverflow.visible,
+                        Container(
+                          width: 30,
+                          height: 30,
+                          clipBehavior: Clip.antiAlias,
+                          decoration: ShapeDecoration(
+                            image: DecorationImage(
+                              image: PreloadedImageProvider(
+                                DefaultAssetBundle.of(context),
+                                'assets/images/logos/colored_logo.webp',
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                slides[index]['subtitle']! as String,
-                                style: appStyle.fonts.B_16R.copyWith(
-                                    color: appStyle.colors.textPrimary),
-                                softWrap: true,
-                                overflow: TextOverflow.visible,
-                              ),
-                            ],
+                              fit: BoxFit.cover,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                         ),
-                        Stack(
-                          children: [
-                            slides[index]['background']! == ''
-                                ? SizedBox()
-                                : ClipRect(
-                                    clipper:
-                                        ImageClipper(MediaQuery.of(context)),
-                                    child: Transform.rotate(
-                                      angle: -math.pi /
-                                          (slides[index]['rotation']!
-                                              as double),
-                                      child: Transform.translate(
-                                        offset: Offset(
+                        const SizedBox(width: 8),
+                        Text(
+                          'Firka Napló',
+                          style: appStyle.fonts.H_18px.copyWith(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: CarouselSlider.builder(
+                      itemCount: slides.length,
+                      itemBuilder: (context, index, realIndex) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: EdgeInsetsGeometry.symmetric(
+                              horizontal: paddingWidthHorizontal,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  slides[index]['title']! as String,
+                                  style: appStyle.fonts.H_18px.copyWith(
+                                    color: appStyle.colors.textPrimary,
+                                  ),
+                                  softWrap: true,
+                                  overflow: TextOverflow.visible,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  slides[index]['subtitle']! as String,
+                                  style: appStyle.fonts.B_16R.copyWith(
+                                    color: appStyle.colors.textPrimary,
+                                  ),
+                                  softWrap: true,
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Stack(
+                            children: [
+                              slides[index]['background']! == ''
+                                  ? SizedBox()
+                                  : ClipRect(
+                                      clipper: ImageClipper(
+                                        MediaQuery.of(context),
+                                      ),
+                                      child: Transform.rotate(
+                                        angle:
+                                            -math.pi /
+                                            (slides[index]['rotation']!
+                                                as double),
+                                        child: Transform.translate(
+                                          offset: Offset(
                                             slides[index]['x'] as double,
-                                            slides[index]['y'] as double),
-                                        child: SizedBox(
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: Transform.scale(
-                                              scale: slides[index]['scale']
-                                                  as double,
+                                            slides[index]['y'] as double,
+                                          ),
+                                          child: SizedBox(
+                                            width: MediaQuery.of(
+                                              context,
+                                            ).size.width,
+                                            child: Transform.scale(
+                                              scale:
+                                                  slides[index]['scale']
+                                                      as double,
                                               child: Image.asset(
                                                 slides[index]['background']!
                                                     as String,
                                                 bundle: DefaultAssetBundle.of(
-                                                    context),
+                                                  context,
+                                                ),
                                                 fit: BoxFit.contain,
                                                 width: double.infinity,
-                                              )),
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    )),
-                            Column(
-                              children: [
-                                SizedBox(height: 73),
-                                Padding(
-                                  padding: EdgeInsetsGeometry.symmetric(
-                                      horizontal: 18),
-                                  child: SizedBox(
-                                    width: MediaQuery.of(context).size.width,
-                                    child: Image(
-                                      image: PreloadedImageProvider(
+                                    ),
+                              Column(
+                                children: [
+                                  SizedBox(height: 73),
+                                  Padding(
+                                    padding: EdgeInsetsGeometry.symmetric(
+                                      horizontal: 18,
+                                    ),
+                                    child: SizedBox(
+                                      width: MediaQuery.of(context).size.width,
+                                      child: Image(
+                                        image: PreloadedImageProvider(
                                           DefaultAssetBundle.of(context),
-                                          slides[index]['picture']! as String),
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      alignment: Alignment.center,
+                                          slides[index]['picture']! as String,
+                                        ),
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        alignment: Alignment.center,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            slides[index]['foreground']! == ''
-                                ? SizedBox()
-                                : SizedBox(
-                                    width: MediaQuery.of(context).size.width,
-                                    child: ClipRect(
-                                      clipBehavior: Clip.none,
-                                      child: Transform.rotate(
-                                          angle: -math.pi /
+                                ],
+                              ),
+                              slides[index]['foreground']! == ''
+                                  ? SizedBox()
+                                  : SizedBox(
+                                      width: MediaQuery.of(context).size.width,
+                                      child: ClipRect(
+                                        clipBehavior: Clip.none,
+                                        child: Transform.rotate(
+                                          angle:
+                                              -math.pi /
                                               (slides[index]['rotation']!
                                                   as double),
                                           child: Transform.translate(
                                             offset: Offset(
-                                                slides[index]['x'] as double,
-                                                slides[index]['y'] as double),
+                                              slides[index]['x'] as double,
+                                              slides[index]['y'] as double,
+                                            ),
                                             child: Transform.scale(
-                                              scale: slides[index]['scale']
-                                                  as double,
+                                              scale:
+                                                  slides[index]['scale']
+                                                      as double,
                                               child: Image.asset(
                                                 slides[index]['foreground']!
                                                     as String,
                                                 bundle: DefaultAssetBundle.of(
-                                                    context),
+                                                  context,
+                                                ),
                                                 fit: BoxFit.cover,
-                                                width: MediaQuery.of(context)
-                                                    .size
-                                                    .width,
+                                                width: MediaQuery.of(
+                                                  context,
+                                                ).size.width,
                                                 alignment: Alignment.center,
                                               ),
                                             ),
-                                          )),
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                          ],
-                        )
-                      ],
-                    ),
-                    options: CarouselOptions(
-                      height: double.infinity,
-                      autoPlay: false,
-                      autoPlayInterval: const Duration(milliseconds: 3000),
-                      viewportFraction: 1.0,
-                      enableInfiniteScroll: true,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  width: double.infinity,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        appStyle.colors.background.withAlpha(0),
-                        appStyle.colors.background,
-                      ], // customize colors
-                      stops: [0.0, 0.5], // percentages (0% → 50% → 100%)
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                )
-              ],
-            ),
-            Positioned(
-              bottom: 10,
-              left: 0,
-              right: 0,
-              child: Column(
-                children: [
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: paddingWidthHorizontal),
-                      child: InkWell(
-                        onTap: () {
-                          showModalBottomSheet<void>(
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (BuildContext context) {
-                              return _loginWebView;
-                            },
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          width: double.infinity,
-                          height: 48,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          decoration: ShapeDecoration(
-                            color: appStyle.colors.accent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            shadows: [
-                              BoxShadow(
-                                color:
-                                    appStyle.colors.textPrimary.withAlpha(13),
-                                blurRadius: 2,
-                                offset: Offset(0, 1),
-                                spreadRadius: 0,
-                              )
                             ],
                           ),
-                          child: Center(
-                            child: Text(
-                              widget.data.l10n.loginBtn,
-                              textAlign: TextAlign.center,
-                              style: appStyle.fonts.H_16px.copyWith(
+                        ],
+                      ),
+                      options: CarouselOptions(
+                        height: double.infinity,
+                        autoPlay: false,
+                        autoPlayInterval: const Duration(milliseconds: 3000),
+                        viewportFraction: 1.0,
+                        enableInfiniteScroll: true,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          appStyle.colors.background.withAlpha(0),
+                          appStyle.colors.background,
+                        ], // customize colors
+                        stops: [0.0, 0.5], // percentages (0% → 50% → 100%)
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                bottom: 10,
+                left: 0,
+                right: 0,
+                child: Column(
+                  children: [
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: paddingWidthHorizontal,
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            showModalBottomSheet<void>(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (BuildContext context) {
+                                return _loginWebView;
+                              },
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            width: double.infinity,
+                            height: 48,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: ShapeDecoration(
+                              color: appStyle.colors.accent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              shadows: [
+                                BoxShadow(
+                                  color: appStyle.colors.textPrimary.withAlpha(
+                                    13,
+                                  ),
+                                  blurRadius: 2,
+                                  offset: Offset(0, 1),
+                                  spreadRadius: 0,
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                widget.data.l10n.loginBtn,
+                                textAlign: TextAlign.center,
+                                style: appStyle.fonts.H_16px.copyWith(
                                   color: appStyle.colors.textPrimaryLight,
-                                  fontVariations: [FontVariation("wght", 800)]),
+                                  fontVariations: [FontVariation("wght", 800)],
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  GestureDetector(
-                    child: Text(
-                      widget.data.l10n.privacyLabel,
-                      textAlign: TextAlign.center,
-                      style: appStyle.fonts.H_12px
-                          .copyWith(color: appStyle.colors.textTertiary),
+                    const SizedBox(height: 20),
+                    GestureDetector(
+                      onTap: _launchPrivacyPolicy,
+                      child: Text(
+                        widget.data.l10n.privacyLabel,
+                        textAlign: TextAlign.center,
+                        style: appStyle.fonts.H_12px.copyWith(
+                          color: appStyle.colors.textTertiary,
+                        ),
+                      ),
                     ),
-                    onTap: _launchPrivacyPolicy,
-                  )
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        )),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -431,7 +460,11 @@ class ImageClipper extends CustomClipper<Rect> {
   @override
   Rect getClip(Size size) {
     return Rect.fromLTWH(
-        0, -70, _mediaQuery.size.width, _mediaQuery.size.height);
+      0,
+      -70,
+      _mediaQuery.size.width,
+      _mediaQuery.size.height,
+    );
   }
 
   @override

@@ -26,8 +26,12 @@ class HomeGradesScreen extends StatefulWidget {
   final void Function(int) pageController;
 
   const HomeGradesScreen(
-      this.data, this.updateNotifier, this.finishNotifier, this.pageController,
-      {super.key});
+    this.data,
+    this.updateNotifier,
+    this.finishNotifier,
+    this.pageController, {
+    super.key,
+  });
 
   @override
   State<StatefulWidget> createState() => _HomeGradesScreen();
@@ -53,23 +57,25 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
     widget.updateNotifier.addListener(updateListener);
   }
 
+  void updateListener() async {
+    var now = timeNow();
+    var start = now.subtract(Duration(days: now.weekday - 1));
+    var end = start.add(Duration(days: 6));
 
-void updateListener() async {
-  var now = timeNow();
-  var start = now.subtract(Duration(days: now.weekday - 1));
-  var end = start.add(Duration(days: 6));
-
-  grades = await widget.data.client.getGrades(forceCache: false);
-  week = await widget.data.client.getTimeTable(start, end, forceCache: false);
-  classGroups = await widget.data.client.getClassGroups(forceCache: false);
-  if (classGroups?.response?.isNotEmpty ?? false) {
-    var group = classGroups!.response!.first;
-    lessons = await widget.data.client.getSubjectAverage(group, forceCache: false);
-    await Future.delayed(Duration(milliseconds: 100));
+    grades = await widget.data.client.getGrades(forceCache: false);
+    week = await widget.data.client.getTimeTable(start, end, forceCache: false);
+    classGroups = await widget.data.client.getClassGroups(forceCache: false);
+    if (classGroups?.response?.isNotEmpty ?? false) {
+      var group = classGroups!.response!.first;
+      lessons = await widget.data.client.getSubjectAverage(
+        group,
+        forceCache: false,
+      );
+      await Future.delayed(Duration(milliseconds: 100));
+    }
+    if (mounted) setState(() {});
+    widget.finishNotifier.update();
   }
-  if (mounted) setState(() {});
-  widget.finishNotifier.update();
-}
 
   @override
   void initState() {
@@ -89,7 +95,7 @@ void updateListener() async {
         var group = classGroups!.response!.first;
         lessons = await widget.data.client.getSubjectAverage(group);
         await Future.delayed(Duration(milliseconds: 100));
-    }
+      }
       if (mounted) setState(() {});
     })();
   }
@@ -107,11 +113,7 @@ void updateListener() async {
         height: MediaQuery.of(context).size.height / 1.35,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SizedBox(),
-            DelayedSpinnerWidget(),
-            SizedBox(),
-          ],
+          children: [SizedBox(), DelayedSpinnerWidget(), SizedBox()],
         ),
       );
     } else {
@@ -130,10 +132,9 @@ void updateListener() async {
 
       if (lessons != null && lessons!.response != null) {
         for (var lesson in lessons!.response!) {
-          if (subjects
-              .where((s) => s.uid == lesson.uid)
-              .isEmpty) {
-              subjects.add(Subject(
+          if (subjects.where((s) => s.uid == lesson.uid).isEmpty) {
+            subjects.add(
+              Subject(
                 uid: lesson.uid,
                 name: lesson.name,
                 category: NameUidDesc(
@@ -142,7 +143,8 @@ void updateListener() async {
                   description: lesson.subjectCategoryDescription,
                 ),
                 sortIndex: lesson.sortIndex,
-              ));
+              ),
+            );
           }
         }
       }
@@ -159,7 +161,10 @@ void updateListener() async {
           for (var grade in subjectGrades) {
             if (grade.valueType.name == "Szazalekos") {
               grade.valueType = NameUidDesc(
-                  uid: "1,Osztalyzat", name: "Osztalyzat", description: "");
+                uid: "1,Osztalyzat",
+                name: "Osztalyzat",
+                description: "",
+              );
               if (grade.numericValue != null) {
                 grade.numericValue = percentageToGrade(grade.numericValue!);
               }
@@ -169,29 +174,37 @@ void updateListener() async {
         }
 
         if (avg.isNaN) {
-          gradeCards.add(GestureDetector(
-            child: GradeSmallCard(grades!.response!, subject),
-            onTap: () {
-              activeSubjectUid = subject.uid;
-              subjectName = subject.name;
-              subjectId = subject.uid;
-              subjectCategory = subject.category.name!; 
-              subjectInfo = subjects.where((s) => s.uid == subject.uid).toList();
-              widget.pageController(1);
-            },
-          ));
+          gradeCards.add(
+            GestureDetector(
+              child: GradeSmallCard(grades!.response!, subject),
+              onTap: () {
+                activeSubjectUid = subject.uid;
+                subjectName = subject.name;
+                subjectId = subject.uid;
+                subjectCategory = subject.category.name!;
+                subjectInfo = subjects
+                    .where((s) => s.uid == subject.uid)
+                    .toList();
+                widget.pageController(1);
+              },
+            ),
+          );
         } else {
-          gradeCards.add(GestureDetector(
-            child: GradeSmallCard(grades!.response!, subject),
-            onTap: () {
-              activeSubjectUid = subject.uid;
-              subjectName = subject.name;
-              subjectId = subject.uid;
-              subjectCategory = subject.category.name!; 
-              subjectInfo = subjects.where((s) => s.uid == subject.uid).toList();
-              widget.pageController(1);
-            },
-          ));
+          gradeCards.add(
+            GestureDetector(
+              child: GradeSmallCard(grades!.response!, subject),
+              onTap: () {
+                activeSubjectUid = subject.uid;
+                subjectName = subject.name;
+                subjectId = subject.uid;
+                subjectCategory = subject.category.name!;
+                subjectInfo = subjects
+                    .where((s) => s.uid == subject.uid)
+                    .toList();
+                widget.pageController(1);
+              },
+            ),
+          );
         }
 
         if (!avg.isNaN) {
@@ -212,11 +225,7 @@ void updateListener() async {
       var subjectAvgColor = getGradeColor(subjectAvg);
 
       return Padding(
-        padding: const EdgeInsets.only(
-          left: 20.0,
-          right: 20.0,
-          top: 12.0,
-        ),
+        padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -224,9 +233,10 @@ void updateListener() async {
               children: [
                 Text(
                   widget.data.l10n.subjects,
-                  style: appStyle.fonts.H_H2
-                      .apply(color: appStyle.colors.textPrimary),
-                )
+                  style: appStyle.fonts.H_H2.apply(
+                    color: appStyle.colors.textPrimary,
+                  ),
+                ),
               ],
             ),
             // SizedBox(height: 16), // TODO: Add graphs here
@@ -237,24 +247,27 @@ void updateListener() async {
                 children: [
                   Text(
                     widget.data.l10n.your_subjects,
-                    style: appStyle.fonts.H_14px
-                        .apply(color: appStyle.colors.textSecondary),
+                    style: appStyle.fonts.H_14px.apply(
+                      color: appStyle.colors.textSecondary,
+                    ),
                   ),
                   SizedBox(height: 16),
                   ...gradeCards,
                   SizedBox(height: 16),
                   Text(
                     widget.data.l10n.data,
-                    style: appStyle.fonts.B_16SB
-                        .apply(color: appStyle.colors.textSecondary),
+                    style: appStyle.fonts.B_16SB.apply(
+                      color: appStyle.colors.textSecondary,
+                    ),
                   ),
                   SizedBox(height: 16),
                   FirkaCard(
                     left: [
                       Text(
                         widget.data.l10n.subject_avg,
-                        style: appStyle.fonts.B_16SB
-                            .apply(color: appStyle.colors.textPrimary),
+                        style: appStyle.fonts.B_16SB.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
                       ),
                     ],
                     right: [
@@ -263,11 +276,16 @@ void updateListener() async {
                         color: subjectAvgColor.withAlpha(38),
                         child: Padding(
                           padding: EdgeInsets.only(
-                              left: 8, right: 8, top: 4, bottom: 4),
+                            left: 8,
+                            right: 8,
+                            top: 4,
+                            bottom: 4,
+                          ),
                           child: Text(
                             subjectAvg.toStringAsFixed(2),
-                            style: appStyle.fonts.B_16SB
-                                .apply(color: subjectAvgColor),
+                            style: appStyle.fonts.B_16SB.apply(
+                              color: subjectAvgColor,
+                            ),
                           ),
                         ),
                       ),
@@ -277,8 +295,9 @@ void updateListener() async {
                     left: [
                       Text(
                         widget.data.l10n.subject_avg_rounded,
-                        style: appStyle.fonts.B_16SB
-                            .apply(color: appStyle.colors.textPrimary),
+                        style: appStyle.fonts.B_16SB.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
                       ),
                     ],
                     right: [
@@ -287,11 +306,16 @@ void updateListener() async {
                         color: subjectAvgColor.withAlpha(38),
                         child: Padding(
                           padding: EdgeInsets.only(
-                              left: 8, right: 8, top: 4, bottom: 4),
+                            left: 8,
+                            right: 8,
+                            top: 4,
+                            bottom: 4,
+                          ),
                           child: Text(
                             subjectAvgRounded.toStringAsFixed(2),
-                            style: appStyle.fonts.B_16SB
-                                .apply(color: subjectAvgColor),
+                            style: appStyle.fonts.B_16SB.apply(
+                              color: subjectAvgColor,
+                            ),
                           ),
                         ),
                       ),
@@ -301,8 +325,9 @@ void updateListener() async {
                     left: [
                       Text(
                         "Összesített átlag",
-                        style: appStyle.fonts.B_16SB
-                            .apply(color: appStyle.colors.textPrimary),
+                        style: appStyle.fonts.B_16SB.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
                       ),
                     ],
                     right: [
@@ -311,40 +336,52 @@ void updateListener() async {
                         color: subjectAvgColor.withAlpha(38),
                         child: Padding(
                           padding: EdgeInsets.only(
-                              left: 8, right: 8, top: 4, bottom: 4),
+                            left: 8,
+                            right: 8,
+                            top: 4,
+                            bottom: 4,
+                          ),
                           child: Text(
                             summaryAvg2.toStringAsFixed(2),
-                            style: appStyle.fonts.B_16SB
-                                .apply(color: subjectAvgColor),
+                            style: appStyle.fonts.B_16SB.apply(
+                              color: subjectAvgColor,
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  FirkaCard(left: [
-                    Text(
-                      widget.data.l10n.class_avg,
-                      style: appStyle.fonts.B_16SB
-                          .apply(color: appStyle.colors.textPrimary),
-                    ),
-                  ]),
+                  FirkaCard(
+                    left: [
+                      Text(
+                        widget.data.l10n.class_avg,
+                        style: appStyle.fonts.B_16SB.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
                   FirkaCard(
                     left: [
                       Text(
                         widget.data.l10n.class_n,
-                        style: appStyle.fonts.B_16SB
-                            .apply(color: appStyle.colors.textPrimary),
+                        style: appStyle.fonts.B_16SB.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
                       ),
                     ],
                     right: [
                       Text(
                         week!.response!
-                            .where((lesson) =>
-                                lesson.type.name != TimetableConsts.event)
+                            .where(
+                              (lesson) =>
+                                  lesson.type.name != TimetableConsts.event,
+                            )
                             .length
                             .toString(),
-                        style: appStyle.fonts.B_16SB
-                            .apply(color: appStyle.colors.textPrimary),
+                        style: appStyle.fonts.B_16SB.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
                       ),
                     ],
                   ),

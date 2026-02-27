@@ -9,24 +9,26 @@ class NoticeBoardItem {
   final String contentHTML;
   final String contentText;
 
-  NoticeBoardItem(
-      {required this.uid,
-      required this.author,
-      required this.validFrom,
-      required this.validTo,
-      required this.title,
-      required this.contentHTML,
-      required this.contentText});
+  NoticeBoardItem({
+    required this.uid,
+    required this.author,
+    required this.validFrom,
+    required this.validTo,
+    required this.title,
+    required this.contentHTML,
+    required this.contentText,
+  });
 
   factory NoticeBoardItem.fromJson(Map<String, dynamic> json) {
     return NoticeBoardItem(
-        uid: json['Uid'],
-        author: json['RogzitoNeve'],
-        validFrom: DateTime.parse(json['ErvenyessegKezdete']),
-        validTo: DateTime.parse(json['ErvenyessegVege']),
-        title: json['Cim'],
-        contentHTML: json['Tartalom'],
-        contentText: json['TartalomText']);
+      uid: json['Uid'],
+      author: json['RogzitoNeve'],
+      validFrom: DateTime.parse(json['ErvenyessegKezdete']),
+      validTo: DateTime.parse(json['ErvenyessegVege']),
+      title: json['Cim'],
+      contentHTML: json['Tartalom'],
+      contentText: json['TartalomText'],
+    );
   }
 
   @override
@@ -53,26 +55,28 @@ class InfoBoardItem {
   final String contentText;
   final NameUidDesc type;
 
-  InfoBoardItem(
-      {required this.uid,
-      required this.title,
-      required this.date,
-      required this.author,
-      required this.createdAt,
-      required this.contentHTML,
-      required this.contentText,
-      required this.type});
+  InfoBoardItem({
+    required this.uid,
+    required this.title,
+    required this.date,
+    required this.author,
+    required this.createdAt,
+    required this.contentHTML,
+    required this.contentText,
+    required this.type,
+  });
 
   factory InfoBoardItem.fromJson(Map<String, dynamic> json) {
     return InfoBoardItem(
-        uid: json['Uid'],
-        title: json['Cim'],
-        date: DateTime.parse(json['Datum']),
-        author: json['KeszitoTanarNeve'],
-        createdAt: DateTime.parse(json['KeszitesDatuma']),
-        contentText: json['Tartalom'],
-        contentHTML: json['TartalomFormazott'],
-        type: NameUidDesc.fromJson(json['Tipus']));
+      uid: json['Uid'],
+      title: json['Cim'],
+      date: DateTime.parse(json['Datum']),
+      author: json['KeszitoTanarNeve'],
+      createdAt: DateTime.parse(json['KeszitesDatuma']),
+      contentText: json['Tartalom'],
+      contentHTML: json['TartalomFormazott'],
+      type: NameUidDesc.fromJson(json['Tipus']),
+    );
   }
 
   @override

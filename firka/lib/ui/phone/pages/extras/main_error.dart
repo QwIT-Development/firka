@@ -31,12 +31,7 @@ void showErrorBottomSheet(BuildContext context, String err) {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Center(
-                  child: Text(
-                    err,
-                    style: appStyle.fonts.B_16R,
-                  ),
-                ),
+                child: Center(child: Text(err, style: appStyle.fonts.B_16R)),
               ),
             ),
           ),
