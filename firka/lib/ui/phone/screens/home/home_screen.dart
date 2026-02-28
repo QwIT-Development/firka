@@ -198,7 +198,8 @@ class _HomeScreenState extends FirkaState<HomeScreen>
       if (Platform.isAndroid) {
         await WidgetCacheHelper.updateWidgetCache(appStyle, initData.client);
         await HomeWidget.updateWidget(
-          qualifiedAndroidName: "app.firka.naplo.glance.TimetableWidget",
+          qualifiedAndroidName:
+              "app.firka.naplo.glance.TimetableWidgetReceiver",
         );
       }
 

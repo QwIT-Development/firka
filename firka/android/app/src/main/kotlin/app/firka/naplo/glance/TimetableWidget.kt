@@ -26,7 +26,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import app.firka.naplo.model.Colors
-import app.firka.naplo.model.Lesson
+import app.firka.naplo.glance.WidgetLesson
 import org.json.JSONObject
 import java.io.File
 import java.time.LocalDate
@@ -73,16 +73,27 @@ class TimetableWidget : GlanceAppWidget() {
         val colors = Colors(widgetState)
 
         val tt = widgetState.getJSONArray("timetable")
-        var lessons = mutableListOf<Lesson>()
+        var lessons = mutableListOf<WidgetLesson>()
 
         for (i in 0..<tt.length()) {
-            lessons.add(Lesson(tt.getJSONObject(i)))
+            lessons.add(WidgetLesson(tt.getJSONObject(i)))
         }
 
-        val now = LocalDate.now()
-        val start = LocalDateTime.of(now.year, now.month, now.dayOfMonth, 0, 0)
+        val displayDateStr = widgetState.optString("displayDate", "")
+        val targetDate = if (displayDateStr.isNotEmpty()) {
+            try {
+                LocalDate.parse(displayDateStr)
+            } catch (_: Exception) {
+                LocalDate.now()
+            }
+        } else {
+            LocalDate.now()
+        }
+        val start = LocalDateTime.of(targetDate.year, targetDate.month, targetDate.dayOfMonth, 0, 0)
         val end = start.plusHours(23)
         lessons = lessons.filter { lesson -> lesson.start.isAfter(start) && lesson.end.isBefore(end) }.toMutableList()
+
+        val headerText = if (displayDateStr.isNotEmpty()) displayDateStr else "Mai órarend"
 
         Box(modifier =
             GlanceModifier
@@ -92,7 +103,7 @@ class TimetableWidget : GlanceAppWidget() {
         ) {
             Column {
                 Text(
-                    "Mai órarend",
+                    headerText,
                     style = TextStyle(
                         color = ColorProvider(colors.textSecondary, colors.textSecondary),
                         fontSize = 12.sp,

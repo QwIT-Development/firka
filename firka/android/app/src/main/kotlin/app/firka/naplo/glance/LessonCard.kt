@@ -18,7 +18,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import app.firka.naplo.model.Colors
-import app.firka.naplo.model.Lesson
+import app.firka.naplo.glance.WidgetLesson
 import java.time.format.DateTimeFormatterBuilder
 
 val hhmm = DateTimeFormatterBuilder()
@@ -26,7 +26,7 @@ val hhmm = DateTimeFormatterBuilder()
     .toFormatter()
 
 @Composable
-fun LessonCard(lesson: Lesson, colors: Colors,
+fun LessonCard(lesson: WidgetLesson, colors: Colors,
                modifier: GlanceModifier = GlanceModifier) {
     Box(modifier =
         modifier
@@ -38,7 +38,7 @@ fun LessonCard(lesson: Lesson, colors: Colors,
         var bgColor = colors.a15p
         var fgColor = colors.textSecondary
 
-        if (lesson.substituteTeacher == null) {
+        if (lesson.substituteTeacher != null) {
             bgColor = colors.warning15p
             fgColor = colors.warningText
         }
