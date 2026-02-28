@@ -1,8 +1,8 @@
-import 'package:firka/ui/model/style.dart';
+import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
-import 'package:firka/helpers/image_preloader.dart';
-import 'package:firka/helpers/firka_bundle.dart';
-import 'package:firka/helpers/swear_generator.dart';
+import 'package:firka/core/image_preloader.dart';
+import 'package:firka/core/firka_bundle.dart';
+import 'package:firka/core/swear_generator.dart';
 
 class ErrorPage extends StatelessWidget {
   final String exception;

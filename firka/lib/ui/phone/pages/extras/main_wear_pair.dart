@@ -1,11 +1,11 @@
-import 'package:firka/helpers/debug_helper.dart';
-import 'package:firka/helpers/ui/firka_card.dart';
-import 'package:firka/helpers/watch_sync_helper.dart';
-import 'package:firka/main.dart';
+import 'package:firka/core/debug_helper.dart';
+import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka/services/watch_sync_helper.dart';
+import 'package:firka/app/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../model/style.dart';
+import 'package:firka/ui/theme/style.dart';
 
 void showWearBottomSheet(
   BuildContext context,

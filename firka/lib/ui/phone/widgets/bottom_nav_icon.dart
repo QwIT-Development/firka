@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-import '../../model/style.dart';
-import '../../widget/firka_icon.dart';
+import 'package:firka/ui/theme/style.dart';
+import 'package:firka/ui/shared/firka_icon.dart';
 
 class BottomNavIconWidget extends StatelessWidget {
   final void Function() onTap;

@@ -1,22 +1,23 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:firka/helpers/db/models/app_settings_model.dart';
-import 'package:firka/helpers/live_activity_service.dart';
-import 'package:firka/main.dart';
+import 'package:firka/data/models/app_settings_model.dart';
+import 'package:firka/services/live_activity_service.dart';
+import 'package:firka/app/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:isar_community/isar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../../helpers/api/client/kreta_client.dart';
-import '../../../helpers/watch_sync_helper.dart';
-import '../../../helpers/api/consts.dart';
-import '../../../helpers/api/token_grant.dart';
-import '../../../helpers/db/models/token_model.dart';
-import '../../../helpers/firka_bundle.dart';
-import '../../../helpers/firka_state.dart';
-import '../../../helpers/settings.dart';
-import '../../../ui/model/style.dart';
+import 'package:firka/api/client/kreta_client.dart';
+import 'package:firka/services/watch_sync_helper.dart';
+import 'package:firka/api/consts.dart';
+import 'package:firka/api/token_grant.dart';
+import 'package:firka/data/models/token_model.dart';
+import 'package:firka/core/firka_bundle.dart';
+import 'package:firka/app/initialization_screen.dart';
+import 'package:firka/core/state/firka_state.dart';
+import 'package:firka/core/settings.dart';
+import 'package:firka/ui/theme/style.dart';
 import '../pages/error/error_page.dart';
 
 class LoginWebviewWidget extends StatefulWidget {

@@ -111,7 +111,7 @@ bool _l10nOutOfDate(String root) {
 }
 
 bool _isarOutOfDate(String root) {
-  final modelsDir = p.join(root, 'lib/helpers/db/models');
+  final modelsDir = p.join(root, 'lib/data/models');
   if (!Directory(modelsDir).existsSync()) return false;
 
   for (final entity in Directory(modelsDir).listSync()) {

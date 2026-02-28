@@ -1,4 +1,4 @@
-import 'package:firka/ui/model/style.dart';
+import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
 
 void showErrorBottomSheet(BuildContext context, String err) {

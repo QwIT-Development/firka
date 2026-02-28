@@ -1,17 +1,17 @@
 import 'dart:math' as math;
 
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:firka/helpers/firka_bundle.dart';
-import 'package:firka/main.dart';
+import 'package:firka/core/firka_bundle.dart';
+import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/phone/widgets/login_webview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../helpers/firka_state.dart';
-import '../../../../helpers/image_preloader.dart';
-import '../../../model/style.dart';
-import '../../../widget/delayed_spinner.dart';
+import 'package:firka/core/state/firka_state.dart';
+import 'package:firka/core/image_preloader.dart';
+import 'package:firka/ui/theme/style.dart';
+import 'package:firka/ui/shared/delayed_spinner.dart';
 
 // TODO: Replace these with actual privacy policy URLs
 const String _privacyUrlHungarian =

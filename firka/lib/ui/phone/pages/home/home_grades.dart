@@ -1,23 +1,23 @@
-import 'package:firka/helpers/api/client/kreta_client.dart';
-import 'package:firka/helpers/api/model/generic.dart';
-import 'package:firka/helpers/average_helper.dart';
-import 'package:firka/helpers/ui/firka_card.dart';
-import 'package:firka/helpers/ui/grade_helpers.dart';
+import 'package:firka/api/client/kreta_client.dart';
+import 'package:firka/api/model/generic.dart';
+import 'package:firka/core/average_helper.dart';
+import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka/ui/components/grade_helpers.dart';
 import 'package:firka/ui/phone/widgets/grade_chart.dart';
-import 'package:firka/ui/widget/grade_small_card.dart';
+import 'package:firka/ui/shared/grade_small_card.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../helpers/api/consts.dart';
-import '../../../../helpers/api/model/class_group.dart';
-import '../../../../helpers/api/model/grade.dart';
-import '../../../../helpers/api/model/subject.dart';
-import '../../../../helpers/api/model/timetable.dart';
-import '../../../../helpers/debug_helper.dart';
-import '../../../../helpers/firka_state.dart';
-import '../../../../helpers/update_notifier.dart';
-import '../../../../main.dart';
-import '../../../model/style.dart';
-import '../../../widget/delayed_spinner.dart';
+import 'package:firka/api/consts.dart';
+import 'package:firka/api/model/class_group.dart';
+import 'package:firka/api/model/grade.dart';
+import 'package:firka/api/model/subject.dart';
+import 'package:firka/api/model/timetable.dart';
+import 'package:firka/core/debug_helper.dart';
+import 'package:firka/core/state/firka_state.dart';
+import 'package:firka/core/state/update_notifier.dart';
+import 'package:firka/app/app_state.dart';
+import 'package:firka/ui/theme/style.dart';
+import 'package:firka/ui/shared/delayed_spinner.dart';
 
 class HomeGradesScreen extends StatefulWidget {
   final AppInitialization data;

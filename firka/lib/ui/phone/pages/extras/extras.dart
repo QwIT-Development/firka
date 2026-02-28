@@ -1,16 +1,16 @@
-import 'package:firka/helpers/db/models/app_settings_model.dart';
-import 'package:firka/helpers/settings.dart';
-import 'package:firka/helpers/ui/firka_shadow.dart';
-import 'package:firka/main.dart';
-import 'package:firka/ui/model/style.dart';
+import 'package:firka/data/models/app_settings_model.dart';
+import 'package:firka/core/settings.dart';
+import 'package:firka/ui/components/firka_shadow.dart';
+import 'package:firka/app/app_state.dart';
+import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
-import 'package:firka/ui/widget/firka_icon.dart';
+import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import '../../../../helpers/firka_bundle.dart';
-import '../../screens/debug/debug_screen.dart';
-import '../../screens/home/home_screen.dart';
+import 'package:firka/core/firka_bundle.dart';
+import 'package:firka/ui/phone/screens/debug/debug_screen.dart';
+import 'package:firka/ui/phone/screens/home/home_screen.dart';
 
 void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
   Widget Function(double) debugBtn = (_) => const SizedBox();

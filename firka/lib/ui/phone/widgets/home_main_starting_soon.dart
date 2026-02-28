@@ -1,10 +1,10 @@
-import 'package:firka/helpers/ui/firka_card.dart';
+import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/l10n/app_localizations.dart';
-import 'package:firka/ui/model/style.dart';
-import 'package:firka/ui/widget/counter_digit.dart';
+import 'package:firka/ui/theme/style.dart';
+import 'package:firka/ui/shared/counter_digit.dart';
 import 'package:flutter/material.dart';
 
-import '../../../helpers/api/model/timetable.dart';
+import 'package:firka/api/model/timetable.dart';
 
 class StartingSoonWidget extends StatelessWidget {
   final AppLocalizations l10n;

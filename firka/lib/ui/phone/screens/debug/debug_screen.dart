@@ -2,19 +2,19 @@
 
 import 'dart:typed_data';
 
-import 'package:firka/helpers/db/models/token_model.dart';
-import 'package:firka/helpers/extensions.dart';
-import 'package:firka/helpers/icon_helper.dart';
-import 'package:firka/helpers/profile_picture.dart';
-import 'package:firka/main.dart';
+import 'package:firka/data/models/token_model.dart';
+import 'package:firka/core/extensions.dart';
+import 'package:firka/core/icon_helper.dart';
+import 'package:firka/core/profile_picture.dart';
+import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/phone/screens/login/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../../helpers/debug_helper.dart';
-import '../../../../helpers/firka_bundle.dart';
-import '../../../../helpers/firka_state.dart';
-import '../../../widget/firka_icon.dart';
+import 'package:firka/core/debug_helper.dart';
+import 'package:firka/core/firka_bundle.dart';
+import 'package:firka/core/state/firka_state.dart';
+import 'package:firka/ui/shared/firka_icon.dart';
 
 class DebugScreen extends StatefulWidget {
   final AppInitialization data;

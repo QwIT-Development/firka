@@ -2,15 +2,15 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:firka/helpers/db/models/app_settings_model.dart';
-import 'package:firka/helpers/db/models/token_model.dart';
-import 'package:firka/helpers/image_preloader.dart';
-import 'package:firka/helpers/ui/firka_button.dart';
-import 'package:firka/helpers/ui/firka_card.dart';
-import 'package:firka/main.dart';
-import 'package:firka/ui/model/style.dart';
+import 'package:firka/data/models/app_settings_model.dart';
+import 'package:firka/data/models/token_model.dart';
+import 'package:firka/core/image_preloader.dart';
+import 'package:firka/ui/components/firka_button.dart';
+import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka/app/app_state.dart';
+import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/screens/login/login_screen.dart';
-import 'package:firka/ui/widget/firka_icon.dart';
+import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,13 +20,14 @@ import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../../../../helpers/db/widget.dart';
-import '../../../../helpers/firka_bundle.dart';
-import '../../../../helpers/firka_state.dart';
-import '../../../../helpers/api/client/kreta_client.dart';
-import '../../../../helpers/settings.dart';
-import '../../../../helpers/live_activity_service.dart';
-import '../../../../helpers/watch_sync_helper.dart';
+import 'package:firka/data/widget.dart';
+import 'package:firka/core/firka_bundle.dart';
+import 'package:firka/app/initialization_screen.dart';
+import 'package:firka/core/state/firka_state.dart';
+import 'package:firka/api/client/kreta_client.dart';
+import 'package:firka/core/settings.dart';
+import 'package:firka/services/live_activity_service.dart';
+import 'package:firka/services/watch_sync_helper.dart';
 import '../../widgets/login_webview.dart';
 
 class SettingsScreen extends StatefulWidget {

@@ -1,15 +1,15 @@
-import 'package:firka/helpers/api/model/test.dart';
-import 'package:firka/helpers/extensions.dart';
-import 'package:firka/helpers/ui/firka_card.dart';
+import 'package:firka/api/model/test.dart';
+import 'package:firka/core/extensions.dart';
+import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/l10n/app_localizations.dart';
-import 'package:firka/ui/model/style.dart';
-import 'package:firka/ui/widget/firka_icon.dart';
+import 'package:firka/ui/theme/style.dart';
+import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import '../../../helpers/api/model/timetable.dart';
-import '../../widget/class_icon.dart';
+import 'package:firka/api/model/timetable.dart';
+import 'package:firka/ui/shared/class_icon.dart';
 
 class LessonBigWidget extends StatelessWidget {
   final AppLocalizations l10n;

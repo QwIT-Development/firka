@@ -1,9 +1,9 @@
-import 'package:firka/ui/widget/firka_icon.dart';
+import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import '../../model/style.dart';
+import 'package:firka/ui/theme/style.dart';
 
 class BubbleTest extends StatelessWidget {
   const BubbleTest({super.key});

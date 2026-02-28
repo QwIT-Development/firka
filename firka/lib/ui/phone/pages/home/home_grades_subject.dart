@@ -1,19 +1,19 @@
-import 'package:firka/helpers/api/model/grade.dart';
-import 'package:firka/helpers/extensions.dart';
-import 'package:firka/helpers/ui/common_bottom_sheets.dart';
-import 'package:firka/helpers/ui/firka_card.dart';
-import 'package:firka/helpers/ui/grade.dart';
+import 'package:firka/api/model/grade.dart';
+import 'package:firka/core/extensions.dart';
+import 'package:firka/ui/components/common_bottom_sheets.dart';
+import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka/ui/components/grade.dart';
 import 'package:firka/ui/phone/pages/home/home_grades.dart';
-import 'package:firka/ui/widget/class_icon.dart';
-import 'package:firka/ui/widget/firka_icon.dart';
+import 'package:firka/ui/shared/class_icon.dart';
+import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import '../../../../helpers/firka_state.dart';
-import '../../../../helpers/update_notifier.dart';
-import '../../../../main.dart';
-import '../../../model/style.dart';
+import 'package:firka/core/state/firka_state.dart';
+import 'package:firka/core/state/update_notifier.dart';
+import 'package:firka/app/app_state.dart';
+import 'package:firka/ui/theme/style.dart';
 
 class HomeGradesSubjectScreen extends StatefulWidget {
   final AppInitialization data;

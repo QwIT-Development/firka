@@ -1,27 +1,27 @@
 import 'dart:async';
 
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:firka/helpers/api/client/kreta_client.dart';
-import 'package:firka/helpers/api/client/kreta_stream.dart';
-import 'package:firka/helpers/api/model/test.dart';
-import 'package:firka/helpers/api/model/timetable.dart';
-import 'package:firka/helpers/debug_helper.dart';
-import 'package:firka/helpers/extensions.dart';
-import 'package:firka/helpers/settings.dart';
-import 'package:firka/ui/model/style.dart';
+import 'package:firka/api/client/kreta_client.dart';
+import 'package:firka/api/client/kreta_stream.dart';
+import 'package:firka/api/model/test.dart';
+import 'package:firka/api/model/timetable.dart';
+import 'package:firka/core/debug_helper.dart';
+import 'package:firka/core/extensions.dart';
+import 'package:firka/core/settings.dart';
+import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:firka/ui/phone/widgets/bubble_test.dart';
-import 'package:firka/ui/widget/delayed_spinner.dart';
+import 'package:firka/ui/shared/delayed_spinner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
 
-import '../../../../helpers/api/consts.dart';
-import '../../../../helpers/firka_state.dart';
-import '../../../../helpers/update_notifier.dart';
-import '../../../../main.dart';
-import '../../../widget/firka_icon.dart';
+import 'package:firka/api/consts.dart';
+import 'package:firka/core/state/firka_state.dart';
+import 'package:firka/core/state/update_notifier.dart';
+import 'package:firka/app/app_state.dart';
+import 'package:firka/ui/shared/firka_icon.dart';
 import '../../widgets/bottom_tt_icon.dart';
 import '../../widgets/tt_day.dart';
 

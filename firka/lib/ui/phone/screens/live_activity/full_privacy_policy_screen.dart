@@ -1,10 +1,10 @@
-import 'package:firka/main.dart';
-import 'package:firka/ui/model/style.dart';
-import 'package:firka/ui/widget/firka_icon.dart';
+import 'package:firka/app/app_state.dart';
+import 'package:firka/ui/theme/style.dart';
+import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import '../../../../helpers/firka_state.dart';
+import 'package:firka/core/state/firka_state.dart';
 
 class FullPrivacyPolicyScreen extends StatefulWidget {
   final AppInitialization data;

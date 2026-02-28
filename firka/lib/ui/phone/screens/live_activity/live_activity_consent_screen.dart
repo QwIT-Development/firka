@@ -1,15 +1,15 @@
 import 'dart:typed_data';
 
-import 'package:firka/helpers/ui/firka_button.dart';
-import 'package:firka/helpers/ui/firka_card.dart';
-import 'package:firka/main.dart';
-import 'package:firka/ui/model/style.dart';
+import 'package:firka/ui/components/firka_button.dart';
+import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka/app/app_state.dart';
+import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/screens/live_activity/full_privacy_policy_screen.dart';
-import 'package:firka/ui/widget/firka_icon.dart';
+import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import '../../../../helpers/firka_state.dart';
+import 'package:firka/core/state/firka_state.dart';
 
 class LiveActivityConsentScreen extends StatefulWidget {
   final AppInitialization data;

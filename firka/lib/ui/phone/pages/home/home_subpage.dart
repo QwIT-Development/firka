@@ -1,9 +1,9 @@
 import 'package:firka/ui/phone/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../helpers/firka_state.dart';
-import '../../../../helpers/update_notifier.dart';
-import '../../../model/style.dart';
+import 'package:firka/core/state/firka_state.dart';
+import 'package:firka/core/state/update_notifier.dart';
+import 'package:firka/ui/theme/style.dart';
 
 class PageWithSubPages extends StatefulWidget {
   final int pageIndex;

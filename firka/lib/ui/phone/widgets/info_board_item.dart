@@ -1,8 +1,8 @@
-import 'package:firka/helpers/ui/firka_card.dart';
-import 'package:firka/ui/model/style.dart';
+import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
 
-import '../../../helpers/api/model/notice_board.dart';
+import 'package:firka/api/model/notice_board.dart';
 
 // TODO: Finish
 class InfoBoardItemWidget extends StatelessWidget {

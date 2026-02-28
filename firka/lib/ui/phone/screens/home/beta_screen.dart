@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:firka/helpers/db/models/app_settings_model.dart';
-import 'package:firka/helpers/settings.dart';
-import 'package:firka/helpers/ui/firka_button.dart';
-import 'package:firka/ui/model/style.dart';
+import 'package:firka/data/models/app_settings_model.dart';
+import 'package:firka/core/settings.dart';
+import 'package:firka/ui/components/firka_button.dart';
+import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../helpers/firka_state.dart';
-import '../../../../main.dart';
+import 'package:firka/core/state/firka_state.dart';
+import 'package:firka/app/app_state.dart';
 
 class BetaScreen extends StatefulWidget {
   final AppInitialization data;

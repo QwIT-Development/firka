@@ -1,14 +1,14 @@
 import 'package:confetti/confetti.dart';
 import 'package:intl/intl.dart';
-import 'package:firka/helpers/extensions.dart';
+import 'package:firka/core/extensions.dart';
 import 'package:firka/l10n/app_localizations.dart';
-import 'package:firka/ui/widget/firka_icon.dart';
+import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import '../../../helpers/api/model/student.dart';
-import '../../../helpers/api/model/timetable.dart';
-import '../../model/style.dart';
+import 'package:firka/api/model/student.dart';
+import 'package:firka/api/model/timetable.dart';
+import 'package:firka/ui/theme/style.dart';
 
 class WelcomeWidget extends StatefulWidget {
   final AppLocalizations l10n;

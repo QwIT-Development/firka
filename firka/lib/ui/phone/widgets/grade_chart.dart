@@ -1,6 +1,6 @@
-import 'package:firka/helpers/api/model/grade.dart';
-import 'package:firka/helpers/ui/grade_helpers.dart';
-import 'package:firka/ui/model/style.dart';
+import 'package:firka/api/model/grade.dart';
+import 'package:firka/ui/components/grade_helpers.dart';
+import 'package:firka/ui/theme/style.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
