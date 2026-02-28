@@ -6,9 +6,14 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import app.firka.naplo.glance.TimetableWidget
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlin.system.exitProcess
 
 class MainActivity : FlutterActivity() {
@@ -97,7 +102,17 @@ class MainActivity : FlutterActivity() {
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
-                    result.success(true)
+                        result.success(true)
+                }
+                "refreshTimetableWidget" -> {
+                    CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
+                        try {
+                            TimetableWidget().updateAll(context.applicationContext)
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.error("refresh_failed", e.message, null)
+                        }
+                    }
                 }
                 else -> {
                     result.notImplemented()

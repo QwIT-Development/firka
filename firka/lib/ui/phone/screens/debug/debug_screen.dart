@@ -18,7 +18,7 @@ import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/data/widget.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:firka/ui/theme/style.dart';
-import 'package:home_widget/home_widget.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -148,10 +148,9 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                       widget.data.client,
                     );
                     if (Platform.isAndroid) {
-                      await HomeWidget.updateWidget(
-                        qualifiedAndroidName:
-                            'app.firka.naplo.glance.TimetableWidgetReceiver',
-                      );
+                      await const MethodChannel(
+                        'firka.app/main',
+                      ).invokeMethod<void>('refreshTimetableWidget');
                     }
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
