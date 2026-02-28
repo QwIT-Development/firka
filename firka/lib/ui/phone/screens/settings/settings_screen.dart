@@ -22,7 +22,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import 'package:firka/data/widget.dart';
 import 'package:firka/core/firka_bundle.dart';
-import 'package:firka/app/initialization_screen.dart';
+import 'package:firka/app/initialization.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/services/live_activity_service.dart';
@@ -884,7 +884,11 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                     }
                   }
 
-                  runApp(InitializationScreen());
+                  await initializeApp();
+                  if (!mounted) return;
+                  final nav = Navigator.of(context);
+                  if (nav.canPop()) nav.pop();
+                  appRouter?.go('/home');
                 }
               },
             ),
@@ -939,95 +943,112 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
               ],
             ),
             onTap: () async {
-              if (Platform.isIOS) {
-                await LiveActivityService.onUserLogout();
-                await WidgetCacheHelper.clearIOSWidgets();
-              }
-
-              final active = widget.data.client.model.studentIdNorm!;
-              if (Platform.isIOS) {
-                try {
-                  await WatchSyncHelper.clearRefreshLeaseForAccount(active);
-                } catch (e) {
-                  logger.warning(
-                    '[Settings] Failed to clear refresh lease for active account: $e',
-                  );
+              try {
+                if (Platform.isIOS) {
+                  await LiveActivityService.onUserLogout();
+                  await WidgetCacheHelper.clearIOSWidgets();
                 }
-                try {
-                  await WatchSyncHelper.clearSharedLanguageState();
-                } catch (e) {
-                  logger.warning(
-                    '[Settings] Failed to clear shared language state on logout: $e',
-                  );
-                }
-              }
 
-              await widget.data.isar.writeTxn(() async {
-                await widget.data.isar.tokenModels.delete(active);
-
-                item.accountIndex = 0;
-                await item.save(widget.data.isar.appSettingsModels);
-              });
-
-              final accounts = await widget.data.isar.tokenModels
-                  .where()
-                  .findAll();
-
-              if (accounts.isEmpty) {
+                final active = widget.data.client.model.studentIdNorm!;
                 if (Platform.isIOS) {
                   try {
-                    await WatchSyncHelper.clearICloudToken(notifyWatch: true);
-                    await WatchSyncHelper.clearAllRefreshLeases();
+                    await WatchSyncHelper.clearRefreshLeaseForAccount(active);
                   } catch (e) {
                     logger.warning(
-                      '[Settings] Failed to clear iCloud token: $e',
+                      '[Settings] Failed to clear refresh lease for active account: $e',
                     );
                   }
-                  initData.client.clearReauthFlag();
+                  try {
+                    await WatchSyncHelper.clearSharedLanguageState();
+                  } catch (e) {
+                    logger.warning(
+                      '[Settings] Failed to clear shared language state on logout: $e',
+                    );
+                  }
                 }
+
+                await widget.data.isar.writeTxn(() async {
+                  await widget.data.isar.tokenModels.delete(active);
+
+                  item.accountIndex = 0;
+                  await item.save(widget.data.isar.appSettingsModels);
+                });
+
+                final accounts = await widget.data.isar.tokenModels
+                    .where()
+                    .findAll();
+
+                if (accounts.isEmpty) {
+                  if (Platform.isIOS) {
+                    try {
+                      await WatchSyncHelper.clearICloudToken(notifyWatch: true);
+                      await WatchSyncHelper.clearAllRefreshLeases();
+                    } catch (e) {
+                      logger.warning(
+                        '[Settings] Failed to clear iCloud token: $e',
+                      );
+                    }
+                    initData.client.clearReauthFlag();
+                  }
+                } else {
+                  if (Platform.isIOS) {
+                    final nextToken = accounts.first;
+                    var watchReachable = false;
+                    try {
+                      watchReachable = await WatchSyncHelper.isWatchReachable(
+                        forceRefreshInstall: true,
+                      );
+                    } catch (e) {
+                      logger.warning(
+                        '[Settings] Failed to query Watch reachability after logout: $e',
+                      );
+                    }
+
+                    if (watchReachable) {
+                      try {
+                        await WatchSyncHelper.sendTokenModelToWatch(
+                          nextToken,
+                          allowExpiredAccessToken: true,
+                        );
+                      } catch (e) {
+                        logger.warning(
+                          '[Settings] Failed to send next account token to reachable Watch after logout: $e',
+                        );
+                      }
+                    } else {
+                      try {
+                        await WatchSyncHelper.saveTokenToiCloud(
+                          nextToken,
+                          forceAccountSwitch: true,
+                        );
+                      } catch (e) {
+                        logger.warning(
+                          '[Settings] Failed to sync next account token to iCloud after logout: $e',
+                        );
+                      }
+                    }
+                  }
+
+                  widget.data.tokens = accounts;
+                }
+
+                await initializeApp();
+
                 if (!mounted) return;
-                context.go('/login');
-              } else {
-                if (Platform.isIOS) {
-                  final nextToken = accounts.first;
-                  var watchReachable = false;
-                  try {
-                    watchReachable = await WatchSyncHelper.isWatchReachable(
-                      forceRefreshInstall: true,
-                    );
-                  } catch (e) {
-                    logger.warning(
-                      '[Settings] Failed to query Watch reachability after logout: $e',
-                    );
-                  }
-
-                  if (watchReachable) {
-                    try {
-                      await WatchSyncHelper.sendTokenModelToWatch(
-                        nextToken,
-                        allowExpiredAccessToken: true,
-                      );
-                    } catch (e) {
-                      logger.warning(
-                        '[Settings] Failed to send next account token to reachable Watch after logout: $e',
-                      );
-                    }
-                  } else {
-                    try {
-                      await WatchSyncHelper.saveTokenToiCloud(
-                        nextToken,
-                        forceAccountSwitch: true,
-                      );
-                    } catch (e) {
-                      logger.warning(
-                        '[Settings] Failed to sync next account token to iCloud after logout: $e',
-                      );
-                    }
-                  }
+                final nav = Navigator.of(context);
+                if (nav.canPop()) nav.pop();
+                if (accounts.isEmpty) {
+                  appRouter?.go('/login');
+                } else {
+                  appRouter?.go('/home');
                 }
-
-                widget.data.tokens = accounts;
-                runApp(InitializationScreen());
+              } catch (e, st) {
+                logger.shout('[Settings] Logout failed: $e', e, st);
+                if (mounted) {
+                  final nav = Navigator.of(context);
+                  if (nav.canPop()) nav.pop();
+                }
+                appRouter?.go('/login');
               }
             },
           ),
