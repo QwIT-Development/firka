@@ -227,25 +227,29 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                         WebViewWidget(controller: _webViewController),
                         if (_fadeAnimationController != null &&
                             _fadeAnimation != null)
-                          AnimatedBuilder(
-                            animation: _fadeAnimationController!,
-                            builder: (context, child) => AnimatedOpacity(
-                              opacity: _isLoading
-                                  ? 1.0
-                                  : _fadeAnimationController!.isAnimating
-                                  ? _fadeAnimation!.value
-                                  : 0.0,
-                              duration: const Duration(milliseconds: 500),
-                              child: Container(
-                                color: appStyle.colors.background,
-                                child: Center(
-                                  child: SizedBox(
-                                    width: 32,
-                                    height: 32,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 3,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        appStyle.colors.accent,
+                          IgnorePointer(
+                            ignoring: !_isLoading,
+                            child: AnimatedBuilder(
+                              animation: _fadeAnimationController!,
+                              builder: (context, child) => AnimatedOpacity(
+                                opacity: _isLoading
+                                    ? 1.0
+                                    : _fadeAnimationController!.isAnimating
+                                    ? _fadeAnimation!.value
+                                    : 0.0,
+                                duration: const Duration(milliseconds: 500),
+                                child: Container(
+                                  color: appStyle.colors.background,
+                                  child: Center(
+                                    child: SizedBox(
+                                      width: 32,
+                                      height: 32,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 3,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              appStyle.colors.accent,
+                                            ),
                                       ),
                                     ),
                                   ),
