@@ -1,7 +1,9 @@
-// ignore_for_file: avoid_print
-
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:firka/data/models/generic_cache_model.dart';
+import 'package:firka/data/models/homework_cache_model.dart';
+import 'package:firka/data/models/timetable_cache_model.dart';
 import 'package:firka/data/models/token_model.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/icon_helper.dart';
@@ -13,7 +15,10 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/state/firka_state.dart';
+import 'package:firka/data/widget.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 class DebugScreen extends StatefulWidget {
   final AppInitialization data;
@@ -201,6 +206,40 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                   setState(() {});
                 },
                 child: const Text('re-render'),
+              ),
+              ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty<Color>.fromMap(
+                    <WidgetStatesConstraint, Color>{
+                      WidgetState.any: Colors.orange,
+                    },
+                  ),
+                ),
+                onPressed: () async {
+                  final isar = widget.data.isar;
+                  await isar.writeTxn(() async {
+                    await isar.genericCacheModels.clear();
+                    await isar.timetableCacheModels.clear();
+                    await isar.homeworkCacheModels.clear();
+                  });
+                  widget.data.client.evictMemCache();
+                  if (Platform.isIOS) {
+                    await WidgetCacheHelper.clearIOSWidgets();
+                  } else {
+                    final dataDir = await getApplicationDocumentsDirectory();
+                    final widgetFile = File(
+                      p.join(dataDir.path, 'widget_state.json'),
+                    );
+                    if (await widgetFile.exists()) {
+                      await widgetFile.delete();
+                    }
+                  }
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Cache cleared')),
+                  );
+                },
+                child: const Text('Clear all cache'),
               ),
               ElevatedButton(
                 style: ButtonStyle(
