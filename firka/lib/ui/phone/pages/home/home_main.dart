@@ -217,16 +217,13 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     Widget? nextTest;
     bool lessonActive = false;
 
-    if (lessons != null && noticeBoard != null && lessons!.isNotEmpty) {
+    if (lessons != null && lessons!.isNotEmpty) {
       if (now.isBefore(lessons!.first.start)) {
         welcomeWidget = StartingSoonWidget(widget.data.l10n, now, lessons!);
       } else {
         var currentLesson = lessons!.firstWhereOrNull(
           (lesson) => now.isAfter(lesson.start) && now.isBefore(lesson.end),
         );
-        // "fun" fact if your clock was exactly when the class ends then isBefore
-        // and isAfter would fail, so to work around that we just add 1ms to the
-        // current time
         var prevLesson = lessons!.getPrevLesson(now);
         var nextLesson = lessons!.getNextLesson(now);
         int? lessonIndex;
@@ -244,7 +241,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
           prevLesson,
           nextLesson,
           lessons!,
-          tests!,
+          tests ?? [],
         );
       }
     }
@@ -307,15 +304,13 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
       }
     }
 
-    if (student != null &&
-        grades != null &&
-        noticeBoard != null &&
-        lessons != null &&
-        homework != null &&
-        tests != null) {
-      List<(Widget, DateTime)> noticeBoardWidgets = List.empty(growable: true);
+    if (student != null && lessons != null) {
+      final infoItems = infoBoard ?? [];
+      final gradeItems = grades ?? [];
+      final homeworkItems = homework ?? [];
+      final noticeBoardWidgets = <(Widget, DateTime)>[];
 
-      for (final item in infoBoard!) {
+      for (final item in infoItems) {
         noticeBoardWidgets.add((
           GestureDetector(
             child: InfoBoardItemWidget(item),
@@ -327,7 +322,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         ));
       }
 
-      for (final grade in grades!) {
+      for (final grade in gradeItems) {
         noticeBoardWidgets.add((
           GestureDetector(
             child: FirkaCard(
@@ -374,7 +369,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         ));
       }
 
-      for (final entry in homework!) {
+      for (final entry in homeworkItems) {
         noticeBoardWidgets.add((
           HomeworkWidget(widget.data, entry),
           entry.creationDate,

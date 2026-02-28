@@ -46,9 +46,7 @@ class FirkaCard extends StatelessWidget {
           shadow: shadow,
           child: Card(
             color: color ?? appStyle.colors.card,
-            shadowColor: isLight && shadow
-                ? null
-                : Colors.transparent,
+            shadowColor: isLight && shadow ? null : Colors.transparent,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(
@@ -96,9 +94,7 @@ class FirkaCard extends StatelessWidget {
           shadow: shadow,
           child: Card(
             color: color ?? appStyle.colors.card,
-            shadowColor: isLight && shadow
-                ? null
-                : Colors.transparent,
+            shadowColor: isLight && shadow ? null : Colors.transparent,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(

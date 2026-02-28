@@ -861,7 +861,8 @@ Future<void> showHomeworkBottomSheet(
                         shadow: true,
                         child: Card(
                           color: appStyle.colors.card,
-                          shadowColor: context.watch<ThemeCubit>().state.isLightMode
+                          shadowColor:
+                              context.watch<ThemeCubit>().state.isLightMode
                               ? null
                               : Colors.transparent,
                           child: Align(

@@ -115,7 +115,9 @@ class _InitializationScreenState extends State<InitializationScreen> {
             providers: [
               BlocProvider<ThemeCubit>.value(value: themeCubit),
               BlocProvider<SettingsCubit>.value(value: settingsCubit),
-              BlocProvider<ProfilePictureCubit>.value(value: profilePictureCubit),
+              BlocProvider<ProfilePictureCubit>.value(
+                value: profilePictureCubit,
+              ),
               BlocProvider<ReauthCubit>.value(value: reauthCubit),
               BlocProvider<HomeRefreshCubit>.value(value: homeRefreshCubit),
             ],
