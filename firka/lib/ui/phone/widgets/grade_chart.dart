@@ -27,6 +27,42 @@ class _GradeChartState extends State<GradeChart> {
 
   late final List<FlSpot> spots;
 
+  double? _subjectAverageInList(List<Grade> grades, String subjectUid) {
+    double weightedSum = 0;
+    double totalWeight = 0;
+    for (final g in grades) {
+      if (g.subject.uid != subjectUid) continue;
+      final v = g.numericValue;
+      final w = g.weightPercentage;
+      if (v != null && w != null) {
+        final effectiveValue = g.valueType.name == "Szazalekos"
+            ? percentageToGrade(v).toDouble()
+            : v.toDouble();
+        weightedSum += effectiveValue * w;
+        totalWeight += w;
+      }
+    }
+    return totalWeight > 0 ? weightedSum / totalWeight : null;
+  }
+
+  double _runningSubjectAverage(List<Grade> sortedGrades, int upToInclusive) {
+    final sublist = sortedGrades.sublist(
+      0,
+      (upToInclusive + 1).clamp(0, sortedGrades.length),
+    );
+    final subjectUids = sublist.map((g) => g.subject.uid).toSet();
+    double sum = 0;
+    int count = 0;
+    for (final uid in subjectUids) {
+      final avg = _subjectAverageInList(sublist, uid);
+      if (avg != null) {
+        sum += avg;
+        count++;
+      }
+    }
+    return count > 0 ? sum / count : 0;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -40,24 +76,13 @@ class _GradeChartState extends State<GradeChart> {
     }
 
     spots = [];
-
-    // for (int i = 0; i < sortedGrades.length; i++) {
-    //   final grade = sortedGrades[i];
-    //   if (grade.numericValue != null) {
-    //     final partialAvg = calculateAverage(sortedGrades.sublist(0, i + 1));
-    //     spots.add(FlSpot(i.toDouble(), partialAvg));
-    //   }
-    // }
-    spots.add(FlSpot(1, 1.3));
-    spots.add(FlSpot(2, 1.0));
-    spots.add(FlSpot(3, 2.0));
-    spots.add(FlSpot(4, 1.75));
-    spots.add(FlSpot(5, 1.8));
-    spots.add(FlSpot(6, 2.17));
-    spots.add(FlSpot(7, 2.57));
-    spots.add(FlSpot(8, 3.00));
-    spots.add(FlSpot(9, 4.00));
-    spots.add(FlSpot(10, 4.89));
+    for (var i = 0; i < sortedGrades.length; i++) {
+      final grade = sortedGrades[i];
+      if (grade.numericValue != null && grade.weightPercentage != null) {
+        final partialAvg = _runningSubjectAverage(sortedGrades, i);
+        spots.add(FlSpot(i.toDouble(), partialAvg));
+      }
+    }
 
     if (spots.isEmpty) {
       spots = [const FlSpot(0, 0)];
@@ -153,15 +178,12 @@ class _GradeChartState extends State<GradeChart> {
     } else {
       gradeColor = getGradeColor(0);
     }
-    if (!_tooltipActive || _tooltipY == null) {
-      return buildCircle(
-        text: text,
-        bgColor: appStyle.colors.card,
-        textColor: appStyle.colors.textPrimary.withValues(alpha: 0.2),
-      );
-    }
+    final currentValue = _tooltipActive && _tooltipY != null
+        ? _tooltipY!.round()
+        : spots.last.y.round();
+    final isActive = text == currentValue.toString();
 
-    if (text == _tooltipY!.round().toString()) {
+    if (isActive) {
       return buildCircle(
         text: text,
         bgColor: gradeColor.withAlpha(38),
@@ -179,8 +201,11 @@ class _GradeChartState extends State<GradeChart> {
   }
 
   LineChartData avgData() {
-    final firstX = spots.first.x;
-    final lastX = spots.last.x;
+    var firstX = spots.first.x;
+    var lastX = spots.last.x;
+    if (firstX == lastX) {
+      lastX = firstX + 1;
+    }
 
     Color colorForY(double y) {
       switch (y.round()) {
@@ -239,7 +264,10 @@ class _GradeChartState extends State<GradeChart> {
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               );
-              return LineTooltipItem(touchedSpot.y.toString(), textStyle);
+              return LineTooltipItem(
+                touchedSpot.y.toStringAsFixed(2),
+                textStyle,
+              );
             }).toList();
           },
         ),
@@ -320,8 +348,8 @@ class _GradeChartState extends State<GradeChart> {
       lineBarsData: [
         LineChartBarData(
           spots: spots,
-          isCurved: false,
-
+          isCurved: true,
+          curveSmoothness: 0.35,
           showingIndicators: _touchedIndex != null ? [_touchedIndex!] : [],
           gradient: LinearGradient(
             colors: [for (final s in spots) colorForY(s.y)],
