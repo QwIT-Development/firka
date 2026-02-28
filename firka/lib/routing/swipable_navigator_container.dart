@@ -1,3 +1,4 @@
+import 'package:firka/routing/chart_interaction_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -82,11 +83,19 @@ class _SwipableNavigatorContainerState
 
   @override
   Widget build(BuildContext context) {
-    return PageView(
-      controller: _pageController,
-      physics: const ClampingScrollPhysics(),
-      onPageChanged: _onPageChanged,
-      children: widget.children,
+    final isChartInteracting = ChartInteractionScope.of(context);
+    return ValueListenableBuilder<bool>(
+      valueListenable: isChartInteracting,
+      builder: (context, interacting, _) {
+        return PageView(
+          controller: _pageController,
+          physics: interacting
+              ? const NeverScrollableScrollPhysics()
+              : const ClampingScrollPhysics(),
+          onPageChanged: _onPageChanged,
+          children: widget.children,
+        );
+      },
     );
   }
 }

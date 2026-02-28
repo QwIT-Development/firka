@@ -16,6 +16,7 @@ import 'package:firka/ui/phone/screens/login/login_screen.dart';
 import 'package:firka/ui/phone/screens/message/message_screen.dart';
 import 'package:firka/ui/phone/screens/home/home_screen.dart';
 import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
+import 'package:firka/routing/chart_interaction_scope.dart';
 import 'package:firka/routing/shell_with_nav_bar.dart';
 import 'package:firka/routing/swipable_navigator_container.dart';
 import 'package:go_router/go_router.dart';
@@ -97,9 +98,11 @@ GoRouter createAppRouter() {
           ),
         ),
         navigatorContainerBuilder: (context, navigationShell, children) {
-          return SwipableNavigatorContainer(
-            navigationShell: navigationShell,
-            children: children,
+          return ChartInteractionScope(
+            child: SwipableNavigatorContainer(
+              navigationShell: navigationShell,
+              children: children,
+            ),
           );
         },
         branches: [
