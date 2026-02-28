@@ -17,6 +17,8 @@ import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/data/widget.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
+import 'package:firka/ui/theme/style.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -130,6 +132,45 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                   }
                 },
                 child: const Text('Set fake time'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final d = await showDatePicker(
+                    context: context,
+                    firstDate: DateTime.now().subtract(Duration(days: 365)),
+                    lastDate: DateTime.now().add(Duration(days: 365)),
+                  );
+                  if (!context.mounted || d == null) return;
+                  try {
+                    await WidgetCacheHelper.generateWidgetStateForDate(
+                      d,
+                      appStyle,
+                      widget.data.client,
+                    );
+                    if (Platform.isAndroid) {
+                      await HomeWidget.updateWidget(
+                        qualifiedAndroidName:
+                            'app.firka.naplo.glance.TimetableWidgetReceiver',
+                      );
+                    }
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Widget state generated for ${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}',
+                        ),
+                      ),
+                    );
+                  } catch (e) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to generate widget state: $e'),
+                      ),
+                    );
+                  }
+                },
+                child: const Text('Generate widget state for date'),
               ),
               const SizedBox(height: 20),
               ElevatedButton(

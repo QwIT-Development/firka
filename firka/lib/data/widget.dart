@@ -109,7 +109,11 @@ class WidgetCacheHelper {
     final dataDir = await getApplicationDocumentsDirectory();
     final dayStart = DateTime(date.year, date.month, date.day);
     final dayEnd = dayStart.add(Duration(hours: 23, minutes: 59));
-    final lessons = await client.getTimeTable(dayStart, dayEnd, forceCache: false);
+    final lessons = await client.getTimeTable(
+      dayStart,
+      dayEnd,
+      forceCache: false,
+    );
     final dayLessons = lessons.response ?? [];
 
     final json = toJson(style, dayLessons);
