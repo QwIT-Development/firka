@@ -26,8 +26,12 @@ val hhmm = DateTimeFormatterBuilder()
     .toFormatter()
 
 @Composable
-fun LessonCard(lesson: WidgetLesson, colors: Colors,
-               modifier: GlanceModifier = GlanceModifier) {
+fun LessonCard(
+    lesson: WidgetLesson,
+    colors: Colors,
+    modifier: GlanceModifier = GlanceModifier,
+    roomBadgeWidthDp: Float = 48f,
+) {
     Box(modifier =
         modifier
             .fillMaxWidth()
@@ -46,9 +50,21 @@ fun LessonCard(lesson: WidgetLesson, colors: Colors,
 
         Box(modifier = GlanceModifier.padding(12.dp)) {
             Row {
+                val badgeStyle = TextStyle(
+                    color = ColorProvider(colors.textSecondary, colors.textSecondary),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                val badgePadding = GlanceModifier.padding(8.dp, 4.dp)
+                val lessonNumberBadgeModifier = GlanceModifier.cornerRadius(16.dp).width(24.dp)
+                val roomBadgeModifier = GlanceModifier.cornerRadius(16.dp).width(roomBadgeWidthDp.dp)
+
                 Row(modifier = GlanceModifier.width(226.dp), verticalAlignment = Alignment.CenterVertically) {
                     if (lesson.lessonNumber != null) {
-                        Box(modifier = GlanceModifier.cornerRadius(16.dp).background(bgColor)) {
+                        Box(
+                            modifier = lessonNumberBadgeModifier.background(bgColor),
+                            contentAlignment = Alignment.Center,
+                        ) {
                             Text(
                                 lesson.lessonNumber.toString(),
                                 style = TextStyle(
@@ -56,7 +72,7 @@ fun LessonCard(lesson: WidgetLesson, colors: Colors,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold
                                 ),
-                                modifier = GlanceModifier.padding(8.dp, 4.dp),
+                                modifier = GlanceModifier.padding(4.dp, 4.dp),
                             )
                         }
                         Spacer(modifier = GlanceModifier.width(4.dp))
@@ -72,8 +88,6 @@ fun LessonCard(lesson: WidgetLesson, colors: Colors,
                     )
                 }
 
-                // Spacer(modifier = GlanceModifier.width(10.dp))
-
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         lesson.start.format(hhmm),
@@ -84,24 +98,15 @@ fun LessonCard(lesson: WidgetLesson, colors: Colors,
                         ),
                     )
                     Spacer(modifier = GlanceModifier.width(8.dp))
-                    Box(modifier = GlanceModifier.cornerRadius(16.dp).background(colors.a15p)) {
-                        var roomName = "N/A";
-                        if (lesson.roomName != null) {
-                            roomName = lesson.roomName!!;
-                        }
-
-                        if (roomName.length < 2) {
-                            roomName = " $roomName"
-                        }
-
+                    val roomName = (lesson.roomName ?: "N/A").take(5)
+                    Box(
+                        modifier = roomBadgeModifier.background(colors.a15p),
+                        contentAlignment = Alignment.Center,
+                    ) {
                         Text(
                             roomName,
-                            style = TextStyle(
-                                color = ColorProvider(colors.textSecondary, colors.textSecondary),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            modifier = GlanceModifier.padding(8.dp, 4.dp),
+                            style = badgeStyle,
+                            modifier = GlanceModifier.padding(4.dp, 4.dp),
                         )
                     }
                 }
