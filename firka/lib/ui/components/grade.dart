@@ -4,6 +4,29 @@ import 'package:flutter/material.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/components/grade_helpers.dart';
 
+class GradeIconWidget extends StatelessWidget {
+  final int gradeValue;
+
+  const GradeIconWidget(this.gradeValue, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gradeColor = getGradeColor(gradeValue.toDouble());
+    return Card(
+      shape: const CircleBorder(),
+      shadowColor: Colors.transparent,
+      color: gradeColor.withAlpha(38),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 8, right: 8),
+        child: Text(
+          gradeValue.toString(),
+          style: appStyle.fonts.H_H1.copyWith(fontSize: 24, color: gradeColor),
+        ),
+      ),
+    );
+  }
+}
+
 class GradeWidget extends StatelessWidget {
   final Grade grade;
 

@@ -60,6 +60,21 @@ Color getGradeColor(double grade) {
   }
 }
 
+(int total, List<int> countsByGrade) getGradeDistribution(List<Grade> grades) {
+  final filtered = grades
+      .where((g) => g.type.name != "felevi_jegy_ertekeles")
+      .toList();
+  final counts = [0, 0, 0, 0, 0];
+  for (final g in filtered) {
+    if (g.numericValue == null) continue;
+    final value = g.valueType.name == "Szazalekos"
+        ? percentageToGrade(g.numericValue!.round())
+        : g.numericValue!.round().clamp(1, 5);
+    counts[value - 1]++;
+  }
+  return (filtered.length, counts);
+}
+
 extension GradeListExtension on List<Grade> {
   double getAverageBySubject(Subject subject) {
     var weightTotal = 0.00;

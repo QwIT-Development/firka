@@ -5,6 +5,7 @@ import 'package:firka/routing/chart_interaction_scope.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/ui/components/grade_helpers.dart';
 import 'package:firka/ui/phone/widgets/grade_chart.dart';
+import 'package:firka/ui/phone/widgets/grade_summary_bar.dart';
 import 'package:firka/ui/shared/grade_small_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -242,7 +243,12 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                   ChartInteractionScope.of(context).value = false,
               child: GradeChart(grades: grades?.response ?? []),
             ),
-            // ...gradeCards,
+            SizedBox(height: 2),
+            GradeSummaryBar(
+              grades: grades?.response ?? [],
+              l10n: widget.data.l10n,
+            ),
+            SizedBox(height: 12),
             Expanded(
               child: ListView(
                 children: [
