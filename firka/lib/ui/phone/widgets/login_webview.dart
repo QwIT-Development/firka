@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:firka/data/models/app_settings_model.dart';
 import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/app/app_state.dart';
+import 'package:firka/app/initialization.dart';
 import 'package:flutter/material.dart';
 import 'package:isar_community/isar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -12,7 +13,6 @@ import 'package:firka/services/watch_sync_helper.dart';
 import 'package:firka/api/consts.dart';
 import 'package:firka/api/token_grant.dart';
 import 'package:firka/data/models/token_model.dart';
-import 'package:firka/app/initialization_screen.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/ui/theme/style.dart';
@@ -152,7 +152,14 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                   LiveActivityService.clearTokenExpiration();
                 }
 
-                runApp(InitializationScreen());
+                await initializeApp();
+
+                if (!mounted) return NavigationDecision.prevent;
+
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  appRouter?.go('/home');
+                }
               } catch (ex) {
                 if (ex is Error) {
                   logger.shout(
