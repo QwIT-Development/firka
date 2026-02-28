@@ -7,8 +7,8 @@ import 'package:firka/api/model/timetable.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/data/ios_widget_helper.dart';
 import 'package:firka/core/settings.dart';
-import 'package:firka/app/app_state.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -149,7 +149,11 @@ class WidgetCacheHelper {
           theme = 'dark';
           break;
         default:
-          theme = isLightMode.value ? 'light' : 'dark';
+          theme =
+              SchedulerBinding.instance.platformDispatcher.platformBrightness ==
+                  Brightness.light
+              ? 'light'
+              : 'dark';
       }
 
       final now = timeNow();

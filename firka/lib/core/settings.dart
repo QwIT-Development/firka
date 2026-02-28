@@ -227,7 +227,7 @@ class SettingsStore {
                 initData.settings = SettingsStore(initData.l10n);
                 await initData.settings.load(initData.isar.appSettingsModels);
 
-                globalUpdate.update();
+                initData.themeCubit?.refresh();
                 runApp(InitializationScreen());
               },
             ),
@@ -340,7 +340,6 @@ class SettingsStore {
               always,
               () async {
                 initTheme(initData);
-                globalUpdate.update();
               },
             ),
           }),
@@ -660,7 +659,7 @@ class SettingsStore {
       await item.save(model);
     }
 
-    initData.settingsUpdateNotifier.update();
+    initData.settingsCubit?.notifyChanged();
   }
 
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
@@ -754,7 +753,7 @@ class SettingsGroup implements SettingsItem {
       await item.save(model);
     }
 
-    initData.settingsUpdateNotifier.update();
+    initData.settingsCubit?.notifyChanged();
   }
 }
 
@@ -796,7 +795,7 @@ class SettingsSubGroup implements SettingsItem {
       await item.save(model);
     }
 
-    initData.settingsUpdateNotifier.update();
+    initData.settingsCubit?.notifyChanged();
   }
 }
 
@@ -1010,7 +1009,7 @@ class SettingsKretenAccountPicker implements SettingsItem {
 
     await model.put(v);
 
-    initData.settingsUpdateNotifier.update();
+    initData.settingsCubit?.notifyChanged();
   }
 }
 
@@ -1078,7 +1077,7 @@ class SettingsAppIconPicker implements SettingsItem {
 
     await model.put(v);
 
-    initData.settingsUpdateNotifier.update();
+    initData.settingsCubit?.notifyChanged();
   }
 }
 
@@ -1129,7 +1128,7 @@ class SettingsBoolean implements SettingsItem {
 
     await model.put(v);
 
-    initData.settingsUpdateNotifier.update();
+    initData.settingsCubit?.notifyChanged();
   }
 }
 
@@ -1176,7 +1175,7 @@ class SettingsItemsRadio implements SettingsItem {
 
     await model.put(v);
 
-    initData.settingsUpdateNotifier.update();
+    initData.settingsCubit?.notifyChanged();
   }
 }
 
@@ -1242,7 +1241,7 @@ class SettingsDouble implements SettingsItem {
 
     await model.put(v);
 
-    initData.settingsUpdateNotifier.update();
+    initData.settingsCubit?.notifyChanged();
   }
 }
 
@@ -1288,7 +1287,7 @@ class SettingsString implements SettingsItem {
 
     await model.put(v);
 
-    initData.settingsUpdateNotifier.update();
+    initData.settingsCubit?.notifyChanged();
   }
 }
 

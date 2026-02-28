@@ -13,6 +13,7 @@ import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:firka/ui/phone/widgets/bubble_test.dart';
 import 'package:firka/ui/shared/delayed_spinner.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
@@ -20,23 +21,17 @@ import 'package:transparent_pointer/transparent_pointer.dart';
 
 import 'package:firka/api/consts.dart';
 import 'package:firka/core/state/firka_state.dart';
-import 'package:firka/core/state/update_notifier.dart';
 import 'package:firka/app/app_state.dart';
+import 'package:firka/core/bloc/home_refresh_cubit.dart';
+import 'package:firka/core/bloc/settings_cubit.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import '../../widgets/bottom_tt_icon.dart';
 import '../../widgets/tt_day.dart';
 
 class HomeTimetableScreen extends StatefulWidget {
   final AppInitialization data;
-  final UpdateNotifier updateNotifier;
-  final UpdateNotifier finishNotifier;
 
-  const HomeTimetableScreen(
-    this.data,
-    this.updateNotifier,
-    this.finishNotifier, {
-    super.key,
-  });
+  const HomeTimetableScreen(this.data, {super.key});
 
   @override
   State<HomeTimetableScreen> createState() => _HomeTimetableScreen();
@@ -69,9 +64,6 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
   @override
   void initState() {
     super.initState();
-
-    widget.updateNotifier.addListener(updateListener);
-    widget.data.settingsUpdateNotifier.addListener(settingsUpdateListener);
 
     now = timeNow();
     initForWeek(now!);
@@ -252,27 +244,15 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     }
   }
 
-  void updateListener() async {
+  void _onRefreshRequested(BuildContext context) async {
+    final cubit = context.read<HomeRefreshCubit>();
     if (now != null) {
       await initForWeek(now!, forceCache: false);
-      if (mounted) setState(() {});
+      if (mounted) {
+        setState(() {});
+        cubit.onRefreshComplete();
+      }
     }
-    widget.finishNotifier.update();
-  }
-
-  void settingsUpdateListener() {
-    if (mounted) setState(() {});
-  }
-
-  @override
-  void didUpdateWidget(HomeTimetableScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    widget.updateNotifier.removeListener(updateListener);
-    widget.updateNotifier.addListener(updateListener);
-
-    widget.data.settingsUpdateNotifier.removeListener(settingsUpdateListener);
-    widget.data.settingsUpdateNotifier.addListener(settingsUpdateListener);
   }
 
   bool animating = false;
@@ -371,6 +351,22 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
 
   @override
   Widget build(BuildContext context) {
+    return BlocListener<SettingsCubit, SettingsState>(
+      listener: (context, state) {
+        if (mounted) setState(() {});
+      },
+      child: BlocListener<HomeRefreshCubit, HomeRefreshState>(
+        listenWhen: (previous, current) =>
+            current.refreshTrigger != previous.refreshTrigger,
+        listener: (context, state) {
+          _onRefreshRequested(context);
+        },
+        child: _buildContent(context),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     if (lessons != null && tests != null && events != null && dates != null) {
       List<Widget> ttWidgets = [];
       List<Widget> ttDays = [];
@@ -772,13 +768,5 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
         ],
       );
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-
-    widget.updateNotifier.removeListener(updateListener);
-    widget.data.settingsUpdateNotifier.removeListener(settingsUpdateListener);
   }
 }

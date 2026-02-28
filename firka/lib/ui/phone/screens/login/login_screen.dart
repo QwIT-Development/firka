@@ -5,9 +5,11 @@ import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/phone/widgets/login_webview.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/core/image_preloader.dart';
 import 'package:firka/ui/theme/style.dart';
@@ -107,7 +109,9 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
       );
     }
 
-    final carousel = isLightMode.value ? "carousel" : "carousel_dark";
+    final carousel = context.watch<ThemeCubit>().state.isLightMode
+        ? "carousel"
+        : "carousel_dark";
 
     final paddingWidthHorizontal =
         MediaQuery.of(context).size.width -

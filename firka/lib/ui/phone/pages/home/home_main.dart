@@ -10,6 +10,7 @@ import 'package:firka/ui/phone/widgets/info_board_item.dart';
 import 'package:firka/ui/phone/widgets/lesson_small.dart';
 import 'package:firka/ui/shared/delayed_spinner.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
@@ -22,8 +23,8 @@ import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/ui/components/grade.dart';
-import 'package:firka/core/state/update_notifier.dart';
 import 'package:firka/app/app_state.dart';
+import 'package:firka/core/bloc/home_refresh_cubit.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import '../../widgets/home_main_welcome.dart';
@@ -31,15 +32,8 @@ import '../../widgets/lesson_big.dart';
 
 class HomeMainScreen extends StatefulWidget {
   final AppInitialization data;
-  final UpdateNotifier updateNotifier;
-  final UpdateNotifier finishNotifier;
 
-  const HomeMainScreen(
-    this.data,
-    this.updateNotifier,
-    this.finishNotifier, {
-    super.key,
-  });
+  const HomeMainScreen(this.data, {super.key});
 
   @override
   State<HomeMainScreen> createState() => _HomeMainScreen();
@@ -58,18 +52,12 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   Student? student;
   Timer? timer;
 
-  @override
-  void didUpdateWidget(HomeMainScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    widget.updateNotifier.removeListener(updateListener);
-    widget.updateNotifier.addListener(updateListener);
-  }
-
-  void updateListener() async {
+  void _onRefreshRequested(BuildContext context) async {
+    final cubit = context.read<HomeRefreshCubit>();
     await fetchData(cacheOnly: false);
-
-    widget.finishNotifier.update();
+    if (mounted) {
+      cubit.onRefreshComplete();
+    }
   }
 
   Future<void> fetchData({bool cacheOnly = true}) async {
@@ -190,8 +178,6 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   void initState() {
     super.initState();
 
-    widget.updateNotifier.addListener(updateListener);
-
     now = timeNow();
     if (!mounted) return;
 
@@ -210,14 +196,22 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   @override
   void dispose() {
     super.dispose();
-
-    widget.updateNotifier.removeListener(updateListener);
-
     timer?.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
+    return BlocListener<HomeRefreshCubit, HomeRefreshState>(
+      listenWhen: (previous, current) =>
+          current.refreshTrigger != previous.refreshTrigger,
+      listener: (context, state) {
+        _onRefreshRequested(context);
+      },
+      child: _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     Widget welcomeWidget = SizedBox();
     Widget nextClass = SizedBox();
     Widget? nextTest;

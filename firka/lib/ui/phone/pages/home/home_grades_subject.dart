@@ -7,26 +7,20 @@ import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import 'package:firka/core/state/firka_state.dart';
-import 'package:firka/core/state/update_notifier.dart';
 import 'package:firka/app/app_state.dart';
+import 'package:firka/core/bloc/home_refresh_cubit.dart';
+import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/ui/theme/style.dart';
 
 class HomeGradesSubjectScreen extends StatefulWidget {
   final AppInitialization data;
-  final UpdateNotifier updateNotifier;
-  final UpdateNotifier finishNotifier;
 
-  const HomeGradesSubjectScreen(
-    this.data,
-    this.updateNotifier,
-    this.finishNotifier, {
-    super.key,
-  });
+  const HomeGradesSubjectScreen(this.data, {super.key});
 
   @override
   State<StatefulWidget> createState() => _HomeGradesSubjectScreen();
@@ -35,29 +29,21 @@ class HomeGradesSubjectScreen extends StatefulWidget {
 class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
   Iterable<Grade>? grades;
 
-  @override
-  void didUpdateWidget(HomeGradesSubjectScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    widget.updateNotifier.removeListener(updateListener);
-    widget.updateNotifier.addListener(updateListener);
-  }
-
-  void updateListener() async {
+  void _onRefreshRequested(BuildContext context) async {
+    final cubit = context.read<HomeRefreshCubit>();
     grades = (await widget.data.client.getGrades(forceCache: false)).response!
         .where((grade) => grade.subject.uid == activeSubjectUid)
         .where((grade) => grade.type.name != "felevi_jegy_ertekeles");
 
-    if (mounted) setState(() {});
-
-    widget.finishNotifier.update();
+    if (mounted) {
+      setState(() {});
+      cubit.onRefreshComplete();
+    }
   }
 
   @override
   void initState() {
     super.initState();
-
-    widget.updateNotifier.addListener(updateListener);
 
     (() async {
       grades = (await widget.data.client.getGrades()).response!
@@ -69,13 +55,18 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
-    widget.updateNotifier.removeListener(updateListener);
+  Widget build(BuildContext context) {
+    return BlocListener<HomeRefreshCubit, HomeRefreshState>(
+      listenWhen: (previous, current) =>
+          current.refreshTrigger != previous.refreshTrigger,
+      listener: (context, state) {
+        _onRefreshRequested(context);
+      },
+      child: _buildContent(context),
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildContent(BuildContext context) {
     if (grades != null && grades!.isNotEmpty && activeSubjectUid != "") {
       var aGrade = grades!.first;
       var groups = grades!.groupList((grade) => grade.recordDate);

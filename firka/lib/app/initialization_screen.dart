@@ -2,9 +2,15 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/app/initialization.dart';
+import 'package:firka/core/bloc/home_refresh_cubit.dart';
+import 'package:firka/core/bloc/profile_picture_cubit.dart';
+import 'package:firka/core/bloc/reauth_cubit.dart';
+import 'package:firka/core/bloc/settings_cubit.dart';
+import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/routing/app_router.dart';
 import 'package:firka/services/watch_sync_helper.dart';
@@ -100,44 +106,58 @@ class _InitializationScreenState extends State<InitializationScreen> {
             appRouter = _router;
           }
 
-          return MaterialApp.router(
-            title: 'Firka',
-            key: const ValueKey('firkaApp'),
-            routerConfig: _router!,
-            theme: ThemeData(
-              primarySwatch: Colors.lightGreen,
-              visualDensity: VisualDensity.adaptivePlatformDensity,
-            ),
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
+          final themeCubit = initData.themeCubit!;
+          final settingsCubit = initData.settingsCubit!;
+          final profilePictureCubit = initData.profilePictureCubit!;
+          final reauthCubit = initData.reauthCubit!;
+          final homeRefreshCubit = initData.homeRefreshCubit!;
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider<ThemeCubit>.value(value: themeCubit),
+              BlocProvider<SettingsCubit>.value(value: settingsCubit),
+              BlocProvider<ProfilePictureCubit>.value(value: profilePictureCubit),
+              BlocProvider<ReauthCubit>.value(value: reauthCubit),
+              BlocProvider<HomeRefreshCubit>.value(value: homeRefreshCubit),
             ],
-            supportedLocales: AppLocalizations.supportedLocales,
-            builder: (context, child) {
-              return ValueListenableBuilder<bool>(
-                valueListenable: isLightMode,
-                builder: (context, isLight, _) {
-                  final overlay = SystemUiOverlayStyle(
-                    statusBarColor: Colors.transparent,
-                    statusBarIconBrightness: isLight
-                        ? Brightness.dark
-                        : Brightness.light,
-                    statusBarBrightness: isLight
-                        ? Brightness.light
-                        : Brightness.dark,
-                    systemStatusBarContrastEnforced: false,
-                  );
+            child: MaterialApp.router(
+              title: 'Firka',
+              key: const ValueKey('firkaApp'),
+              routerConfig: _router!,
+              theme: ThemeData(
+                primarySwatch: Colors.lightGreen,
+                visualDensity: VisualDensity.adaptivePlatformDensity,
+              ),
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+              ],
+              supportedLocales: AppLocalizations.supportedLocales,
+              builder: (context, child) {
+                return BlocBuilder<ThemeCubit, ThemeState>(
+                  builder: (context, themeState) {
+                    final isLight = themeState.isLightMode;
+                    final overlay = SystemUiOverlayStyle(
+                      statusBarColor: Colors.transparent,
+                      statusBarIconBrightness: isLight
+                          ? Brightness.dark
+                          : Brightness.light,
+                      statusBarBrightness: isLight
+                          ? Brightness.light
+                          : Brightness.dark,
+                      systemStatusBarContrastEnforced: false,
+                    );
 
-                  SystemChrome.setSystemUIOverlayStyle(overlay);
+                    SystemChrome.setSystemUIOverlayStyle(overlay);
 
-                  return AnnotatedRegion<SystemUiOverlayStyle>(
-                    value: overlay,
-                    child: child ?? const SizedBox.shrink(),
-                  );
-                },
-              );
-            },
+                    return AnnotatedRegion<SystemUiOverlayStyle>(
+                      value: overlay,
+                      child: child ?? const SizedBox.shrink(),
+                    );
+                  },
+                );
+              },
+            ),
           );
         }
 

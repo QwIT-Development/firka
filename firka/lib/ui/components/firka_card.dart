@@ -1,7 +1,8 @@
-import 'package:firka/ui/components/firka_shadow.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:firka/app/app_state.dart';
+import 'package:firka/core/bloc/theme_cubit.dart';
+import 'package:firka/ui/components/firka_shadow.dart';
 import 'package:firka/ui/theme/style.dart';
 
 enum Attach { none, bottom, top }
@@ -35,6 +36,7 @@ class FirkaCard extends StatelessWidget {
     var attached = this.attached != null ? this.attached! : Attach.none;
     final defaultRounding = 16.0;
     final attachedRounding = 8.0;
+    final isLight = context.watch<ThemeCubit>().state.isLightMode;
 
     if (extra != null) {
       return SizedBox(
@@ -44,7 +46,7 @@ class FirkaCard extends StatelessWidget {
           shadow: shadow,
           child: Card(
             color: color ?? appStyle.colors.card,
-            shadowColor: isLightMode.value && shadow
+            shadowColor: isLight && shadow
                 ? null
                 : Colors.transparent,
             shape: RoundedRectangleBorder(
@@ -94,7 +96,7 @@ class FirkaCard extends StatelessWidget {
           shadow: shadow,
           child: Card(
             color: color ?? appStyle.colors.card,
-            shadowColor: isLightMode.value && shadow
+            shadowColor: isLight && shadow
                 ? null
                 : Colors.transparent,
             shape: RoundedRectangleBorder(

@@ -24,7 +24,6 @@ import 'package:firka/data/widget.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/app/initialization_screen.dart';
 import 'package:firka/core/state/firka_state.dart';
-import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/services/watch_sync_helper.dart';
@@ -984,7 +983,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                       '[Settings] Failed to clear iCloud token: $e',
                     );
                   }
-                  KretaClient.clearReauthFlag();
+                  initData.client.clearReauthFlag();
                 }
                 if (!mounted) return;
                 context.go('/login');

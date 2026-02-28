@@ -21,5 +21,5 @@ Future<void> pickProfilePicture(
   await File(p.join(dataDir.path, "profile.webp")).writeAsBytes(bytes);
 
   data.profilePicture = bytes;
-  data.profilePictureUpdateNotifier.update();
+  data.profilePictureCubit?.notifyChanged();
 }

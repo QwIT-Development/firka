@@ -9,12 +9,14 @@ import 'package:firka/core/settings.dart';
 import 'package:firka/ui/components/firka_shadow.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:intl/intl.dart';
 
 import 'package:firka/app/app_state.dart';
+import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/phone/widgets/lesson.dart';
@@ -859,7 +861,7 @@ Future<void> showHomeworkBottomSheet(
                         shadow: true,
                         child: Card(
                           color: appStyle.colors.card,
-                          shadowColor: isLightMode.value
+                          shadowColor: context.watch<ThemeCubit>().state.isLightMode
                               ? null
                               : Colors.transparent,
                           child: Align(

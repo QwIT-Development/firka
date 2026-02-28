@@ -290,7 +290,7 @@ class LiveActivityService {
         );
       }
 
-      globalUpdate.update();
+      initData.themeCubit?.refresh();
     } catch (e) {
       _logger.warning('Error syncing global settings: $e');
     }

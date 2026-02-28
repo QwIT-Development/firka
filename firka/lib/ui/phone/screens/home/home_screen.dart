@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/api/client/kreta_stream.dart';
 import 'package:firka/api/exceptions/token.dart';
 import 'package:firka/core/extensions.dart';
@@ -14,12 +13,16 @@ import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/pages/extras/reauth_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import 'package:firka/data/widget.dart';
 import 'package:firka/core/debug_helper.dart';
+import 'package:firka/core/bloc/profile_picture_cubit.dart';
+import 'package:firka/core/bloc/reauth_cubit.dart';
+import 'package:firka/core/bloc/settings_cubit.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/core/image_preloader.dart';
 import 'package:firka/ui/shared/delayed_spinner.dart';
@@ -118,7 +121,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
 
     final now = DateTime.now();
     final shouldRunRecovery =
-        KretaClient.needsReauth ||
+        initData.client.needsReauth ||
         activeToken == null ||
         activeToken.expiryDate == null ||
         activeToken.expiryDate!.isBefore(now.add(const Duration(seconds: 60)));
@@ -153,7 +156,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
       if (selectedToken != null) {
         initData.client.model = selectedToken;
       }
-      KretaClient.clearReauthFlag();
+      initData.reauthCubit?.clear();
       logger.info('[Home] Secondary iCloud recovery applied a fresher token');
     } catch (e) {
       logger.warning('[Home] Secondary iCloud recovery failed: $e');
@@ -223,7 +226,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
       }
 
       if (!_disposed &&
-          (LiveActivityService.isTokenExpired || KretaClient.needsReauth)) {
+          (LiveActivityService.isTokenExpired || initData.client.needsReauth)) {
         activeToast = ActiveToastType.reauth;
         setState(() {
           toast = buildReauthToast(context, initData, () {
@@ -394,10 +397,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
 
     WidgetsBinding.instance.addObserver(this);
 
-    initData.settingsUpdateNotifier.addListener(settingsUpdateListener);
-    initData.profilePictureUpdateNotifier.addListener(_onProfilePictureUpdated);
-    KretaClient.reauthStateNotifier.addListener(_onReauthStateChanged);
-
     _setupNotificationListener();
     _setupWidgetDeepLinkListener();
 
@@ -410,24 +409,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
         await LiveActivityService.showConsentScreenIfNeeded();
       });
     }
-  }
-
-  void _onReauthStateChanged() {
-    if (!mounted || _disposed) return;
-    if (!KretaClient.needsReauth && activeToast == ActiveToastType.reauth) {
-      setState(() {
-        activeToast = ActiveToastType.none;
-        toast = null;
-      });
-    }
-  }
-
-  void settingsUpdateListener() {
-    if (mounted) setState(() {});
-  }
-
-  void _onProfilePictureUpdated() {
-    if (mounted) setState(() {});
   }
 
   Future<void> _preloadImages() async {
@@ -508,12 +489,35 @@ class _HomeScreenState extends FirkaState<HomeScreen>
     }
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    return Scaffold(
-      backgroundColor: appStyle.colors.background,
-      body: SafeArea(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height,
-          child: Stack(children: [widget.child, toast ?? SizedBox.shrink()]),
+    return BlocListener<SettingsCubit, SettingsState>(
+      listener: (context, state) {
+        if (mounted) setState(() {});
+      },
+      child: BlocListener<ProfilePictureCubit, ProfilePictureState>(
+        listener: (context, state) {
+          if (mounted) setState(() {});
+        },
+        child: BlocListener<ReauthCubit, ReauthState>(
+          listener: (context, state) {
+            if (!mounted || _disposed) return;
+            if (!state.needsReauth && activeToast == ActiveToastType.reauth) {
+              setState(() {
+                activeToast = ActiveToastType.none;
+                toast = null;
+              });
+            }
+          },
+          child: Scaffold(
+            backgroundColor: appStyle.colors.background,
+            body: SafeArea(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height,
+                child: Stack(
+                  children: [widget.child, toast ?? SizedBox.shrink()],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -557,11 +561,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    initData.settingsUpdateNotifier.removeListener(settingsUpdateListener);
-    initData.profilePictureUpdateNotifier.removeListener(
-      _onProfilePictureUpdated,
-    );
-    KretaClient.reauthStateNotifier.removeListener(_onReauthStateChanged);
 
     _disposed = true;
     _fetching = false;

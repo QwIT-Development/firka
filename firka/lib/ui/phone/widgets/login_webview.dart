@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:isar_community/isar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/services/watch_sync_helper.dart';
 import 'package:firka/api/consts.dart';
 import 'package:firka/api/token_grant.dart';
@@ -148,7 +147,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
 
                 if (!mounted) return NavigationDecision.prevent;
 
-                KretaClient.clearReauthFlag();
+                widget.data.reauthCubit?.clear();
                 if (Platform.isIOS) {
                   LiveActivityService.clearTokenExpiration();
                 }

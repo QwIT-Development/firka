@@ -111,11 +111,7 @@ GoRouter createAppRouter() {
                   key: state.pageKey,
                   child: DefaultAssetBundle(
                     bundle: FirkaBundle(),
-                    child: HomeMainScreen(
-                      initData,
-                      homeUpdateNotifier,
-                      homeUpdateFinishedNotifier,
-                    ),
+                    child: HomeMainScreen(initData),
                   ),
                 ),
                 routes: [
@@ -126,11 +122,7 @@ GoRouter createAppRouter() {
                       activeSubjectUid = uid;
                       return DefaultAssetBundle(
                         bundle: FirkaBundle(),
-                        child: HomeGradesSubjectScreen(
-                          initData,
-                          homeUpdateNotifier,
-                          homeUpdateFinishedNotifier,
-                        ),
+                        child: HomeGradesSubjectScreen(initData),
                       );
                     },
                   ),
@@ -146,11 +138,7 @@ GoRouter createAppRouter() {
                   key: state.pageKey,
                   child: DefaultAssetBundle(
                     bundle: FirkaBundle(),
-                    child: HomeGradesScreen(
-                      initData,
-                      homeUpdateNotifier,
-                      homeUpdateFinishedNotifier,
-                    ),
+                    child: HomeGradesScreen(initData),
                   ),
                 ),
                 routes: [
@@ -161,11 +149,7 @@ GoRouter createAppRouter() {
                       activeSubjectUid = uid;
                       return DefaultAssetBundle(
                         bundle: FirkaBundle(),
-                        child: HomeGradesSubjectScreen(
-                          initData,
-                          homeUpdateNotifier,
-                          homeUpdateFinishedNotifier,
-                        ),
+                        child: HomeGradesSubjectScreen(initData),
                       );
                     },
                   ),
@@ -181,11 +165,7 @@ GoRouter createAppRouter() {
                   key: state.pageKey,
                   child: DefaultAssetBundle(
                     bundle: FirkaBundle(),
-                    child: HomeTimetableScreen(
-                      initData,
-                      homeUpdateNotifier,
-                      homeUpdateFinishedNotifier,
-                    ),
+                    child: HomeTimetableScreen(initData),
                   ),
                 ),
                 routes: [
@@ -193,11 +173,7 @@ GoRouter createAppRouter() {
                     path: 'monthly',
                     builder: (context, state) => DefaultAssetBundle(
                       bundle: FirkaBundle(),
-                      child: HomeTimetableMonthlyScreen(
-                        initData,
-                        homeUpdateNotifier,
-                        homeUpdateFinishedNotifier,
-                      ),
+                      child: HomeTimetableMonthlyScreen(initData),
                     ),
                   ),
                   GoRoute(
@@ -207,11 +183,7 @@ GoRouter createAppRouter() {
                       activeSubjectUid = uid;
                       return DefaultAssetBundle(
                         bundle: FirkaBundle(),
-                        child: HomeGradesSubjectScreen(
-                          initData,
-                          homeUpdateNotifier,
-                          homeUpdateFinishedNotifier,
-                        ),
+                        child: HomeGradesSubjectScreen(initData),
                       );
                     },
                   ),

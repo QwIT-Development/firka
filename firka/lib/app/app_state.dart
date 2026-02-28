@@ -3,8 +3,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firka/api/client/kreta_client.dart';
+import 'package:firka/core/bloc/home_refresh_cubit.dart';
+import 'package:firka/core/bloc/profile_picture_cubit.dart';
+import 'package:firka/core/bloc/reauth_cubit.dart';
+import 'package:firka/core/bloc/settings_cubit.dart';
+import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/data/models/token_model.dart';
-import 'package:firka/core/state/update_notifier.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:logging/logging.dart';
@@ -23,13 +27,6 @@ GoRouter? appRouter;
 
 final dio = Dio();
 final isBeta = true;
-
-final ValueNotifier<bool> isLightMode = ValueNotifier<bool>(true);
-final UpdateNotifier globalUpdate = UpdateNotifier();
-
-/// Used by home shell screens for pull-to-refresh coordination.
-final UpdateNotifier homeUpdateNotifier = UpdateNotifier();
-final UpdateNotifier homeUpdateFinishedNotifier = UpdateNotifier();
 
 class DeviceInfo {
   String model;
@@ -56,8 +53,11 @@ class AppInitialization {
   bool hasWatchListener = false;
   Uint8List? profilePicture;
   SettingsStore settings;
-  UpdateNotifier settingsUpdateNotifier = UpdateNotifier();
-  UpdateNotifier profilePictureUpdateNotifier = UpdateNotifier();
+  ThemeCubit? themeCubit;
+  SettingsCubit? settingsCubit;
+  ProfilePictureCubit? profilePictureCubit;
+  ReauthCubit? reauthCubit;
+  HomeRefreshCubit? homeRefreshCubit;
   AppLocalizations l10n;
   final GlobalKey<NavigatorState> navigatorKey;
 

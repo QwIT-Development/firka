@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:isar_community/isar.dart';
 
 import 'package:firka/app/app_state.dart';
+import 'package:firka/core/bloc/reauth_cubit.dart';
 import 'package:firka/data/models/token_model.dart';
 import 'package:firka/data/util.dart';
 import 'package:firka/core/debug_helper.dart';
@@ -60,25 +61,22 @@ class KretaClient {
   Completer<void>? _tokenMutexCompleter;
   TokenModel model;
   Isar isar;
+  final ReauthCubit _reauthCubit;
 
-  static bool needsReauth = false;
+  KretaClient(this.model, this.isar, this._reauthCubit);
 
-  static final ValueNotifier<bool> reauthStateNotifier = ValueNotifier(false);
+  bool get needsReauth => _reauthCubit.state.needsReauth;
 
-  static void clearReauthFlag() {
-    needsReauth = false;
-    reauthStateNotifier.value = false;
+  void clearReauthFlag() {
+    _reauthCubit.clear();
     debugPrint('[KretaClient] Reauth flag cleared');
   }
 
-  static Future<void> _setReauthFlag() async {
+  Future<void> _setReauthFlag() async {
     if (needsReauth) return;
-    needsReauth = true;
-    reauthStateNotifier.value = true;
+    _reauthCubit.setNeedsReauth(true);
     debugPrint('[KretaClient] Reauth flag set');
   }
-
-  KretaClient(this.model, this.isar);
 
   Future<TokenModel> _refreshModelWithCrossDeviceLease(
     TokenModel sourceToken,

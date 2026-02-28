@@ -442,7 +442,7 @@ class WatchSyncHelper {
     if (initDone) {
       initData.tokens = [];
     }
-    KretaClient.clearReauthFlag();
+    if (initDone) initData.reauthCubit?.clear();
 
     await prefs.setBool(_iosFreshInstallHandledKey, true);
     return true;
@@ -529,7 +529,7 @@ class WatchSyncHelper {
         );
         final expiryDate = token?.expiryDate;
         if (expiryDate != null && expiryDate.isAfter(DateTime.now())) {
-          KretaClient.clearReauthFlag();
+          if (initDone) initData.reauthCubit?.clear();
           debugPrint(
             '[WatchSync] Cleared reauth flag after iCloud notification (token is valid)',
           );
@@ -562,7 +562,7 @@ class WatchSyncHelper {
       return {'error': 'token_incomplete'};
     }
 
-    if (KretaClient.needsReauth) {
+    if (initData.client.needsReauth) {
       debugPrint('[WatchSync] iPhone needs reauth');
       return {'error': 'needsReauth'};
     }
@@ -699,7 +699,7 @@ class WatchSyncHelper {
       initData.tokens = await initData.isar.tokenModels.where().findAll();
       if (isForActiveAccount) {
         initData.client.model = newToken;
-        KretaClient.clearReauthFlag();
+        if (initDone) initData.reauthCubit?.clear();
       } else {
         debugPrint(
           '[WatchSync] Stored token for inactive account ($watchStudentIdNorm), active is $expectedStudentIdNorm',
@@ -918,7 +918,7 @@ class WatchSyncHelper {
             (expectedStudentIdNorm == null ||
                 newToken.studentIdNorm == expectedStudentIdNorm);
         if (shouldClearReauth) {
-          KretaClient.clearReauthFlag();
+          if (initDone) initData.reauthCubit?.clear();
         }
 
         debugPrint(
@@ -1008,7 +1008,7 @@ class WatchSyncHelper {
             currentToken.accessToken != null &&
             currentToken.refreshToken != null &&
             currentToken.expiryDate != null &&
-            !KretaClient.needsReauth) {
+            !(initData.reauthCubit?.state.needsReauth ?? false)) {
           debugPrint('[WatchSync] Sending iPhone token to Watch (no response)');
           await _sendTokenToWatchInternal(
             currentToken,
@@ -1025,7 +1025,7 @@ class WatchSyncHelper {
             currentToken.accessToken != null &&
             currentToken.refreshToken != null &&
             currentToken.expiryDate != null &&
-            !KretaClient.needsReauth) {
+            !(initData.reauthCubit?.state.needsReauth ?? false)) {
           debugPrint(
             '[WatchSync] Sending iPhone token to Watch (Watch has no token)',
           );
@@ -1058,7 +1058,7 @@ class WatchSyncHelper {
             currentToken.accessToken != null &&
             currentToken.refreshToken != null &&
             currentToken.expiryDate != null &&
-            !KretaClient.needsReauth) {
+            !(initData.reauthCubit?.state.needsReauth ?? false)) {
           await _sendTokenToWatchInternal(
             currentToken,
             allowExpiredAccessToken: true,
@@ -1080,7 +1080,7 @@ class WatchSyncHelper {
               currentToken.expiryDate,
               skew: const Duration(),
             ) &&
-            !KretaClient.needsReauth) {
+            !(initData.reauthCubit?.state.needsReauth ?? false)) {
           await _sendTokenToWatchInternal(
             currentToken,
             allowExpiredAccessToken: true,
@@ -1135,7 +1135,7 @@ class WatchSyncHelper {
 
         if (expectedStudentIdNorm == null ||
             newToken.studentIdNorm == expectedStudentIdNorm) {
-          KretaClient.clearReauthFlag();
+          if (initDone) initData.reauthCubit?.clear();
         }
 
         debugPrint(

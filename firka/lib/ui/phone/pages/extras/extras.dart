@@ -1,12 +1,14 @@
-import 'package:firka/data/models/app_settings_model.dart';
-import 'package:firka/core/settings.dart';
-import 'package:firka/ui/components/firka_shadow.dart';
-import 'package:firka/app/app_state.dart';
-import 'package:firka/ui/theme/style.dart';
-import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
+import 'package:firka/app/app_state.dart';
+import 'package:firka/core/bloc/theme_cubit.dart';
+import 'package:firka/core/settings.dart';
+import 'package:firka/data/models/app_settings_model.dart';
+import 'package:firka/ui/components/firka_shadow.dart';
+import 'package:firka/ui/shared/firka_icon.dart';
+import 'package:firka/ui/theme/style.dart';
 import 'package:go_router/go_router.dart';
 
 void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
@@ -28,7 +30,9 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
           shadow: true,
           child: Card(
             color: appStyle.colors.card,
-            shadowColor: isLightMode.value ? null : Colors.transparent,
+            shadowColor: context.watch<ThemeCubit>().state.isLightMode
+                ? null
+                : Colors.transparent,
             child: Align(
               alignment: Alignment.centerLeft,
               child: Padding(
@@ -130,7 +134,11 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                       shadow: true,
                                       child: Card(
                                         color: appStyle.colors.card,
-                                        shadowColor: isLightMode.value
+                                        shadowColor:
+                                            context
+                                                .watch<ThemeCubit>()
+                                                .state
+                                                .isLightMode
                                             ? null
                                             : Colors.transparent,
                                         child: Align(
@@ -179,7 +187,11 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                       shadow: true,
                                       child: Card(
                                         color: appStyle.colors.card,
-                                        shadowColor: isLightMode.value
+                                        shadowColor:
+                                            context
+                                                .watch<ThemeCubit>()
+                                                .state
+                                                .isLightMode
                                             ? null
                                             : Colors.transparent,
                                         child: Align(
@@ -238,6 +250,8 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                             onTap: () async {
                               if (isDebug()) return;
                               if (debugCounter == 10) {
+                                final navigator = Navigator.of(context);
+                                final router = GoRouter.of(context);
                                 data.settings
                                     .group("settings")
                                     .setBoolean(
@@ -257,8 +271,8 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                     .group("settings")["developer_enabled"]!
                                     .postUpdate();
 
-                                context.pop();
-                                context.go('/home');
+                                navigator.pop();
+                                router.go('/home');
                               } else if (debugCounter < 10) {
                                 debugCounter++;
                               }

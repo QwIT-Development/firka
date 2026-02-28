@@ -5,6 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:firka/app/app_state.dart';
+import 'package:firka/core/bloc/home_refresh_cubit.dart';
+import 'package:firka/core/bloc/profile_picture_cubit.dart';
+import 'package:firka/core/bloc/reauth_cubit.dart';
+import 'package:firka/core/bloc/settings_cubit.dart';
+import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/services/active_account_helper.dart';
 import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/data/models/app_settings_model.dart';
@@ -101,6 +106,9 @@ Future<void> initLang(AppInitialization data) async {
 }
 
 void initTheme(AppInitialization data) {
+  final themeCubit = data.themeCubit;
+  if (themeCubit == null) return;
+
   final brightness =
       SchedulerBinding.instance.platformDispatcher.platformBrightness;
 
@@ -109,24 +117,29 @@ void initTheme(AppInitialization data) {
       .activeIndex) {
     case 1:
       appStyle = lightStyle;
-      isLightMode.value = true;
+      themeCubit.setLightMode(true);
       break;
     case 2:
       appStyle = darkStyle;
-      isLightMode.value = false;
+      themeCubit.setLightMode(false);
       break;
     default:
       if (brightness == Brightness.dark) {
         appStyle = darkStyle;
-        isLightMode.value = false;
+        themeCubit.setLightMode(false);
       } else {
         appStyle = lightStyle;
-        isLightMode.value = true;
+        themeCubit.setLightMode(true);
       }
   }
 }
 
 Future<void> _initData(AppInitialization init) async {
+  init.themeCubit ??= ThemeCubit();
+  init.settingsCubit ??= SettingsCubit();
+  init.profilePictureCubit ??= ProfilePictureCubit();
+  init.reauthCubit ??= ReauthCubit();
+  init.homeRefreshCubit ??= HomeRefreshCubit();
   await init.settings.load(init.isar.appSettingsModels);
   await initLang(init);
   initTheme(init);
@@ -136,7 +149,6 @@ Future<void> _initData(AppInitialization init) async {
   var dispatcher = SchedulerBinding.instance.platformDispatcher;
 
   dispatcher.onPlatformBrightnessChanged = () {
-    globalUpdate.update();
     initTheme(init);
   };
 
@@ -158,7 +170,7 @@ Future<void> _initData(AppInitialization init) async {
           "[Init] System locale changed in auto mode: $previousLocale -> $nextLocale",
         );
       }
-      globalUpdate.update();
+      init.themeCubit?.refresh();
     }());
   };
 
@@ -197,12 +209,12 @@ Future<void> _initData(AppInitialization init) async {
       return;
     }
     logger.fine("Initializing kréta client as: ${token.studentId}");
-    init.client = KretaClient(token, init.isar);
+    init.client = KretaClient(token, init.isar, init.reauthCubit!);
 
     if (Platform.isIOS) {
       final expiryDate = token.expiryDate;
       if (expiryDate != null && expiryDate.isAfter(DateTime.now())) {
-        KretaClient.clearReauthFlag();
+        init.reauthCubit?.clear();
       }
 
       unawaited(() async {
@@ -286,10 +298,6 @@ Future<AppInitialization> initializeApp() async {
   }
 
   await _initData(init);
-
-  init.settingsUpdateNotifier.addListener(() {
-    logger.finest("Settings updated");
-  });
 
   return init;
 }

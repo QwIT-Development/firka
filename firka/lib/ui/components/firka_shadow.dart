@@ -1,6 +1,7 @@
-import 'package:firka/app/app_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/ui/theme/style.dart';
 
 class FirkaShadow extends StatelessWidget {
@@ -31,7 +32,8 @@ class FirkaShadow extends StatelessWidget {
       return ClipRRect(borderRadius: borderRadius, child: child);
     }
 
-    if (isLightMode.value) {
+    final isLight = context.watch<ThemeCubit>().state.isLightMode;
+    if (isLight) {
       return child;
     } else {
       return Container(
