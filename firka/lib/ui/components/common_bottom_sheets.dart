@@ -16,8 +16,9 @@ import 'package:intl/intl.dart';
 
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
-import 'package:firka/ui/phone/screens/home/home_screen.dart';
+import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/phone/widgets/lesson.dart';
+import 'package:go_router/go_router.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka/api/model/timetable.dart';
 import 'package:firka/ui/components/firka_card.dart';
@@ -295,11 +296,14 @@ Future<void> showLessonBottomSheet(
                           color: appStyle.colors.buttonSecondaryFill,
                         ),
                         onTap: () {
+                          activeSubjectUid = lesson.subject!.uid;
+                          subjectName = lesson.subject!.name;
+                          subjectId = lesson.subject!.uid;
+                          subjectCategory = lesson.subject!.category.name ?? "";
+                          subjectInfo = [];
                           Navigator.pop(context);
-                          pageNavNotifier.value = PageNavData(
-                            HomePage.grades,
-                            lesson.subject!.uid,
-                            lesson.subject!.name,
+                          context.push(
+                            '/timetable/subject/${lesson.subject!.uid}',
                           );
                         },
                       ),
@@ -728,11 +732,15 @@ Future<void> showGradeBottomSheet(
                                 color: appStyle.colors.buttonSecondaryFill,
                               ),
                               onTap: () {
+                                activeSubjectUid = grade.subject.uid;
+                                subjectName = grade.subject.name;
+                                subjectId = grade.subject.uid;
+                                subjectCategory =
+                                    grade.subject.category.name ?? "";
+                                subjectInfo = [];
                                 Navigator.pop(context);
-                                pageNavNotifier.value = PageNavData(
-                                  HomePage.grades,
-                                  grade.subject.uid,
-                                  grade.subject.name,
+                                context.go(
+                                  '/grades/subject/${grade.subject.uid}',
                                 );
                               },
                             ),
@@ -955,12 +963,13 @@ Future<void> showHomeworkBottomSheet(
                           color: appStyle.colors.buttonSecondaryFill,
                         ),
                         onTap: () {
+                          activeSubjectUid = homework.subject.uid;
+                          subjectName = homework.subjectName;
+                          subjectId = homework.subject.uid;
+                          subjectCategory = "";
+                          subjectInfo = [];
                           Navigator.pop(context);
-                          pageNavNotifier.value = PageNavData(
-                            HomePage.grades,
-                            homework.subject.uid,
-                            homework.subjectName,
-                          );
+                          context.push('/home/subject/${homework.subject.uid}');
                         },
                       ),
                     ),

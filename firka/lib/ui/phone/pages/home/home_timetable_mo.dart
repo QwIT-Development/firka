@@ -7,6 +7,7 @@ import 'package:firka/core/settings.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/shared/delayed_spinner.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
@@ -22,13 +23,11 @@ class HomeTimetableMonthlyScreen extends StatefulWidget {
   final AppInitialization data;
   final UpdateNotifier updateNotifier;
   final UpdateNotifier finishNotifier;
-  final void Function(int) pageController;
 
   const HomeTimetableMonthlyScreen(
     this.data,
     this.updateNotifier,
-    this.finishNotifier,
-    this.pageController, {
+    this.finishNotifier, {
     super.key,
   });
 
@@ -392,7 +391,7 @@ class _HomeTimetableMonthlyScreen
                                 ),
                               ),
                               onTap: () {
-                                widget.pageController(0);
+                                context.pop();
                               },
                             ),
                             // Nincs elkészítve jelenleg: Dolgozat stb hozzáadása(?)

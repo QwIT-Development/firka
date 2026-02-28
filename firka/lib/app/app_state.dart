@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/data/models/token_model.dart';
 import 'package:firka/core/state/update_notifier.dart';
@@ -17,11 +18,18 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 late AppInitialization initData;
 bool initDone = false;
 
+/// Set when app router is created; used for deep links and notifications.
+GoRouter? appRouter;
+
 final dio = Dio();
 final isBeta = true;
 
 final ValueNotifier<bool> isLightMode = ValueNotifier<bool>(true);
 final UpdateNotifier globalUpdate = UpdateNotifier();
+
+/// Used by home shell screens for pull-to-refresh coordination.
+final UpdateNotifier homeUpdateNotifier = UpdateNotifier();
+final UpdateNotifier homeUpdateFinishedNotifier = UpdateNotifier();
 
 class DeviceInfo {
   String model;

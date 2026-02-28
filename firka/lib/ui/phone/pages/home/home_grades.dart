@@ -6,6 +6,7 @@ import 'package:firka/ui/components/grade_helpers.dart';
 import 'package:firka/ui/phone/widgets/grade_chart.dart';
 import 'package:firka/ui/shared/grade_small_card.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:firka/api/consts.dart';
 import 'package:firka/api/model/class_group.dart';
@@ -23,13 +24,11 @@ class HomeGradesScreen extends StatefulWidget {
   final AppInitialization data;
   final UpdateNotifier updateNotifier;
   final UpdateNotifier finishNotifier;
-  final void Function(int) pageController;
 
   const HomeGradesScreen(
     this.data,
     this.updateNotifier,
-    this.finishNotifier,
-    this.pageController, {
+    this.finishNotifier, {
     super.key,
   });
 
@@ -185,7 +184,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                 subjectInfo = subjects
                     .where((s) => s.uid == subject.uid)
                     .toList();
-                widget.pageController(1);
+                context.go('/grades/subject/${subject.uid}');
               },
             ),
           );
@@ -201,7 +200,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                 subjectInfo = subjects
                     .where((s) => s.uid == subject.uid)
                     .toList();
-                widget.pageController(1);
+                context.go('/grades/subject/${subject.uid}');
               },
             ),
           );

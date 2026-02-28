@@ -5,8 +5,8 @@ import 'package:firka/data/models/app_settings_model.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/ui/components/firka_button.dart';
 import 'package:firka/ui/theme/style.dart';
-import 'package:firka/ui/phone/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/app/app_state.dart';
@@ -123,12 +123,7 @@ class _BetaScreenState extends FirkaState<BetaScreen> {
                           .group("settings")["beta_warning"]!
                           .postUpdate();
                       if (!context.mounted) return;
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (context) => HomeScreen(widget.data, false),
-                        ),
-                        (route) => false,
-                      );
+                      context.go('/home');
                     },
                   ),
                 ],

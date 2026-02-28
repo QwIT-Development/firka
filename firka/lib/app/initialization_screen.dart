@@ -6,16 +6,21 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/app/initialization.dart';
 import 'package:firka/core/firka_bundle.dart';
+import 'package:firka/routing/app_router.dart';
 import 'package:firka/services/watch_sync_helper.dart';
 import 'package:firka/l10n/app_localizations.dart';
-import 'package:firka/ui/phone/screens/debug/debug_screen.dart';
-import 'package:firka/ui/phone/screens/home/home_screen.dart';
-import 'package:firka/ui/phone/screens/login/login_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:go_router/go_router.dart';
 
-class InitializationScreen extends StatelessWidget {
-  InitializationScreen({super.key});
+class InitializationScreen extends StatefulWidget {
+  const InitializationScreen({super.key});
 
+  @override
+  State<InitializationScreen> createState() => _InitializationScreenState();
+}
+
+class _InitializationScreenState extends State<InitializationScreen> {
+  GoRouter? _router;
   final Future<AppInitialization> _init = initializeApp().timeout(
     const Duration(seconds: 20),
   );
@@ -25,7 +30,6 @@ class InitializationScreen extends StatelessWidget {
     return FutureBuilder<AppInitialization>(
       future: _init,
       builder: (context, snapshot) {
-        // Check if initialization is complete
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasError) {
             logger.shout(
@@ -36,25 +40,21 @@ class InitializationScreen extends StatelessWidget {
 
             FlutterNativeSplash.remove();
 
-            // Handle initialization error
             return MaterialApp(
-              key: ValueKey('errorPage'),
+              key: const ValueKey('errorPage'),
               home: DefaultAssetBundle(
                 bundle: FirkaBundle(),
                 child: Scaffold(
                   body: Center(
                     child: Text(
                       'Error initializing app: ${snapshot.error}',
-                      style: TextStyle(color: Colors.red),
+                      style: const TextStyle(color: Colors.red),
                     ),
                   ),
                 ),
               ),
             );
           }
-
-          // Initialization successful, determine which screen to show
-          Widget screen;
 
           assert(snapshot.data != null);
           initData = snapshot.data!;
@@ -89,43 +89,33 @@ class InitializationScreen extends StatelessWidget {
                     watchChannel.invokeMethod('sendMessageToWatch', {
                       "id": "pong",
                     });
-                    navigatorKey.currentState?.push(
-                      MaterialPageRoute(
-                        builder: (context) => HomeScreen(
-                          initData,
-                          true,
-                          model: msg["model"] as String? ?? "unknown",
-                        ),
-                      ),
-                    );
+                    _router?.go('/home');
                   }
               }
             };
           }
 
-          if (snapshot.data!.tokens.isEmpty) {
-            screen = LoginScreen(initData, key: ValueKey('loginScreen'));
-          } else {
-            screen = HomeScreen(initData, false, key: ValueKey('homeScreen'));
+          if (_router == null) {
+            _router = createAppRouter();
+            appRouter = _router;
           }
 
-          return MaterialApp(
+          return MaterialApp.router(
             title: 'Firka',
-            key: ValueKey('firkaApp'),
-            navigatorKey: navigatorKey,
+            key: const ValueKey('firkaApp'),
+            routerConfig: _router!,
             theme: ThemeData(
               primarySwatch: Colors.lightGreen,
               visualDensity: VisualDensity.adaptivePlatformDensity,
             ),
-            localizationsDelegates: [
+            localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
-            home: DefaultAssetBundle(
-              bundle: FirkaBundle(),
-              child: ValueListenableBuilder<bool>(
+            builder: (context, child) {
+              return ValueListenableBuilder<bool>(
                 valueListenable: isLightMode,
                 builder: (context, isLight, _) {
                   final overlay = SystemUiOverlayStyle(
@@ -143,24 +133,10 @@ class InitializationScreen extends StatelessWidget {
 
                   return AnnotatedRegion<SystemUiOverlayStyle>(
                     value: overlay,
-                    child: screen,
+                    child: child ?? const SizedBox.shrink(),
                   );
                 },
-              ),
-            ),
-            routes: {
-              '/login': (context) => DefaultAssetBundle(
-                bundle: FirkaBundle(),
-                child: LoginScreen(initData, key: ValueKey('loginScreen')),
-              ),
-              '/home': (context) => DefaultAssetBundle(
-                bundle: FirkaBundle(),
-                child: HomeScreen(initData, false, key: ValueKey('homeScreen')),
-              ),
-              '/debug': (context) => DefaultAssetBundle(
-                bundle: FirkaBundle(),
-                child: DebugScreen(initData, key: ValueKey('debugScreen')),
-              ),
+              );
             },
           );
         }

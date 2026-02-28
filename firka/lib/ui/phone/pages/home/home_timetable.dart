@@ -13,6 +13,7 @@ import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:firka/ui/phone/widgets/bubble_test.dart';
 import 'package:firka/ui/shared/delayed_spinner.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
@@ -29,13 +30,11 @@ class HomeTimetableScreen extends StatefulWidget {
   final AppInitialization data;
   final UpdateNotifier updateNotifier;
   final UpdateNotifier finishNotifier;
-  final void Function(int) pageController;
 
   const HomeTimetableScreen(
     this.data,
     this.updateNotifier,
-    this.finishNotifier,
-    this.pageController, {
+    this.finishNotifier, {
     super.key,
   });
 
@@ -555,7 +554,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                                   ),
                                 ),
                                 onTap: () {
-                                  widget.pageController(1);
+                                  context.push('/timetable/monthly');
                                 },
                               ),
                               /* TODO: 1.1.0

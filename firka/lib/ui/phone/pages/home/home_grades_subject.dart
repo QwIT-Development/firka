@@ -7,6 +7,7 @@ import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
@@ -19,13 +20,11 @@ class HomeGradesSubjectScreen extends StatefulWidget {
   final AppInitialization data;
   final UpdateNotifier updateNotifier;
   final UpdateNotifier finishNotifier;
-  final void Function(int) pageController;
 
   const HomeGradesSubjectScreen(
     this.data,
     this.updateNotifier,
-    this.finishNotifier,
-    this.pageController, {
+    this.finishNotifier, {
     super.key,
   });
 
@@ -142,235 +141,241 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
         }
       }
 
-      return Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 12),
-            Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Transform.translate(
-                          offset: const Offset(-4, 0),
-                          child: GestureDetector(
-                            child: FirkaIconWidget(
-                              FirkaIconType.majesticons,
-                              Majesticon.chevronLeftLine,
-                              color: appStyle.colors.textSecondary,
-                            ),
-                            onTap: () {
-                              widget.pageController(0);
-                            },
-                          ),
-                        ),
-                        Transform.translate(
-                          offset: const Offset(-4, 0),
-                          child: Text(
-                            widget.data.l10n.subjects,
-                            style: appStyle.fonts.B_16R.apply(
-                              color: appStyle.colors.textPrimary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    GestureDetector(
-                      child: Card(
-                        color: appStyle.colors.buttonSecondaryFill,
-                        child: Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: FirkaIconWidget(
-                            FirkaIconType.majesticons,
-                            Majesticon.menuSolid,
-                            size: 26.0,
-                            color: appStyle.colors.accent,
-                          ),
-                        ),
-                      ),
-                      onTap: () {
-                        // Navigator.push(context, Settings)
-                        // showSubjectBottomSheetSettings(
-                        //   context,
-                        //   widget.data,
-                        //   aGrade.subject,
-                        // );
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            // SizedBox(height: 16),
-            // GradeChart(grades: grades?.toList() ?? []),
-            SizedBox(
-              height:
-                  MediaQuery.of(context).size.height -
-                  MediaQuery.of(context).padding.top -
-                  230,
-              child: ListView(
+      return Material(
+        color: appStyle.colors.background,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 12),
+              Column(
                 children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Card(
-                        shadowColor: const Color.fromRGBO(0, 0, 0, 0),
-                        color: appStyle.colors.a15p,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsetsGeometry.all(6),
-                          child: ClassIconWidget(
-                            uid: aGrade.subject.uid,
-                            className: aGrade.subject.name,
-                            category: aGrade.subject.category.name!,
-                            color: appStyle.colors.accent,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        aGrade.subject.name,
-                        style: appStyle.fonts.H_H2.apply(
-                          color: appStyle.colors.textPrimary,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        aGrade.teacher,
-                        style: appStyle.fonts.B_16R.apply(
-                          color: appStyle.colors.textSecondary,
-                        ),
-                      ),
-                      SizedBox(height: 15),
-                    ],
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(left: 4),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: gradeWidgets,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      return Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
-              children: [
-                Row(
-                  children: [
-                    Transform.translate(
-                      offset: const Offset(-4, 0),
-                      child: GestureDetector(
-                        child: FirkaIconWidget(
-                          FirkaIconType.majesticons,
-                          Majesticon.chevronLeftLine,
-                          color: appStyle.colors.textSecondary,
-                        ),
-                        onTap: () {
-                          widget.pageController(0);
-                        },
-                      ),
-                    ),
-                    Transform.translate(
-                      offset: const Offset(-4, 1),
-                      child: Text(
-                        widget.data.l10n.subjects,
-                        style: appStyle.fonts.B_16R.apply(
-                          color: appStyle.colors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            SizedBox(
-              height:
-                  MediaQuery.of(context).size.height -
-                  MediaQuery.of(context).padding.top -
-                  230,
-              child: ListView(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Card(
-                        shadowColor: const Color.fromRGBO(0, 0, 0, 0),
-                        color: appStyle.colors.a15p,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsetsGeometry.all(6),
-                          child: ClassIconWidget(
-                            uid: subjectId,
-                            className: subjectName,
-                            category: subjectCategory,
-                            color: appStyle.colors.accent,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        subjectName,
-                        style: appStyle.fonts.H_H2.apply(
-                          color: appStyle.colors.textPrimary,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        widget.data.l10n.unknown_teacher,
-                        style: appStyle.fonts.B_16R.apply(
-                          color: appStyle.colors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height:
-                        MediaQuery.of(context).size.height -
-                        MediaQuery.of(context).padding.top -
-                        320,
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+                      Row(
                         children: [
-                          SvgPicture.asset(
-                            "assets/images/logos/dave.svg",
-                            width: 48,
-                            height: 48,
+                          Transform.translate(
+                            offset: const Offset(-4, 0),
+                            child: GestureDetector(
+                              child: FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.chevronLeftLine,
+                                color: appStyle.colors.textSecondary,
+                              ),
+                              onTap: () {
+                                context.pop();
+                              },
+                            ),
                           ),
-                          SizedBox(height: 12),
-                          Text(
-                            widget.data.l10n.no_grades,
-                            style: appStyle.fonts.B_16R.apply(
-                              color: appStyle.colors.textSecondary,
+                          Transform.translate(
+                            offset: const Offset(-4, 0),
+                            child: Text(
+                              widget.data.l10n.subjects,
+                              style: appStyle.fonts.B_16R.apply(
+                                color: appStyle.colors.textPrimary,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
+                      GestureDetector(
+                        child: Card(
+                          color: appStyle.colors.buttonSecondaryFill,
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: FirkaIconWidget(
+                              FirkaIconType.majesticons,
+                              Majesticon.menuSolid,
+                              size: 26.0,
+                              color: appStyle.colors.accent,
+                            ),
+                          ),
+                        ),
+                        onTap: () {
+                          // Navigator.push(context, Settings)
+                          // showSubjectBottomSheetSettings(
+                          //   context,
+                          //   widget.data,
+                          //   aGrade.subject,
+                          // );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ),
-          ],
+              // SizedBox(height: 16),
+              // GradeChart(grades: grades?.toList() ?? []),
+              SizedBox(
+                height:
+                    MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).padding.top -
+                    230,
+                child: ListView(
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Card(
+                          shadowColor: const Color.fromRGBO(0, 0, 0, 0),
+                          color: appStyle.colors.a15p,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsetsGeometry.all(6),
+                            child: ClassIconWidget(
+                              uid: aGrade.subject.uid,
+                              className: aGrade.subject.name,
+                              category: aGrade.subject.category.name!,
+                              color: appStyle.colors.accent,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          aGrade.subject.name,
+                          style: appStyle.fonts.H_H2.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          aGrade.teacher,
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textSecondary,
+                          ),
+                        ),
+                        SizedBox(height: 15),
+                      ],
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(left: 4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: gradeWidgets,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      return Material(
+        color: appStyle.colors.background,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
+                children: [
+                  Row(
+                    children: [
+                      Transform.translate(
+                        offset: const Offset(-4, 0),
+                        child: GestureDetector(
+                          child: FirkaIconWidget(
+                            FirkaIconType.majesticons,
+                            Majesticon.chevronLeftLine,
+                            color: appStyle.colors.textSecondary,
+                          ),
+                          onTap: () {
+                            context.pop();
+                          },
+                        ),
+                      ),
+                      Transform.translate(
+                        offset: const Offset(-4, 1),
+                        child: Text(
+                          widget.data.l10n.subjects,
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              SizedBox(
+                height:
+                    MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).padding.top -
+                    230,
+                child: ListView(
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Card(
+                          shadowColor: const Color.fromRGBO(0, 0, 0, 0),
+                          color: appStyle.colors.a15p,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsetsGeometry.all(6),
+                            child: ClassIconWidget(
+                              uid: subjectId,
+                              className: subjectName,
+                              category: subjectCategory,
+                              color: appStyle.colors.accent,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          subjectName,
+                          style: appStyle.fonts.H_H2.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          widget.data.l10n.unknown_teacher,
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height:
+                          MediaQuery.of(context).size.height -
+                          MediaQuery.of(context).padding.top -
+                          320,
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SvgPicture.asset(
+                              "assets/images/logos/dave.svg",
+                              width: 48,
+                              height: 48,
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              widget.data.l10n.no_grades,
+                              style: appStyle.fonts.B_16R.apply(
+                                color: appStyle.colors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }

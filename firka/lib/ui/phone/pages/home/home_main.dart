@@ -4,13 +4,13 @@ import 'package:firka/api/client/kreta_stream.dart';
 import 'package:firka/api/model/grade.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/ui/components/common_bottom_sheets.dart';
-import 'package:firka/ui/phone/screens/message/message_screen.dart';
 import 'package:firka/ui/phone/widgets/home_main_starting_soon.dart';
 import 'package:firka/ui/phone/widgets/homework.dart';
 import 'package:firka/ui/phone/widgets/info_board_item.dart';
 import 'package:firka/ui/phone/widgets/lesson_small.dart';
 import 'package:firka/ui/shared/delayed_spinner.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import 'package:firka/api/model/homework.dart';
@@ -326,11 +326,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
           GestureDetector(
             child: InfoBoardItemWidget(item),
             onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => MessageScreen(widget.data, item),
-                ),
-              );
+              context.push('/message', extra: item);
             },
           ),
           item.date,

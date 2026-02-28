@@ -3,14 +3,11 @@ import 'package:firka/core/settings.dart';
 import 'package:firka/ui/components/firka_shadow.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
-import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import 'package:firka/core/firka_bundle.dart';
-import 'package:firka/ui/phone/screens/debug/debug_screen.dart';
-import 'package:firka/ui/phone/screens/home/home_screen.dart';
+import 'package:go_router/go_router.dart';
 
 void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
   Widget Function(double) debugBtn = (_) => const SizedBox();
@@ -20,17 +17,9 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
   if (isDeveloper()) {
     debugBtn = (double itemWidth) => GestureDetector(
       // Fejlesztői menü
-      onTap: () => {
-        Navigator.pop(context),
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DefaultAssetBundle(
-              bundle: FirkaBundle(),
-              child: DebugScreen(data),
-            ),
-          ),
-        ),
+      onTap: () {
+        context.pop();
+        context.push('/debug');
       },
       child: SizedBox(
         height: 60,
@@ -126,20 +115,11 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                 GestureDetector(
                                   // Fiókod
                                   onTap: () {
-                                    Navigator.pop(context);
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            DefaultAssetBundle(
-                                              bundle: FirkaBundle(),
-                                              child: SettingsScreen(
-                                                data,
-                                                data.settings.items.group(
-                                                  "profile_settings",
-                                                ),
-                                              ),
-                                            ),
+                                    context.pop();
+                                    context.push(
+                                      '/settings',
+                                      extra: data.settings.items.group(
+                                        "profile_settings",
                                       ),
                                     );
                                   },
@@ -189,20 +169,8 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                 GestureDetector(
                                   // Beállítás
                                   onTap: () {
-                                    Navigator.pop(context);
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            DefaultAssetBundle(
-                                              bundle: FirkaBundle(),
-                                              child: SettingsScreen(
-                                                data,
-                                                data.settings.items,
-                                              ),
-                                            ),
-                                      ),
-                                    );
+                                    context.pop();
+                                    context.push('/settings');
                                   },
                                   child: SizedBox(
                                     height: 60,
@@ -289,22 +257,8 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                     .group("settings")["developer_enabled"]!
                                     .postUpdate();
 
-                                Navigator.of(
-                                  navigatorKey.currentContext!,
-                                ).popUntil((route) => false);
-                                Navigator.push(
-                                  navigatorKey.currentContext!,
-                                  MaterialPageRoute(
-                                    builder: (context) => DefaultAssetBundle(
-                                      bundle: FirkaBundle(),
-                                      child: HomeScreen(
-                                        data,
-                                        false,
-                                        key: ValueKey('homeScreen'),
-                                      ),
-                                    ),
-                                  ),
-                                );
+                                context.pop();
+                                context.go('/home');
                               } else if (debugCounter < 10) {
                                 debugCounter++;
                               }

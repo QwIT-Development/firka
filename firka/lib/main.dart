@@ -6,7 +6,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/app/initialization.dart';
 import 'package:firka/app/initialization_screen.dart';
-import 'package:firka/ui/phone/pages/error/error_page.dart';
 
 void main() async {
   logger = Logger("Firka");
@@ -35,14 +34,8 @@ void main() async {
       logger.shout('Caught error: $error');
       logger.shout('Stack trace: $stackTrace');
 
-      navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (context) => ErrorPage(
-            key: ValueKey('errorPage'),
-            exception: error.toString(),
-          ),
-        ),
-      );
+      final message = '$error\n$stackTrace';
+      appRouter?.go('/error', extra: message);
     },
   );
 }

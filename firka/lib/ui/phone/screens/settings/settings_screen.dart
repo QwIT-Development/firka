@@ -9,10 +9,10 @@ import 'package:firka/ui/components/firka_button.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
-import 'package:firka/ui/phone/screens/login/login_screen.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'package:isar_community/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
@@ -185,15 +185,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                 launchUrlString("https://firka.app/privacy");
                 return;
               } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DefaultAssetBundle(
-                      bundle: FirkaBundle(),
-                      child: SettingsScreen(widget.data, item.children),
-                    ),
-                  ),
-                );
+                context.push('/settings', extra: item.children);
               }
             },
             child: item.redirectTo != null
@@ -995,12 +987,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                   KretaClient.clearReauthFlag();
                 }
                 if (!mounted) return;
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                    builder: (context) => LoginScreen(widget.data),
-                  ),
-                  (route) => false,
-                );
+                context.go('/login');
               } else {
                 if (Platform.isIOS) {
                   final nextToken = accounts.first;

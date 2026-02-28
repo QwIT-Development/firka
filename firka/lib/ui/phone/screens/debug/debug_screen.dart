@@ -7,12 +7,11 @@ import 'package:firka/core/extensions.dart';
 import 'package:firka/core/icon_helper.dart';
 import 'package:firka/core/profile_picture.dart';
 import 'package:firka/app/app_state.dart';
-import 'package:firka/ui/phone/screens/login/login_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:firka/core/debug_helper.dart';
-import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 
@@ -221,15 +220,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                   widget.data.tokens = List.empty(growable: true);
 
                   if (!context.mounted) return;
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DefaultAssetBundle(
-                        bundle: FirkaBundle(),
-                        child: LoginScreen(widget.data),
-                      ),
-                    ),
-                  );
+                  context.go('/login');
                 },
                 child: const Text('wipe users'),
               ),

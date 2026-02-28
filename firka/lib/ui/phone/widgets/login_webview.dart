@@ -13,12 +13,10 @@ import 'package:firka/services/watch_sync_helper.dart';
 import 'package:firka/api/consts.dart';
 import 'package:firka/api/token_grant.dart';
 import 'package:firka/data/models/token_model.dart';
-import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/app/initialization_screen.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/ui/theme/style.dart';
-import '../pages/error/error_page.dart';
 
 class LoginWebviewWidget extends StatefulWidget {
   final AppInitialization data;
@@ -166,15 +164,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                 } else {
                   logger.shout("oauthredirect failed:", ex.toString());
                 }
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DefaultAssetBundle(
-                      bundle: FirkaBundle(),
-                      child: ErrorPage(exception: ex.toString()),
-                    ),
-                  ),
-                );
+                appRouter?.go('/error', extra: ex.toString());
               }
 
               return NavigationDecision.prevent;
