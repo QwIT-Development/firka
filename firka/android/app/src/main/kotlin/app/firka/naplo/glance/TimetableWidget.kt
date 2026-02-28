@@ -9,8 +9,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.LocalSize
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.SizeMode
 import androidx.glance.background
 import androidx.glance.color.ColorProvider
 import androidx.glance.currentState
@@ -38,6 +40,9 @@ class TimetableWidget : GlanceAppWidget() {
 
     override val stateDefinition: GlanceStateDefinition<*>?
         get() = HomeWidgetGlanceStateDefinition()
+
+    override val sizeMode: SizeMode
+        get() = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val data = withContext(Dispatchers.IO) {
@@ -73,7 +78,7 @@ class TimetableWidget : GlanceAppWidget() {
         val end = start.plusHours(23)
         val filtered = lessons.filter { it.start.isAfter(start) && it.end.isBefore(end) }
         val headerText = if (displayDateStr.isNotEmpty()) displayDateStr else "Mai órarend"
-        return WidgetData(colors, headerText, filtered.take(4))
+        return WidgetData(colors, headerText, filtered)
     }
 
     @Composable
@@ -98,26 +103,55 @@ class TimetableWidget : GlanceAppWidget() {
             return
         }
 
+        val size = LocalSize.current
+        val lessonRowHeightDp = 52f
+        val scale = lessonRowHeightDp / 52f
+        val headerHeightDp = 20f * scale
+        val verticalPaddingDp = 32f * scale
+        val spacerDp = 4f * scale
+        val paddingDp = 16f * scale
+        val availableHeightDp = size.height.value - verticalPaddingDp - headerHeightDp - spacerDp
+        val maxVisibleLessons = (availableHeightDp / lessonRowHeightDp).toInt().coerceAtLeast(0)
+        val maxLessons = (maxVisibleLessons.coerceAtMost(16) / 2 * 2).coerceAtLeast(1)
+        val displayLessons = data.lessons.take(maxLessons)
+        val lessonChunks = displayLessons.chunked(2)
+        val showDate = maxLessons > 1
+        val dateSectionHeight = if (showDate) headerHeightDp + spacerDp else 0f
+        val lessonListHeight = when (val n = displayLessons.size) {
+            0 -> 0f
+            else -> n * lessonRowHeightDp + (n - 1) * spacerDp
+        }
+        val remainingHeight = (size.height.value - 2 * paddingDp - dateSectionHeight - lessonListHeight).coerceAtLeast(0f)
+        val verticalPaddingAroundLessons = remainingHeight / 2f
+
         Box(
             modifier = GlanceModifier
                 .background(data.colors.background)
-                .padding(16.dp)
+                .padding(paddingDp.dp)
                 .fillMaxSize()
         ) {
             Column {
-                Text(
-                    data.headerText,
-                    style = TextStyle(
-                        color = ColorProvider(data.colors.textSecondary, data.colors.textSecondary),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
+                if (showDate) {
+                    Text(
+                        data.headerText,
+                        style = TextStyle(
+                            color = ColorProvider(data.colors.textSecondary, data.colors.textSecondary),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
                     )
-                )
-                Spacer(modifier = GlanceModifier.height(4.dp))
-                for (lesson in data.lessons) {
-                    LessonCard(lesson, data.colors)
-                    Spacer(modifier = GlanceModifier.height(4.dp))
+                    Spacer(modifier = GlanceModifier.height(spacerDp.dp))
                 }
+                Spacer(modifier = GlanceModifier.height(verticalPaddingAroundLessons.dp))
+                for (chunk in lessonChunks) {
+                    Column {
+                        for (lesson in chunk) {
+                            LessonCard(lesson, data.colors)
+                            Spacer(modifier = GlanceModifier.height(spacerDp.dp))
+                        }
+                    }
+                }
+                Spacer(modifier = GlanceModifier.height(verticalPaddingAroundLessons.dp))
             }
         }
     }
