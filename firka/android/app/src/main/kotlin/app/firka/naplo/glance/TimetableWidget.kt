@@ -27,6 +27,8 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import app.firka.naplo.model.Colors
 import app.firka.naplo.glance.WidgetLesson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.File
 import java.time.LocalDate
@@ -38,19 +40,47 @@ class TimetableWidget : GlanceAppWidget() {
         get() = HomeWidgetGlanceStateDefinition()
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        val data = withContext(Dispatchers.IO) {
+            loadWidgetData(context)
+        }
         provideContent {
-            GlanceContent(context, currentState())
+            GlanceContent(context, currentState(), data)
         }
     }
 
-    @Composable
-    private fun GlanceContent(context: Context, currentState: HomeWidgetGlanceState) {
+    private fun loadWidgetData(context: Context): WidgetData? {
         val appFlutter = File(context.applicationContext.dataDir, "app_flutter")
         val widgetStateFile = File(appFlutter, "widget_state.json")
+        if (!widgetStateFile.exists()) return null
+        val widgetState = JSONObject(widgetStateFile.readText(Charsets.UTF_8))
+        val colors = Colors(widgetState)
+        val tt = widgetState.getJSONArray("timetable")
+        val lessons = mutableListOf<WidgetLesson>()
+        for (i in 0..<tt.length()) {
+            lessons.add(WidgetLesson(tt.getJSONObject(i)))
+        }
+        val displayDateStr = widgetState.optString("displayDate", "")
+        val targetDate = if (displayDateStr.isNotEmpty()) {
+            try {
+                LocalDate.parse(displayDateStr)
+            } catch (_: Exception) {
+                LocalDate.now()
+            }
+        } else {
+            LocalDate.now()
+        }
+        val start = LocalDateTime.of(targetDate.year, targetDate.month, targetDate.dayOfMonth, 0, 0)
+        val end = start.plusHours(23)
+        val filtered = lessons.filter { it.start.isAfter(start) && it.end.isBefore(end) }
+        val headerText = if (displayDateStr.isNotEmpty()) displayDateStr else "Mai órarend"
+        return WidgetData(colors, headerText, filtered.take(4))
+    }
 
-        if (!widgetStateFile.exists()) {
-            Box(modifier =
-                GlanceModifier
+    @Composable
+    private fun GlanceContent(context: Context, currentState: HomeWidgetGlanceState, data: WidgetData?) {
+        if (data == null) {
+            Box(
+                modifier = GlanceModifier
                     .background(Color(0xFFFAFFF0))
                     .padding(16.dp)
                     .fillMaxSize(),
@@ -65,58 +95,36 @@ class TimetableWidget : GlanceAppWidget() {
                     )
                 )
             }
-
             return
         }
 
-        val widgetState = JSONObject(widgetStateFile.readText(Charsets.UTF_8))
-        val colors = Colors(widgetState)
-
-        val tt = widgetState.getJSONArray("timetable")
-        var lessons = mutableListOf<WidgetLesson>()
-
-        for (i in 0..<tt.length()) {
-            lessons.add(WidgetLesson(tt.getJSONObject(i)))
-        }
-
-        val displayDateStr = widgetState.optString("displayDate", "")
-        val targetDate = if (displayDateStr.isNotEmpty()) {
-            try {
-                LocalDate.parse(displayDateStr)
-            } catch (_: Exception) {
-                LocalDate.now()
-            }
-        } else {
-            LocalDate.now()
-        }
-        val start = LocalDateTime.of(targetDate.year, targetDate.month, targetDate.dayOfMonth, 0, 0)
-        val end = start.plusHours(23)
-        lessons = lessons.filter { lesson -> lesson.start.isAfter(start) && lesson.end.isBefore(end) }.toMutableList()
-
-        val headerText = if (displayDateStr.isNotEmpty()) displayDateStr else "Mai órarend"
-
-        Box(modifier =
-            GlanceModifier
-                .background(colors.background)
+        Box(
+            modifier = GlanceModifier
+                .background(data.colors.background)
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
             Column {
                 Text(
-                    headerText,
+                    data.headerText,
                     style = TextStyle(
-                        color = ColorProvider(colors.textSecondary, colors.textSecondary),
+                        color = ColorProvider(data.colors.textSecondary, data.colors.textSecondary),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
                 )
                 Spacer(modifier = GlanceModifier.height(4.dp))
-                for (lesson in lessons) {
-                    LessonCard(lesson, colors)
+                for (lesson in data.lessons) {
+                    LessonCard(lesson, data.colors)
                     Spacer(modifier = GlanceModifier.height(4.dp))
                 }
             }
         }
     }
-
 }
+
+private data class WidgetData(
+    val colors: Colors,
+    val headerText: String,
+    val lessons: List<WidgetLesson>,
+)
