@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:firka/data/models/generic_cache_model.dart';
 import 'package:firka/data/models/homework_cache_model.dart';

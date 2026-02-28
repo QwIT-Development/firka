@@ -92,7 +92,9 @@ class _GradeSummaryBarState extends State<GradeSummaryBar> {
                         SizedBox(
                           width: 32,
                           height: 32,
-                          child: FittedBox(child: GradeIconWidget(grade)),
+                          child: FittedBox(
+                            child: GradeWidget.gradeValue(grade),
+                          ),
                         ),
                         const SizedBox(width: 4),
                         Text(
