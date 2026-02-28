@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
@@ -96,7 +95,6 @@ class ShellWithNavBar extends StatelessWidget {
                 ),
                 BottomNavIconWidget(
                   () {
-                    HapticFeedback.lightImpact();
                     showExtrasBottomSheet(context, data);
                   },
                   false,
