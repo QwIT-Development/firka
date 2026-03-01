@@ -1,4 +1,4 @@
-import 'package:firka_wear/helpers/api/model/grade.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:flutter/material.dart';
 
 import '../../ui/model/style.dart';
@@ -18,8 +18,9 @@ class GradeWidget extends StatelessWidget {
     if (grade.valueType.name == "Szazalekos") {
       gradeStr = grade.strValue.replaceAll("%", "");
       if (grade.numericValue != null) {
-        gradeColor =
-            getGradeColor(percentageToGrade(grade.numericValue!).toDouble());
+        gradeColor = getGradeColor(
+          percentageToGrade(grade.numericValue!).toDouble(),
+        );
       }
 
       if (grade.numericValue != null && grade.numericValue == 100) {
@@ -29,10 +30,14 @@ class GradeWidget extends StatelessWidget {
           color: gradeColor.withAlpha(38),
           child: Padding(
             padding: EdgeInsets.only(left: 8, right: 8),
-            child: Row(children: [
-              Text("100", // TODO: Make this curved
-                  style: appStyle.fonts.P_14.copyWith(color: gradeColor))
-            ]),
+            child: Row(
+              children: [
+                Text(
+                  "100", // TODO: Make this curved
+                  style: appStyle.fonts.P_14.copyWith(color: gradeColor),
+                ),
+              ],
+            ),
           ),
         );
       } else {
@@ -42,11 +47,18 @@ class GradeWidget extends StatelessWidget {
           color: gradeColor.withAlpha(38),
           child: Padding(
             padding: EdgeInsets.only(left: 8, right: 8),
-            child: Row(children: [
-              Text(gradeStr,
-                  style: appStyle.fonts.P_14.copyWith(color: gradeColor)),
-              Text("%", style: appStyle.fonts.P_12.copyWith(color: gradeColor))
-            ]),
+            child: Row(
+              children: [
+                Text(
+                  gradeStr,
+                  style: appStyle.fonts.P_14.copyWith(color: gradeColor),
+                ),
+                Text(
+                  "%",
+                  style: appStyle.fonts.P_12.copyWith(color: gradeColor),
+                ),
+              ],
+            ),
           ),
         );
       }
@@ -60,10 +72,15 @@ class GradeWidget extends StatelessWidget {
         shadowColor: Colors.transparent,
         color: gradeColor.withAlpha(38),
         child: Padding(
-            padding: EdgeInsets.only(left: 8, right: 8),
-            child: Text(gradeStr,
-                style: appStyle.fonts.H_H1
-                    .copyWith(fontSize: 24, color: gradeColor))),
+          padding: EdgeInsets.only(left: 8, right: 8),
+          child: Text(
+            gradeStr,
+            style: appStyle.fonts.H_H1.copyWith(
+              fontSize: 24,
+              color: gradeColor,
+            ),
+          ),
+        ),
       );
     }
   }

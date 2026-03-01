@@ -3,8 +3,7 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 
-import 'package:firka_wear/helpers/api/model/grade.dart';
-import 'package:firka_wear/helpers/api/model/timetable.dart';
+import 'package:kreta_api/kreta_api.dart';
 
 const String _syncFileName = 'wear_sync_data.json';
 

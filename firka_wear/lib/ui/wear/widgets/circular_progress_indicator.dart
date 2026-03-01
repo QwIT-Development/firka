@@ -34,8 +34,10 @@ class _CircularProgressIndicatorWidgetState
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    _animation =
-        Tween<double>(begin: 0.0, end: widget.progress).animate(_controller);
+    _animation = Tween<double>(
+      begin: 0.0,
+      end: widget.progress,
+    ).animate(_controller);
     _controller.forward();
   }
 

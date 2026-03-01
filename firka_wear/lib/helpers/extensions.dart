@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../l10n/app_localizations.dart';
-import 'api/model/timetable.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'debug_helper.dart';
 
 extension IterableExtensionMap on Iterable<MapEntry<String, dynamic>> {
@@ -41,11 +41,14 @@ enum Cycle { morning, day, afternoon, night }
 extension DateExtension on DateTime {
   String format(BuildContext context, FormatMode mode) {
     var today = timeNow();
-    today = today.subtract(Duration(
+    today = today.subtract(
+      Duration(
         hours: today.hour,
         minutes: today.minute,
         seconds: today.second,
-        milliseconds: today.millisecond));
+        milliseconds: today.millisecond,
+      ),
+    );
 
     var tomorrowLim = today.add(Duration(days: 2));
     var tomorrow = today.add(Duration(days: 1));
@@ -86,11 +89,14 @@ extension DateExtension on DateTime {
   }
 
   DateTime getMidnight() {
-    return subtract(Duration(
+    return subtract(
+      Duration(
         hours: hour,
         minutes: minute,
         seconds: second,
-        milliseconds: millisecond));
+        milliseconds: millisecond,
+      ),
+    );
   }
 
   Cycle getDayCycle() {
@@ -117,22 +123,28 @@ extension DateGrouper<T> on Iterable<T> {
     Map<DateTime, List<T>> newList = {};
 
     var today = timeNow();
-    today = today.subtract(Duration(
+    today = today.subtract(
+      Duration(
         hours: today.hour,
         minutes: today.minute,
         seconds: today.second,
-        milliseconds: today.millisecond));
+        milliseconds: today.millisecond,
+      ),
+    );
 
     var tomorrow = today.add(Duration(days: 1));
     var yesterday = today.subtract(Duration(days: 1));
 
     for (var elem in this) {
       var date = getDate(elem);
-      var day = date.subtract(Duration(
+      var day = date.subtract(
+        Duration(
           hours: date.hour,
           minutes: date.minute,
           seconds: date.second,
-          milliseconds: date.millisecond));
+          milliseconds: date.millisecond,
+        ),
+      );
 
       if (date.isAfter(tomorrow.add(Duration(days: 1)))) {
         if (newList[day] == null) {
@@ -178,16 +190,19 @@ extension LessonExtension on List<Lesson> {
 
   Lesson? getCurrentLesson(DateTime now) {
     return firstWhereOrNull(
-        (lesson) => now.isAfter(lesson.start) && now.isBefore(lesson.end));
+      (lesson) => now.isAfter(lesson.start) && now.isBefore(lesson.end),
+    );
   }
 
   Lesson? getPrevLesson(DateTime now) {
     return firstWhereOrNull(
-        (lesson) => lesson.end.isBefore(now.add(Duration(milliseconds: 1))));
+      (lesson) => lesson.end.isBefore(now.add(Duration(milliseconds: 1))),
+    );
   }
 
   Lesson? getNextLesson(DateTime now) {
     return firstWhereOrNull(
-        (lesson) => lesson.start.isAfter(now.add(Duration(milliseconds: 1))));
+      (lesson) => lesson.start.isAfter(now.add(Duration(milliseconds: 1))),
+    );
   }
 }

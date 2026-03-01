@@ -14,10 +14,7 @@ class CounterDigitWidget extends StatelessWidget {
       color: appStyle.colors.buttonSecondaryFill,
       child: Padding(
         padding: EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
-        child: Text(
-          c,
-          style: style,
-        ),
+        child: Text(c, style: style),
       ),
     );
   }

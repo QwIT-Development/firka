@@ -1,8 +1,7 @@
 import 'dart:ui';
 
 import '../../ui/model/style.dart';
-import '../api/model/grade.dart';
-import '../api/model/subject.dart';
+import 'package:kreta_api/kreta_api.dart';
 
 int roundGrade(double grade) {
   if (grade < 2) {

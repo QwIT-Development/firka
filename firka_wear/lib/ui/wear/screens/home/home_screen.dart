@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:firka_wear/helpers/api/model/grade.dart';
-import 'package:firka_wear/helpers/api/model/timetable.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:firka_wear/helpers/extensions.dart';
 import 'package:firka_wear/ui/widget/class_icon.dart';
 import 'package:firka_wear/main.dart';

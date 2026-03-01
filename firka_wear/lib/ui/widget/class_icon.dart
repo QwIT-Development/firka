@@ -10,22 +10,26 @@ class ClassIconWidget extends StatelessWidget {
   final Color color;
   final double? size;
 
-  const ClassIconWidget(
-      {super.key,
-      required String uid,
-      required String className,
-      required String category,
-      this.color = Colors.white,
-      this.size})
-      : _className = className,
-        _uid = uid,
-        _category = category;
+  const ClassIconWidget({
+    super.key,
+    required String uid,
+    required String className,
+    required String category,
+    this.color = Colors.white,
+    this.size,
+  }) : _className = className,
+       _uid = uid,
+       _category = category;
 
   @override
   Widget build(BuildContext context) {
     var iconCategory = getIconType(_uid, _className, _category);
 
-    return FirkaIconWidget(FirkaIconType.Majesticons, getIconData(iconCategory),
-        color: color, size: size);
+    return FirkaIconWidget(
+      FirkaIconType.Majesticons,
+      getIconData(iconCategory),
+      color: color,
+      size: size,
+    );
   }
 }

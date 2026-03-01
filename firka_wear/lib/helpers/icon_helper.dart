@@ -34,7 +34,7 @@ enum ClassIcon {
   linux,
   database,
   applications,
-  project
+  project,
 }
 
 Map<ClassIcon, RegExp> _descriptors = {
@@ -49,8 +49,9 @@ Map<ClassIcon, RegExp> _descriptors = {
   ClassIcon.pe: RegExp(r'^tes(i|tneveles)|sport|edzeselmelet'),
   ClassIcon.chemistry: RegExp(r'kemia'),
   ClassIcon.biology: RegExp(r'biologia'),
-  ClassIcon.env:
-      RegExp(r'kornyezet|termeszet ?(tudomany|ismeret)|hon( es nep)?ismeret'),
+  ClassIcon.env: RegExp(
+    r'kornyezet|termeszet ?(tudomany|ismeret)|hon( es nep)?ismeret',
+  ),
   ClassIcon.religion: RegExp(r'(hit|erkolcs)tan|vallas|etika|bibliaismeret'),
   ClassIcon.economics: RegExp(r'penzugy|gazdasag'),
   ClassIcon.it: RegExp(r'informatika|szoftver|iroda|digitalis'),
@@ -66,12 +67,13 @@ Map<ClassIcon, RegExp> _descriptors = {
   ClassIcon.ofo: RegExp(r'osztaly(fonoki|kozosseg)|kozossegi|neveles'),
   ClassIcon.diligence: RegExp(r'szorgalom'),
   ClassIcon.attitude: RegExp(r'magatartas'),
-  ClassIcon.language:
-      RegExp(r'angol|nemet|francia|olasz|orosz|spanyol|latin|kinai|nyelv'),
+  ClassIcon.language: RegExp(
+    r'angol|nemet|francia|olasz|orosz|spanyol|latin|kinai|nyelv',
+  ),
   ClassIcon.linux: RegExp(r'linux'),
   ClassIcon.database: RegExp(r'adatbazis.*'),
   ClassIcon.applications: RegExp(r'asztali alkalmazasok'),
-  ClassIcon.project: RegExp(r'projekt')
+  ClassIcon.project: RegExp(r'projekt'),
 };
 
 Map<ClassIcon, Uint8List> _iconMap = {
@@ -117,17 +119,19 @@ ClassIcon? getIconType(String uid, String className, String category) {
 
   if (icon == null) {
     for (var desc in _descriptors.entries) {
-      if (desc.value.hasMatch(className
-          .replaceAll("ö", "o")
-          .replaceAll("ü", "u")
-          .replaceAll("ó", "o")
-          .replaceAll("ő", "o")
-          .replaceAll("ú", "u")
-          .replaceAll("é", "e")
-          .replaceAll("á", "a")
-          .replaceAll("ű", "u")
-          .replaceAll("í", "i")
-          .toLowerCase())) {
+      if (desc.value.hasMatch(
+        className
+            .replaceAll("ö", "o")
+            .replaceAll("ü", "u")
+            .replaceAll("ó", "o")
+            .replaceAll("ő", "o")
+            .replaceAll("ú", "u")
+            .replaceAll("é", "e")
+            .replaceAll("á", "a")
+            .replaceAll("ű", "u")
+            .replaceAll("í", "i")
+            .toLowerCase(),
+      )) {
         icon = desc.key;
 
         break;
