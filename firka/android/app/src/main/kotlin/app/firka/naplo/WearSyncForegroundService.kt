@@ -130,7 +130,7 @@ class WearSyncForegroundService : Service(), MessageClient.OnMessageReceivedList
         return NotificationCompat.Builder(this, channelId)
             .setContentTitle(notificationTitle)
             .setContentText(notificationText)
-            .setSmallIcon(android.R.drawable.ic_menu_my_calendar)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .build()
