@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 
-import 'package:firka/api/model/timetable.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/l10n/app_localizations.dart';
 

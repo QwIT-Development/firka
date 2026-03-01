@@ -3,7 +3,7 @@ import 'package:firka/app/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import 'package:firka/api/model/notice_board.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/shared/firka_icon.dart';

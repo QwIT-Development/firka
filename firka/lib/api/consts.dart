@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:firka/app/app_state.dart';
+import 'package:kreta_api/kreta_api.dart' as ka;
 
 class Constants {
   static String get clientId {
@@ -41,8 +42,6 @@ class TimetableConsts {
 }
 
 class KretaEndpoints {
-  static String kretaBase = "e-kreta.hu";
-
   static String _generateCodeVerifier() {
     var random = Random.secure();
     final bytes = List<int>.generate(32, (i) => random.nextInt(256));
@@ -64,13 +63,7 @@ class KretaEndpoints {
     return base64Url.encode(bytes).replaceAll('=', '');
   }
 
-  static String kreta(String iss) {
-    if (iss == "firka-test") {
-      return kretaBase;
-    } else {
-      return "https://$iss.$kretaBase";
-    }
-  }
+  static String kreta(String iss) => ka.KretaEndpoints.kreta(iss);
 
   static final String codeVerifier = _generateCodeVerifier();
   static final String _codeChallenge = _generateCodeChallenge(codeVerifier);
@@ -86,38 +79,28 @@ class KretaEndpoints {
   static String tokenGrantUrl = "$kretaIdp/connect/token";
 
   static String getStudentUrl(String iss) =>
-      "${kreta(iss)}/ellenorzo/v3/sajat/TanuloAdatlap";
+      ka.KretaEndpoints.getStudentUrl(iss);
 
   static String getClassGroups(String iss) =>
-      "${kreta(iss)}/ellenorzo/v3/sajat/OsztalyCsoportok";
+      ka.KretaEndpoints.getClassGroups(iss);
 
   static String getNoticeBoard(String iss) =>
-      "${kreta(iss)}/ellenorzo/v3/sajat/FaliujsagElemek";
+      ka.KretaEndpoints.getNoticeBoard(iss);
 
-  // for some reason the [redacted] devs decided to make
-  // two different apis to get items for the notice board
-  // that appears on the home screen, like wtf
-  static String getInfoBoard(String iss) =>
-      "${kreta(iss)}/ellenorzo/v3/sajat/Feljegyzesek";
+  static String getInfoBoard(String iss) => ka.KretaEndpoints.getInfoBoard(iss);
 
-  static String getGrades(String iss) =>
-      "${kreta(iss)}/ellenorzo/v3/sajat/Ertekelesek";
+  static String getGrades(String iss) => ka.KretaEndpoints.getGrades(iss);
 
   static String getSubjectAvg(String iss, String studyGroupId) =>
-      "${kreta(iss)}/ellenorzo/v3/sajat/Ertekelesek/Atlagok/TantargyiAtlagok?oktatasiNevelesiFeladatUid=$studyGroupId&oktatasiNevelesiFeladatUid=$studyGroupId";
+      ka.KretaEndpoints.getSubjectAvg(iss, studyGroupId);
 
-  static String getTimeTable(String iss) =>
-      "${kreta(iss)}/ellenorzo/v3/sajat/OrarendElemek";
+  static String getTimeTable(String iss) => ka.KretaEndpoints.getTimeTable(iss);
 
-  static String getOmissions(String iss) =>
-      "${kreta(iss)}/ellenorzo/v3/sajat/Mulasztasok";
+  static String getOmissions(String iss) => ka.KretaEndpoints.getOmissions(iss);
 
-  static String getHomework(String iss) =>
-      "${kreta(iss)}/ellenorzo/v3/sajat/HaziFeladatok";
+  static String getHomework(String iss) => ka.KretaEndpoints.getHomework(iss);
 
-  static String getTests(String iss) =>
-      "${kreta(iss)}/ellenorzo/v3/sajat/BejelentettSzamonkeresek";
+  static String getTests(String iss) => ka.KretaEndpoints.getTests(iss);
 
-  static String getLessons(String iss) =>
-      "${kreta(iss)}/dktapi/intezmenyek/munkaterek/tanulok";
+  static String getLessons(String iss) => ka.KretaEndpoints.getLessons(iss);
 }

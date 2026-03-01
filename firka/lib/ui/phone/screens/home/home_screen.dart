@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:firka/api/client/kreta_stream.dart';
-import 'package:firka/api/exceptions/token.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/services/active_account_helper.dart';

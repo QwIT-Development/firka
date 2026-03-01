@@ -4,8 +4,7 @@ import 'package:firka/core/settings.dart';
 import 'package:firka/app/app_state.dart';
 
 import 'package:firka/ui/theme/style.dart';
-import 'package:firka/api/model/grade.dart';
-import 'package:firka/api/model/subject.dart';
+import 'package:kreta_api/kreta_api.dart';
 
 int roundGrade(double grade) {
   final rounding = initData.settings

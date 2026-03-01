@@ -1,7 +1,4 @@
-import 'package:firka/api/model/generic.dart';
-import 'package:firka/api/model/grade.dart';
-import 'package:firka/api/model/homework.dart';
-import 'package:firka/api/model/subject.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/data/models/homework_cache_model.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/extensions.dart';
@@ -22,10 +19,8 @@ import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/phone/widgets/lesson.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firka/ui/shared/class_icon.dart';
-import 'package:firka/api/model/timetable.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/ui/components/grade.dart';
-import 'package:firka/api/model/test.dart';
 
 Future<void> showLessonBottomSheet(
   BuildContext context,

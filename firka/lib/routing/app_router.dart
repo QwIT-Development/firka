@@ -21,7 +21,7 @@ import 'package:firka/routing/shell_with_nav_bar.dart';
 import 'package:firka/routing/swipable_navigator_container.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:firka/api/model/notice_board.dart';
+import 'package:kreta_api/kreta_api.dart';
 
 GoRouter createAppRouter() {
   return GoRouter(

@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:firka/api/exceptions/token.dart';
-import 'package:firka/api/resp/token_grant.dart';
 import 'package:firka/data/models/token_model.dart';
+import 'package:kreta_api/kreta_api.dart' hide KretaEndpoints;
 
 import 'package:firka/app/app_state.dart';
 import 'consts.dart';

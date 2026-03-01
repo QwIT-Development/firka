@@ -1,5 +1,4 @@
-import 'package:firka/api/model/test.dart';
-import 'package:firka/api/model/timetable.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/app/app_state.dart';

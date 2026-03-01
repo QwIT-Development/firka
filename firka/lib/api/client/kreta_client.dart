@@ -3,14 +3,11 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
-import 'package:firka/api/model/all_lessons.dart';
-import 'package:firka/api/model/class_group.dart';
-import 'package:firka/api/model/homework.dart';
-import 'package:firka/api/model/timetable.dart';
 import 'package:firka/data/models/generic_cache_model.dart';
 import 'package:firka/data/models/timetable_cache_model.dart';
 import 'package:intl/intl.dart';
 import 'package:isar_community/isar.dart';
+import 'package:kreta_api/kreta_api.dart' hide KretaEndpoints;
 
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/bloc/reauth_cubit.dart';
@@ -20,12 +17,6 @@ import 'package:firka/core/debug_helper.dart';
 import 'package:firka/services/active_account_helper.dart';
 import 'package:firka/services/watch_sync_helper.dart';
 import '../consts.dart';
-import '../exceptions/token.dart';
-import '../model/grade.dart';
-import '../model/notice_board.dart';
-import '../model/omission.dart';
-import '../model/student.dart';
-import '../model/test.dart';
 import '../token_grant.dart';
 
 import 'dart:io';
@@ -37,25 +28,6 @@ const _watchChannel = MethodChannel('app.firka/watch_sync');
 const backoffCount = 4;
 const backoffMin = 100;
 const backoffStep = 500;
-
-class ApiResponse<T> {
-  T? response;
-  int statusCode;
-  String? err;
-  bool cached;
-
-  ApiResponse(this.response, this.statusCode, this.err, this.cached);
-
-  @override
-  String toString() {
-    return "ApiResponse("
-        "response: $response, "
-        "statusCode: $statusCode, "
-        "err: \"$err\", "
-        "cached: $cached"
-        ")";
-  }
-}
 
 class KretaClient {
   Completer<void>? _tokenMutexCompleter;

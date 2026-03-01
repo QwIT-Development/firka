@@ -1,10 +1,8 @@
 import 'dart:async';
 
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/api/client/kreta_stream.dart';
-import 'package:firka/api/model/test.dart';
-import 'package:firka/api/model/timetable.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings.dart';

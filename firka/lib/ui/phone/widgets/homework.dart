@@ -1,4 +1,4 @@
-import 'package:firka/api/model/homework.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/data/models/homework_cache_model.dart';
 import 'package:firka/ui/components/common_bottom_sheets.dart';
 import 'package:firka/ui/components/firka_card.dart';

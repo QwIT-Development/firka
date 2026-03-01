@@ -2,7 +2,7 @@ import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
 
-import 'package:firka/api/model/notice_board.dart';
+import 'package:kreta_api/kreta_api.dart';
 
 // TODO: Finish
 class InfoBoardItemWidget extends StatelessWidget {

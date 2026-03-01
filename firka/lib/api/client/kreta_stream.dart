@@ -1,12 +1,5 @@
-import 'package:firka/api/model/class_group.dart';
-import 'package:firka/api/model/homework.dart';
-import 'package:firka/api/model/notice_board.dart';
-import 'package:firka/api/model/omission.dart';
-import 'package:firka/api/model/test.dart';
-import 'package:firka/api/model/timetable.dart';
+import 'package:kreta_api/kreta_api.dart';
 
-import '../model/grade.dart';
-import '../model/student.dart';
 import 'kreta_client.dart';
 
 bool getStudentFL = false;

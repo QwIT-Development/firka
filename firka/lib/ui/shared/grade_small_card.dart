@@ -1,5 +1,4 @@
-import 'package:firka/api/model/grade.dart';
-import 'package:firka/api/model/subject.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/ui/components/grade_helpers.dart';
 import 'package:firka/ui/shared/class_icon.dart';

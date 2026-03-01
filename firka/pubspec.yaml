@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  kreta_api:
+    path: ../kreta_api
 
   cupertino_icons: ^1.0.8
   flutter_launcher_icons: ^0.14.3

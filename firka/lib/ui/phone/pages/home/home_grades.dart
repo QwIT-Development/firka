@@ -1,5 +1,4 @@
-import 'package:firka/api/client/kreta_client.dart';
-import 'package:firka/api/model/generic.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/average_helper.dart';
 import 'package:firka/routing/chart_interaction_scope.dart';
 import 'package:firka/ui/components/firka_card.dart';
@@ -12,10 +11,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:firka/api/consts.dart';
-import 'package:firka/api/model/class_group.dart';
-import 'package:firka/api/model/grade.dart';
-import 'package:firka/api/model/subject.dart';
-import 'package:firka/api/model/timetable.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/app/app_state.dart';

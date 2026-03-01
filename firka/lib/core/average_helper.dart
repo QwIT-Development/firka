@@ -1,4 +1,4 @@
-import 'package:firka/api/model/grade.dart';
+import 'package:kreta_api/kreta_api.dart';
 
 double calculateAverage(List<Grade> sortedGrades) {
   double totalWeight = 0.0;

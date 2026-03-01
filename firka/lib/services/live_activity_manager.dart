@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/services.dart';
-import 'package:firka/api/model/timetable.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:logging/logging.dart';
 
 class LiveActivityManager {

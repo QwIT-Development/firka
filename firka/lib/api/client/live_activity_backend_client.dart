@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:firka/api/model/timetable.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:logging/logging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 

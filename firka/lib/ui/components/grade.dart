@@ -1,4 +1,4 @@
-import 'package:firka/api/model/grade.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firka/ui/theme/style.dart';

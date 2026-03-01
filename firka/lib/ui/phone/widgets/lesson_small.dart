@@ -4,7 +4,7 @@ import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
 
-import 'package:firka/api/model/timetable.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 
 class LessonSmallWidget extends StatelessWidget {

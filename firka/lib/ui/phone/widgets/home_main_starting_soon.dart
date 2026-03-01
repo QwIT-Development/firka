@@ -4,7 +4,7 @@ import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/shared/counter_digit.dart';
 import 'package:flutter/material.dart';
 
-import 'package:firka/api/model/timetable.dart';
+import 'package:kreta_api/kreta_api.dart';
 
 class StartingSoonWidget extends StatelessWidget {
   final AppLocalizations l10n;

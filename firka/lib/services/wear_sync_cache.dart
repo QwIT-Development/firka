@@ -5,8 +5,7 @@ import 'package:path_provider/path_provider.dart'
     show getApplicationDocumentsDirectory;
 
 import 'package:firka/api/client/kreta_client.dart';
-import 'package:firka/api/model/grade.dart';
-import 'package:firka/api/model/timetable.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/debug_helper.dart';
 
 /// File name for the Wear OS sync cache written by the phone (Dart isolate or main).

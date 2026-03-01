@@ -1,6 +1,5 @@
 import 'package:firka/api/consts.dart';
-import 'package:firka/api/model/omission.dart';
-import 'package:firka/api/model/timetable.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings.dart';
@@ -13,7 +12,6 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
 
-import 'package:firka/api/model/test.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
 import 'package:firka/core/state/firka_state.dart';
