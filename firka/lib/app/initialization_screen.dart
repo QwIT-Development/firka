@@ -7,6 +7,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/app/initialization.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
+import 'package:firka/core/settings.dart';
 import 'package:firka/core/bloc/profile_picture_cubit.dart';
 import 'package:firka/core/bloc/reauth_cubit.dart';
 import 'package:firka/core/bloc/settings_cubit.dart';
@@ -99,6 +100,18 @@ class _InitializationScreenState extends State<InitializationScreen> {
                   }
               }
             };
+
+            if (Platform.isAndroid) {
+              WatchSyncHelper.watchMessageStream.listen((msg) async {
+                if (msg['id'] == 'request_sync' &&
+                    initDone &&
+                    isWearOsSupportEnabled()) {
+                  await WatchSyncHelper.runWearSyncInForeground(
+                    initData.client,
+                  );
+                }
+              });
+            }
           }
 
           if (_router == null) {

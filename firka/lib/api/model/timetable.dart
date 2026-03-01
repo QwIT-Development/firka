@@ -128,7 +128,7 @@ class Lesson {
       'Nev': name,
       'Oraszam': lessonNumber,
       'OraEvesSorszama': lessonSeqNumber,
-      'OsztalyCsoport': classGroup,
+      'OsztalyCsoport': classGroup?.toJson(),
       'TanarNeve': teacher,
       'Tantargy': subject?.toJson(),
       'Tema': theme,

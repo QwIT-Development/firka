@@ -1,6 +1,6 @@
-import 'package:firka/core/debug_helper.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/services/watch_sync_helper.dart';
+import 'package:firka/services/wear_sync_cache.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -12,21 +12,9 @@ void showWearBottomSheet(
   AppInitialization data,
   String model,
 ) async {
-  final timetable = await data.client.getTimeTable(
-    timeNow(),
-    timeNow().add(Duration(days: 7)),
-  );
-
-  if (timetable.err != null) {
-    return;
-  }
+  final payload = await buildWearSyncPayload(data.client);
+  if (payload == null) return;
   if (!context.mounted) return;
-
-  List<Map<String, dynamic>> timetableArray = List.empty(growable: true);
-
-  for (var l in timetable.response!) {
-    timetableArray.add(l.toJson());
-  }
 
   showModalBottomSheet(
     context: context,
@@ -107,21 +95,22 @@ void showWearBottomSheet(
                           color: appStyle.colors.accent,
                         ),
                         onTap: () {
+                          final m = data.client.model;
                           WatchSyncHelper.sendMessageToWatch({
-                            "id": "init_data",
-                            "auth": {
-                              "studentId": data.client.model.studentId,
-                              "studentIdNorm": data.client.model.studentIdNorm,
-                              "iss": data.client.model.iss,
-                              "idToken": data.client.model.idToken,
-                              "accessToken": data.client.model.accessToken,
-                              "refreshToken": data.client.model.refreshToken,
-                              "expiryDate": data
-                                  .client
-                                  .model
-                                  .expiryDate!
-                                  .millisecondsSinceEpoch,
+                            'id': 'init_data',
+                            'auth': {
+                              'studentId': m.studentId,
+                              'studentIdNorm': m.studentIdNorm,
+                              'iss': m.iss,
+                              'idToken': m.idToken,
+                              'accessToken': m.accessToken,
+                              'refreshToken': m.refreshToken,
+                              'expiryDate':
+                                  m.expiryDate!.millisecondsSinceEpoch,
                             },
+                            'lastSyncAt': payload['lastSyncAt'],
+                            'timetable': payload['timetable'],
+                            'grades': payload['grades'],
                           });
                         },
                       ),

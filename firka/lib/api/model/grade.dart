@@ -66,6 +66,28 @@ class Grade {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'Uid': uid,
+      'RogzitesDatuma': recordDate.toUtc().toIso8601String(),
+      'KeszitesDatuma': creationDate.toUtc().toIso8601String(),
+      'LattamozasDatuma': ackDate?.toUtc().toIso8601String(),
+      'Tantargy': subject.toJson(),
+      'Tema': topic,
+      'Tipus': type.toJson(),
+      'Mod': mode?.toJson(),
+      'ErtekFajta': valueType.toJson(),
+      'ErtekeloTanarNeve': teacher,
+      'Kind': kind,
+      'SzamErtek': numericValue,
+      'SzovegesErtek': strValue,
+      'SulySzazalekErteke': weightPercentage,
+      'SzovegesErtekelesRovidNev': shortStrValue,
+      'OsztalyCsoport': classGroup != null ? {'Uid': classGroup!.uid} : null,
+      'SortIndex': sortIndex,
+    };
+  }
+
   @override
   String toString() {
     return 'Grade('

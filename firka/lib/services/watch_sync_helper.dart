@@ -6,15 +6,24 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:isar_community/isar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:watch_connectivity/watch_connectivity.dart';
 
 import 'package:firka/app/app_state.dart';
 import 'package:firka/services/active_account_helper.dart';
+import 'package:firka/services/wear_sync_cache.dart';
 import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/data/models/token_model.dart';
 
-/// Helper class for Watch ↔ iPhone token sync
+/// Helper class for Watch ↔ iPhone token sync (iOS) and Wear OS sync (Android).
 class WatchSyncHelper {
   static const _watchChannel = MethodChannel('app.firka/watch_sync');
+  static const _wearSyncChannel = MethodChannel('app.firka/wear_sync');
+  static WatchConnectivity? _androidWatchConnectivity;
+  static WatchConnectivity get _watchConnectivityAndroid {
+    _androidWatchConnectivity ??= WatchConnectivity();
+    return _androidWatchConnectivity!;
+  }
+
   static const _leaseOwnerIPhone = 'iphone';
   static bool _initialized = false;
   static bool _watchAppInstalledCache = false;
@@ -579,11 +588,47 @@ class WatchSyncHelper {
     return tokenData;
   }
 
-  /// Send a fire-and-forget message to Watch via WatchSessionManager.
-  /// Replaces direct watch_connectivity plugin usage to avoid WCSession delegate conflict.
+  /// Send a fire-and-forget message to Watch via WatchSessionManager (iOS) or watch_connectivity (Android).
   static Future<void> sendMessageToWatch(Map<String, dynamic> message) async {
+    if (Platform.isAndroid) {
+      await _watchConnectivityAndroid.sendMessage(message);
+      return;
+    }
     if (!Platform.isIOS) return;
     await _invokeMethodWithTimeout('sendMessageToWatch', message);
+  }
+
+  /// Starts the Wear sync foreground service (Android only). Call after writing initial cache.
+  static Future<void> startWearSyncService(String cachePath) async {
+    if (!Platform.isAndroid) return;
+    await _wearSyncChannel.invokeMethod<void>(
+      'startWearSyncService',
+      cachePath,
+    );
+  }
+
+  /// Stops the Wear sync foreground service (Android only).
+  static Future<void> stopWearSyncService() async {
+    if (!Platform.isAndroid) return;
+    await _wearSyncChannel.invokeMethod<void>('stopWearSyncService');
+  }
+
+  /// Runs sync in foreground: fetches timetable + grades, writes cache, sends sync_data to watch.
+  /// Used when app is in foreground and watch sends request_sync (Android) or equivalent.
+  static Future<void> runWearSyncInForeground(KretaClient client) async {
+    final payload = await buildWearSyncPayload(client);
+    if (payload == null) return;
+    final path = await getWearSyncCachePath();
+    await writeWearSyncCache(path, payload);
+    await sendMessageToWatch(<String, dynamic>{'id': 'sync_data', ...payload});
+  }
+
+  /// Stream of messages from the watch (Android: watch_connectivity). Use for request_sync etc.
+  static Stream<Map<String, dynamic>> get watchMessageStream {
+    if (!Platform.isAndroid) return const Stream.empty();
+    return _watchConnectivityAndroid.messageStream.map(
+      (m) => Map<String, dynamic>.from(m),
+    );
   }
 
   static Future<void> sendTokenToWatch() async {
