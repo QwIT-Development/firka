@@ -39,6 +39,7 @@ const liveActivityPrivacyEverDeclined = 1020;
 const morningNotificationEnabled = 1021;
 const morningNotificationTime = 1022;
 const ttToastABTimetable = 1023;
+const wearOsSupport = 1024;
 
 bool always() {
   return true;
@@ -75,6 +76,14 @@ bool isMorningNotificationEnabled() {
           .group("settings")
           .subGroup("notifications")
           .boolean("morning_notification_enabled");
+}
+
+bool isWearOsSupportEnabled() {
+  return Platform.isAndroid &&
+      initData.settings
+          .group("settings")
+          .subGroup("wear")
+          .boolean("wear_os_support");
 }
 
 bool isDebug() {
@@ -344,6 +353,30 @@ class SettingsStore {
             ),
           }),
           always,
+          null,
+        ),
+        "wear": SettingsSubGroup(
+          0,
+          FirkaIconType.majesticons,
+          Majesticon.clockSolid,
+          l10n.s_wear,
+          LinkedHashMap.of({
+            "back": SettingsBackHeader(0, l10n.s_settings, always),
+            "settings_header": SettingsHeader(0, l10n.s_wear, always),
+            "settings_padding": SettingsPadding(0, 23, always),
+            "wear_os_support": SettingsBoolean(
+              wearOsSupport,
+              FirkaIconType.majesticons,
+              Majesticon.clockSolid,
+              l10n.s_wear_os_support,
+              false,
+              always,
+              () async {
+                // Start/stop Wear sync service wired in WearSyncHelper task
+              },
+            ),
+          }),
+          isAndroid,
           null,
         ),
         "notifications": SettingsSubGroup(
