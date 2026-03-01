@@ -76,6 +76,7 @@ android {
 }
 dependencies {
     implementation("androidx.glance:glance-appwidget:1.1.1")
+    implementation("com.google.android.gms:play-services-wearable:18.1.0")
 }
 
 // Ensure .env exists before Flutter bundles assets (copy from .env.example if missing)

@@ -599,12 +599,41 @@ class WatchSyncHelper {
   }
 
   /// Starts the Wear sync foreground service (Android only). Call after writing initial cache.
-  static Future<void> startWearSyncService(String cachePath) async {
+  /// [appDirPath] is the application documents directory path (for the background isolate).
+  static Future<void> startWearSyncService(
+    String cachePath,
+    String appDirPath,
+  ) async {
     if (!Platform.isAndroid) return;
     await _wearSyncChannel.invokeMethod<void>(
       'startWearSyncService',
-      cachePath,
+      <String, dynamic>{'cachePath': cachePath, 'appDirPath': appDirPath},
     );
+  }
+
+  /// Sets the method call handler for getLocalizedString (Android). Call once when initData is ready.
+  static void setWearSyncMethodCallHandler() {
+    if (!Platform.isAndroid) return;
+    _wearSyncChannel.setMethodCallHandler((MethodCall call) async {
+      if (call.method == 'getLocalizedString') {
+        final key = call.arguments as String?;
+        return getLocalizedString(key);
+      }
+      return null;
+    });
+  }
+
+  /// Returns the localized string for [key] from l10n. Used by Kotlin for notification title/text.
+  static String? getLocalizedString(String? key) {
+    if (key == null || !initDone) return null;
+    switch (key) {
+      case 'wearSyncNotificationTitle':
+        return initData.l10n.wearSyncNotificationTitle;
+      case 'wearSyncNotificationText':
+        return initData.l10n.wearSyncNotificationText;
+      default:
+        return null;
+    }
   }
 
   /// Stops the Wear sync foreground service (Android only).

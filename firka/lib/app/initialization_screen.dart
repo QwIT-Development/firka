@@ -70,6 +70,9 @@ class _InitializationScreenState extends State<InitializationScreen> {
           FlutterNativeSplash.remove();
 
           WatchSyncHelper.initialize();
+          if (Platform.isAndroid) {
+            WatchSyncHelper.setWearSyncMethodCallHandler();
+          }
           if (Platform.isIOS) {
             unawaited(() async {
               try {

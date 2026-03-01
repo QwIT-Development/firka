@@ -381,7 +381,10 @@ class SettingsStore {
                   if (payload != null) {
                     final path = await getWearSyncCachePath();
                     await writeWearSyncCache(path, payload);
-                    await WatchSyncHelper.startWearSyncService(path);
+                    await WatchSyncHelper.startWearSyncService(
+                      path,
+                      initData.appDir.path,
+                    );
                   }
                 } else {
                   await WatchSyncHelper.stopWearSyncService();

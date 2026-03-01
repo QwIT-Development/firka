@@ -22,6 +22,7 @@ import kotlin.system.exitProcess
 class MainActivity : FlutterActivity() {
 
     private val channel = "firka.app/main"
+    private val wearSyncChannel = "app.firka/wear_sync"
 
     private fun forceIconUpdate() {
         try {
@@ -37,6 +38,57 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, wearSyncChannel).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "startWearSyncService" -> {
+                    val args = call.arguments as? Map<*, *>
+                    val cachePath = args?.get("cachePath") as? String
+                    val appDirPath = args?.get("appDirPath") as? String
+                    if (cachePath != null && appDirPath != null) {
+                        val messenger = flutterEngine.dartExecutor.binaryMessenger
+                        val ch = MethodChannel(messenger, wearSyncChannel)
+                        ch.invokeMethod("getLocalizedString", "wearSyncNotificationTitle", object : MethodChannel.Result {
+                            override fun success(titleResult: Any?) {
+                                val title = titleResult as? String ?: "Syncing with watch"
+                                ch.invokeMethod("getLocalizedString", "wearSyncNotificationText", object : MethodChannel.Result {
+                                    override fun success(textResult: Any?) {
+                                        val text = textResult as? String ?: ""
+                                        val intent = Intent(this@MainActivity, WearSyncForegroundService::class.java).apply {
+                                            action = WearSyncForegroundService.ACTION_START
+                                            putExtra(WearSyncForegroundService.EXTRA_CACHE_PATH, cachePath)
+                                            putExtra(WearSyncForegroundService.EXTRA_APP_DIR_PATH, appDirPath)
+                                            putExtra(WearSyncForegroundService.EXTRA_NOTIFICATION_TITLE, title)
+                                            putExtra(WearSyncForegroundService.EXTRA_NOTIFICATION_TEXT, text)
+                                        }
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                            startForegroundService(intent)
+                                        } else {
+                                            startService(intent)
+                                        }
+                                        result.success(null)
+                                    }
+                                    override fun error(code: String, msg: String?, details: Any?) { result.success(null) }
+                                    override fun notImplemented() { result.success(null) }
+                                })
+                            }
+                            override fun error(code: String, msg: String?, details: Any?) { result.error(code, msg, details) }
+                            override fun notImplemented() { result.notImplemented() }
+                        })
+                    } else {
+                        result.error("INVALID_ARGS", "cachePath and appDirPath required", null)
+                    }
+                }
+                "stopWearSyncService" -> {
+                    val intent = Intent(this, WearSyncForegroundService::class.java).apply {
+                        action = WearSyncForegroundService.ACTION_STOP
+                    }
+                    startService(intent)
+                    result.success(null)
+                }
+                else -> result.notImplemented()
+            }
+        }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channel).setMethodCallHandler {
                 call, result ->
