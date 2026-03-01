@@ -1,0 +1,10 @@
+name: kreta_api
+description: Shared Kreta API data structures (models, DTOs, exceptions) for firka and firka_wear.
+version: 0.1.0
+repository: https://github.com/firka/firka
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  intl: any
