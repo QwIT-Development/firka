@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:firka_wear/helpers/api/model/grade.dart';
 import 'package:firka_wear/helpers/api/model/timetable.dart';
 import 'package:firka_wear/helpers/extensions.dart';
 import 'package:firka_wear/ui/widget/class_icon.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_arc_text/flutter_arc_text.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:wear_plus/wear_plus.dart';
 
 import '../../../../helpers/debug_helper.dart';
@@ -38,6 +40,8 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   bool init = false;
   WearMode mode = WearMode.active;
   final platform = MethodChannel('firka.app/main');
+  final watch = WatchConnectivity();
+  StreamSubscription? _messageSub;
 
   bool disposed = false;
 
@@ -45,7 +49,10 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   void initState() {
     super.initState();
     now = timeNow();
-
+    _messageSub = watch.messageStream.listen((e) {
+      final msg = Map<String, dynamic>.from(e);
+      if (msg['id'] == 'sync_data') _onSyncData(msg);
+    });
     timer = Timer.periodic(Duration(seconds: 1), (timer) async {
       setState(() {
         now = timeNow();
@@ -54,22 +61,40 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
     initStateAsync();
   }
 
-  Future<void> initStateAsync() async {
-    var kreta = data.client;
-
-    now = timeNow();
-    var todayStart = now.getMidnight();
-    var todayEnd = todayStart.add(Duration(hours: 23, minutes: 59));
-    var classes = await kreta.getTimeTable(todayStart, todayEnd);
-
+  void _onSyncData(Map<String, dynamic> msg) async {
+    final lastSyncAt = msg['lastSyncAt'] != null
+        ? DateTime.parse(msg['lastSyncAt'] as String)
+        : null;
+    final rawTimetable = msg['timetable'] as List<dynamic>? ?? [];
+    final timetable = rawTimetable
+        .map((e) => Lesson.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+    final rawGrades = msg['grades'] as List<dynamic>? ?? [];
+    final grades = rawGrades
+        .map((e) => Grade.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+    await data.syncStore.save(
+      lastSyncAt: lastSyncAt,
+      timetable: timetable,
+      grades: grades,
+    );
     if (disposed) return;
     setState(() {
-      if (classes.response != null) today = classes.response!;
-      if (classes.statusCode != 200) {
-        apiError = "Unexpected status : ${classes.statusCode}";
-      }
-      if (classes.err != null) apiError = classes.err!;
+      now = timeNow();
+      today = data.syncStore.getLessonsForDate(now);
+    });
+  }
 
+  Future<void> initStateAsync() async {
+    now = timeNow();
+    if (data.syncStore.needsSync) {
+      watch.sendMessage({'id': 'request_sync'});
+    }
+    await data.syncStore.load();
+    if (disposed) return;
+    setState(() {
+      now = timeNow();
+      today = data.syncStore.getLessonsForDate(now);
       init = true;
     });
   }
@@ -82,34 +107,44 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
       return (body, 255.h);
     }
 
-    if (today.isEmpty && apiError != "") {
-      body.add(Text(
-        apiError,
-        style:
-            wearStyle.fonts.H_18px.apply(color: wearStyle.colors.textPrimary),
-        textAlign: TextAlign.center,
-      ));
-
+    if (today.isEmpty &&
+        data.syncStore.needsSync &&
+        data.syncStore.timetable.isEmpty) {
+      body.add(
+        Text(
+          AppLocalizations.of(context)!.wear_sync_with_phone,
+          style: wearStyle.fonts.H_18px.apply(
+            color: wearStyle.colors.textPrimary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
       return (body, 255.h);
     }
     if (today.isEmpty) {
-      body.add(Text(
-        AppLocalizations.of(context)!.noClasses,
-        style:
-            wearStyle.fonts.H_18px.apply(color: wearStyle.colors.textPrimary),
-        textAlign: TextAlign.center,
-      ));
+      body.add(
+        Text(
+          AppLocalizations.of(context)!.noClasses,
+          style: wearStyle.fonts.H_18px.apply(
+            color: wearStyle.colors.textPrimary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
 
       platform.invokeMethod('activity_cancel');
       return (body, 255.h);
     }
     if (now.isAfter(today.last.end)) {
-      body.add(Text(
-        AppLocalizations.of(context)!.noMoreClasses,
-        style:
-            wearStyle.fonts.H_18px.apply(color: wearStyle.colors.textPrimary),
-        textAlign: TextAlign.center,
-      ));
+      body.add(
+        Text(
+          AppLocalizations.of(context)!.noMoreClasses,
+          style: wearStyle.fonts.H_18px.apply(
+            color: wearStyle.colors.textPrimary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
 
       platform.invokeMethod('activity_cancel');
       return (body, 300.h);
@@ -117,12 +152,15 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
     if (now.isBefore(today.first.start)) {
       var untilFirst = today.first.start.difference(now);
 
-      body.add(Text(
-        AppLocalizations.of(context)!.firstIn(untilFirst.formatDuration()),
-        style:
-            wearStyle.fonts.H_18px.apply(color: wearStyle.colors.textPrimary),
-        textAlign: TextAlign.center,
-      ));
+      body.add(
+        Text(
+          AppLocalizations.of(context)!.firstIn(untilFirst.formatDuration()),
+          style: wearStyle.fonts.H_18px.apply(
+            color: wearStyle.colors.textPrimary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
 
       platform.invokeMethod('activity_update');
       return (body, 255.h);
@@ -155,14 +193,17 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
 
         var minutes = currentBreakProgress.inMinutes + 1;
 
-        body.add(CustomPaint(
+        body.add(
+          CustomPaint(
             painter: CircularProgressPainter(
-                progress: currentBreakProgress.inMilliseconds /
-                    currentBreak.inMilliseconds,
-                // progress: 5 / 10,
-                screenSize: MediaQuery.of(context).size,
-                strokeWidth: 4,
-                color: wearStyle.colors.accent),
+              progress:
+                  currentBreakProgress.inMilliseconds /
+                  currentBreak.inMilliseconds,
+              // progress: 5 / 10,
+              screenSize: MediaQuery.of(context).size,
+              strokeWidth: 4,
+              color: wearStyle.colors.accent,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -174,9 +215,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
                       color: wearStyle.colors.textPrimary,
                       fontSize: 14,
                       fontFamily: 'Montserrat',
-                      fontVariations: [
-                        FontVariation('wght', 600),
-                      ],
+                      fontVariations: [FontVariation('wght', 600)],
                     ),
                   ),
                 ),
@@ -187,14 +226,14 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
                       color: wearStyle.colors.textPrimary,
                       fontSize: 12,
                       fontFamily: 'Montserrat',
-                      fontVariations: [
-                        FontVariation('wght', 400),
-                      ],
+                      fontVariations: [FontVariation('wght', 400)],
                     ),
                   ),
-                )
+                ),
               ],
-            )));
+            ),
+          ),
+        );
 
         platform.invokeMethod('activity_update');
         return (body, 200.h);
@@ -215,61 +254,61 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
                 color: wearStyle.colors.textPrimary,
                 fontSize: 12,
                 fontFamily: 'Montserrat',
-                fontVariations: [
-                  FontVariation('wght', 400),
-                ],
+                fontVariations: [FontVariation('wght', 400)],
               ),
             ),
           );
         }
 
-        body.add(CustomPaint(
+        body.add(
+          CustomPaint(
             painter: CircularProgressPainter(
-                progress: elapsed.inMilliseconds / duration.inMilliseconds,
-                screenSize: MediaQuery.of(context).size,
-                strokeWidth: 4,
-                color: wearStyle.colors.accent),
-            child: Column(children: [
-              SizedBox(height: nextLesson == null ? 20.h : 0),
-              Center(
-                child: ClassIconWidget(
-                  color: wearStyle.colors.accent,
-                  size: 16,
-                  uid: currentLesson.uid,
-                  className: currentLesson.name,
-                  category: currentLesson.subject?.name ?? '',
-                ).build(context),
-              ),
-              const SizedBox(height: 4),
-              Center(
-                child: Text(
-                  "${currentLesson.name}, ${currentLesson.roomName}",
-                  style: TextStyle(
-                    color: wearStyle.colors.textPrimary,
-                    fontSize: 14,
-                    fontFamily: 'Montserrat',
-                    fontVariations: [
-                      FontVariation('wght', 600),
-                    ],
+              progress: elapsed.inMilliseconds / duration.inMilliseconds,
+              screenSize: MediaQuery.of(context).size,
+              strokeWidth: 4,
+              color: wearStyle.colors.accent,
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: nextLesson == null ? 20.h : 0),
+                Center(
+                  child: ClassIconWidget(
+                    color: wearStyle.colors.accent,
+                    size: 16,
+                    uid: currentLesson.uid,
+                    className: currentLesson.name,
+                    category: currentLesson.subject?.name ?? '',
+                  ).build(context),
+                ),
+                const SizedBox(height: 4),
+                Center(
+                  child: Text(
+                    "${currentLesson.name}, ${currentLesson.roomName}",
+                    style: TextStyle(
+                      color: wearStyle.colors.textPrimary,
+                      fontSize: 14,
+                      fontFamily: 'Montserrat',
+                      fontVariations: [FontVariation('wght', 600)],
+                    ),
                   ),
                 ),
-              ),
-              Center(
-                child: Text(
-                  AppLocalizations.of(context)!.timeLeft(minutes),
-                  style: TextStyle(
-                    color: wearStyle.colors.textPrimary,
-                    fontSize: 12,
-                    fontFamily: 'Montserrat',
-                    fontVariations: [
-                      FontVariation('wght', 400),
-                    ],
+                Center(
+                  child: Text(
+                    AppLocalizations.of(context)!.timeLeft(minutes),
+                    style: TextStyle(
+                      color: wearStyle.colors.textPrimary,
+                      fontSize: 12,
+                      fontFamily: 'Montserrat',
+                      fontVariations: [FontVariation('wght', 400)],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              nextLessonWidget,
-            ])));
+                const SizedBox(height: 8),
+                nextLessonWidget,
+              ],
+            ),
+          ),
+        );
 
         platform.invokeMethod('activity_update');
         return (body, 200.h);
@@ -294,9 +333,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
           fontSize: 12,
           color: wearStyle.colors.secondary,
           fontFamily: 'Montserrat',
-          fontVariations: [
-            FontVariation('wght', 500),
-          ],
+          fontVariations: [FontVariation('wght', 500)],
         ),
         placement: Placement.inside,
       );
@@ -308,9 +345,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
           : wearStyle.colors.backgroundAmoled,
       body: Stack(
         children: [
-          Center(
-            child: titleBar,
-          ),
+          Center(child: titleBar),
           Center(
             child: Column(
               children: [
@@ -318,9 +353,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
                   builder: (context, shape, child) {
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        child!,
-                      ],
+                      children: <Widget>[child!],
                     );
                   },
                   child: AmbientMode(
@@ -339,19 +372,20 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           Container(
-                              padding: EdgeInsets.only(top: padding),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [...body],
-                              )),
+                            padding: EdgeInsets.only(top: padding),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [...body],
+                            ),
+                          ),
                         ],
                       );
                     },
                   ),
-                )
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -359,8 +393,9 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
 
   @override
   void dispose() {
-    super.dispose();
+    _messageSub?.cancel();
     timer?.cancel();
     disposed = true;
+    super.dispose();
   }
 }

@@ -7,6 +7,7 @@ import 'package:firka_wear/helpers/db/models/generic_cache_model.dart';
 import 'package:firka_wear/helpers/db/models/homework_cache_model.dart';
 import 'package:firka_wear/helpers/db/models/timetable_cache_model.dart';
 import 'package:firka_wear/helpers/db/models/token_model.dart';
+import 'package:firka_wear/helpers/sync/wear_sync_store.dart';
 import 'package:firka_wear/ui/model/style.dart';
 import 'package:firka_wear/ui/wear/screens/login/login_screen.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:wear_plus/wear_plus.dart';
 
-import 'helpers/api/client/kreta_client.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/app_localizations_de.dart';
 import 'l10n/app_localizations_en.dart';
@@ -47,16 +47,18 @@ class DeviceInfo {
 
 class WearAppInitialization {
   final Isar isar;
-  late KretaClient client;
+  final WearSyncStore syncStore;
   final int tokenCount;
   final AppLocalizations l10n;
   final DeviceInfo devInfo;
 
-  WearAppInitialization(
-      {required this.isar,
-      required this.tokenCount,
-      required this.l10n,
-      required this.devInfo});
+  WearAppInitialization({
+    required this.isar,
+    required this.syncStore,
+    required this.tokenCount,
+    required this.l10n,
+    required this.devInfo,
+  });
 }
 
 Future<Isar> initDB() async {
@@ -68,7 +70,7 @@ Future<Isar> initDB() async {
       TokenModelSchema,
       GenericCacheModelSchema,
       TimetableCacheModelSchema,
-      HomeworkCacheModelSchema
+      HomeworkCacheModelSchema,
     ],
     inspector: true,
     directory: dir.path,
@@ -90,28 +92,21 @@ AppLocalizations getLang() {
 
 Future<WearAppInitialization> initializeApp() async {
   final isar = await initDB();
+  final syncStore = WearSyncStore();
+  await syncStore.load();
 
   const channel = MethodChannel("firka.app/main");
-  final rawInfo =
-      ((await channel.invokeMethod("get_info")) as String).split(";");
+  final rawInfo = ((await channel.invokeMethod("get_info")) as String).split(
+    ";",
+  );
 
-  var init = WearAppInitialization(
+  return WearAppInitialization(
     isar: isar,
+    syncStore: syncStore,
     tokenCount: await isar.tokenModels.count(),
     l10n: getLang(),
     devInfo: DeviceInfo(rawInfo[0], rawInfo[1], rawInfo[2]),
   );
-
-  resetOldTimeTableCache(isar);
-  resetOldHomeworkCache(isar);
-
-  // TODO: Account selection
-  if (init.tokenCount > 0) {
-    init.client =
-        KretaClient((await isar.tokenModels.where().findFirst())!, isar);
-  }
-
-  return init;
 }
 
 void main() async {
@@ -207,7 +202,7 @@ class WearInitializationScreen extends StatelessWidget {
               '/login': (context) =>
                   WearLoginScreen(data, key: ValueKey('wearLoginScreen')),
               '/home': (context) =>
-                  WearHomeScreen(data, key: ValueKey('wearHomeScreen'))
+                  WearHomeScreen(data, key: ValueKey('wearHomeScreen')),
             },
           );
         }
@@ -217,11 +212,7 @@ class WearInitializationScreen extends StatelessWidget {
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    color: wearStyle.colors.secondary,
-                  )
-                ],
+                children: [Container(color: wearStyle.colors.secondary)],
               ),
             ),
           ),

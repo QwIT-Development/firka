@@ -2,7 +2,8 @@
 
 import 'dart:async';
 
-import 'package:firka_wear/helpers/api/client/kreta_client.dart';
+import 'package:firka_wear/helpers/api/model/grade.dart';
+import 'package:firka_wear/helpers/api/model/timetable.dart';
 import 'package:firka_wear/helpers/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
@@ -47,26 +48,46 @@ class _WearLoginScreen extends State<WearLoginScreen> {
         case "init_data":
           {
             () async {
-              var data = msg["auth"];
-              var tokenModel = TokenModel.fromValues(
-                  data["studentIdNorm"],
-                  data["studentId"],
-                  data["iss"],
-                  data["idToken"],
-                  data["accessToken"],
-                  data["refreshToken"],
-                  data["expiryDate"]);
-
-              initData.client = KretaClient(tokenModel, initData.isar);
-
+              final auth = msg["auth"] as Map<dynamic, dynamic>?;
+              if (auth == null) return;
+              final tokenModel = TokenModel.fromValues(
+                auth["studentIdNorm"] as int,
+                auth["studentId"] as String,
+                auth["iss"] as String,
+                auth["idToken"] as String,
+                auth["accessToken"] as String,
+                auth["refreshToken"] as String,
+                auth["expiryDate"] as int,
+              );
               await initData.isar.writeTxn(() async {
                 await initData.isar.tokenModels.put(tokenModel);
               });
-
+              final lastSyncAt = msg["lastSyncAt"] != null
+                  ? DateTime.parse(msg["lastSyncAt"] as String)
+                  : null;
+              final rawTimetable = msg["timetable"] as List<dynamic>? ?? [];
+              final timetable = rawTimetable
+                  .map(
+                    (e) => Lesson.fromJson(Map<String, dynamic>.from(e as Map)),
+                  )
+                  .toList();
+              final rawGrades = msg["grades"] as List<dynamic>? ?? [];
+              final grades = rawGrades
+                  .map(
+                    (e) => Grade.fromJson(Map<String, dynamic>.from(e as Map)),
+                  )
+                  .toList();
+              await initData.syncStore.save(
+                lastSyncAt: lastSyncAt,
+                timetable: timetable,
+                grades: grades,
+              );
+              if (!context.mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
-                    builder: (context) => WearHomeScreen(initData)),
-                (route) => false, // Remove all previous routes
+                  builder: (context) => WearHomeScreen(initData),
+                ),
+                (route) => false,
               );
             }();
           }
@@ -94,12 +115,7 @@ class _WearLoginScreen extends State<WearLoginScreen> {
 
   (List<Widget>, double) buildBody(BuildContext context) {
     if (!init) {
-      return (
-        <Widget>[
-
-        ],
-        60
-      );
+      return (<Widget>[], 60);
     }
 
     if (!isPaired) {
@@ -108,11 +124,12 @@ class _WearLoginScreen extends State<WearLoginScreen> {
           Text(
             widget.data.l10n.wear_phone_unpaired,
             textAlign: TextAlign.center,
-            style: wearStyle.fonts.B_14R
-                .apply(color: wearStyle.colors.textPrimary),
+            style: wearStyle.fonts.B_14R.apply(
+              color: wearStyle.colors.textPrimary,
+            ),
           ),
         ],
-        60
+        60,
       );
     }
     if (!isReachable) {
@@ -121,11 +138,12 @@ class _WearLoginScreen extends State<WearLoginScreen> {
           Text(
             widget.data.l10n.wear_phone_disconnected,
             textAlign: TextAlign.center,
-            style: wearStyle.fonts.B_16R
-                .apply(color: wearStyle.colors.textPrimary),
+            style: wearStyle.fonts.B_16R.apply(
+              color: wearStyle.colors.textPrimary,
+            ),
           ),
         ],
-        60
+        60,
       );
     }
 
@@ -135,13 +153,17 @@ class _WearLoginScreen extends State<WearLoginScreen> {
           Text(
             widget.data.l10n.wear_pairing_request_sent,
             textAlign: TextAlign.center,
-            style: wearStyle.fonts.B_16R
-                .apply(color: wearStyle.colors.textPrimary),
+            style: wearStyle.fonts.B_16R.apply(
+              color: wearStyle.colors.textPrimary,
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
               debugPrint("[Watch -> Phone]: ping");
-              watch.sendMessage({'id': 'ping', 'model': initData.devInfo.model});
+              watch.sendMessage({
+                'id': 'ping',
+                'model': initData.devInfo.model,
+              });
             },
             // TODO: This is a placeholder, style this properly
             style: ButtonStyle(
@@ -158,12 +180,14 @@ class _WearLoginScreen extends State<WearLoginScreen> {
                 return wearStyle.colors.accent;
               }),
             ),
-            child: Text(widget.data.l10n.wear_try_again,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: wearStyle.colors.textPrimary)),
+            child: Text(
+              widget.data.l10n.wear_try_again,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: wearStyle.colors.textPrimary),
+            ),
           ),
         ],
-        45
+        45,
       );
     }
 
@@ -173,8 +197,9 @@ class _WearLoginScreen extends State<WearLoginScreen> {
           Text(
             widget.data.l10n.wear_pairing_check_phone,
             textAlign: TextAlign.center,
-            style: wearStyle.fonts.B_16R
-                .apply(color: wearStyle.colors.textPrimary),
+            style: wearStyle.fonts.B_16R.apply(
+              color: wearStyle.colors.textPrimary,
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -196,22 +221,26 @@ class _WearLoginScreen extends State<WearLoginScreen> {
                 return wearStyle.colors.accent;
               }),
             ),
-            child: Text(widget.data.l10n.wear_try_again,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: wearStyle.colors.textPrimary)),
+            child: Text(
+              widget.data.l10n.wear_try_again,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: wearStyle.colors.textPrimary),
+            ),
           ),
         ],
-        55
+        55,
       );
     }
 
     return (
       <Widget>[
-        Text("Unexpected state",
-            style: TextStyle(color: wearStyle.colors.textPrimary, fontSize: 18),
-            textAlign: TextAlign.center),
+        Text(
+          "Unexpected state",
+          style: TextStyle(color: wearStyle.colors.textPrimary, fontSize: 18),
+          textAlign: TextAlign.center,
+        ),
       ],
-      60
+      60,
     );
   }
 
@@ -225,26 +254,28 @@ class _WearLoginScreen extends State<WearLoginScreen> {
         child: Column(
           children: [
             WatchShape(
-                builder: (context, shape, child) {
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Container(
-                              padding: EdgeInsets.only(top: offset),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: body,
-                              )),
-                        ],
-                      ),
-                      child!,
-                    ],
-                  );
-                },
-                child: SizedBox())
+              builder: (context, shape, child) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Container(
+                          padding: EdgeInsets.only(top: offset),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: body,
+                          ),
+                        ),
+                      ],
+                    ),
+                    child!,
+                  ],
+                );
+              },
+              child: SizedBox(),
+            ),
           ],
         ),
       ),

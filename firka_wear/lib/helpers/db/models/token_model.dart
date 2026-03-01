@@ -1,9 +1,4 @@
-import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:firka_wear/helpers/api/resp/token_grant.dart';
 import 'package:isar_community/isar.dart';
-
-import '../../api/resp/token_grant.dart';
-import '../../debug_helper.dart';
 
 part 'token_model.g.dart';
 
@@ -19,8 +14,15 @@ class TokenModel {
 
   TokenModel();
 
-  factory TokenModel.fromValues(Id studentIdNorm, studentId, String iss,
-      String idToken, String accessToken, String refreshToken, int expiryDate) {
+  factory TokenModel.fromValues(
+    Id studentIdNorm,
+    studentId,
+    String iss,
+    String idToken,
+    String accessToken,
+    String refreshToken,
+    int expiryDate,
+  ) {
     var m = TokenModel();
 
     m.studentIdNorm = studentIdNorm;
@@ -30,24 +32,6 @@ class TokenModel {
     m.accessToken = accessToken;
     m.refreshToken = refreshToken;
     m.expiryDate = DateTime.fromMillisecondsSinceEpoch(expiryDate);
-
-    return m;
-  }
-
-  factory TokenModel.fromResp(TokenGrantResponse resp) {
-    var m = TokenModel();
-    final jwt = JWT.decode(resp.idToken);
-
-    m.studentIdNorm = int.parse(
-        jwt.payload["kreta:user_name"].toString().replaceAll("G0", ""));
-    m.studentId = jwt.payload["kreta:user_name"];
-    m.iss = jwt.payload["kreta:institute_code"];
-    m.idToken = resp.idToken;
-    m.accessToken = resp.accessToken;
-    m.refreshToken = resp.refreshToken;
-    m.expiryDate = timeNow()
-        .add(Duration(seconds: resp.expiresIn))
-        .subtract(Duration(minutes: 1)); // just to be safe
 
     return m;
   }
