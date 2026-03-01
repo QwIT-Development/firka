@@ -14,9 +14,9 @@ import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/app/initialization.dart';
 import 'package:firka/app/initialization_screen.dart';
-import 'package:firka/services/wear_sync_cache.dart';
 import 'package:firka/services/watch_sync_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 const bellRing = 1001;
 const rounding1 = 1002;
@@ -377,15 +377,14 @@ class SettingsStore {
                 if (!Platform.isAndroid) return;
                 final enabled = isWearOsSupportEnabled();
                 if (enabled && initDone) {
-                  final payload = await buildWearSyncPayload(initData.client);
-                  if (payload != null) {
-                    final path = await getWearSyncCachePath();
-                    await writeWearSyncCache(path, payload);
-                    await WatchSyncHelper.startWearSyncService(
-                      path,
-                      initData.appDir.path,
-                    );
+                  final notifStatus = await Permission.notification.status;
+                  if (notifStatus.isDenied || notifStatus.isPermanentlyDenied) {
+                    await Permission.notification.request();
                   }
+                  await WatchSyncHelper.startWearSyncServiceWithFreshCache(
+                    initData.client,
+                    initData.appDir.path,
+                  );
                 } else {
                   await WatchSyncHelper.stopWearSyncService();
                 }

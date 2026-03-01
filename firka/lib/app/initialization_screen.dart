@@ -15,6 +15,7 @@ import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/routing/app_router.dart';
 import 'package:firka/services/watch_sync_helper.dart';
+import 'package:firka/ui/phone/pages/extras/main_wear_pair.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -95,17 +96,27 @@ class _InitializationScreenState extends State<InitializationScreen> {
                 case "ping":
                   if (initData.tokens.isNotEmpty) {
                     logger.finest("WatchOS IPC [Phone -> Watch]: pong");
-                    const watchChannel = MethodChannel('app.firka/watch_sync');
-                    watchChannel.invokeMethod('sendMessageToWatch', {
-                      "id": "pong",
-                    });
+                    unawaited(
+                      WatchSyncHelper.sendMessageToWatch({'id': 'pong'}),
+                    );
                     _router?.go('/home');
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      final ctx = navigatorKey.currentContext;
+                      if (ctx != null && ctx.mounted) {
+                        showWearBottomSheet(
+                          ctx,
+                          initData,
+                          Platform.isAndroid ? 'Wear OS' : 'Apple Watch',
+                        );
+                      }
+                    });
                   }
               }
             };
 
             if (Platform.isAndroid) {
               WatchSyncHelper.watchMessageStream.listen((msg) async {
+                WatchSyncHelper.onWatchMessage?.call(msg);
                 if (msg['id'] == 'request_sync' &&
                     initDone &&
                     isWearOsSupportEnabled()) {
@@ -114,6 +125,20 @@ class _InitializationScreenState extends State<InitializationScreen> {
                   );
                 }
               });
+              if (isWearOsSupportEnabled()) {
+                unawaited(() async {
+                  try {
+                    await WatchSyncHelper.startWearSyncServiceWithFreshCache(
+                      initData.client,
+                      initData.appDir.path,
+                    );
+                  } catch (e) {
+                    logger.warning(
+                      '[Init] Failed to start Wear sync service on launch: $e',
+                    );
+                  }
+                }());
+              }
             }
           }
 

@@ -611,6 +611,20 @@ class WatchSyncHelper {
     );
   }
 
+  /// Builds fresh sync payload, writes cache, and starts the Wear sync service (Android only).
+  /// Use when enabling Wear OS support or on app launch when support is already enabled.
+  static Future<void> startWearSyncServiceWithFreshCache(
+    KretaClient client,
+    String appDirPath,
+  ) async {
+    if (!Platform.isAndroid) return;
+    final payload = await buildWearSyncPayload(client);
+    if (payload == null) return;
+    final path = await getWearSyncCachePath();
+    await writeWearSyncCache(path, payload);
+    await startWearSyncService(path, appDirPath);
+  }
+
   /// Sets the method call handler for getLocalizedString (Android). Call once when initData is ready.
   static void setWearSyncMethodCallHandler() {
     if (!Platform.isAndroid) return;
