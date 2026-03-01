@@ -1,3 +1,6 @@
+// Design token names (e.g. H_H1, B_16R) follow the design system.
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:flutter/material.dart';
 
 class FirkaFonts {

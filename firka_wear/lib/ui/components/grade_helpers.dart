@@ -1,7 +1,9 @@
 import 'dart:ui';
 
-import '../../ui/model/style.dart';
+import 'package:flutter/material.dart';
 import 'package:kreta_api/kreta_api.dart';
+
+import 'package:firka_wear/ui/theme/style.dart';
 
 int roundGrade(double grade) {
   if (grade < 2) {

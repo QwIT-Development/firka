@@ -1,7 +1,7 @@
-import 'package:kreta_api/kreta_api.dart';
 import 'package:flutter/material.dart';
+import 'package:kreta_api/kreta_api.dart';
 
-import '../../ui/model/style.dart';
+import 'package:firka_wear/ui/theme/style.dart';
 import 'grade_helpers.dart';
 
 class GradeWidget extends StatelessWidget {

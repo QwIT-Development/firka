@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../ui/model/style.dart';
+import 'package:firka_wear/ui/theme/style.dart';
 
 class FirkaCard extends StatelessWidget {
   final List<Widget> left;

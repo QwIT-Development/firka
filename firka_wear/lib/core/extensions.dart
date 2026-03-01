@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../l10n/app_localizations.dart';
+import 'package:firka_wear/core/debug_helper.dart';
+import 'package:firka_wear/l10n/app_localizations.dart';
 import 'package:kreta_api/kreta_api.dart';
-import 'debug_helper.dart';
 
 extension IterableExtensionMap on Iterable<MapEntry<String, dynamic>> {
   Map<String, dynamic> toMap() {

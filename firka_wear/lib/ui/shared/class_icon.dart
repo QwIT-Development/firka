@@ -1,5 +1,6 @@
-import 'package:firka_wear/helpers/icon_helper.dart';
 import 'package:flutter/material.dart';
+
+import 'package:firka_wear/core/icon_helper.dart';
 
 import 'firka_icon.dart';
 

@@ -1,10 +1,10 @@
-import 'package:kreta_api/kreta_api.dart';
-import 'package:firka_wear/helpers/ui/firka_card.dart';
-import 'package:firka_wear/helpers/ui/grade_helpers.dart';
-import 'package:firka_wear/ui/widget/class_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:kreta_api/kreta_api.dart';
 
-import '../model/style.dart';
+import 'package:firka_wear/ui/components/firka_card.dart';
+import 'package:firka_wear/ui/components/grade_helpers.dart';
+import 'package:firka_wear/ui/shared/class_icon.dart';
+import 'package:firka_wear/ui/theme/style.dart';
 
 class GradeSmallCard extends FirkaCard {
   final List<Grade> grades;

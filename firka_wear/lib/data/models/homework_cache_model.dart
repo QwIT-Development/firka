@@ -1,7 +1,7 @@
 import 'package:isar_community/isar.dart';
 
-import '../../debug_helper.dart';
-import '../util.dart';
+import 'package:firka_wear/core/debug_helper.dart';
+import 'package:firka_wear/data/util.dart';
 
 part 'homework_cache_model.g.dart';
 

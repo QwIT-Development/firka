@@ -2,28 +2,27 @@
 
 import 'dart:async';
 
-import 'package:kreta_api/kreta_api.dart';
-import 'package:firka_wear/helpers/extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:wear_plus/wear_plus.dart';
 
-import '../../../../helpers/db/models/token_model.dart';
-import '../../../../main.dart';
-import '../../../model/style.dart';
-import '../home/home_screen.dart';
+import 'package:firka_wear/app/initialization.dart';
+import 'package:firka_wear/core/extensions.dart';
+import 'package:firka_wear/data/models/token_model.dart';
+import 'package:firka_wear/ui/theme/style.dart';
+import 'package:firka_wear/ui/wear/screens/home/home_screen.dart';
 
 class WearLoginScreen extends StatefulWidget {
   final WearAppInitialization data;
   const WearLoginScreen(this.data, {super.key});
 
   @override
-  State<WearLoginScreen> createState() => _WearLoginScreen(data);
+  State<WearLoginScreen> createState() => _WearLoginScreen();
 }
 
 class _WearLoginScreen extends State<WearLoginScreen> {
-  final WearAppInitialization initData;
-  _WearLoginScreen(this.initData);
+  WearAppInitialization get initData => widget.data;
 
   bool init = false;
   bool isPaired = false;
@@ -81,7 +80,7 @@ class _WearLoginScreen extends State<WearLoginScreen> {
                 timetable: timetable,
                 grades: grades,
               );
-              if (!context.mounted) return;
+              if (!mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
                   builder: (context) => WearHomeScreen(initData),

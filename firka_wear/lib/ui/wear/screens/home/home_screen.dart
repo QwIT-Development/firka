@@ -1,21 +1,21 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:kreta_api/kreta_api.dart';
-import 'package:firka_wear/helpers/extensions.dart';
-import 'package:firka_wear/ui/widget/class_icon.dart';
-import 'package:firka_wear/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_arc_text/flutter_arc_text.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:wear_plus/wear_plus.dart';
 
-import '../../../../helpers/debug_helper.dart';
-import '../../../../l10n/app_localizations.dart';
-import '../../../model/style.dart';
-import '../../widgets/circular_progress_indicator.dart';
+import 'package:firka_wear/app/initialization.dart';
+import 'package:firka_wear/core/debug_helper.dart';
+import 'package:firka_wear/core/extensions.dart';
+import 'package:firka_wear/l10n/app_localizations.dart';
+import 'package:firka_wear/ui/theme/style.dart';
+import 'package:firka_wear/ui/shared/class_icon.dart';
+import 'package:firka_wear/ui/wear/widgets/circular_progress_indicator.dart';
 
 class WearHomeScreen extends StatefulWidget {
   final WearAppInitialization data;
@@ -23,13 +23,11 @@ class WearHomeScreen extends StatefulWidget {
   const WearHomeScreen(this.data, {super.key});
 
   @override
-  State<WearHomeScreen> createState() => _WearHomeScreenState(data);
+  State<WearHomeScreen> createState() => _WearHomeScreenState();
 }
 
 class _WearHomeScreenState extends State<WearHomeScreen> {
-  final WearAppInitialization data;
-
-  _WearHomeScreenState(this.data);
+  WearAppInitialization get data => widget.data;
 
   int? currentLessonNo;
   List<Lesson> today = List.empty(growable: true);

@@ -1,4 +1,4 @@
-import 'package:firka_wear/ui/widget/delayed_spinner.dart';
+import 'package:firka_wear/ui/shared/delayed_spinner.dart';
 import 'package:flutter/material.dart';
 
 abstract class StatelessAsyncWidget extends StatelessWidget {
