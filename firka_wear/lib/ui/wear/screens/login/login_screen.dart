@@ -6,7 +6,7 @@ import 'package:firka_wear/helpers/api/client/kreta_client.dart';
 import 'package:firka_wear/helpers/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
-import 'package:zear_plus/wear_plus.dart';
+import 'package:wear_plus/wear_plus.dart';
 
 import '../../../../helpers/db/models/token_model.dart';
 import '../../../../main.dart';

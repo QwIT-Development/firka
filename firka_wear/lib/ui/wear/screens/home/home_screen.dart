@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_arc_text/flutter_arc_text.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:zear_plus/wear_plus.dart';
+import 'package:wear_plus/wear_plus.dart';
 
 import '../../../../helpers/debug_helper.dart';
 import '../../../../l10n/app_localizations.dart';

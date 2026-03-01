@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:intl/intl.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../debug_helper.dart';
 

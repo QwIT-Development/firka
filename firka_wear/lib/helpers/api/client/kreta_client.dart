@@ -8,7 +8,7 @@ import 'package:firka_wear/helpers/db/models/generic_cache_model.dart';
 import 'package:firka_wear/helpers/db/models/homework_cache_model.dart';
 import 'package:firka_wear/helpers/db/models/timetable_cache_model.dart';
 import 'package:intl/intl.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../../main.dart';
 import '../../db/models/token_model.dart';

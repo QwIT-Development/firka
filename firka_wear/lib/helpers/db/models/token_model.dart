@@ -1,6 +1,6 @@
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:firka_wear/helpers/api/resp/token_grant.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../api/resp/token_grant.dart';
 import '../../debug_helper.dart';

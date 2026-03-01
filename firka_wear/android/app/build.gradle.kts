@@ -14,7 +14,7 @@ import java.util.zip.ZipOutputStream.STORED
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.1.0"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -30,7 +30,7 @@ fun loadProperties(file: File): Properties {
 android {
     namespace = "app.firka.naplo"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -95,52 +95,6 @@ dependencies {
 
 flutter {
     source = "../.."
-}
-
-tasks.register("transformAndResignDebugApk") {
-    group = "build"
-    description = "Transform and resign APK with debug key"
-
-    dependsOn("assembleDebug")
-
-    doLast {
-        transformApks(true)
-    }
-}
-
-tasks.register("transformAndResignReleaseApk") {
-    group = "build"
-    description = "Transform and resign APK with release key"
-
-    dependsOn("assembleRelease")
-
-    doLast {
-        checkReleaseKey()
-        if (System.getenv("TRANSFORM_APK") != null
-            && System.getenv("TRANSFORM_APK") == "true") {
-            transformApks(false)
-        }
-    }
-}
-
-tasks.register("transformAndResignReleaseBundle") {
-    group = "build"
-    description = "Transform and resign bundle with release key"
-
-    dependsOn("bundleRelease")
-
-    doLast {
-        if (System.getenv("TRANSFORM_AAB") != null
-            && System.getenv("TRANSFORM_AAB") == "true") {
-            transformAppBundle()
-        }
-    }
-}
-
-afterEvaluate {
-    tasks.findByName("assembleDebug")?.finalizedBy("transformAndResignDebugApk")
-    tasks.findByName("assembleRelease")?.finalizedBy("transformAndResignReleaseApk")
-    tasks.findByName("bundleRelease")?.finalizedBy("transformAndResignReleaseBundle")
 }
 
 fun checkReleaseKey() {

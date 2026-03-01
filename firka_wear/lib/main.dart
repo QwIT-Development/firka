@@ -13,10 +13,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:zear_plus/wear_plus.dart';
+import 'package:wear_plus/wear_plus.dart';
 
 import 'helpers/api/client/kreta_client.dart';
 import 'l10n/app_localizations.dart';

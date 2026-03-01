@@ -21,7 +21,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1011
 
 environment:
-  sdk: ">=3.6.0 <=3.9.0"
+  sdk: ^3.11.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -37,20 +37,16 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_launcher_icons: ^0.14.3
   dio: ^5.8.0+1
-  isar:
-    path: vendor/isar
-  isar_flutter_libs:
-    path: vendor/isar_flutter_libs
+  isar_community: 3.3.0
+  isar_community_flutter_libs: 3.3.0
   build_runner: any
   path_provider: ^2.1.0
   carousel_slider: ^5.0.0
-  webview_flutter: ^4.7.0
   dart_jsonwebtoken: ^3.2.0
-  zear_plus:
-    path: vendor/wear_plus
+  wear_plus: ^1.2.4
   majesticons_flutter: ^0.0.1
   watch_connectivity: ^0.2.1+1
-  permission_handler: ^11.4.0
+  permission_handler: ^12.0.1
   flutter_localizations:
     sdk: flutter
   intl: any
@@ -64,9 +60,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
-  isar_generator:
-    path: vendor/isar_generator
+  flutter_lints: ^6.0.0
+  isar_community_generator: 3.3.0
   android_notification_icons: ^0.0.1
   integration_test:
     sdk: flutter
