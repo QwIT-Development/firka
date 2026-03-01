@@ -20,38 +20,47 @@ class Grade {
   final UidObj? classGroup;
   final int sortIndex;
 
-  Grade(
-      {required this.uid,
-      required this.recordDate,
-      required this.creationDate,
-      this.ackDate,
-      required this.subject,
-      this.topic,
-      required this.type,
-      this.mode,
-      required this.valueType,
-      required this.teacher,
-      this.kind,
-      this.numericValue,
-      required this.strValue,
-      this.weightPercentage,
-      this.shortStrValue,
-      this.classGroup,
-      required this.sortIndex});
+  Grade({
+    required this.uid,
+    required this.recordDate,
+    required this.creationDate,
+    this.ackDate,
+    required this.subject,
+    this.topic,
+    required this.type,
+    this.mode,
+    required this.valueType,
+    required this.teacher,
+    this.kind,
+    this.numericValue,
+    required this.strValue,
+    this.weightPercentage,
+    this.shortStrValue,
+    this.classGroup,
+    required this.sortIndex,
+  });
 
   factory Grade.fromJson(Map<String, dynamic> json) {
     return Grade(
       uid: json['Uid'],
-      recordDate: DateTime.parse(json['RogzitesDatuma']),
-      creationDate: DateTime.parse(json['KeszitesDatuma']),
+      recordDate: DateTime.parse(json['RogzitesDatuma']).toLocal(),
+      creationDate: DateTime.parse(json['KeszitesDatuma']).toLocal(),
       ackDate: json['LattamozasDatuma'] != null
-          ? DateTime.parse(json['LattamozasDatuma'])
+          ? DateTime.parse(json['LattamozasDatuma']).toLocal()
           : null,
-      subject: Subject.fromJson(json['Tantargy']),
+      subject: Subject.fromJson(
+        Map<String, dynamic>.from(json['Tantargy'] as Map),
+      ),
       topic: json['Tema'],
-      type: NameUidDesc.fromJson(json['Tipus']),
-      mode: json['Mod'] != null ? NameUidDesc.fromJson(json['Mod']) : null,
-      valueType: NameUidDesc.fromJson(json['ErtekFajta']),
+      type: NameUidDesc.fromJson(
+        Map<String, dynamic>.from(json['Tipus'] as Map),
+      ),
+      mode: json['Mod'] != null
+          ? NameUidDesc.fromJson(Map<String, dynamic>.from(json['Mod'] as Map))
+          : null,
+      valueType: NameUidDesc.fromJson(
+        Map<String, dynamic>.from(json['ErtekFajta'] as Map),
+      ),
       teacher: json['ErtekeloTanarNeve'],
       kind: json['Kind'],
       numericValue: json['SzamErtek'],
@@ -59,10 +68,34 @@ class Grade {
       weightPercentage: json['SulySzazalekErteke'],
       shortStrValue: json['SzovegesErtekelesRovidNev'],
       classGroup: json['OsztalyCsoport'] != null
-          ? UidObj.fromJson(json['OsztalyCsoport'])
+          ? UidObj.fromJson(
+              Map<String, dynamic>.from(json['OsztalyCsoport'] as Map),
+            )
           : null,
       sortIndex: json['SortIndex'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'Uid': uid,
+      'RogzitesDatuma': recordDate.toUtc().toIso8601String(),
+      'KeszitesDatuma': creationDate.toUtc().toIso8601String(),
+      'LattamozasDatuma': ackDate?.toUtc().toIso8601String(),
+      'Tantargy': subject.toJson(),
+      'Tema': topic,
+      'Tipus': type.toJson(),
+      'Mod': mode?.toJson(),
+      'ErtekFajta': valueType.toJson(),
+      'ErtekeloTanarNeve': teacher,
+      'Kind': kind,
+      'SzamErtek': numericValue,
+      'SzovegesErtek': strValue,
+      'SulySzazalekErteke': weightPercentage,
+      'SzovegesErtekelesRovidNev': shortStrValue,
+      'OsztalyCsoport': classGroup != null ? {'Uid': classGroup!.uid} : null,
+      'SortIndex': sortIndex,
+    };
   }
 
   @override

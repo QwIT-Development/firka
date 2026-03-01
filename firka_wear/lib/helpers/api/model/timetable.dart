@@ -66,32 +66,43 @@ class Lesson {
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
     var attachments = List<NameUid>.empty(growable: true);
-    var rawAttachments = json['Csatolmanyok'];
+    var rawAttachments = json['Csatolmanyok'] as List<dynamic>? ?? [];
 
     for (var attachment in rawAttachments) {
-      attachments.add(NameUid.fromJson(attachment));
+      attachments.add(
+        NameUid.fromJson(Map<String, dynamic>.from(attachment as Map)),
+      );
     }
     return Lesson(
       uid: json['Uid'],
       date: json['Datum'],
-      start: DateTime.parse(json['KezdetIdopont']),
-      end: DateTime.parse(json['VegIdopont']),
+      start: DateTime.parse(json['KezdetIdopont']).toLocal(),
+      end: DateTime.parse(json['VegIdopont']).toLocal(),
       name: json['Nev'],
       lessonNumber: json['Oraszam'],
       lessonSeqNumber: json['OraEvesSorszama'],
       classGroup: json['OsztalyCsoport'] != null
-          ? NameUid.fromJson(json['OsztalyCsoport'])
+          ? NameUid.fromJson(
+              Map<String, dynamic>.from(json['OsztalyCsoport'] as Map),
+            )
           : null,
       teacher: json['TanarNeve'],
-      subject:
-          json['Tantargy'] != null ? Subject.fromJson(json['Tantargy']) : null,
+      subject: json['Tantargy'] != null
+          ? Subject.fromJson(Map<String, dynamic>.from(json['Tantargy'] as Map))
+          : null,
       theme: json['Tema'],
       roomName: json['TeremNeve'],
-      type: NameUidDesc.fromJson(json['Tipus']),
+      type: NameUidDesc.fromJson(
+        Map<String, dynamic>.from(json['Tipus'] as Map),
+      ),
       studentPresence: json['TanuloJelenlet'] != null
-          ? NameUidDesc.fromJson(json['TanuloJelenlet'])
+          ? NameUidDesc.fromJson(
+              Map<String, dynamic>.from(json['TanuloJelenlet'] as Map),
+            )
           : null,
-      state: NameUidDesc.fromJson(json['Allapot']),
+      state: NameUidDesc.fromJson(
+        Map<String, dynamic>.from(json['Allapot'] as Map),
+      ),
       substituteTeacher: json['HelyettesTanarNeve'],
       homeworkUid: json['HaziFeladatUid'],
       taskGroupUid: json['FeladatGroupUid'],
@@ -105,11 +116,46 @@ class Lesson {
       digitalPlatformType: json['DigitalisPlatformTipus'],
       digitalSupportDeviceTypeList:
           json['DigitalisTamogatoEszkozTipusList'] != null
-              ? List<String>.from(json['DigitalisTamogatoEszkozTipusList'])
-              : List<String>.empty(),
-      createdAt: DateTime.parse(json['Letrehozas']),
-      lastModifiedAt: DateTime.parse(json['UtolsoModositas']),
+          ? List<String>.from(json['DigitalisTamogatoEszkozTipusList'])
+          : List<String>.empty(),
+      createdAt: DateTime.parse(json['Letrehozas']).toLocal(),
+      lastModifiedAt: DateTime.parse(json['UtolsoModositas']).toLocal(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    final rawAttachments = attachments.map((e) => e.toJson()).toList();
+    return {
+      'Uid': uid,
+      'Datum': date,
+      'KezdetIdopont': start.toIso8601String(),
+      'VegIdopont': end.toIso8601String(),
+      'Nev': name,
+      'Oraszam': lessonNumber,
+      'OraEvesSorszama': lessonSeqNumber,
+      'OsztalyCsoport': classGroup?.toJson(),
+      'TanarNeve': teacher,
+      'Tantargy': subject?.toJson(),
+      'Tema': theme,
+      'TeremNeve': roomName,
+      'Tipus': type.toJson(),
+      'TanuloJelenlet': studentPresence?.toJson(),
+      'Allapot': state.toJson(),
+      'HelyettesTanarNeve': substituteTeacher,
+      'HaziFeladatUid': homeworkUid,
+      'FeladatGroupUid': taskGroupUid,
+      'NyelviFeladatGroupUid': languageTaskGroupUid,
+      'BejelentettSzamonkeresUid': assessmentUid,
+      'IsTanuloHaziFeladatEnabled': canStudentEditHomework,
+      'IsHaziFeladatMegoldva': isHomeworkComplete,
+      'Csatolmanyok': rawAttachments,
+      'IsDigitalisOra': isDigitalLesson,
+      'DigitalisEszkozTipus': digitalDeviceList,
+      'DigitalisPlatformTipus': digitalPlatformType,
+      'DigitalisTamogatoEszkozTipusList': digitalSupportDeviceTypeList,
+      'Letrehozas': createdAt.toIso8601String(),
+      'UtolsoModositas': lastModifiedAt.toIso8601String(),
+    };
   }
 
   @override
