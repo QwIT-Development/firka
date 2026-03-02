@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -103,10 +104,11 @@ class _InitializationScreenState extends State<InitializationScreen> {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       final ctx = navigatorKey.currentContext;
                       if (ctx != null && ctx.mounted) {
+                        logger.info('Watch init_data: ${jsonEncode(msg)}');
                         showWearBottomSheet(
                           ctx,
                           initData,
-                          Platform.isAndroid ? 'Wear OS' : 'Apple Watch',
+                          Platform.isAndroid ? msg['model'] : 'Apple Watch',
                         );
                       }
                     });

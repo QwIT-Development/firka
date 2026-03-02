@@ -146,10 +146,13 @@ class _WearPairSheetContentState extends State<_WearPairSheetContent> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Column(
                         children: [
-                          const SizedBox(
+                          SizedBox(
                             width: 32,
                             height: 32,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(
+                              color: appStyle.colors.accent,
+                              strokeWidth: 2,
+                            ),
                           ),
                           const SizedBox(height: 12),
                           Text(

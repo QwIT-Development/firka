@@ -114,7 +114,10 @@ class _WearLoginScreen extends State<WearLoginScreen> {
 
         debugPrint("[Watch -> Phone]: ping");
         watch.sendMessage(<String, dynamic>{
-          'data': jsonEncode(<String, dynamic>{'id': 'ping'}),
+          'data': jsonEncode(<String, dynamic>{
+            'id': 'ping',
+            'model': initData.devInfo.model,
+          }),
         });
       }
 
@@ -241,7 +244,10 @@ class _WearLoginScreen extends State<WearLoginScreen> {
             onPressed: () async {
               debugPrint("[Watch -> Phone]: ping");
               watch.sendMessage(<String, dynamic>{
-                'data': jsonEncode(<String, dynamic>{'id': 'ping'}),
+                'data': jsonEncode(<String, dynamic>{
+                  'id': 'ping',
+                  'model': initData.devInfo.model,
+                }),
               });
             },
             // TODO: This is a placeholder, style this properly
