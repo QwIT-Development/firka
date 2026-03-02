@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:kreta_api/kreta_api.dart';
-import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/extensions.dart';
+import 'package:firka_common/core/debug_helper.dart';
 import 'package:isar_community/isar.dart';
 
 part 'token_model.g.dart';

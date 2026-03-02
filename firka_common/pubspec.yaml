@@ -1,0 +1,21 @@
+name: firka_common
+description: Shared widgets, data structures, and helpers for firka and firka_wear.
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  kreta_api:
+    path: ../kreta_api
+  majesticons_flutter: ^0.0.1
+  flutter_svg: ^1.1.6
+  intl: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

@@ -370,6 +370,7 @@ class LessonWidget extends StatelessWidget {
                         'cupFilled',
                         color: appStyle.colors.accent,
                         size: 24,
+                        package: 'firka',
                       ),
                     ),
                   ),

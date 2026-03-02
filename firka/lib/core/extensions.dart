@@ -1,8 +1,11 @@
 import 'package:intl/intl.dart';
 
-import 'package:kreta_api/kreta_api.dart';
-import 'package:firka/core/debug_helper.dart';
 import 'package:firka/l10n/app_localizations.dart';
+import 'package:firka_common/core/debug_helper.dart';
+import 'package:firka_common/core/extensions.dart';
+import 'package:kreta_api/kreta_api.dart';
+
+export 'package:firka_common/core/extensions.dart';
 
 extension TimetableExtension on Iterable<Lesson> {
   List<Lesson> getAllSeqs(Lesson reference) {
@@ -56,26 +59,6 @@ extension TimetableExtension on Iterable<Lesson> {
     lessons.sort((l1, l2) => l1.lessonNumber! - l2.lessonNumber!);
 
     return lessons;
-  }
-}
-
-extension IterableExtensionMap on Iterable<MapEntry<String, dynamic>> {
-  Map<String, dynamic> toMap() {
-    var map = <String, dynamic>{};
-    for (var item in this) {
-      map[item.key] = item.value;
-    }
-
-    return map;
-  }
-}
-
-extension IterableExtension<T> on Iterable<T> {
-  T? firstWhereOrNull(bool Function(T element) test) {
-    for (var element in this) {
-      if (test(element)) return element;
-    }
-    return null;
   }
 }
 

@@ -14,6 +14,7 @@ import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
+import 'package:firka/core/settings.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/shared/delayed_spinner.dart';
 
@@ -197,7 +198,17 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
         if (!avg.isNaN) {
           subjectCount++;
           subjectAvg += avg;
-          subjectAvgRounded += roundGrade(avg);
+          final rounding = widget.data.settings
+              .group("settings")
+              .subGroup("application")
+              .subGroup("rounding");
+          subjectAvgRounded += roundGrade(
+            avg,
+            t1: rounding.dbl("1"),
+            t2: rounding.dbl("2"),
+            t3: rounding.dbl("3"),
+            t4: rounding.dbl("4"),
+          );
         }
       }
 
@@ -209,7 +220,17 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
         subjectAvgRounded = 0.00;
       }
 
-      var subjectAvgColor = getGradeColor(subjectAvg);
+      final rounding = widget.data.settings
+          .group("settings")
+          .subGroup("application")
+          .subGroup("rounding");
+      var subjectAvgColor = getGradeColor(
+        subjectAvg,
+        t1: rounding.dbl("1"),
+        t2: rounding.dbl("2"),
+        t3: rounding.dbl("3"),
+        t4: rounding.dbl("4"),
+      );
 
       return Padding(
         padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 12.0),
