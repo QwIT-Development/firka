@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'package:firka_wear/app/app_state.dart';
 import 'package:firka_wear/data/models/generic_cache_model.dart';
 import 'package:firka_wear/data/models/homework_cache_model.dart';
 import 'package:firka_wear/data/models/timetable_cache_model.dart';
@@ -12,42 +13,9 @@ import 'package:firka_wear/l10n/app_localizations.dart';
 import 'package:firka_wear/l10n/app_localizations_de.dart';
 import 'package:firka_wear/l10n/app_localizations_en.dart';
 import 'package:firka_wear/l10n/app_localizations_hu.dart';
-import 'package:flutter/material.dart';
-
 import 'package:firka_wear/services/wear_sync_store.dart';
 
 Isar? isarInit;
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-class DeviceInfo {
-  String model;
-  String versionRelease;
-  String versionSdkInt;
-
-  DeviceInfo(this.model, this.versionRelease, this.versionSdkInt);
-
-  @override
-  String toString() {
-    return "DeviceInfo(model = \"$model\", versionRelease = \"$versionRelease\""
-        ", versionSdkInt = \"$versionSdkInt\"";
-  }
-}
-
-class WearAppInitialization {
-  final Isar isar;
-  final WearSyncStore syncStore;
-  final int tokenCount;
-  final AppLocalizations l10n;
-  final DeviceInfo devInfo;
-
-  WearAppInitialization({
-    required this.isar,
-    required this.syncStore,
-    required this.tokenCount,
-    required this.l10n,
-    required this.devInfo,
-  });
-}
 
 Future<Isar> initDB() async {
   if (isarInit != null) return isarInit!;

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:wear_plus/wear_plus.dart';
 
+import 'package:firka_wear/app/app_state.dart';
 import 'package:firka_wear/app/initialization.dart';
+import 'package:firka_wear/core/bloc/wear_sync_cubit.dart';
 import 'package:firka_wear/l10n/app_localizations.dart';
 import 'package:firka_wear/ui/theme/style.dart';
 import 'package:firka_wear/ui/wear/screens/home/home_screen.dart';
@@ -44,37 +47,33 @@ class WearInitializationScreen extends StatelessWidget {
             );
           }
 
-          Widget screen;
           assert(snapshot.data != null);
-          var data = snapshot.data!;
+          initData = snapshot.data!;
+          initDone = true;
 
-          if (snapshot.data!.tokenCount == 0) {
-            screen = WearLoginScreen(data, key: ValueKey('wearLoginScreen'));
-          } else {
-            screen = WearHomeScreen(data, key: ValueKey('wearHomeScreen'));
-          }
+          final data = initData;
+          final screen = data.tokenCount == 0
+              ? WearLoginScreen(data, key: ValueKey('wearLoginScreen'))
+              : WearHomeScreen(data, key: ValueKey('wearHomeScreen'));
 
-          return MaterialApp(
-            key: ValueKey('firkaWearApp'),
-            title: 'Firka',
-            navigatorKey: navigatorKey,
-            theme: ThemeData(
-              primarySwatch: Colors.lightGreen,
-              visualDensity: VisualDensity.adaptivePlatformDensity,
+          return BlocProvider(
+            create: (_) => WearSyncCubit(),
+            child: MaterialApp(
+              key: ValueKey('firkaWearApp'),
+              title: 'Firka',
+              navigatorKey: navigatorKey,
+              theme: ThemeData(
+                primarySwatch: Colors.lightGreen,
+                visualDensity: VisualDensity.adaptivePlatformDensity,
+              ),
+              localizationsDelegates: [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+              ],
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: screen,
             ),
-            localizationsDelegates: [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-            ],
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: screen,
-            routes: {
-              '/login': (context) =>
-                  WearLoginScreen(data, key: ValueKey('wearLoginScreen')),
-              '/home': (context) =>
-                  WearHomeScreen(data, key: ValueKey('wearHomeScreen')),
-            },
           );
         }
 

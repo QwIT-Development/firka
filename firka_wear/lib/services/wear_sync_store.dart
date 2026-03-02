@@ -129,8 +129,9 @@ class WearSyncStore {
     final m = date.month;
     final d = date.day;
     return _timetable
-        .where((l) =>
-            l.start.year == y && l.start.month == m && l.start.day == d)
+        .where(
+          (l) => l.start.year == y && l.start.month == m && l.start.day == d,
+        )
         .toList()
       ..sort((a, b) => a.start.compareTo(b.start));
   }

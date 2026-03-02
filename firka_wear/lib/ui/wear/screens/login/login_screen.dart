@@ -1,20 +1,20 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:wear_plus/wear_plus.dart';
 
-import 'package:firka_wear/app/initialization.dart';
+import 'package:firka_wear/app/app_state.dart' as app_state;
+import 'package:firka_wear/core/bloc/wear_sync_cubit.dart';
 import 'package:firka_wear/data/models/token_model.dart';
 import 'package:firka_wear/ui/theme/style.dart';
 import 'package:firka_wear/ui/wear/screens/home/home_screen.dart';
 
 class WearLoginScreen extends StatefulWidget {
-  final WearAppInitialization data;
+  final app_state.WearAppInitialization data;
   const WearLoginScreen(this.data, {super.key});
 
   @override
@@ -22,16 +22,22 @@ class WearLoginScreen extends StatefulWidget {
 }
 
 class _WearLoginScreen extends State<WearLoginScreen> {
-  WearAppInitialization get initData => widget.data;
+  app_state.WearAppInitialization get initData => widget.data;
 
   bool init = false;
   bool isPaired = false;
   bool isReachable = false;
   bool isMessageSending = false;
   bool isMessageSent = false;
-  bool isSyncing = false;
   final watch = WatchConnectivity();
   late Timer connectionTimer;
+  WearSyncCubit? _syncCubit;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncCubit ??= context.read<WearSyncCubit>();
+  }
 
   @override
   void initState() {
@@ -45,13 +51,13 @@ class _WearLoginScreen extends State<WearLoginScreen> {
           : raw;
       var id = msg["id"];
 
-      debugPrint("[Phone -> Watch]: $id");
+      app_state.logger.fine("[Phone -> Watch]: $id");
 
       switch (id) {
         case "init_data":
           () async {
             if (!mounted) return;
-            setState(() => isSyncing = true);
+            _syncCubit?.setSyncing(true);
             try {
               final auth = msg["auth"] as Map<dynamic, dynamic>?;
               if (auth == null) return;
@@ -91,14 +97,22 @@ class _WearLoginScreen extends State<WearLoginScreen> {
                 'data': jsonEncode(<String, dynamic>{'id': 'init_done'}),
               });
               if (!mounted) return;
+              app_state.initData = app_state.WearAppInitialization(
+                isar: initData.isar,
+                syncStore: initData.syncStore,
+                tokenCount: await initData.isar.tokenModels.count(),
+                l10n: initData.l10n,
+                devInfo: initData.devInfo,
+              );
+              if (!mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
-                  builder: (context) => WearHomeScreen(initData),
+                  builder: (context) => WearHomeScreen(app_state.initData),
                 ),
                 (route) => false,
               );
             } finally {
-              if (mounted) setState(() => isSyncing = false);
+              if (mounted) _syncCubit?.setSyncing(false);
             }
           }();
           break;
@@ -112,7 +126,7 @@ class _WearLoginScreen extends State<WearLoginScreen> {
       if (!isMessageSending) {
         isMessageSending = true;
 
-        debugPrint("[Watch -> Phone]: ping");
+        app_state.logger.fine("[Watch -> Phone]: ping");
         watch.sendMessage(<String, dynamic>{
           'data': jsonEncode(<String, dynamic>{
             'id': 'ping',
@@ -129,7 +143,7 @@ class _WearLoginScreen extends State<WearLoginScreen> {
     });
   }
 
-  (List<Widget>, double) buildBody(BuildContext context) {
+  (List<Widget>, double) buildBody(BuildContext context, bool isSyncing) {
     if (!init) {
       return (<Widget>[], 60);
     }
@@ -196,7 +210,7 @@ class _WearLoginScreen extends State<WearLoginScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              debugPrint("[Watch -> Phone]: ping");
+              app_state.logger.fine("[Watch -> Phone]: ping");
               watch.sendMessage(<String, dynamic>{
                 'data': jsonEncode(<String, dynamic>{
                   'id': 'ping',
@@ -242,7 +256,7 @@ class _WearLoginScreen extends State<WearLoginScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              debugPrint("[Watch -> Phone]: ping");
+              app_state.logger.fine("[Watch -> Phone]: ping");
               watch.sendMessage(<String, dynamic>{
                 'data': jsonEncode(<String, dynamic>{
                   'id': 'ping',
@@ -290,39 +304,42 @@ class _WearLoginScreen extends State<WearLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var (body, offset) = buildBody(context);
-
-    return Scaffold(
-      backgroundColor: wearStyle.colors.background,
-      body: Center(
-        child: Column(
-          children: [
-            WatchShape(
-              builder: (context, shape, child) {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Column(
+    return BlocBuilder<WearSyncCubit, WearSyncState>(
+      builder: (context, syncState) {
+        var (body, offset) = buildBody(context, syncState.isSyncing);
+        return Scaffold(
+          backgroundColor: wearStyle.colors.background,
+          body: Center(
+            child: Column(
+              children: [
+                WatchShape(
+                  builder: (context, shape, child) {
+                    return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.only(top: offset),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: body,
-                          ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Container(
+                              padding: EdgeInsets.only(top: offset),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: body,
+                              ),
+                            ),
+                          ],
                         ),
+                        child!,
                       ],
-                    ),
-                    child!,
-                  ],
-                );
-              },
-              child: SizedBox(),
+                    );
+                  },
+                  child: SizedBox(),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

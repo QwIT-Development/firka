@@ -5,12 +5,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_arc_text/flutter_arc_text.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:wear_plus/wear_plus.dart';
 
-import 'package:firka_wear/app/initialization.dart';
+import 'package:firka_wear/app/app_state.dart';
+import 'package:firka_wear/core/bloc/wear_sync_cubit.dart';
 import 'package:firka_wear/core/debug_helper.dart';
 import 'package:firka_wear/core/extensions.dart';
 import 'package:firka_wear/l10n/app_localizations.dart';
@@ -40,9 +42,15 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   final platform = MethodChannel('firka.app/main');
   final watch = WatchConnectivity();
   StreamSubscription? _messageSub;
-  bool _syncing = false;
+  WearSyncCubit? _syncCubit;
 
   bool disposed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncCubit ??= context.read<WearSyncCubit>();
+  }
 
   @override
   void initState() {
@@ -68,7 +76,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
 
   void _onSyncData(Map<String, dynamic> msg) async {
     if (disposed) return;
-    setState(() => _syncing = true);
+    _syncCubit?.setSyncing(true);
     try {
       final lastSyncAt = msg['lastSyncAt'] != null
           ? DateTime.parse(msg['lastSyncAt'] as String)
@@ -95,7 +103,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
         today = data.syncStore.getLessonsForDate(now);
       });
     } finally {
-      if (!disposed) setState(() => _syncing = false);
+      if (!disposed) _syncCubit?.setSyncing(false);
     }
   }
 
@@ -355,80 +363,84 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: mode == WearMode.active
-          ? wearStyle.colors.background
-          : wearStyle.colors.backgroundAmoled,
-      body: Stack(
-        children: [
-          Center(child: titleBar),
-          Center(
-            child: Column(
-              children: [
-                WatchShape(
-                  builder: (context, shape, child) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[child!],
-                    );
-                  },
-                  child: AmbientMode(
-                    builder: (context, mode, child) {
-                      if (this.mode != mode) {
-                        Timer(Duration(milliseconds: 100), () {
-                          setState(() {
-                            this.mode = mode;
-                          });
-                        });
-                      }
+    return BlocBuilder<WearSyncCubit, WearSyncState>(
+      builder: (context, syncState) {
+        return Scaffold(
+          backgroundColor: mode == WearMode.active
+              ? wearStyle.colors.background
+              : wearStyle.colors.backgroundAmoled,
+          body: Stack(
+            children: [
+              Center(child: titleBar),
+              Center(
+                child: Column(
+                  children: [
+                    WatchShape(
+                      builder: (context, shape, child) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[child!],
+                        );
+                      },
+                      child: AmbientMode(
+                        builder: (context, mode, child) {
+                          if (this.mode != mode) {
+                            Timer(Duration(milliseconds: 100), () {
+                              setState(() {
+                                this.mode = mode;
+                              });
+                            });
+                          }
 
-                      var (body, padding) = buildBody(context, mode);
+                          var (body, padding) = buildBody(context, mode);
 
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Container(
-                            padding: EdgeInsets.only(top: padding),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [...body],
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Container(
+                                padding: EdgeInsets.only(top: padding),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [...body],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (syncState.isSyncing)
+                Positioned.fill(
+                  child: Container(
+                    color: wearStyle.colors.background.withValues(alpha: 0.8),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(height: 12.h),
+                          Text(
+                            AppLocalizations.of(context)!.wear_syncing,
+                            style: wearStyle.fonts.B_16R.apply(
+                              color: wearStyle.colors.textPrimary,
                             ),
                           ),
                         ],
-                      );
-                    },
+                      ),
+                    ),
                   ),
                 ),
-              ],
-            ),
+            ],
           ),
-          if (_syncing)
-            Positioned.fill(
-              child: Container(
-                color: wearStyle.colors.background.withValues(alpha: 0.8),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(
-                        width: 32,
-                        height: 32,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                      SizedBox(height: 12.h),
-                      Text(
-                        AppLocalizations.of(context)!.wear_syncing,
-                        style: wearStyle.fonts.B_16R.apply(
-                          color: wearStyle.colors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 
