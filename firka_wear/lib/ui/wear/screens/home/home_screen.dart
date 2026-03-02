@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
+import 'package:wearable_rotary/wearable_rotary.dart';
 import 'package:wear_plus/wear_plus.dart';
 
 import 'package:firka_wear/app/app_state.dart';
@@ -45,6 +46,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   final platform = MethodChannel('firka.app/main');
   final watch = WatchConnectivity();
   StreamSubscription? _messageSub;
+  StreamSubscription<RotaryEvent>? _rotarySub;
   WearSyncCubit? _syncCubit;
   late final PageController _pageController;
 
@@ -79,7 +81,26 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
         now = timeNow();
       });
     });
+    _rotarySub = rotaryEvents.listen(_onRotaryEvent);
     initStateAsync();
+  }
+
+  void _onRotaryEvent(RotaryEvent event) {
+    if (!_pageController.hasClients) return;
+    final pos = _pageController.position;
+    final pageCount = (pos.maxScrollExtent / pos.viewportDimension).round() + 1;
+    final currentPage = (_pageController.page ?? 0).round();
+    final nextPage = event.direction == RotaryDirection.clockwise
+        ? (currentPage + 1).clamp(0, pageCount - 1)
+        : (currentPage - 1).clamp(0, pageCount - 1);
+    if (nextPage != currentPage) {
+      HapticFeedback.lightImpact();
+      _pageController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOutCirc,
+      );
+    }
   }
 
   void _onSyncData(Map<String, dynamic> msg) async {
@@ -624,6 +645,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   @override
   void dispose() {
     _messageSub?.cancel();
+    _rotarySub?.cancel();
     timer?.cancel();
     _pageController.dispose();
     disposed = true;

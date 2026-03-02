@@ -1,5 +1,6 @@
 package app.firka.naplo
 
+import android.view.MotionEvent
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -10,6 +11,7 @@ import android.os.Bundle
 import androidx.core.app.NotificationCompat
 import androidx.wear.ongoing.OngoingActivity
 import androidx.wear.ongoing.Status
+import com.samsung.wearable_rotary.WearableRotaryPlugin
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -89,4 +91,10 @@ class MainActivity : FlutterActivity() {
         window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
     }
 
+    override fun onGenericMotionEvent(event: MotionEvent?): Boolean {
+        return when {
+            WearableRotaryPlugin.onGenericMotionEvent(event) -> true
+            else -> super.onGenericMotionEvent(event)
+        }
+    }
 }
