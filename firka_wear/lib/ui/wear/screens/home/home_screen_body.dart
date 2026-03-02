@@ -26,25 +26,28 @@ class _HomeScreenBodyPage extends StatelessWidget {
   }
 }
 
-class _PlaceholderPage extends StatelessWidget {
-  final int index;
+class _LessonCardPage extends StatelessWidget {
+  final Lesson? lesson;
   final double viewportHeight;
 
-  const _PlaceholderPage({required this.index, required this.viewportHeight});
+  const _LessonCardPage({
+    required this.lesson,
+    required this.viewportHeight,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (lesson == null) {
+      return SizedBox(height: viewportHeight);
+    }
+
     return SizedBox(
       height: viewportHeight,
       child: Center(
-        child: Text(
-          'Placeholder $index',
-          style: TextStyle(
-            color: wearStyle.colors.textPrimary,
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontVariations: [FontVariation('wght', 400)],
-          ),
+        child: SizedBox(
+          width: 340.w,
+          child: LessonCardSmall.fromLesson(lesson!),
         ),
       ),
     );

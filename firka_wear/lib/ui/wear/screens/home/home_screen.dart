@@ -18,6 +18,7 @@ import 'package:firka_wear/core/extensions.dart';
 import 'package:firka_wear/l10n/app_localizations.dart';
 import 'package:firka_wear/ui/theme/style.dart';
 import 'package:firka_wear/ui/shared/class_icon.dart';
+import 'package:firka_wear/ui/wear/widgets/lesson_card_small.dart';
 import 'package:firka_wear/ui/wear/widgets/circular_progress_indicator.dart';
 
 part 'home_screen_body.dart';
@@ -48,6 +49,9 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   late final PageController _pageController;
 
   bool disposed = false;
+  DateTime? _anchorLessonStart;
+  int _bodyPageIndex = 0;
+  int? _activeLessonNo;
 
   @override
   void didChangeDependencies() {
@@ -58,7 +62,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: 2);
+    _pageController = PageController();
     now = timeNow();
     today = data.syncStore.getLessonsForDate(now);
     init = data.syncStore.timetable.isNotEmpty;
@@ -133,7 +137,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   ) {
     var body = List<Widget>.empty(growable: true);
     if (!init) {
-      return (body, 255.h, null);
+      return (body, 0.h, null);
     }
 
     if (today.isEmpty &&
@@ -148,7 +152,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
           textAlign: TextAlign.center,
         ),
       );
-      return (body, 255.h, null);
+      return (body, 50.h, null);
     }
     if (today.isEmpty) {
       body.add(
@@ -162,7 +166,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
       );
 
       platform.invokeMethod('activity_cancel');
-      return (body, 255.h, null);
+      return (body, 50.h, null);
     }
     if (now.isAfter(today.last.end)) {
       body.add(
@@ -176,7 +180,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
       );
 
       platform.invokeMethod('activity_cancel');
-      return (body, 300.h, null);
+      return (body, 50.h, null);
     }
     if (now.isBefore(today.first.start)) {
       var untilFirst = today.first.start.difference(now);
@@ -192,7 +196,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
       );
 
       platform.invokeMethod('activity_update');
-      return (body, 255.h, null);
+      return (body, 50.h, null);
     }
     currentLessonNo = null;
     if (now.isAfter(today.first.start) && now.isBefore(today.last.end)) {
@@ -418,34 +422,165 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
                             });
                           }
 
+                          final hasScrollableLessons =
+                              today.isNotEmpty &&
+                              !now.isBefore(today.first.start) &&
+                              !now.isAfter(today.last.end);
+
+                          if (!hasScrollableLessons) {
+                            return SizedBox(
+                              height: viewportHeight,
+                              child: _HomeScreenBodyPage(
+                                body: body,
+                                padding: padding,
+                                viewportHeight: viewportHeight,
+                              ),
+                            );
+                          }
+
+                          final anchorLesson =
+                              today.getCurrentLesson(now) ??
+                              today.getNextLesson(now) ??
+                              (today.isNotEmpty ? today.first : null);
+                          final anchorIndex = anchorLesson == null
+                              ? 0
+                              : today.indexWhere(
+                                  (e) =>
+                                      e.start.millisecondsSinceEpoch ==
+                                      anchorLesson.start.millisecondsSinceEpoch,
+                                );
+                          final safeAnchorIndex = anchorIndex < 0
+                              ? 0
+                              : anchorIndex.clamp(0, today.length);
+
+                          final beforeLessons = today
+                              .take(safeAnchorIndex)
+                              .toList(growable: false);
+                          final afterLessons = today
+                              .skip(safeAnchorIndex + 1)
+                              .toList(growable: false);
+
+                          final pages = <Widget>[
+                            ...beforeLessons.map(
+                              (lesson) => _LessonCardPage(
+                                key: ValueKey(
+                                  'before_${lesson.start.millisecondsSinceEpoch}',
+                                ),
+                                lesson: lesson,
+                                viewportHeight: viewportHeight,
+                              ),
+                            ),
+                            _HomeScreenBodyPage(
+                              body: body,
+                              padding: padding,
+                              viewportHeight: viewportHeight,
+                            ),
+                            ...afterLessons.map(
+                              (lesson) => _LessonCardPage(
+                                key: ValueKey(
+                                  'after_${lesson.start.millisecondsSinceEpoch}',
+                                ),
+                                lesson: lesson,
+                                viewportHeight: viewportHeight,
+                              ),
+                            ),
+                          ];
+
+                          final newBodyPageIndex = beforeLessons.length;
+                          final anchorStart = anchorLesson?.start;
+                          final currentPage = _pageController.hasClients
+                              ? _pageController.page
+                              : null;
+                          final shouldRetainBody =
+                              currentPage == null ||
+                              currentPage.round() == _bodyPageIndex;
+
+                          int? pageIndexForLessonStart(DateTime start) {
+                            final beforeIndex = beforeLessons.indexWhere(
+                              (e) =>
+                                  e.start.millisecondsSinceEpoch ==
+                                  start.millisecondsSinceEpoch,
+                            );
+                            if (beforeIndex != -1) {
+                              return beforeIndex;
+                            }
+
+                            final afterIndex = afterLessons.indexWhere(
+                              (e) =>
+                                  e.start.millisecondsSinceEpoch ==
+                                  start.millisecondsSinceEpoch,
+                            );
+                            if (afterIndex != -1) {
+                              return beforeLessons.length + 1 + afterIndex;
+                            }
+
+                            return null;
+                          }
+
+                          DateTime? visibleLessonStartForPageIndex(
+                            int pageIndex,
+                          ) {
+                            if (pageIndex == newBodyPageIndex) return null;
+                            if (pageIndex < newBodyPageIndex) {
+                              final beforeIndex = pageIndex;
+                              if (beforeIndex < 0 ||
+                                  beforeIndex >= beforeLessons.length) {
+                                return null;
+                              }
+                              return beforeLessons[beforeIndex].start;
+                            }
+
+                            final afterIndex = pageIndex - newBodyPageIndex - 1;
+                            if (afterIndex < 0 ||
+                                afterIndex >= afterLessons.length) {
+                              return null;
+                            }
+                            return afterLessons[afterIndex].start;
+                          }
+
+                          final activeLessonNo = currentLessonNo;
+                          final activeLessonChanged =
+                              activeLessonNo != _activeLessonNo;
+
+                          final pageIndex = currentPage?.round();
+                          final visibleLessonStart = pageIndex == null
+                              ? null
+                              : visibleLessonStartForPageIndex(pageIndex);
+                          final targetPageIndex = shouldRetainBody
+                              ? newBodyPageIndex
+                              : (visibleLessonStart == null
+                                    ? null
+                                    : pageIndexForLessonStart(
+                                        visibleLessonStart,
+                                      ));
+
+                          if (anchorStart != _anchorLessonStart ||
+                              newBodyPageIndex != _bodyPageIndex ||
+                              activeLessonChanged) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (!mounted) return;
+                              if (anchorStart != _anchorLessonStart) {
+                                _anchorLessonStart = anchorStart;
+                              }
+                              if (newBodyPageIndex != _bodyPageIndex) {
+                                _bodyPageIndex = newBodyPageIndex;
+                              }
+                              if (activeLessonChanged) {
+                                _activeLessonNo = activeLessonNo;
+                              }
+                              if (_pageController.hasClients &&
+                                  targetPageIndex != null) {
+                                _pageController.jumpToPage(targetPageIndex);
+                              }
+                            });
+                          }
+
                           return SizedBox(
                             height: viewportHeight,
                             child: PageView(
                               controller: _pageController,
                               scrollDirection: Axis.vertical,
-                              children: [
-                                _PlaceholderPage(
-                                  index: 1,
-                                  viewportHeight: viewportHeight,
-                                ),
-                                _PlaceholderPage(
-                                  index: 2,
-                                  viewportHeight: viewportHeight,
-                                ),
-                                _HomeScreenBodyPage(
-                                  body: body,
-                                  padding: padding,
-                                  viewportHeight: viewportHeight,
-                                ),
-                                _PlaceholderPage(
-                                  index: 3,
-                                  viewportHeight: viewportHeight,
-                                ),
-                                _PlaceholderPage(
-                                  index: 4,
-                                  viewportHeight: viewportHeight,
-                                ),
-                              ],
+                              children: pages,
                             ),
                           );
                         },
