@@ -284,6 +284,18 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
           );
         }
 
+        var currentLessonText =
+            "${currentLesson.name}, ${currentLesson.roomName}";
+        if (currentLessonText.length > 10) {
+          if (currentLesson.roomName!.length > 10) {
+            currentLessonText =
+                "${currentLesson.name}, ${currentLesson.roomName?.substring(0, 6) ?? ''}...";
+          } else {
+            currentLessonText =
+                "${currentLesson.name.substring(0, 10)}, ${currentLesson.roomName}...";
+          }
+        }
+
         body.add(
           CustomPaint(
             painter: CircularProgressPainter(
@@ -307,7 +319,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
                 const SizedBox(height: 4),
                 Center(
                   child: Text(
-                    "${currentLesson.name}, ${currentLesson.roomName}",
+                    currentLessonText,
                     style: TextStyle(
                       color: wearStyle.colors.textPrimary,
                       fontSize: 14,
