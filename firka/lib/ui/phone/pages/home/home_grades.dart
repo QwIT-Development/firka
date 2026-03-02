@@ -1,6 +1,5 @@
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/average_helper.dart';
-import 'package:firka/routing/chart_interaction_scope.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/ui/components/grade_helpers.dart';
 import 'package:firka/ui/phone/widgets/grade_chart.dart';
@@ -227,17 +226,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                 ),
               ],
             ),
-            // SizedBox(height: 16), // TODO: Add graphs here
-            Listener(
-              behavior: HitTestBehavior.opaque,
-              onPointerDown: (_) =>
-                  ChartInteractionScope.of(context).value = true,
-              onPointerUp: (_) =>
-                  ChartInteractionScope.of(context).value = false,
-              onPointerCancel: (_) =>
-                  ChartInteractionScope.of(context).value = false,
-              child: GradeChart(grades: grades?.response ?? []),
-            ),
+            GradeChartWithInteraction(grades: grades?.response ?? []),
             SizedBox(height: 2),
             GradeSummaryBar(
               grades: grades?.response ?? [],

@@ -4,6 +4,7 @@ import 'package:firka/ui/components/common_bottom_sheets.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/ui/components/grade.dart';
 import 'package:firka/ui/phone/pages/home/home_grades.dart';
+import 'package:firka/ui/phone/widgets/grade_chart.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
@@ -196,13 +197,8 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                   ),
                 ],
               ),
-              // SizedBox(height: 16),
-              // GradeChart(grades: grades?.toList() ?? []),
-              SizedBox(
-                height:
-                    MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).padding.top -
-                    230,
+              SizedBox(height: 16),
+              Expanded(
                 child: ListView(
                   children: [
                     Column(
@@ -241,6 +237,8 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                         SizedBox(height: 15),
                       ],
                     ),
+                    GradeChartWithInteraction(grades: grades?.toList() ?? []),
+                    SizedBox(height: 12),
                     Padding(
                       padding: EdgeInsets.only(left: 4),
                       child: Column(

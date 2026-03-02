@@ -1,4 +1,5 @@
 import 'package:kreta_api/kreta_api.dart';
+import 'package:firka/routing/chart_interaction_scope.dart';
 import 'package:firka/ui/components/grade_helpers.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -367,6 +368,25 @@ class _GradeChartState extends State<GradeChart> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Wraps [GradeChart] with a [Listener] that updates [ChartInteractionScope]
+/// so the navigator does not intercept touch/drag (e.g. for swipe back).
+class GradeChartWithInteraction extends StatelessWidget {
+  final List<Grade> grades;
+
+  const GradeChartWithInteraction({super.key, required this.grades});
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      behavior: HitTestBehavior.opaque,
+      onPointerDown: (_) => ChartInteractionScope.of(context).value = true,
+      onPointerUp: (_) => ChartInteractionScope.of(context).value = false,
+      onPointerCancel: (_) => ChartInteractionScope.of(context).value = false,
+      child: GradeChart(grades: grades),
     );
   }
 }
