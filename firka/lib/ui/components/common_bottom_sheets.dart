@@ -21,6 +21,7 @@ import 'package:go_router/go_router.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/ui/components/grade.dart';
+import 'package:firka/ui/components/grade_helpers.dart';
 
 Future<void> showLessonBottomSheet(
   BuildContext context,
@@ -982,7 +983,7 @@ Future<void> showHomeworkBottomSheet(
   );
 }
 
-Future<void> showSubjectBottomSheetSettings(
+Future<void> showGradeCalculatorBottomSheet(
   BuildContext context,
   AppInitialization data,
   Subject subject,
@@ -1000,6 +1001,278 @@ Future<void> showSubjectBottomSheetSettings(
           Positioned.fill(
             child: GestureDetector(
               onTap: () => Navigator.pop(context),
+              behavior: HitTestBehavior.opaque,
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              decoration: BoxDecoration(
+                color: appStyle.colors.background,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
+                child: _GradeCalculatorSheetContent(
+                  data: data,
+                  subject: subject,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+class _GradeCalculatorSheetContent extends StatefulWidget {
+  final AppInitialization data;
+  final Subject subject;
+
+  const _GradeCalculatorSheetContent({
+    required this.data,
+    required this.subject,
+  });
+
+  @override
+  State<_GradeCalculatorSheetContent> createState() =>
+      _GradeCalculatorSheetContentState();
+}
+
+class _GradeCalculatorSheetContentState
+    extends State<_GradeCalculatorSheetContent> {
+  int selectedGrade = 3;
+  int weightPercent = 100;
+  final List<(int grade, int weight)> entries = [];
+
+  double get _weightedAverage {
+    if (entries.isEmpty) return 0;
+    double sum = 0;
+    double weightTotal = 0;
+    for (final e in entries) {
+      final w = e.$2 / 100.0;
+      weightTotal += w;
+      sum += e.$1 * w;
+    }
+    return weightTotal > 0 ? sum / weightTotal : 0;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Center(
+          child: Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: appStyle.colors.a15p,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+        SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                widget.data.l10n.grade_calculator,
+                style: appStyle.fonts.H_H2.apply(
+                  color: appStyle.colors.textPrimary,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: appStyle.colors.buttonSecondaryFill,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: appStyle.colors.shadowColor,
+                      blurRadius: appStyle.colors.shadowBlur.toDouble(),
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.close,
+                  size: 20,
+                  color: appStyle.colors.textPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 20),
+        Container(
+          height: 64,
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: appStyle.colors.card,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: appStyle.colors.shadowColor,
+                blurRadius: appStyle.colors.shadowBlur.toDouble(),
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [1, 2, 3, 4, 5].map((grade) {
+              final isSelected = selectedGrade == grade;
+              final gradeColor = getGradeColor(grade.toDouble());
+              return GestureDetector(
+                onTap: () => setState(() => selectedGrade = grade),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? appStyle.colors.buttonSecondaryFill
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: gradeColor.withAlpha(38),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '$grade',
+                      style: appStyle.fonts.H_14px.copyWith(
+                        fontSize: 18,
+                        color: gradeColor,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: appStyle.colors.card,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: appStyle.colors.shadowColor,
+                      blurRadius: appStyle.colors.shadowBlur.toDouble(),
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: SliderTheme(
+                  data: SliderThemeData(
+                    activeTrackColor: appStyle.colors.accent,
+                    inactiveTrackColor: appStyle.colors.card,
+                    thumbColor: appStyle.colors.accent,
+                    overlayColor: appStyle.colors.a10p,
+                    trackHeight: 8,
+                  ),
+                  child: Slider(
+                    value: weightPercent.toDouble(),
+                    min: 0,
+                    max: 100,
+                    divisions: 100,
+                    onChanged: (v) => setState(() => weightPercent = v.round()),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 12),
+            SizedBox(
+              width: 48,
+              child: Text(
+                '$weightPercent%',
+                style: appStyle.fonts.B_16R.apply(
+                  color: appStyle.colors.textPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: appStyle.colors.accent,
+              foregroundColor: appStyle.colors.textPrimary,
+              elevation: 1,
+              shadowColor: appStyle.colors.shadowColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () {
+              setState(() {
+                entries.add((selectedGrade, weightPercent));
+              });
+            },
+            child: Text(
+              widget.data.l10n.grade_calculator_add,
+              style: appStyle.fonts.H_18px.apply(
+                color: appStyle.colors.textPrimary,
+              ),
+            ),
+          ),
+        ),
+        if (entries.isNotEmpty) ...[
+          SizedBox(height: 16),
+          Text(
+            '${widget.data.l10n.subject_avg}: ${_weightedAverage.toStringAsFixed(2)}',
+            style: appStyle.fonts.B_14R.apply(
+              color: appStyle.colors.textPrimary,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+Future<void> showSubjectBottomSheetSettings(
+  BuildContext context,
+  AppInitialization data,
+  Subject subject,
+) async {
+  final parentContext = context;
+  showModalBottomSheet(
+    context: context,
+    elevation: 100,
+    isScrollControlled: true,
+    enableDrag: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: appStyle.colors.a15p,
+    builder: (BuildContext sheetContext) {
+      return Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => Navigator.pop(sheetContext),
               behavior: HitTestBehavior.opaque,
               child: Container(color: Colors.transparent),
             ),
@@ -1036,7 +1309,14 @@ Future<void> showSubjectBottomSheetSettings(
                     ),
                     SizedBox(height: 20),
                     GestureDetector(
-                      onTap: () => Navigator.pop(context),
+                      onTap: () {
+                        Navigator.pop(sheetContext);
+                        showGradeCalculatorBottomSheet(
+                          parentContext,
+                          data,
+                          subject,
+                        );
+                      },
                       child: Container(
                         height: 56,
                         padding: const EdgeInsets.symmetric(
