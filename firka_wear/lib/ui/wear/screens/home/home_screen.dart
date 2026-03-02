@@ -267,9 +267,20 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
         Widget nextLessonWidget = SizedBox();
 
         if (nextLesson != null) {
+          var nextLessonText = "${nextLesson.name}, ${nextLesson.roomName}";
+          if (nextLessonText.length > 10) {
+            if (nextLesson.roomName!.length > 10) {
+              nextLessonText =
+                  "${nextLesson.name}, ${nextLesson.roomName!.substring(0, 6)}...";
+            } else {
+              nextLessonText =
+                  "${nextLesson.name.substring(0, 10)}..., ${nextLesson.roomName}";
+            }
+          }
+
           nextLessonWidget = Center(
             child: Text(
-              "→ ${nextLesson.name}, ${nextLesson.roomName}",
+              "→ $nextLessonText",
               style: TextStyle(
                 color: wearStyle.colors.textPrimary,
                 fontSize: 12,
