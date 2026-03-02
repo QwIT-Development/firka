@@ -26,7 +26,7 @@ class _GradeChartState extends State<GradeChart> {
     appStyle.colors.grade1,
   ];
 
-  late final List<FlSpot> spots;
+  late List<FlSpot> spots;
 
   double? _subjectAverageInList(List<Grade> grades, String subjectUid) {
     double weightedSum = 0;
@@ -67,7 +67,10 @@ class _GradeChartState extends State<GradeChart> {
   @override
   void initState() {
     super.initState();
+    _computeSpots();
+  }
 
+  void _computeSpots() {
     final sortedGrades = List<Grade>.from(widget.grades)
       ..sort((a, b) => a.creationDate.compareTo(b.creationDate));
 
@@ -87,6 +90,14 @@ class _GradeChartState extends State<GradeChart> {
 
     if (spots.isEmpty) {
       spots = [const FlSpot(0, 0)];
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant GradeChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.grades.length != widget.grades.length) {
+      _computeSpots();
     }
   }
 

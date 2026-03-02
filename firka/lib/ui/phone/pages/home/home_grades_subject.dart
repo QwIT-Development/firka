@@ -29,6 +29,7 @@ class HomeGradesSubjectScreen extends StatefulWidget {
 
 class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
   Iterable<Grade>? grades;
+  final List<(int grade, int weight)> _ghostEntries = [];
 
   void _onRefreshRequested(BuildContext context) async {
     final cubit = context.read<HomeRefreshCubit>();
@@ -55,6 +56,41 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
     })();
   }
 
+  List<Grade> _gradesWithGhosts(Subject subject) {
+    final real = grades?.toList() ?? [];
+    if (_ghostEntries.isEmpty) return real;
+    final baseDate = real.isEmpty
+        ? DateTime.now()
+        : real
+              .map((g) => g.creationDate)
+              .reduce((a, b) => a.isAfter(b) ? a : b);
+    final osztalyzat = NameUidDesc(
+      uid: '1,Osztalyzat',
+      name: 'Osztalyzat',
+      description: '',
+    );
+    final ghostGrades = <Grade>[];
+    for (var i = 0; i < _ghostEntries.length; i++) {
+      final e = _ghostEntries[i];
+      ghostGrades.add(
+        Grade(
+          uid: 'ghost-$i-${e.$1}-${e.$2}',
+          recordDate: baseDate.add(Duration(seconds: i)),
+          creationDate: baseDate.add(Duration(seconds: i)),
+          subject: subject,
+          type: osztalyzat,
+          valueType: osztalyzat,
+          teacher: '',
+          strValue: '${e.$1}',
+          sortIndex: 0,
+          numericValue: e.$1,
+          weightPercentage: e.$2,
+        ),
+      );
+    }
+    return [...real, ...ghostGrades];
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<HomeRefreshCubit, HomeRefreshState>(
@@ -72,7 +108,30 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
       var aGrade = grades!.first;
       var groups = grades!.groupList((grade) => grade.recordDate);
 
+      final ghostGradeWidgets = _ghostEntries.reversed.map((e) {
+        return GestureDetector(
+          child: FirkaCard(
+            left: [
+              Row(
+                children: [
+                  GradeWidget.gradeValue(e.$1),
+                  SizedBox(width: 8),
+                  Text(
+                    '${widget.data.l10n.ghost_grade} ${e.$2}%',
+                    style: appStyle.fonts.B_16SB.apply(
+                      color: appStyle.colors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          onTap: () {},
+        );
+      }).toList();
+
       var gradeWidgets = List<Widget>.empty(growable: true);
+      gradeWidgets.addAll(ghostGradeWidgets);
 
       for (var group in groups.entries) {
         gradeWidgets.add(SizedBox(height: 8));
@@ -190,6 +249,9 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                             context,
                             widget.data,
                             aGrade.subject,
+                            onAddFromCalculator: (g, w) {
+                              setState(() => _ghostEntries.add((g, w)));
+                            },
                           );
                         },
                       ),
@@ -237,7 +299,9 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                         SizedBox(height: 15),
                       ],
                     ),
-                    GradeChartWithInteraction(grades: grades?.toList() ?? []),
+                    GradeChartWithInteraction(
+                      grades: _gradesWithGhosts(aGrade.subject),
+                    ),
                     SizedBox(height: 12),
                     Padding(
                       padding: EdgeInsets.only(left: 4),

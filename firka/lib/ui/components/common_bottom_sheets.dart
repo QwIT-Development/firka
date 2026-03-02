@@ -986,8 +986,9 @@ Future<void> showHomeworkBottomSheet(
 Future<void> showGradeCalculatorBottomSheet(
   BuildContext context,
   AppInitialization data,
-  Subject subject,
-) async {
+  Subject subject, {
+  void Function(int grade, int weight)? onAdd,
+}) async {
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -1017,6 +1018,7 @@ Future<void> showGradeCalculatorBottomSheet(
                 child: _GradeCalculatorSheetContent(
                   data: data,
                   subject: subject,
+                  onAdd: onAdd,
                 ),
               ),
             ),
@@ -1030,10 +1032,12 @@ Future<void> showGradeCalculatorBottomSheet(
 class _GradeCalculatorSheetContent extends StatefulWidget {
   final AppInitialization data;
   final Subject subject;
+  final void Function(int grade, int weight)? onAdd;
 
   const _GradeCalculatorSheetContent({
     required this.data,
     required this.subject,
+    this.onAdd,
   });
 
   @override
@@ -1193,9 +1197,9 @@ class _GradeCalculatorSheetContentState
                   ),
                   child: Slider(
                     value: weightPercent.toDouble(),
-                    min: 0,
-                    max: 100,
-                    divisions: 100,
+                    min: 1,
+                    max: 500,
+                    divisions: 499,
                     onChanged: (v) => setState(() => weightPercent = v.round()),
                   ),
                 ),
@@ -1203,7 +1207,7 @@ class _GradeCalculatorSheetContentState
             ),
             SizedBox(width: 12),
             SizedBox(
-              width: 48,
+              width: 56,
               child: Text(
                 '$weightPercent%',
                 style: appStyle.fonts.B_16R.apply(
@@ -1231,6 +1235,7 @@ class _GradeCalculatorSheetContentState
               setState(() {
                 entries.add((selectedGrade, weightPercent));
               });
+              widget.onAdd?.call(selectedGrade, weightPercent);
             },
             child: Text(
               widget.data.l10n.grade_calculator_add,
@@ -1257,8 +1262,9 @@ class _GradeCalculatorSheetContentState
 Future<void> showSubjectBottomSheetSettings(
   BuildContext context,
   AppInitialization data,
-  Subject subject,
-) async {
+  Subject subject, {
+  void Function(int grade, int weight)? onAddFromCalculator,
+}) async {
   final parentContext = context;
   showModalBottomSheet(
     context: context,
@@ -1315,6 +1321,7 @@ Future<void> showSubjectBottomSheetSettings(
                           parentContext,
                           data,
                           subject,
+                          onAdd: onAddFromCalculator,
                         );
                       },
                       child: Container(
