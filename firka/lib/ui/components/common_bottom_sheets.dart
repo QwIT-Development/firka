@@ -997,73 +997,74 @@ Future<void> showSubjectBottomSheetSettings(
     builder: (BuildContext context) {
       return Stack(
         children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              behavior: HitTestBehavior.opaque,
+              child: Container(color: Colors.transparent),
+            ),
+          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
               decoration: BoxDecoration(
                 color: appStyle.colors.background,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16) + EdgeInsets.only(bottom: 32),
+                padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 6),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                subject.name,
-                                style: appStyle.fonts.H_18px.apply(
-                                  color: appStyle.colors.textPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: appStyle.colors.a15p,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                    SizedBox(height: 8),
-                    GestureDetector(
-                      child: FirkaCard(
-                        left: [
-                          SizedBox(
-                            height: 30,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Row(
-                                  children: [
-                                    FirkaIconWidget(
-                                      FirkaIconType.majesticons,
-                                      Majesticon.editPen4Solid,
-                                      size: 24.0,
-                                      color: appStyle.colors.accent,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      "Tantárgy átnevezése",
-                                      style: appStyle.fonts.B_16R.apply(
-                                        color: appStyle.colors.textPrimary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                    SizedBox(height: 20),
+                    Text(
+                      data.l10n.subject,
+                      style: appStyle.fonts.H_H2.apply(
+                        color: appStyle.colors.textPrimary,
                       ),
-                      onTap: () {
-                        logger.finest("Tantárgy átnevezése");
-                        // Navigator.pop(context);
-                      },
+                    ),
+                    SizedBox(height: 20),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        height: 56,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: appStyle.colors.card,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            FirkaIconWidget(
+                              FirkaIconType.majesticons,
+                              Majesticon.calculatorSolid,
+                              size: 24,
+                              color: appStyle.colors.accent,
+                            ),
+                            SizedBox(width: 12),
+                            Text(
+                              data.l10n.grade_calculator,
+                              style: appStyle.fonts.B_16SB.apply(
+                                color: appStyle.colors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),

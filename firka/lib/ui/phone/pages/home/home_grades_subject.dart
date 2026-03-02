@@ -185,12 +185,11 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                           ),
                         ),
                         onTap: () {
-                          // Navigator.push(context, Settings)
-                          // showSubjectBottomSheetSettings(
-                          //   context,
-                          //   widget.data,
-                          //   aGrade.subject,
-                          // );
+                          showSubjectBottomSheetSettings(
+                            context,
+                            widget.data,
+                            aGrade.subject,
+                          );
                         },
                       ),
                     ],
