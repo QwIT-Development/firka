@@ -20,6 +20,8 @@ import 'package:firka_wear/ui/theme/style.dart';
 import 'package:firka_wear/ui/shared/class_icon.dart';
 import 'package:firka_wear/ui/wear/widgets/circular_progress_indicator.dart';
 
+part 'home_screen_body.dart';
+
 class WearHomeScreen extends StatefulWidget {
   final WearAppInitialization data;
 
@@ -43,6 +45,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   final watch = WatchConnectivity();
   StreamSubscription? _messageSub;
   WearSyncCubit? _syncCubit;
+  late final PageController _pageController;
 
   bool disposed = false;
 
@@ -55,6 +58,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(initialPage: 2);
     now = timeNow();
     today = data.syncStore.getLessonsForDate(now);
     init = data.syncStore.timetable.isNotEmpty;
@@ -123,12 +127,13 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
     });
   }
 
-  (List<Widget>, double) buildBody(BuildContext context, WearMode mode) {
-    ScreenUtil.init(context);
-
+  (List<Widget>, double, double?) buildBody(
+    BuildContext context,
+    WearMode mode,
+  ) {
     var body = List<Widget>.empty(growable: true);
     if (!init) {
-      return (body, 255.h);
+      return (body, 255.h, null);
     }
 
     if (today.isEmpty &&
@@ -143,7 +148,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
           textAlign: TextAlign.center,
         ),
       );
-      return (body, 255.h);
+      return (body, 255.h, null);
     }
     if (today.isEmpty) {
       body.add(
@@ -157,7 +162,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
       );
 
       platform.invokeMethod('activity_cancel');
-      return (body, 255.h);
+      return (body, 255.h, null);
     }
     if (now.isAfter(today.last.end)) {
       body.add(
@@ -171,7 +176,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
       );
 
       platform.invokeMethod('activity_cancel');
-      return (body, 300.h);
+      return (body, 300.h, null);
     }
     if (now.isBefore(today.first.start)) {
       var untilFirst = today.first.start.difference(now);
@@ -187,7 +192,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
       );
 
       platform.invokeMethod('activity_update');
-      return (body, 255.h);
+      return (body, 255.h, null);
     }
     currentLessonNo = null;
     if (now.isAfter(today.first.start) && now.isBefore(today.last.end)) {
@@ -216,57 +221,48 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
         }
 
         var minutes = currentBreakProgress.inMinutes + 1;
+        final progress =
+            currentBreakProgress.inMilliseconds / currentBreak.inMilliseconds;
 
         body.add(
-          CustomPaint(
-            painter: CircularProgressPainter(
-              progress:
-                  currentBreakProgress.inMilliseconds /
-                  currentBreak.inMilliseconds,
-              // progress: 5 / 10,
-              screenSize: MediaQuery.of(context).size,
-              strokeWidth: 4,
-              color: wearStyle.colors.accent,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(height: 55.h),
-                Center(
-                  child: Text(
-                    AppLocalizations.of(context)!.breakTxt,
-                    style: TextStyle(
-                      color: wearStyle.colors.textPrimary,
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontVariations: [FontVariation('wght', 600)],
-                    ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Center(
+                child: Text(
+                  AppLocalizations.of(context)!.breakTxt,
+                  style: TextStyle(
+                    color: wearStyle.colors.textPrimary,
+                    fontSize: 14,
+                    fontFamily: 'Montserrat',
+                    fontVariations: [FontVariation('wght', 600)],
                   ),
                 ),
-                Center(
-                  child: Text(
-                    AppLocalizations.of(context)!.timeLeft(minutes),
-                    style: TextStyle(
-                      color: wearStyle.colors.textPrimary,
-                      fontSize: 12,
-                      fontFamily: 'Montserrat',
-                      fontVariations: [FontVariation('wght', 400)],
-                    ),
+              ),
+              Center(
+                child: Text(
+                  AppLocalizations.of(context)!.timeLeft(minutes),
+                  style: TextStyle(
+                    color: wearStyle.colors.textPrimary,
+                    fontSize: 12,
+                    fontFamily: 'Montserrat',
+                    fontVariations: [FontVariation('wght', 400)],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
 
         platform.invokeMethod('activity_update');
-        return (body, 200.h);
+        return (body, 20.h, progress);
       } else {
         var duration = currentLesson.start.difference(currentLesson.end);
         var elapsed = currentLesson.start.difference(now);
         var timeLeft = currentLesson.end.difference(now);
 
         var minutes = timeLeft.inMinutes + 1;
+        final progress = elapsed.inMilliseconds / duration.inMilliseconds;
 
         Widget nextLessonWidget = SizedBox();
 
@@ -297,57 +293,48 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
         }
 
         body.add(
-          CustomPaint(
-            painter: CircularProgressPainter(
-              progress: elapsed.inMilliseconds / duration.inMilliseconds,
-              screenSize: MediaQuery.of(context).size,
-              strokeWidth: 4,
-              color: wearStyle.colors.accent,
-            ),
-            child: Column(
-              children: [
-                SizedBox(height: nextLesson == null ? 20.h : 0),
-                Center(
-                  child: ClassIconWidget(
-                    color: wearStyle.colors.accent,
-                    size: 16,
-                    uid: currentLesson.uid,
-                    className: currentLesson.name,
-                    category: currentLesson.subject?.name ?? '',
-                  ).build(context),
-                ),
-                const SizedBox(height: 4),
-                Center(
-                  child: Text(
-                    currentLessonText,
-                    style: TextStyle(
-                      color: wearStyle.colors.textPrimary,
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontVariations: [FontVariation('wght', 600)],
-                    ),
+          Column(
+            children: [
+              Center(
+                child: ClassIconWidget(
+                  color: wearStyle.colors.accent,
+                  size: 16,
+                  uid: currentLesson.uid,
+                  className: currentLesson.name,
+                  category: currentLesson.subject?.name ?? '',
+                ).build(context),
+              ),
+              const SizedBox(height: 4),
+              Center(
+                child: Text(
+                  currentLessonText,
+                  style: TextStyle(
+                    color: wearStyle.colors.textPrimary,
+                    fontSize: 14,
+                    fontFamily: 'Montserrat',
+                    fontVariations: [FontVariation('wght', 600)],
                   ),
                 ),
-                Center(
-                  child: Text(
-                    AppLocalizations.of(context)!.timeLeft(minutes),
-                    style: TextStyle(
-                      color: wearStyle.colors.textPrimary,
-                      fontSize: 12,
-                      fontFamily: 'Montserrat',
-                      fontVariations: [FontVariation('wght', 400)],
-                    ),
+              ),
+              Center(
+                child: Text(
+                  AppLocalizations.of(context)!.timeLeft(minutes),
+                  style: TextStyle(
+                    color: wearStyle.colors.textPrimary,
+                    fontSize: 12,
+                    fontFamily: 'Montserrat',
+                    fontVariations: [FontVariation('wght', 400)],
                   ),
                 ),
-                const SizedBox(height: 8),
-                nextLessonWidget,
-              ],
-            ),
+              ),
+              const SizedBox(height: 8),
+              nextLessonWidget,
+            ],
           ),
         );
 
         platform.invokeMethod('activity_update');
-        return (body, 200.h);
+        return (body, 0.h, progress);
       }
     }
 
@@ -357,6 +344,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtil.init(context);
     Widget titleBar = SizedBox();
 
     if (currentLessonNo != null) {
@@ -377,6 +365,9 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
 
     return BlocBuilder<WearSyncCubit, WearSyncState>(
       builder: (context, syncState) {
+        var (body, padding, progress) = buildBody(context, mode);
+        final viewportHeight = MediaQuery.of(context).size.height;
+
         return Scaffold(
           backgroundColor: mode == WearMode.active
               ? wearStyle.colors.background
@@ -384,6 +375,18 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
           body: Stack(
             children: [
               Center(child: titleBar),
+              Transform.translate(
+                offset: Offset(0, 200.h),
+                child: CustomPaint(
+                  painter: CircularProgressPainter(
+                    progress: progress ?? 0.0,
+                    screenSize: MediaQuery.of(context).size,
+                    strokeWidth: 4,
+                    color: wearStyle.colors.accent,
+                  ),
+                  child: SizedBox.expand(),
+                ),
+              ),
               Center(
                 child: Column(
                   children: [
@@ -404,19 +407,35 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
                             });
                           }
 
-                          var (body, padding) = buildBody(context, mode);
-
-                          return Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Container(
-                                padding: EdgeInsets.only(top: padding),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [...body],
+                          return SizedBox(
+                            height: viewportHeight,
+                            child: PageView(
+                              controller: _pageController,
+                              scrollDirection: Axis.vertical,
+                              children: [
+                                _PlaceholderPage(
+                                  index: 1,
+                                  viewportHeight: viewportHeight,
                                 ),
-                              ),
-                            ],
+                                _PlaceholderPage(
+                                  index: 2,
+                                  viewportHeight: viewportHeight,
+                                ),
+                                _HomeScreenBodyPage(
+                                  body: body,
+                                  padding: padding,
+                                  viewportHeight: viewportHeight,
+                                ),
+                                _PlaceholderPage(
+                                  index: 3,
+                                  viewportHeight: viewportHeight,
+                                ),
+                                _PlaceholderPage(
+                                  index: 4,
+                                  viewportHeight: viewportHeight,
+                                ),
+                              ],
+                            ),
                           );
                         },
                       ),
@@ -460,6 +479,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   void dispose() {
     _messageSub?.cancel();
     timer?.cancel();
+    _pageController.dispose();
     disposed = true;
     super.dispose();
   }
