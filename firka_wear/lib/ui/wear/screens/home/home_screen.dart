@@ -288,7 +288,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
                 "${currentLesson.name}, ${currentLesson.roomName?.substring(0, 6) ?? ''}...";
           } else {
             currentLessonText =
-                "${currentLesson.name.substring(0, 10)}, ${currentLesson.roomName}...";
+                "${currentLesson.name.substring(0, 10)}..., ${currentLesson.roomName}";
           }
         }
 
