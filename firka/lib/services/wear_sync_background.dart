@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -55,7 +56,9 @@ void wearSyncBackgroundEntrypoint() {
       if (payload == null) return null;
       await writeWearSyncCache(cachePath, payload);
       final wc = WatchConnectivity();
-      await wc.sendMessage(<String, dynamic>{'id': 'sync_data', ...payload});
+      await wc.sendMessage(<String, dynamic>{
+        'data': jsonEncode(<String, dynamic>{'id': 'sync_data', ...payload}),
+      });
       return true;
     } catch (e, st) {
       debugPrint('[WearSyncBackground] Error: $e $st');

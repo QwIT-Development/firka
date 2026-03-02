@@ -111,6 +111,16 @@ class _InitializationScreenState extends State<InitializationScreen> {
                       }
                     });
                   }
+                  break;
+                case "init_done":
+                case "sync_done":
+                  final ctx = navigatorKey.currentContext;
+                  if (ctx != null && ctx.mounted) {
+                    ScaffoldMessenger.of(ctx).hideCurrentSnackBar();
+                  }
+                  initData.dismissWearPairingSheet?.call();
+                  initData.dismissWearPairingSheet = null;
+                  break;
               }
             };
 
@@ -120,6 +130,12 @@ class _InitializationScreenState extends State<InitializationScreen> {
                 if (msg['id'] == 'request_sync' &&
                     initDone &&
                     isWearOsSupportEnabled()) {
+                  final ctx = navigatorKey.currentContext;
+                  if (ctx != null && ctx.mounted) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(content: Text(initData.l10n.wear_syncing)),
+                    );
+                  }
                   await WatchSyncHelper.runWearSyncInForeground(
                     initData.client,
                   );

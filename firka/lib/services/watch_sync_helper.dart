@@ -589,9 +589,12 @@ class WatchSyncHelper {
   }
 
   /// Send a fire-and-forget message to Watch via WatchSessionManager (iOS) or watch_connectivity (Android).
+  /// On Android the payload is sent as a JSON string for reliable transport.
   static Future<void> sendMessageToWatch(Map<String, dynamic> message) async {
     if (Platform.isAndroid) {
-      await _watchConnectivityAndroid.sendMessage(message);
+      await _watchConnectivityAndroid.sendMessage(<String, dynamic>{
+        'data': jsonEncode(message),
+      });
       return;
     }
     if (!Platform.isIOS) return;
@@ -669,9 +672,14 @@ class WatchSyncHelper {
   /// Stream of messages from the watch (Android: watch_connectivity). Use for request_sync etc.
   static Stream<Map<String, dynamic>> get watchMessageStream {
     if (!Platform.isAndroid) return const Stream.empty();
-    return _watchConnectivityAndroid.messageStream.map(
-      (m) => Map<String, dynamic>.from(m),
-    );
+    return _watchConnectivityAndroid.messageStream.map((m) {
+      final map = Map<String, dynamic>.from(m);
+      final data = map['data'];
+      if (data is String) {
+        return jsonDecode(data) as Map<String, dynamic>;
+      }
+      return map;
+    });
   }
 
   static Future<void> sendTokenToWatch() async {

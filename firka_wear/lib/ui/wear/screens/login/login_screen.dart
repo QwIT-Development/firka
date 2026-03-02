@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:kreta_api/kreta_api.dart';
@@ -8,7 +9,6 @@ import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:wear_plus/wear_plus.dart';
 
 import 'package:firka_wear/app/initialization.dart';
-import 'package:firka_wear/core/extensions.dart';
 import 'package:firka_wear/data/models/token_model.dart';
 import 'package:firka_wear/ui/theme/style.dart';
 import 'package:firka_wear/ui/wear/screens/home/home_screen.dart';
@@ -29,6 +29,7 @@ class _WearLoginScreen extends State<WearLoginScreen> {
   bool isReachable = false;
   bool isMessageSending = false;
   bool isMessageSent = false;
+  bool isSyncing = false;
   final watch = WatchConnectivity();
   late Timer connectionTimer;
 
@@ -37,15 +38,21 @@ class _WearLoginScreen extends State<WearLoginScreen> {
     super.initState();
 
     watch.messageStream.listen((e) {
-      var msg = e.entries.toMap();
+      final raw = Map<String, dynamic>.from(e);
+      final data = raw['data'];
+      final msg = data is String
+          ? jsonDecode(data) as Map<String, dynamic>
+          : raw;
       var id = msg["id"];
 
       debugPrint("[Phone -> Watch]: $id");
 
       switch (id) {
         case "init_data":
-          {
-            () async {
+          () async {
+            if (!mounted) return;
+            setState(() => isSyncing = true);
+            try {
               final auth = msg["auth"] as Map<dynamic, dynamic>?;
               if (auth == null) return;
               final tokenModel = TokenModel.fromValues(
@@ -80,6 +87,9 @@ class _WearLoginScreen extends State<WearLoginScreen> {
                 timetable: timetable,
                 grades: grades,
               );
+              watch.sendMessage(<String, dynamic>{
+                'data': jsonEncode(<String, dynamic>{'id': 'init_done'}),
+              });
               if (!mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
@@ -87,8 +97,11 @@ class _WearLoginScreen extends State<WearLoginScreen> {
                 ),
                 (route) => false,
               );
-            }();
-          }
+            } finally {
+              if (mounted) setState(() => isSyncing = false);
+            }
+          }();
+          break;
       }
     });
 
@@ -100,7 +113,9 @@ class _WearLoginScreen extends State<WearLoginScreen> {
         isMessageSending = true;
 
         debugPrint("[Watch -> Phone]: ping");
-        watch.sendMessage({'id': 'ping'});
+        watch.sendMessage(<String, dynamic>{
+          'data': jsonEncode(<String, dynamic>{'id': 'ping'}),
+        });
       }
 
       setState(() {
@@ -114,6 +129,27 @@ class _WearLoginScreen extends State<WearLoginScreen> {
   (List<Widget>, double) buildBody(BuildContext context) {
     if (!init) {
       return (<Widget>[], 60);
+    }
+
+    if (isSyncing) {
+      return (
+        <Widget>[
+          const SizedBox(
+            width: 32,
+            height: 32,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            widget.data.l10n.wear_syncing,
+            textAlign: TextAlign.center,
+            style: wearStyle.fonts.B_16R.apply(
+              color: wearStyle.colors.textPrimary,
+            ),
+          ),
+        ],
+        60,
+      );
     }
 
     if (!isPaired) {
@@ -158,9 +194,11 @@ class _WearLoginScreen extends State<WearLoginScreen> {
           ElevatedButton(
             onPressed: () async {
               debugPrint("[Watch -> Phone]: ping");
-              watch.sendMessage({
-                'id': 'ping',
-                'model': initData.devInfo.model,
+              watch.sendMessage(<String, dynamic>{
+                'data': jsonEncode(<String, dynamic>{
+                  'id': 'ping',
+                  'model': initData.devInfo.model,
+                }),
               });
             },
             // TODO: This is a placeholder, style this properly
@@ -202,7 +240,9 @@ class _WearLoginScreen extends State<WearLoginScreen> {
           ElevatedButton(
             onPressed: () async {
               debugPrint("[Watch -> Phone]: ping");
-              watch.sendMessage({'id': 'ping'});
+              watch.sendMessage(<String, dynamic>{
+                'data': jsonEncode(<String, dynamic>{'id': 'ping'}),
+              });
             },
             // TODO: This is a placeholder, style this properly
             style: ButtonStyle(

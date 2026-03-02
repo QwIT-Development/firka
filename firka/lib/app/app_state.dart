@@ -51,6 +51,9 @@ class AppInitialization {
   late KretaClient client;
   List<TokenModel> tokens;
   bool hasWatchListener = false;
+
+  /// Set by the wear pairing modal; called when watch sends init_done or sync_done to dismiss the sheet.
+  void Function()? dismissWearPairingSheet;
   Uint8List? profilePicture;
   SettingsStore settings;
   ThemeCubit? themeCubit;

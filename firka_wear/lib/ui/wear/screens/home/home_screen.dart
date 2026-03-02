@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -39,6 +40,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   final platform = MethodChannel('firka.app/main');
   final watch = WatchConnectivity();
   StreamSubscription? _messageSub;
+  bool _syncing = false;
 
   bool disposed = false;
 
@@ -46,8 +48,14 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   void initState() {
     super.initState();
     now = timeNow();
+    today = data.syncStore.getLessonsForDate(now);
+    init = data.syncStore.timetable.isNotEmpty;
     _messageSub = watch.messageStream.listen((e) {
-      final msg = Map<String, dynamic>.from(e);
+      final raw = Map<String, dynamic>.from(e);
+      final data = raw['data'];
+      final msg = data is String
+          ? jsonDecode(data) as Map<String, dynamic>
+          : raw;
       if (msg['id'] == 'sync_data') _onSyncData(msg);
     });
     timer = Timer.periodic(Duration(seconds: 1), (timer) async {
@@ -59,33 +67,44 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   }
 
   void _onSyncData(Map<String, dynamic> msg) async {
-    final lastSyncAt = msg['lastSyncAt'] != null
-        ? DateTime.parse(msg['lastSyncAt'] as String)
-        : null;
-    final rawTimetable = msg['timetable'] as List<dynamic>? ?? [];
-    final timetable = rawTimetable
-        .map((e) => Lesson.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
-    final rawGrades = msg['grades'] as List<dynamic>? ?? [];
-    final grades = rawGrades
-        .map((e) => Grade.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
-    await data.syncStore.save(
-      lastSyncAt: lastSyncAt,
-      timetable: timetable,
-      grades: grades,
-    );
     if (disposed) return;
-    setState(() {
-      now = timeNow();
-      today = data.syncStore.getLessonsForDate(now);
-    });
+    setState(() => _syncing = true);
+    try {
+      final lastSyncAt = msg['lastSyncAt'] != null
+          ? DateTime.parse(msg['lastSyncAt'] as String)
+          : null;
+      final rawTimetable = msg['timetable'] as List<dynamic>? ?? [];
+      final timetable = rawTimetable
+          .map((e) => Lesson.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
+      final rawGrades = msg['grades'] as List<dynamic>? ?? [];
+      final grades = rawGrades
+          .map((e) => Grade.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
+      await data.syncStore.save(
+        lastSyncAt: lastSyncAt,
+        timetable: timetable,
+        grades: grades,
+      );
+      watch.sendMessage(<String, dynamic>{
+        'data': jsonEncode(<String, dynamic>{'id': 'sync_done'}),
+      });
+      if (disposed) return;
+      setState(() {
+        now = timeNow();
+        today = data.syncStore.getLessonsForDate(now);
+      });
+    } finally {
+      if (!disposed) setState(() => _syncing = false);
+    }
   }
 
   Future<void> initStateAsync() async {
     now = timeNow();
     if (data.syncStore.needsSync) {
-      watch.sendMessage({'id': 'request_sync'});
+      watch.sendMessage(<String, dynamic>{
+        'data': jsonEncode(<String, dynamic>{'id': 'request_sync'}),
+      });
     }
     await data.syncStore.load();
     if (disposed) return;
@@ -383,6 +402,31 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
               ],
             ),
           ),
+          if (_syncing)
+            Positioned.fill(
+              child: Container(
+                color: wearStyle.colors.background.withValues(alpha: 0.8),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(
+                        width: 32,
+                        height: 32,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      SizedBox(height: 12.h),
+                      Text(
+                        AppLocalizations.of(context)!.wear_syncing,
+                        style: wearStyle.fonts.B_16R.apply(
+                          color: wearStyle.colors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

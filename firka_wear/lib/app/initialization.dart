@@ -80,7 +80,7 @@ AppLocalizations getLang() {
 
 Future<WearAppInitialization> initializeApp() async {
   final isar = await initDB();
-  final syncStore = WearSyncStore();
+  final syncStore = WearSyncStore(isar);
   await syncStore.load();
 
   const channel = MethodChannel("firka.app/main");

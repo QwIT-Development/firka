@@ -1,14 +1,20 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:math';
 
-import 'package:path_provider/path_provider.dart';
+import 'package:isar_community/isar.dart';
 
 import 'package:kreta_api/kreta_api.dart';
 
-const String _syncFileName = 'wear_sync_data.json';
+import 'package:firka_wear/data/models/generic_cache_model.dart';
+import 'package:firka_wear/data/models/token_model.dart';
 
 /// Persists and loads synced data (timetable, grades, lastSyncAt) from the phone.
+/// Uses [GenericCacheModel] for metadata, timetable (single JSON blob), and grades.
 class WearSyncStore {
+  WearSyncStore(this.isar);
+
+  final Isar isar;
+
   List<Lesson> _timetable = [];
   List<Grade> _grades = [];
   DateTime? _lastSyncAt;
@@ -23,29 +29,53 @@ class WearSyncStore {
     return DateTime.now().difference(_lastSyncAt!) > const Duration(hours: 1);
   }
 
-  Future<String> _getSyncFilePath() async {
-    final dir = await getApplicationDocumentsDirectory();
-    return '${dir.path}/$_syncFileName';
+  static int _genericCacheKey(int studentIdNorm, CacheId id) {
+    return (studentIdNorm + (id.index + 1) * pow(10, 11)) as int;
+  }
+
+  Future<int?> _getStudentIdNorm() async {
+    final token = await isar.tokenModels.where().findFirst();
+    return token?.studentIdNorm;
   }
 
   Future<void> load() async {
     try {
-      final path = await _getSyncFilePath();
-      final file = File(path);
-      if (!await file.exists()) return;
-      final json =
-          jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-      _lastSyncAt = json['lastSyncAt'] != null
-          ? DateTime.parse(json['lastSyncAt'] as String)
-          : null;
-      final rawTimetable = json['timetable'] as List<dynamic>? ?? [];
-      _timetable = rawTimetable
-          .map((e) => Lesson.fromJson(Map<String, dynamic>.from(e as Map)))
-          .toList();
-      final rawGrades = json['grades'] as List<dynamic>? ?? [];
-      _grades = rawGrades
-          .map((e) => Grade.fromJson(Map<String, dynamic>.from(e as Map)))
-          .toList();
+      final studentIdNorm = await _getStudentIdNorm();
+      if (studentIdNorm == null) return;
+
+      final metadataKey = _genericCacheKey(
+        studentIdNorm,
+        CacheId.wearSyncMetadata,
+      );
+      final metadataCache = await isar.genericCacheModels.get(metadataKey);
+      if (metadataCache?.cacheData != null) {
+        final meta =
+            jsonDecode(metadataCache!.cacheData!) as Map<String, dynamic>;
+        _lastSyncAt = meta['lastSyncAt'] != null
+            ? DateTime.parse(meta['lastSyncAt'] as String)
+            : null;
+      }
+
+      final timetableKey = _genericCacheKey(
+        studentIdNorm,
+        CacheId.wearSyncTimetable,
+      );
+      final timetableCache = await isar.genericCacheModels.get(timetableKey);
+      if (timetableCache?.cacheData != null) {
+        final raw = jsonDecode(timetableCache!.cacheData!) as List<dynamic>;
+        _timetable = raw
+            .map((e) => Lesson.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      }
+
+      final gradesKey = _genericCacheKey(studentIdNorm, CacheId.getGrades);
+      final gradesCache = await isar.genericCacheModels.get(gradesKey);
+      if (gradesCache?.cacheData != null) {
+        final raw = jsonDecode(gradesCache!.cacheData!) as List<dynamic>;
+        _grades = raw
+            .map((e) => Grade.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      }
     } catch (_) {}
   }
 
@@ -54,25 +84,54 @@ class WearSyncStore {
     required List<Lesson> timetable,
     required List<Grade> grades,
   }) async {
+    final studentIdNorm = await _getStudentIdNorm();
+    if (studentIdNorm == null) return;
+
     _lastSyncAt = lastSyncAt;
     _timetable = timetable;
     _grades = grades;
-    final path = await _getSyncFilePath();
-    final file = File(path);
-    await file.writeAsString(
-      jsonEncode({
-        'lastSyncAt': lastSyncAt?.toUtc().toIso8601String(),
-        'timetable': timetable.map((e) => e.toJson()).toList(),
-        'grades': grades.map((e) => e.toJson()).toList(),
-      }),
-    );
+
+    await isar.writeTxn(() async {
+      final metadataKey = _genericCacheKey(
+        studentIdNorm,
+        CacheId.wearSyncMetadata,
+      );
+      await isar.genericCacheModels.put(
+        GenericCacheModel()
+          ..cacheKey = metadataKey
+          ..cacheData = jsonEncode({
+            'lastSyncAt': lastSyncAt?.toUtc().toIso8601String(),
+          }),
+      );
+
+      final timetableKey = _genericCacheKey(
+        studentIdNorm,
+        CacheId.wearSyncTimetable,
+      );
+      await isar.genericCacheModels.put(
+        GenericCacheModel()
+          ..cacheKey = timetableKey
+          ..cacheData = jsonEncode(timetable.map((e) => e.toJson()).toList()),
+      );
+
+      final gradesKey = _genericCacheKey(studentIdNorm, CacheId.getGrades);
+      await isar.genericCacheModels.put(
+        GenericCacheModel()
+          ..cacheKey = gradesKey
+          ..cacheData = jsonEncode(grades.map((e) => e.toJson()).toList()),
+      );
+    });
   }
 
-  /// Returns lessons that fall on [date] (by date string or start date).
+  /// Returns lessons that fall on [date] (compare by calendar day via lesson start).
   List<Lesson> getLessonsForDate(DateTime date) {
-    final dateStr =
-        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-    return _timetable.where((l) => l.date == dateStr).toList()
+    final y = date.year;
+    final m = date.month;
+    final d = date.day;
+    return _timetable
+        .where((l) =>
+            l.start.year == y && l.start.month == m && l.start.day == d)
+        .toList()
       ..sort((a, b) => a.start.compareTo(b.start));
   }
 }
