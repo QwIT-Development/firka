@@ -948,7 +948,6 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                       FirkaIconType.icons,
                       "group",
                       color: appStyle.colors.accent,
-                      package: 'firka',
                     ),
                     SizedBox(width: 8),
                     Text(
