@@ -11,7 +11,7 @@ class HomeWidgetMethodChannel {
             switch call.method {
             case "getAppGroupDirectory":
                 if let containerURL = FileManager.default.containerURL(
-                    forSecurityApplicationGroupIdentifier: "group.app.firka.firkaa"
+                    forSecurityApplicationGroupIdentifier: "group.app.firka.firka"
                 ) {
                     result(containerURL.path)
                 } else {

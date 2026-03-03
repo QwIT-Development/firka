@@ -32,7 +32,7 @@ enum TokenError: Error {
 class TokenManager {
     static let shared = TokenManager()
 
-    private let appGroupID = "group.app.firka.firkaa"
+    private let appGroupID = "group.app.firka.firka"
     private let tokenFileName = "watch_token.json"
 
     private static let keychainService = "app.firka.watch.token"

@@ -30,7 +30,7 @@ class DataStore {
         (error == "token_expired" || error == "no_token") && recoveryAttempted && !isRecoveringToken
     }
 
-    private let appGroupID = "group.app.firka.firkaa"
+    private let appGroupID = "group.app.firka.firka"
     private let cacheFileName = "watch_data.json"
     private let lastHandledSessionStateVersionKey = "firka.watch.last_handled_session_state_version"
     private let lastHandledSessionActiveStudentIdNormKey = "firka.watch.last_handled_session_active_student_id_norm"

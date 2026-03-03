@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>com.apple.developer.ubiquity-kvstore-identifier</key>
-	<string>$(TeamIdentifierPrefix)app.firka.firkaa</string>
+	<string>$(TeamIdentifierPrefix)app.firka.firka</string>
 	<key>com.apple.security.application-groups</key>
 	<array>
 		<string>group.app.firka.firka</string>

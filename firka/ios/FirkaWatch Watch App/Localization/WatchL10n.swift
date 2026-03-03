@@ -31,7 +31,7 @@ class WatchL10n {
     private let languageKey = "watch_language"
     private let syncWithiPhoneKey = "watch_sync_language_with_iphone"
     private let lastAppliedSharedLanguageVersionKey = "watch_last_applied_shared_language_version"
-    private static let appGroupID = "group.app.firka.firkaa"
+    private static let appGroupID = "group.app.firka.firka"
     private var appGroupDefaults: UserDefaults? {
         UserDefaults(suiteName: Self.appGroupID)
     }
