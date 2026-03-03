@@ -1245,15 +1245,6 @@ class _GradeCalculatorSheetContentState
             ),
           ),
         ),
-        if (entries.isNotEmpty) ...[
-          SizedBox(height: 16),
-          Text(
-            '${widget.data.l10n.subject_avg}: ${_weightedAverage.toStringAsFixed(2)}',
-            style: appStyle.fonts.B_14R.apply(
-              color: appStyle.colors.textPrimary,
-            ),
-          ),
-        ],
       ],
     );
   }

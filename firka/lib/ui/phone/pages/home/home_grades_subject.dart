@@ -131,7 +131,17 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
       }).toList();
 
       var gradeWidgets = List<Widget>.empty(growable: true);
-      gradeWidgets.addAll(ghostGradeWidgets);
+      if (ghostGradeWidgets.isNotEmpty) {
+        gradeWidgets.add(
+          Text(
+            widget.data.l10n.ghost_grades,
+            style: appStyle.fonts.B_16R.apply(
+              color: appStyle.colors.textPrimary,
+            ),
+          ),
+        );
+        gradeWidgets.addAll(ghostGradeWidgets);
+      }
 
       for (var group in groups.entries) {
         gradeWidgets.add(SizedBox(height: 8));
