@@ -410,6 +410,11 @@ class _HomeScreenState extends FirkaState<HomeScreen>
         await LiveActivityService.showConsentScreenIfNeeded();
       });
     }
+    if (Platform.isIOS) {
+      Future.delayed(const Duration(seconds: 4), () {
+        if (!_disposed) _runLiveActivityLoginIfNeeded();
+      });
+    }
   }
 
   Future<void> _preloadImages() async {
@@ -535,8 +540,33 @@ class _HomeScreenState extends FirkaState<HomeScreen>
 
       if (Platform.isIOS) {
         _refreshLiveActivityOnResume();
+        _runLiveActivityLoginIfNeeded();
       }
     }
+  }
+
+  /// Fallback: if Live Activity login never ran (e.g. prefetch bailed on lifecycle
+  /// or fetchData didn't complete), run it once when app is resumed.
+  void _runLiveActivityLoginIfNeeded() {
+    if (_didRunLiveActivityLogin || _disposed) return;
+    Future.delayed(const Duration(milliseconds: 500), () async {
+      if (_disposed || _didRunLiveActivityLogin) return;
+      _didRunLiveActivityLogin = true;
+      final token = pickActiveToken(
+        tokens: initData.tokens,
+        settings: initData.settings,
+        preferredStudentIdNorm: initData.client.model.studentIdNorm,
+      );
+      final studentName = token?.studentId ?? 'Student';
+      LiveActivityService.onUserLogin(
+        client: initData.client,
+        studentName: studentName,
+        settingsStore: initData.settings,
+      ).catchError((e, st) {
+        _didRunLiveActivityLogin = false;
+        logger.severe('LiveActivity registration failed: $e', e, st);
+      });
+    });
   }
 
   void _refreshLiveActivityOnResume() async {
