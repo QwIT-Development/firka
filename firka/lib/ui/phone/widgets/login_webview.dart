@@ -207,8 +207,8 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
           children: [
             Text(
               widget.data.l10n.runningInDomainBrowser,
-              style: appStyle.fonts.H_12px.copyWith(
-                color: appStyle.colors.textSecondary,
+              style: appStyle.fonts.B_16R.copyWith(
+                color: appStyle.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
