@@ -6,6 +6,7 @@ import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/app/initialization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:isar_community/isar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -205,11 +206,23 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.data.l10n.runningInDomainBrowser,
-              style: appStyle.fonts.B_16R.copyWith(
-                color: appStyle.colors.textPrimary,
-              ),
+            Row(
+              children: [
+                SvgPicture.asset(
+                  "assets/icons/dave.svg",
+                  width: 18,
+                  height: 18,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    widget.data.l10n.runningInDomainBrowser,
+                    style: appStyle.fonts.B_16R.copyWith(
+                      color: appStyle.colors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Expanded(
