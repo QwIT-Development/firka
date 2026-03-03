@@ -393,8 +393,12 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
                             showModalBottomSheet<void>(
                               context: context,
                               isScrollControlled: true,
+                              showDragHandle: false,
                               builder: (BuildContext context) {
-                                return _loginWebView;
+                                return SizedBox(
+                                  height: MediaQuery.sizeOf(context).height,
+                                  child: _loginWebView,
+                                );
                               },
                             );
                           },
