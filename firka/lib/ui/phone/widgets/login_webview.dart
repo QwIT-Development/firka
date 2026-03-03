@@ -8,6 +8,7 @@ import 'package:firka/app/initialization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:isar_community/isar.dart';
+import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'package:firka/services/watch_sync_helper.dart';
@@ -195,23 +196,26 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
     final safePadding = mediaQuery.padding;
 
     return Material(
-      color: appStyle.colors.card,
+      color: appStyle.colors.background, //why was this card? :sob:
       child: Padding(
         padding: EdgeInsets.only(
           top: 61 + safePadding.top,
           left: 12,
           right: 12,
-          bottom: 0 + safePadding.bottom,
+          bottom: safePadding.bottom,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                SvgPicture.asset(
-                  "assets/icons/dave.svg",
-                  width: 18,
-                  height: 18,
+                Padding(
+                  padding: const EdgeInsets.only(left: 2),
+                  child: SvgPicture.asset(
+                    "assets/icons/dave.svg",
+                    width: 24,
+                    height: 24,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -222,9 +226,34 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: appStyle.colors.buttonSecondaryFill,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: appStyle.colors.shadowColor,
+                          offset: const Offset(0, 1),
+                          blurRadius: appStyle.colors.shadowBlur.toDouble(),
+                        ),
+                      ],
+                    ),
+                    child: Majesticon(
+                      Majesticon.multiplySolid,
+                      color: appStyle.colors.accent,
+                      size: 16,
+                    ),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 22),
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
@@ -266,6 +295,104 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: appStyle.colors.card,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(
+                        children: [
+                          Text(
+                            "eKréta/Bejelentkezés",
+                            style: appStyle.fonts.B_14R.copyWith(
+                              fontSize: 16,
+                              color: appStyle.colors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: appStyle.colors.buttonSecondaryFill,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: appStyle.colors.shadowColor,
+                        offset: const Offset(0, 1),
+                        blurRadius: appStyle.colors.shadowBlur.toDouble(),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Image.asset(
+                      "assets/icons/button/colorwheel.png",
+                      width: 22,
+                      height: 22,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: appStyle.colors.buttonSecondaryFill,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: appStyle.colors.shadowColor,
+                        offset: const Offset(0, 1),
+                        blurRadius: appStyle.colors.shadowBlur.toDouble(),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Majesticon(
+                      Majesticon.chevronLeftLine,
+                      color: appStyle.colors.secondary,
+                      size: 22,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: appStyle.colors.buttonSecondaryFill,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: appStyle.colors.shadowColor,
+                        offset: const Offset(0, 1),
+                        blurRadius: appStyle.colors.shadowBlur.toDouble(),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Majesticon(
+                      Majesticon.menuLine,
+                      color: appStyle.colors.secondary,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
