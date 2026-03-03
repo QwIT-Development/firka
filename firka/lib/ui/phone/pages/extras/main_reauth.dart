@@ -26,7 +26,7 @@ void showReauthBottomSheet(
     elevation: 100,
     isScrollControlled: true,
     isDismissible: true,
-    enableDrag: true,
+    enableDrag: false,
     backgroundColor: Colors.transparent,
     builder: (BuildContext context) {
       return Container(

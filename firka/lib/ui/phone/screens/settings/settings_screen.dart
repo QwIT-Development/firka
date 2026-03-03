@@ -912,6 +912,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
               showModalBottomSheet<void>(
                 context: context,
                 isScrollControlled: true,
+                enableDrag: false,
                 builder: (BuildContext context) {
                   return LoginWebviewWidget(widget.data);
                 },
