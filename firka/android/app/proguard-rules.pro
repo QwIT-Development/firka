@@ -1,2 +1,1 @@
--keep class org.brotli.** { *; }
 -keep class app.firka.naplo.glance.** { *; }
