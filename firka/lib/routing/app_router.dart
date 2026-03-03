@@ -49,6 +49,13 @@ GoRouter createAppRouter() {
         ),
       ),
       GoRoute(
+        path: '/login_page',
+        builder: (context, state) => DefaultAssetBundle(
+          bundle: FirkaBundle(),
+          child: LoginScreen(initData, key: state.pageKey),
+        ),
+      ),
+      GoRoute(
         path: '/beta',
         builder: (context, state) => DefaultAssetBundle(
           bundle: FirkaBundle(),
