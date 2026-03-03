@@ -1051,18 +1051,6 @@ class _GradeCalculatorSheetContentState
   int weightPercent = 100;
   final List<(int grade, int weight)> entries = [];
 
-  double get _weightedAverage {
-    if (entries.isEmpty) return 0;
-    double sum = 0;
-    double weightTotal = 0;
-    for (final e in entries) {
-      final w = e.$2 / 100.0;
-      weightTotal += w;
-      sum += e.$1 * w;
-    }
-    return weightTotal > 0 ? sum / weightTotal : 0;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
