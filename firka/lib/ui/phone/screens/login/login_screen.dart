@@ -575,7 +575,7 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
   static const double _collisionRestitution = 1.0;
 
   //minimum speed it has to go to trigger a vibration, so the phone doesn't turn into a bomb if the cards are touching
-  static const double _vibrateSpeedThreshold = _maxSpeed * 0.2;
+  static const double _vibrateSpeedThreshold = _maxSpeed * 0.09;
 
   static const List<_CardConfig> _cards = [
     _CardConfig(
