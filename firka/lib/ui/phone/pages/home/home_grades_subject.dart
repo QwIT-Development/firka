@@ -1,3 +1,4 @@
+import 'package:firka/ui/phone/widgets/grade_summary_bar.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/ui/components/common_bottom_sheets.dart';
@@ -131,7 +132,17 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
       }).toList();
 
       var gradeWidgets = List<Widget>.empty(growable: true);
-      gradeWidgets.addAll(ghostGradeWidgets);
+      if (ghostGradeWidgets.isNotEmpty) {
+        gradeWidgets.add(
+          Text(
+            widget.data.l10n.ghost_grades,
+            style: appStyle.fonts.B_16R.apply(
+              color: appStyle.colors.textPrimary,
+            ),
+          ),
+        );
+        gradeWidgets.addAll(ghostGradeWidgets);
+      }
 
       for (var group in groups.entries) {
         gradeWidgets.add(SizedBox(height: 8));
@@ -301,6 +312,12 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                     ),
                     GradeChartWithInteraction(
                       grades: _gradesWithGhosts(aGrade.subject),
+                    ),
+                    SizedBox(height: 2),
+                    GradeSummaryBar(
+                      grades: _gradesWithGhosts(aGrade.subject),
+                      l10n: widget.data.l10n,
+                      showAverage: ghostGradeWidgets.isNotEmpty,
                     ),
                     SizedBox(height: 12),
                     Padding(

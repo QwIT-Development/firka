@@ -56,12 +56,14 @@ class _WelcomeWidgetState extends State<WelcomeWidget> {
           FirkaIconType.majesticonsLocal,
           "sunSolid",
           color: appStyle.colors.accent,
+          package: 'firka',
         );
       case Cycle.day:
         return FirkaIconWidget(
           FirkaIconType.majesticonsLocal,
           "parkSolidSchool",
           color: appStyle.colors.accent,
+          package: 'firka',
         );
       case Cycle.afternoon:
         return FirkaIconWidget(

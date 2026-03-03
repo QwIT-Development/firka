@@ -608,6 +608,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                                 "dropdownLeft",
                                 size: 24,
                                 color: appStyle.colors.accent,
+                                package: 'firka',
                               ),
                             ),
                             onTap: () async {
@@ -672,6 +673,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                                 "dropdownRight",
                                 size: 24,
                                 color: appStyle.colors.accent,
+                                package: 'firka',
                               ),
                             ),
                             onTap: () async {

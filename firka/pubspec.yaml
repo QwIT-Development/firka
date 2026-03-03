@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  firka_common:
+    path: ../firka_common
   kreta_api:
     path: ../kreta_api
 
@@ -63,6 +65,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  yaml: ^3.1.2
   isar_community_generator: 3.3.0
   android_notification_icons: ^0.0.1
   integration_test:
