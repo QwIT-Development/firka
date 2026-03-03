@@ -190,87 +190,70 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final safePadding = mediaQuery.padding;
+
     return Material(
       color: appStyle.colors.card,
       child: Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
+          top: 61 + safePadding.top,
+          left: 12,
+          right: 12,
+          bottom: 0 + safePadding.bottom,
         ),
-        child: FractionallySizedBox(
-          heightFactor: 0.90,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.data.l10n.runningInDomainBrowser,
+              style: appStyle.fonts.H_12px.copyWith(
+                color: appStyle.colors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Stack(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: appStyle.colors.secondary.withValues(
-                            alpha: 0.5,
-                          ),
-                          borderRadius: BorderRadius.all(Radius.circular(2)),
-                        ),
-                        width: 40,
-                        height: 4,
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  height: MediaQuery.of(context).size.height * 0.8,
-                  // Adjust height for content
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  // Add ClipRRect for circular edges
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Stack(
-                      children: [
-                        WebViewWidget(controller: _webViewController),
-                        if (_fadeAnimationController != null &&
-                            _fadeAnimation != null)
-                          IgnorePointer(
-                            ignoring: !_isLoading,
-                            child: AnimatedBuilder(
-                              animation: _fadeAnimationController!,
-                              builder: (context, child) => AnimatedOpacity(
-                                opacity: _isLoading
-                                    ? 1.0
-                                    : _fadeAnimationController!.isAnimating
-                                    ? _fadeAnimation!.value
-                                    : 0.0,
-                                duration: const Duration(milliseconds: 500),
-                                child: Container(
-                                  color: appStyle.colors.background,
-                                  child: Center(
-                                    child: SizedBox(
-                                      width: 32,
-                                      height: 32,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 3,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              appStyle.colors.accent,
-                                            ),
-                                      ),
+                    WebViewWidget(controller: _webViewController),
+                    if (_fadeAnimationController != null &&
+                        _fadeAnimation != null)
+                      IgnorePointer(
+                        ignoring: !_isLoading,
+                        child: AnimatedBuilder(
+                          animation: _fadeAnimationController!,
+                          builder: (context, child) => AnimatedOpacity(
+                            opacity: _isLoading
+                                ? 1.0
+                                : _fadeAnimationController!.isAnimating
+                                ? _fadeAnimation!.value
+                                : 0.0,
+                            duration: const Duration(milliseconds: 500),
+                            child: Container(
+                              color: appStyle.colors.background,
+                              child: Center(
+                                child: SizedBox(
+                                  width: 32,
+                                  height: 32,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      appStyle.colors.accent,
                                     ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                      ],
-                    ),
-                  ),
+                        ),
+                      ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
