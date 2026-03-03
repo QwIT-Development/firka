@@ -438,7 +438,6 @@ class _HomeTimetableMonthlyScreen
                               "dropdownLeft",
                               size: 24,
                               color: appStyle.colors.accent,
-                              package: 'firka',
                             ),
                           ),
                           onTap: () async {
@@ -468,7 +467,6 @@ class _HomeTimetableMonthlyScreen
                             "dropdownRight",
                             size: 24,
                             color: appStyle.colors.accent,
-                            package: 'firka',
                           ),
                           onTap: () async {
                             var newNow = DateTime(now!.year, now!.month + 1);

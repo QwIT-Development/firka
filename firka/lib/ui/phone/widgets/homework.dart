@@ -34,7 +34,6 @@ class HomeworkWidget extends StatelessWidget {
                           "homeWithMark",
                           color: appStyle.colors.accent,
                           size: 24,
-                          package: 'firka',
                         )
                       : FirkaIconWidget(
                           FirkaIconType.majesticons,
