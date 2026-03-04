@@ -1048,8 +1048,12 @@ class _GradeCalculatorSheetContent extends StatefulWidget {
 class _GradeCalculatorSheetContentState
     extends State<_GradeCalculatorSheetContent> {
   int selectedGrade = 3;
-  int weightPercent = 100;
+  int weightIndex = 1; // 0-based index into _snapPoints
   final List<(int grade, int weight)> entries = [];
+
+  static const _snapPoints = [50, 100, 200, 300, 500];
+
+  int get weightPercent => _snapPoints[weightIndex];
 
   @override
   Widget build(BuildContext context) {
@@ -1184,11 +1188,12 @@ class _GradeCalculatorSheetContentState
                     trackHeight: 8,
                   ),
                   child: Slider(
-                    value: weightPercent.toDouble(),
-                    min: 1,
-                    max: 500,
-                    divisions: 499,
-                    onChanged: (v) => setState(() => weightPercent = v.round()),
+                    value: weightIndex.toDouble(),
+                    min: 0,
+                    max: (_snapPoints.length - 1).toDouble(),
+                    divisions: _snapPoints.length - 1,
+                    label: '${weightPercent}%',
+                    onChanged: (v) => setState(() => weightIndex = v.round()),
                   ),
                 ),
               ),
