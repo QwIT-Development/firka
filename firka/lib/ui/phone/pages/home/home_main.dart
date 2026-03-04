@@ -55,7 +55,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     }
   }
 
-  Future<void> fetchData({bool cacheOnly = true}) async {
+  Future<void> fetchData({bool cacheOnly = false}) async {
     final midnight = now.getMidnight();
 
     var lessonsFetched = 0;
