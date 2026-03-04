@@ -5,7 +5,7 @@ import SwiftUI
 // MARK: - Complication Localization Helper
 
 private struct ComplicationL10n {
-    private static let appGroupID = "group.app.firka.firkaa"
+    private static let appGroupID = "group.app.firka.firka"
 
     enum Language: String {
         case hungarian = "hu"
@@ -63,7 +63,7 @@ private struct ComplicationL10n {
 // MARK: - Watch Cache Loader
 
 private struct WatchCacheLoader {
-    private static let appGroupID = "group.app.firka.firkaa"
+    private static let appGroupID = "group.app.firka.firka"
     private static let cacheFileName = "watch_data.json"
 
     static func loadWidgetData() -> WidgetData? {

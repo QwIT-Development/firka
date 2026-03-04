@@ -2,7 +2,7 @@ import WidgetKit
 import SwiftUI
 import AppIntents
 
-private let appGroup = "group.app.firka.firkaa"
+private let appGroup = "group.app.firka.firka"
 
 // MARK: - Navigation Intents (iOS 16+, used by Controls and Shortcuts)
 
@@ -46,7 +46,7 @@ struct OpenTimetableIntent: AppIntent {
 
 @available(iOS 18.0, *)
 struct HomeControl: ControlWidget {
-    static let kind = "app.firka.firkaa.control.home"
+    static let kind = "app.firka.firka.control.home"
 
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: Self.kind) {
@@ -63,7 +63,7 @@ struct HomeControl: ControlWidget {
 
 @available(iOS 18.0, *)
 struct GradesControl: ControlWidget {
-    static let kind = "app.firka.firkaa.control.grades"
+    static let kind = "app.firka.firka.control.grades"
 
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: Self.kind) {
@@ -80,7 +80,7 @@ struct GradesControl: ControlWidget {
 
 @available(iOS 18.0, *)
 struct TimetableControl: ControlWidget {
-    static let kind = "app.firka.firkaa.control.timetable"
+    static let kind = "app.firka.firka.control.timetable"
 
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: Self.kind) {

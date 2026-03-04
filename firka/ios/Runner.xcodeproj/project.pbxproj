@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -222,35 +222,35 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		4F0EA0512F2BD2A2003CC89E /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		4F0EA0512F2BD2A2003CC89E /* Exceptions for "HomeWidgetsExtension" folder in "Runner" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Controls/AppControls.swift,
 			);
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 		};
-		4F4E70D02EF565FF00C90AD1 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		4F4E70D02EF565FF00C90AD1 /* Exceptions for "LiveActivityWidget" folder in "Runner" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				ActivityAttributes.swift,
 			);
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 		};
-		4F5966082F2F0EB100A3DB03 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		4F5966082F2F0EB100A3DB03 /* Exceptions for "FirkaWatchComplications" folder in "FirkaWatchComplicationsExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 4F5965FC2F2F0EAF00A3DB03 /* FirkaWatchComplicationsExtension */;
 		};
-		4F6C1D3E2ECD3FBD00F819D7 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		4F6C1D3E2ECD3FBD00F819D7 /* Exceptions for "LiveActivityWidget" folder in "LiveActivityWidget" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 4F30C7642E8FBF9D008BB46C /* LiveActivityWidget */;
 		};
-		4FE64E472F27B07B006F9205 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		4FE64E472F27B07B006F9205 /* Exceptions for "HomeWidgetsExtension" folder in "HomeWidgetsExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -260,10 +260,55 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		4F30C76A2E8FBF9D008BB46C /* LiveActivityWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (4F4E70D02EF565FF00C90AD1 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 4F6C1D3E2ECD3FBD00F819D7 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = LiveActivityWidget; sourceTree = "<group>"; };
-		4F5966002F2F0EAF00A3DB03 /* FirkaWatchComplications */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (4F5966082F2F0EB100A3DB03 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = FirkaWatchComplications; sourceTree = "<group>"; };
-		4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (4F0EA0512F2BD2A2003CC89E /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 4FE64E472F27B07B006F9205 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = HomeWidgetsExtension; sourceTree = "<group>"; };
-		4FF81B7B2F2EB4C100E95BA0 /* FirkaWatch Watch App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "FirkaWatch Watch App"; sourceTree = "<group>"; };
+		4F30C76A2E8FBF9D008BB46C /* LiveActivityWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4F4E70D02EF565FF00C90AD1 /* Exceptions for "LiveActivityWidget" folder in "Runner" target */,
+				4F6C1D3E2ECD3FBD00F819D7 /* Exceptions for "LiveActivityWidget" folder in "LiveActivityWidget" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = LiveActivityWidget;
+			sourceTree = "<group>";
+		};
+		4F5966002F2F0EAF00A3DB03 /* FirkaWatchComplications */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4F5966082F2F0EB100A3DB03 /* Exceptions for "FirkaWatchComplications" folder in "FirkaWatchComplicationsExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = FirkaWatchComplications;
+			sourceTree = "<group>";
+		};
+		4FE64E362F27B07A006F9205 /* HomeWidgetsExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4F0EA0512F2BD2A2003CC89E /* Exceptions for "HomeWidgetsExtension" folder in "Runner" target */,
+				4FE64E472F27B07B006F9205 /* Exceptions for "HomeWidgetsExtension" folder in "HomeWidgetsExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = HomeWidgetsExtension;
+			sourceTree = "<group>";
+		};
+		4FF81B7B2F2EB4C100E95BA0 /* FirkaWatch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "FirkaWatch Watch App";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -711,13 +756,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -775,7 +816,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
+			shellScript = "set -e\nNATIVE_ASSETS_DIR=\"$FLUTTER_APPLICATION_PATH/$FLUTTER_BUILD_DIR/native_assets\"\ncase \"$FLUTTER_BUILD_DIR\" in\n  /*) NATIVE_ASSETS_DIR=\"$FLUTTER_BUILD_DIR/native_assets\" ;;\nesac\nif [ -d \"$FLUTTER_APPLICATION_PATH/.dart_tool/hooks_runner\" ]; then\n  find \"$FLUTTER_APPLICATION_PATH/.dart_tool/hooks_runner\" -exec xattr -c {} \\; 2>/dev/null || true\nfi\nif [ -d \"$NATIVE_ASSETS_DIR\" ]; then\n  find \"$NATIVE_ASSETS_DIR\" -exec xattr -c {} \\; 2>/dev/null || true\nfi\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
 		};
 		D576F90540C8E625A9A12317 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -807,13 +848,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1030,27 +1067,27 @@
 			};
 			name = Profile;
 		};
-			249021D4217E4FDB00AE95B9 /* Profile */ = {
-				isa = XCBuildConfiguration;
-				baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
-				buildSettings = {
+		249021D4217E4FDB00AE95B9 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_BITCODE = NO;
-					INFOPLIST_FILE = Runner/Info.plist;
-					INFOPLIST_KEY_CFBundleDisplayName = "Firka Testing";
-					INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Firka;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.9;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1071,7 +1108,8 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.RunnerTests;
@@ -1090,7 +1128,8 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.RunnerTests;
@@ -1107,7 +1146,8 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.RunnerTests;
@@ -1134,8 +1174,8 @@
 				CODE_SIGN_ENTITLEMENTS = LiveActivityWidget.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1153,7 +1193,7 @@
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.LiveActivityWidget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.LiveActivityWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1185,8 +1225,8 @@
 				CODE_SIGN_ENTITLEMENTS = LiveActivityWidget.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1203,7 +1243,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.LiveActivityWidget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.LiveActivityWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1233,8 +1273,8 @@
 				CODE_SIGN_ENTITLEMENTS = LiveActivityWidget.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1251,7 +1291,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.LiveActivityWidget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.LiveActivityWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1280,8 +1320,8 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_ENTITLEMENTS = FirkaWatchComplicationsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1301,7 +1341,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.watchkitapp.complications;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.watchkitapp.complications;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -1333,8 +1373,8 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_ENTITLEMENTS = FirkaWatchComplicationsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1352,7 +1392,7 @@
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.watchkitapp.complications;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.watchkitapp.complications;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -1383,8 +1423,8 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_ENTITLEMENTS = FirkaWatchComplicationsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1402,7 +1442,7 @@
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.watchkitapp.complications;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.watchkitapp.complications;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -1434,8 +1474,8 @@
 				CODE_SIGN_ENTITLEMENTS = HomeWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1454,7 +1494,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.HomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.HomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1485,8 +1525,8 @@
 				CODE_SIGN_ENTITLEMENTS = HomeWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1503,7 +1543,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.HomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.HomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1532,8 +1572,8 @@
 				CODE_SIGN_ENTITLEMENTS = HomeWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1550,7 +1590,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.HomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.HomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1563,9 +1603,9 @@
 			};
 			name = Profile;
 		};
-			4FF81B9C2F2EB4C300E95BA0 /* Debug */ = {
-				isa = XCBuildConfiguration;
-				buildSettings = {
+		4FF81B9C2F2EB4C300E95BA0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = AppIcon;
@@ -1579,14 +1619,15 @@
 				CODE_SIGN_ENTITLEMENTS = "FirkaWatch Watch App/FirkaWatch Watch App.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
-					GENERATE_INFOPLIST_FILE = YES;
-					INFOPLIST_KEY_CFBundleDisplayName = FirkaWatch;
-					INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-					INFOPLIST_KEY_WKCompanionAppBundleIdentifier = app.firka.firkaa;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FirkaWatch;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = app.firka.firka;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1596,7 +1637,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = watchos;
@@ -1615,9 +1656,9 @@
 			};
 			name = Debug;
 		};
-			4FF81B9D2F2EB4C300E95BA0 /* Release */ = {
-				isa = XCBuildConfiguration;
-				buildSettings = {
+		4FF81B9D2F2EB4C300E95BA0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = AppIcon;
@@ -1631,14 +1672,15 @@
 				CODE_SIGN_ENTITLEMENTS = "FirkaWatch Watch App/FirkaWatch Watch App.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
-					GENERATE_INFOPLIST_FILE = YES;
-					INFOPLIST_KEY_CFBundleDisplayName = FirkaWatch;
-					INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-					INFOPLIST_KEY_WKCompanionAppBundleIdentifier = app.firka.firkaa;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FirkaWatch;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = app.firka.firka;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1646,7 +1688,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = watchos;
@@ -1664,9 +1706,9 @@
 			};
 			name = Release;
 		};
-			4FF81B9E2F2EB4C300E95BA0 /* Profile */ = {
-				isa = XCBuildConfiguration;
-				buildSettings = {
+		4FF81B9E2F2EB4C300E95BA0 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = AppIcon;
@@ -1680,14 +1722,15 @@
 				CODE_SIGN_ENTITLEMENTS = "FirkaWatch Watch App/FirkaWatch Watch App.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
-					GENERATE_INFOPLIST_FILE = YES;
-					INFOPLIST_KEY_CFBundleDisplayName = FirkaWatch;
-					INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-					INFOPLIST_KEY_WKCompanionAppBundleIdentifier = app.firka.firkaa;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FirkaWatch;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = app.firka.firka;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1695,7 +1738,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = watchos;
@@ -1828,27 +1871,27 @@
 			};
 			name = Release;
 		};
-			97C147061CF9000F007C117D /* Debug */ = {
-				isa = XCBuildConfiguration;
-				baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
-				buildSettings = {
+		97C147061CF9000F007C117D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
+			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_BITCODE = NO;
-					INFOPLIST_FILE = Runner/Info.plist;
-					INFOPLIST_KEY_CFBundleDisplayName = "Firka Testing";
-					INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Firka;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.9;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1864,27 +1907,27 @@
 			};
 			name = Debug;
 		};
-			97C147071CF9000F007C117D /* Release */ = {
-				isa = XCBuildConfiguration;
-				baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
-				buildSettings = {
+		97C147071CF9000F007C117D /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1101;
-				DEVELOPMENT_TEAM = UT7MSP4GWZ;
+				CURRENT_PROJECT_VERSION = 1102;
+				DEVELOPMENT_TEAM = R9PZGUCNJ3;
 				ENABLE_BITCODE = NO;
-					INFOPLIST_FILE = Runner/Info.plist;
-					INFOPLIST_KEY_CFBundleDisplayName = "Firka Testing";
-					INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Firka;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.9;
-				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firkaa;
+				PRODUCT_BUNDLE_IDENTIFIER = app.firka.firka;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

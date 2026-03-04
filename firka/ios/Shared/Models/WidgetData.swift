@@ -12,7 +12,7 @@ struct WidgetData: Codable {
 
     static func load() -> WidgetData? {
         guard let containerURL = FileManager.default.containerURL(
-            forSecurityApplicationGroupIdentifier: "group.app.firka.firkaa"
+            forSecurityApplicationGroupIdentifier: "group.app.firka.firka"
         ) else {
             lastError = "No App Group container"
             return nil
