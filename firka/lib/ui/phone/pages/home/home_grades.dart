@@ -146,18 +146,6 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
 
         double avg = double.nan;
         if (subjectGrades.isNotEmpty) {
-          for (var grade in subjectGrades) {
-            if (grade.valueType.name == "Szazalekos") {
-              grade.valueType = NameUidDesc(
-                uid: "1,Osztalyzat",
-                name: "Osztalyzat",
-                description: "",
-              );
-              if (grade.numericValue != null) {
-                grade.numericValue = percentageToGrade(grade.numericValue!);
-              }
-            }
-          }
           avg = grades!.response!.getAverageBySubject(subject);
         }
 

@@ -322,6 +322,11 @@ class WidgetCacheHelper {
     var sum = 0.0;
 
     for (var grade in grades) {
+      final name = grade.valueType.name.toLowerCase();
+      final isPercentage =
+          name.contains('szazalek') || name.contains('percent');
+      if (isPercentage) continue;
+
       if (grade.numericValue != null) {
         var weight = (grade.weightPercentage ?? 100) / 100.0;
         weightTotal += weight;

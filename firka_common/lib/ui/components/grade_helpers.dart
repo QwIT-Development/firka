@@ -86,6 +86,14 @@ extension GradeListExtension on List<Grade> {
 
     for (var grade in this) {
       if (grade.subject.uid == subject.uid) {
+        final name = grade.valueType.name.toLowerCase();
+        final isPercentage =
+            name.contains('szazalek') || name.contains('percent');
+
+        if (isPercentage) {
+          continue;
+        }
+
         if (grade.numericValue != null) {
           var weight = (grade.weightPercentage ?? 100) / 100.0;
           weightTotal += weight;
@@ -93,6 +101,10 @@ extension GradeListExtension on List<Grade> {
           sum += grade.numericValue! * weight;
         }
       }
+    }
+
+    if (weightTotal == 0) {
+      return double.nan;
     }
 
     return sum / weightTotal;

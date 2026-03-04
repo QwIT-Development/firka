@@ -33,6 +33,10 @@ class _GradeChartState extends State<GradeChart> {
     double totalWeight = 0;
     for (final g in grades) {
       if (g.subject.uid != subjectUid) continue;
+      final name = g.valueType.name.toLowerCase();
+      final isPercentage =
+          name.contains('szazalek') || name.contains('percent');
+      if (isPercentage) continue;
       final v = g.numericValue;
       final w = g.weightPercentage;
       if (v != null && w != null) {
