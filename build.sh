@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Build firka and/or firka_wear with version from pubspec + short git SHA.
-# Usage: ./build.sh [firka|firka_wear|all]
-# Default (no args) builds both.
-
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 SHA=$(git -C "$ROOT" rev-parse --short HEAD)
+COMMIT_COUNT=$(git -C "$ROOT" rev-list --count HEAD)
 
 build_app() {
   local APP="$1"
@@ -16,22 +13,18 @@ build_app() {
     return 1
   fi
 
-  local VERSION_LINE BUILD_NUMBER BASE_VERSION BUILD_NAME
+  local VERSION_LINE BASE_VERSION BUILD_NAME VERSION_CODE
   VERSION_LINE=$(grep -E '^\s*version:\s*' "$PUBSPEC" | head -1)
   BASE_VERSION=$(echo "$VERSION_LINE" | sed -E 's/^[[:space:]]*version:[[:space:]]*([^+]+).*/\1/' | tr -d ' ')
-  BUILD_NUMBER=""
-  if [[ "$VERSION_LINE" == *+* ]]; then
-    BUILD_NUMBER=$(echo "$VERSION_LINE" | sed -E 's/^[[:space:]]*version:[[:space:]]*[^+]+\+([0-9]+).*/\1/')
-  fi
   BUILD_NAME="${BASE_VERSION}-${SHA}"
 
-  echo "Building $APP: version $BUILD_NAME (build number: ${BUILD_NUMBER:-none})"
+  VERSION_CODE=$((2000 + COMMIT_COUNT))
+  [[ "$APP" == "firka_wear" ]] && VERSION_CODE=$((VERSION_CODE + 1))
+
+  echo "Building $APP: version $BUILD_NAME (version code: $VERSION_CODE)"
   cd "$ROOT/$APP"
 
-  local FLUTTER_ARGS=(build appbundle --build-name="$BUILD_NAME" --verbose)
-  [[ -n "${BUILD_NUMBER:-}" ]] && FLUTTER_ARGS+=(--build-number="$BUILD_NUMBER")
-
-  flutter "${FLUTTER_ARGS[@]}"
+  flutter build appbundle --build-name="$BUILD_NAME" --build-number="$VERSION_CODE" --verbose
 }
 
 case "${1:-all}" in
