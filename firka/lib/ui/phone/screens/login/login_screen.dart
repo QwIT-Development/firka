@@ -816,32 +816,42 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
           double vx = _velocities[i].dx;
           double vy = _velocities[i].dy;
 
+          // capture incoming velocity components before any bounce damping
+          final double preVx = vx;
+          final double preVy = vy;
+          double impactSpeed = 0.0; // normal to the wall
+
           bool hit = false;
 
           if (pos.dx < minX) {
             pos = Offset(minX, pos.dy);
             vx = vx.abs() * _bounceDamping;
+            impactSpeed = math.max(impactSpeed, preVx.abs());
             hit = true;
           } else if (pos.dx > maxX) {
             pos = Offset(maxX, pos.dy);
             vx = -vx.abs() * _bounceDamping;
+            impactSpeed = math.max(impactSpeed, preVx.abs());
             hit = true;
           }
 
           if (pos.dy < minY) {
             pos = Offset(pos.dx, minY);
             vy = vy.abs() * _bounceDamping;
+            impactSpeed = math.max(impactSpeed, preVy.abs());
             hit = true;
           } else if (pos.dy > maxY) {
             pos = Offset(pos.dx, maxY);
             vy = -vy.abs() * _bounceDamping;
+            impactSpeed = math.max(impactSpeed, preVy.abs());
             hit = true;
           }
 
           _velocities[i] = _clampVel(Offset(vx, vy));
           _positions[i] = pos;
 
-          if (hit && _velocities[i].distance > _vibrateSpeedThreshold) {
+          // vibrate only when the component toward the wall exceeded threshold
+          if (hit && impactSpeed > _vibrateSpeedThreshold) {
             wallHitThisTick = true;
           }
         }
