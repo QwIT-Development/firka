@@ -13,10 +13,33 @@ void main() async {
 
   if (_iconsOutOfDate(root)) {
     final inputs = _iconsInputs(root);
-    stdout.writeln('Icons out of date, running flutter_launcher_icons...');
-    await _run('dart', ['run', 'flutter_launcher_icons'], root);
-    _updateLockWithHashes(root, 'icons', _computeHashes(root, inputs));
-    ran = true;
+    final manifestFile = File(p.join(root, 'android/app/src/main/AndroidManifest.xml'));
+    String? manifestBackup;
+    if (manifestFile.existsSync()) {
+      manifestBackup = manifestFile.readAsStringSync();
+    }
+    late ProcessResult iconResult;
+    try {
+      stdout.writeln('Icons out of date, running flutter_launcher_icons...');
+      iconResult = await Process.run(
+        'dart',
+        ['run', 'flutter_launcher_icons'],
+        workingDirectory: root,
+        runInShell: true,
+      );
+      if (iconResult.exitCode == 0) {
+        _updateLockWithHashes(root, 'icons', _computeHashes(root, inputs));
+        ran = true;
+      }
+    } finally {
+      if (manifestBackup != null) {
+        manifestFile.writeAsStringSync(manifestBackup);
+      }
+    }
+    if (iconResult.exitCode != 0) {
+      stderr.write(iconResult.stderr);
+      exit(iconResult.exitCode);
+    }
   }
 
   if (_l10nOutOfDate(root)) {
