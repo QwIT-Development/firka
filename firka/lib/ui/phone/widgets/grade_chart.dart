@@ -93,6 +93,27 @@ class _GradeChartState extends State<GradeChart> {
     }
   }
 
+  List<FlSpot> _smoothSpots(List<FlSpot> input) {
+    if (input.length < 3) return input;
+
+    final smoothed = <FlSpot>[];
+    for (var i = 0; i < input.length; i++) {
+      if (i == 0 || i == input.length - 1) {
+        smoothed.add(input[i]);
+        continue;
+      }
+
+      final prev = input[i - 1].y;
+      final curr = input[i].y;
+      final next = input[i + 1].y;
+      final blended = (0.25 * prev) + (0.5 * curr) + (0.25 * next);
+
+      smoothed.add(FlSpot(input[i].x, blended));
+    }
+
+    return smoothed;
+  }
+
   @override
   void didUpdateWidget(covariant GradeChart oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -213,8 +234,10 @@ class _GradeChartState extends State<GradeChart> {
   }
 
   LineChartData avgData() {
-    var firstX = spots.first.x;
-    var lastX = spots.last.x;
+    final smoothedSpots = _smoothSpots(spots);
+
+    var firstX = smoothedSpots.first.x;
+    var lastX = smoothedSpots.last.x;
     if (firstX == lastX) {
       lastX = firstX + 1;
     }
@@ -359,12 +382,12 @@ class _GradeChartState extends State<GradeChart> {
 
       lineBarsData: [
         LineChartBarData(
-          spots: spots,
+          spots: smoothedSpots,
           isCurved: true,
-          curveSmoothness: 0.35,
+          curveSmoothness: 0.5,
           showingIndicators: _touchedIndex != null ? [_touchedIndex!] : [],
           gradient: LinearGradient(
-            colors: [for (final s in spots) colorForY(s.y)],
+            colors: [for (final s in smoothedSpots) colorForY(s.y)],
           ),
           barWidth: 5,
           isStrokeCapRound: true,
@@ -373,7 +396,8 @@ class _GradeChartState extends State<GradeChart> {
             show: true,
             gradient: LinearGradient(
               colors: [
-                for (final s in spots) colorForY(s.y).withValues(alpha: 0.1),
+                for (final s in smoothedSpots)
+                  colorForY(s.y).withValues(alpha: 0.1),
               ],
             ),
           ),
