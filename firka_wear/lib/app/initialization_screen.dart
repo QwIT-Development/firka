@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:wear_plus/wear_plus.dart';
 
 import 'package:firka_wear/app/app_state.dart';
 import 'package:firka_wear/app/initialization.dart';
 import 'package:firka_wear/core/bloc/wear_sync_cubit.dart';
 import 'package:firka_wear/l10n/app_localizations.dart';
 import 'package:firka_wear/ui/theme/style.dart';
+import 'package:firka_wear/ui/wear/screens/error/error_screen.dart';
 import 'package:firka_wear/ui/wear/screens/home/home_screen.dart';
 import 'package:firka_wear/ui/wear/screens/login/login_screen.dart';
 
@@ -25,25 +25,7 @@ class WearInitializationScreen extends StatelessWidget {
           if (snapshot.hasError) {
             return MaterialApp(
               key: ValueKey('firkaErrorPage'),
-              home: Scaffold(
-                body: Center(
-                  child: WatchShape(
-                    builder: (context, shape, child) {
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Text(
-                            'Error initializing app: ${snapshot.error}',
-                            style: TextStyle(color: Colors.red),
-                          ),
-                          child!,
-                        ],
-                      );
-                    },
-                    child: SizedBox(),
-                  ),
-                ),
-              ),
+              home: WearErrorScreen(exception: snapshot.error!),
             );
           }
 

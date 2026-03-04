@@ -9,6 +9,10 @@ import 'package:firka_wear/services/wear_sync_store.dart';
 late final Logger logger;
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+/// When non-null, the app should show [WearErrorScreen] with this error.
+final ValueNotifier<FlutterErrorDetails?> globalErrorNotifier =
+    ValueNotifier<FlutterErrorDetails?>(null);
 late WearAppInitialization initData;
 bool initDone = false;
 
