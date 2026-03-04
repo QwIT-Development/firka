@@ -24,6 +24,9 @@ build_app() {
   echo "Building $APP: version $BUILD_NAME (version code: $VERSION_CODE)"
   cd "$ROOT/$APP"
 
+  flutter pub get
+  dart run scripts/codegen.dart
+
   flutter build appbundle --build-name="$BUILD_NAME" --build-number="$VERSION_CODE" --verbose
 }
 
