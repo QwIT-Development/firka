@@ -69,6 +69,7 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
       "assets/images/carousel_dark/slide3.webp",
       "assets/images/carousel_dark/slide4.webp",
       "assets/images/logos/colored_logo.webp",
+      "assets/images/logos/loading.gif",
     ];
     try {
       await ImagePreloader.preloadMultipleAssets(FirkaBundle(), imagePaths);

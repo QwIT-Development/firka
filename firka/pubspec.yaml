@@ -81,6 +81,7 @@ flutter:
     - .env
     - assets/images/logos/colored_logo.webp
     - assets/images/logos/dave.svg
+    - assets/images/logos/loading.gif
     - assets/images/carousel/
     - assets/images/carousel_dark/
     - assets/images/icons/

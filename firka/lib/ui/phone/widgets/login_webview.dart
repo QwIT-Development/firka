@@ -276,15 +276,10 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                             child: Container(
                               color: appStyle.colors.background,
                               child: Center(
-                                child: SizedBox(
-                                  width: 32,
-                                  height: 32,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      appStyle.colors.accent,
-                                    ),
-                                  ),
+                                child: Image.asset(
+                                  "assets/images/logos/loading.gif",
+                                  width: 50,
+                                  height: 50,
                                 ),
                               ),
                             ),
