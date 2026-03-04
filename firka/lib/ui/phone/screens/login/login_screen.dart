@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/app/app_state.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firka/ui/phone/widgets/login_webview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -569,6 +570,7 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
   static const double _friction = 0.878;
   static const double _cardHeight =
       45; //not in pixels, idk what unit but it works :p
+  // cap speeds so impacts stay tame
   static const double _maxSpeed = _cardHeight * 1.2;
   static const double _tiltForce = 0.05;
   static const double _bounceDamping = 0.45;
@@ -644,6 +646,7 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
   Offset? _baseline;
   StreamSubscription<AccelerometerEvent>? _accelerometerSub;
   Duration? _lastTick;
+  AccelerometerEvent? _lastAccelEvent;
 
   double _sceneWidth = 0;
   double _sceneHeight = 0;
@@ -687,6 +690,7 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
   }
 
   void _handleTilt(AccelerometerEvent event) {
+    _lastAccelEvent = event;
     final raw = Offset(event.x, event.y);
     _baseline ??= raw;
     final rel = raw - _baseline!;
@@ -712,6 +716,7 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
     if (_sceneWidth == 0 || _sceneHeight == 0) return;
 
     bool collidedThisTick = false;
+    bool wallHitThisTick = false;
 
     setState(() {
       final slope = Offset(-_tilt.dx, _tilt.dy);
@@ -811,30 +816,40 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
           double vx = _velocities[i].dx;
           double vy = _velocities[i].dy;
 
+          bool hit = false;
+
           if (pos.dx < minX) {
             pos = Offset(minX, pos.dy);
             vx = vx.abs() * _bounceDamping;
+            hit = true;
           } else if (pos.dx > maxX) {
             pos = Offset(maxX, pos.dy);
             vx = -vx.abs() * _bounceDamping;
+            hit = true;
           }
 
           if (pos.dy < minY) {
             pos = Offset(pos.dx, minY);
             vy = vy.abs() * _bounceDamping;
+            hit = true;
           } else if (pos.dy > maxY) {
             pos = Offset(pos.dx, maxY);
             vy = -vy.abs() * _bounceDamping;
+            hit = true;
           }
 
           _velocities[i] = _clampVel(Offset(vx, vy));
           _positions[i] = pos;
+
+          if (hit && _velocities[i].distance > _vibrateSpeedThreshold) {
+            wallHitThisTick = true;
+          }
         }
       }
     });
 
-    // phone mating session
-    if (collidedThisTick) _maybeVibrate();
+    // vibration on collisions (card-card or walls)
+    if (collidedThisTick || wallHitThisTick) _maybeVibrate();
   }
 
   @override
@@ -896,7 +911,56 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
               ),
             );
           }),
+          if (kDebugMode) _buildDebugOverlay(center),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDebugOverlay(Offset center) {
+    final firstPos = _positions.isNotEmpty ? _positions.first : Offset.zero;
+    final firstVel = _velocities.isNotEmpty ? _velocities.first : Offset.zero;
+    final accel = _lastAccelEvent;
+    final speed = firstVel.distance;
+
+    String formatOffset(Offset o) =>
+        '(${o.dx.toStringAsFixed(2)}, ${o.dy.toStringAsFixed(2)})';
+
+    return Positioned(
+      left: 12,
+      top: 12,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.55),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        width: math.min(260, _sceneWidth - 24),
+        child: DefaultTextStyle(
+          style: appStyle.fonts.B_12R.copyWith(
+            color: Colors.white,
+            height: 1.25,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Sim Debug'),
+              const SizedBox(height: 4),
+              Text('tilt: ${formatOffset(_tilt)}'),
+              if (accel != null)
+                Text(
+                  'accel: (${accel.x.toStringAsFixed(2)}, ${accel.y.toStringAsFixed(2)}, ${accel.z.toStringAsFixed(2)})',
+                ),
+              Text('baseline set: ${_baseline != null}'),
+              Text('scene: ${_sceneWidth.toStringAsFixed(0)} x ${_sceneHeight.toStringAsFixed(0)}'),
+              Text('center: ${formatOffset(center)}'),
+              Text('card[0] pos: ${formatOffset(firstPos)}'),
+              Text('card[0] vel: ${formatOffset(firstVel)} | |v|=${speed.toStringAsFixed(2)}'),
+              Text('cards: ${_cards.length}'),
+            ],
+          ),
+        ),
       ),
     );
   }
