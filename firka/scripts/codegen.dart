@@ -31,11 +31,11 @@ void main() async {
     ran = true;
   }
 
-  if (_isarOutOfDate(root)) {
+  if (_isarOutOfDate(root) || _isarGeneratedFilesMissing(root)) {
     final inputs = _isarInputs(root);
     final hashes = _computeHashes(root, inputs);
     stdout.writeln(
-      'Isar generated dart files out of date, running build_runner...',
+      'Isar generated dart files out of date or missing, running build_runner...',
     );
     await _run('dart', ['run', 'build_runner', 'build'], root);
     _updateLockWithHashes(root, 'isar', hashes);
@@ -236,6 +236,18 @@ bool _isarOutOfDate(String root) {
     if (_anyNewerThan([dartFile], gFile)) {
       return !_hashesMatch(root, 'isar', inputs, _readLock(root));
     }
+  }
+  return false;
+}
+
+bool _isarGeneratedFilesMissing(String root) {
+  final inputs = _isarInputs(root);
+  if (inputs.isEmpty) return false;
+  final modelsDir = p.join(root, 'lib/data/models');
+  for (final dartFile in inputs) {
+    final baseName = p.basenameWithoutExtension(dartFile.path);
+    final gFile = File(p.join(modelsDir, '$baseName.g.dart'));
+    if (!gFile.existsSync()) return true;
   }
   return false;
 }
