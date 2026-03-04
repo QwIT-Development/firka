@@ -16,6 +16,7 @@ import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/routing/app_router.dart';
 import 'package:firka/services/watch_sync_helper.dart';
+import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/pages/extras/main_wear_pair.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -33,6 +34,23 @@ class _InitializationScreenState extends State<InitializationScreen> {
   final Future<AppInitialization> _init = initializeApp().timeout(
     const Duration(seconds: 20),
   );
+
+  ThemeData _buildTheme(FirkaStyle style) {
+    return ThemeData(
+      scaffoldBackgroundColor: style.colors.background,
+      canvasColor: style.colors.background,
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Colors.transparent,
+      ),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: style.colors.accent,
+        brightness: style.isLight ? Brightness.light : Brightness.dark,
+        background: style.colors.background,
+        surface: style.colors.card,
+      ),
+      useMaterial3: false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -180,40 +198,47 @@ class _InitializationScreenState extends State<InitializationScreen> {
               BlocProvider<ReauthCubit>.value(value: reauthCubit),
               BlocProvider<HomeRefreshCubit>.value(value: homeRefreshCubit),
             ],
-            child: MaterialApp.router(
-              title: 'Firka',
-              key: const ValueKey('firkaApp'),
-              routerConfig: _router!,
-              theme: ThemeData(
-                primarySwatch: Colors.lightGreen,
-                visualDensity: VisualDensity.adaptivePlatformDensity,
-              ),
-              localizationsDelegates: const [
-                AppLocalizations.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-              ],
-              supportedLocales: AppLocalizations.supportedLocales,
-              builder: (context, child) {
-                return BlocBuilder<ThemeCubit, ThemeState>(
-                  builder: (context, themeState) {
-                    final isLight = themeState.isLightMode;
-                    final overlay = SystemUiOverlayStyle(
-                      statusBarColor: Colors.transparent,
-                      statusBarIconBrightness: isLight
-                          ? Brightness.dark
-                          : Brightness.light,
-                      statusBarBrightness: isLight
-                          ? Brightness.light
-                          : Brightness.dark,
-                      systemStatusBarContrastEnforced: false,
-                    );
+            child: BlocBuilder<ThemeCubit, ThemeState>(
+              builder: (context, themeState) {
+                final isLight = themeState.isLightMode;
+                final overlay = SystemUiOverlayStyle(
+                  statusBarColor: Colors.transparent,
+                  statusBarIconBrightness:
+                      isLight ? Brightness.dark : Brightness.light,
+                  statusBarBrightness:
+                      isLight ? Brightness.light : Brightness.dark,
+                  systemStatusBarContrastEnforced: false,
+                );
 
-                    SystemChrome.setSystemUIOverlayStyle(overlay);
+                final themeMode =
+                    isLight ? ThemeMode.light : ThemeMode.dark;
 
+                final fallbackBg = isLight
+                    ? lightStyle.colors.background
+                    : darkStyle.colors.background;
+
+                SystemChrome.setSystemUIOverlayStyle(overlay);
+
+                return MaterialApp.router(
+                  title: 'Firka',
+                  key: const ValueKey('firkaApp'),
+                  routerConfig: _router!,
+                  theme: _buildTheme(lightStyle),
+                  darkTheme: _buildTheme(darkStyle),
+                  themeMode: themeMode,
+                  localizationsDelegates: const [
+                    AppLocalizations.delegate,
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                  ],
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  builder: (context, child) {
                     return AnnotatedRegion<SystemUiOverlayStyle>(
                       value: overlay,
-                      child: child ?? const SizedBox.shrink(),
+                      child: ColoredBox(
+                        color: fallbackBg,
+                        child: child ?? const SizedBox.shrink(),
+                      ),
                     );
                   },
                 );
