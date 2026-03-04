@@ -1,7 +1,7 @@
 import 'package:kreta_api/kreta_api.dart';
 
 bool _isPercentageGrade(Grade grade) {
-  final name = grade.valueType.name.toLowerCase();
+  final name = grade.valueType.name?.toLowerCase() ?? '';
   return name.contains('szazalek') || name.contains('percent');
 }
 

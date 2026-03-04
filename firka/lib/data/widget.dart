@@ -322,7 +322,7 @@ class WidgetCacheHelper {
     var sum = 0.0;
 
     for (var grade in grades) {
-      final name = grade.valueType.name.toLowerCase();
+      final name = grade.valueType.name?.toLowerCase() ?? '';
       final isPercentage =
           name.contains('szazalek') || name.contains('percent');
       if (isPercentage) continue;

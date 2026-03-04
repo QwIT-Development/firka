@@ -86,7 +86,7 @@ extension GradeListExtension on List<Grade> {
 
     for (var grade in this) {
       if (grade.subject.uid == subject.uid) {
-        final name = grade.valueType.name.toLowerCase();
+        final name = grade.valueType.name?.toLowerCase() ?? '';
         final isPercentage =
             name.contains('szazalek') || name.contains('percent');
 
