@@ -66,6 +66,7 @@ class FirkaColors {
   Color cardTranslucent;
 
   Color buttonSecondaryFill;
+  Color buttonDisabledIcon;
 
   Color accent;
   Color secondary;
@@ -105,6 +106,7 @@ class FirkaColors {
     required this.card,
     required this.cardTranslucent,
     required this.buttonSecondaryFill,
+    required this.buttonDisabledIcon,
     required this.accent,
     required this.secondary,
     required this.shadowColor,
@@ -247,6 +249,7 @@ final FirkaStyle lightStyle = FirkaStyle(
     card: Color(0xFFF3FBDE),
     cardTranslucent: Color(0x80F3FBDE),
     buttonSecondaryFill: Color(0xFFFEFFFD),
+    buttonDisabledIcon: Color(0xFFCDD9B3),
     accent: Color(0xFFA7DC22),
     secondary: Color(0xFF6E8F1B),
     shadowColor: Color(0x33647e22),
@@ -287,6 +290,7 @@ final FirkaStyle darkStyle = FirkaStyle(
     card: Color(0xFF141905),
     cardTranslucent: Color(0x80141905),
     buttonSecondaryFill: Color(0xFF20290B),
+    buttonDisabledIcon: Color(0xFF465422),
     accent: Color(0xFFA7DC22),
     secondary: Color(0xFFCBEE71),
     shadowColor: Color(0x26CBEE71),

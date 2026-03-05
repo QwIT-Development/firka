@@ -286,7 +286,7 @@ class _DomainBrowserWebviewWidgetState
                   child: Center(
                     child: Majesticon(
                       Majesticon.chevronLeftLine,
-                      color: appStyle.colors.secondary,
+                      color: appStyle.colors.buttonDisabledIcon,
                       size: 22,
                     ),
                   ),
@@ -309,7 +309,7 @@ class _DomainBrowserWebviewWidgetState
                   child: Center(
                     child: Majesticon(
                       Majesticon.menuLine,
-                      color: appStyle.colors.secondary,
+                      color: appStyle.colors.buttonDisabledIcon,
                       size: 22,
                     ),
                   ),
