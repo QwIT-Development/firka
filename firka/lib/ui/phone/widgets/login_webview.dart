@@ -51,7 +51,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
     super.initState();
 
     _fadeAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     );
 
@@ -82,7 +82,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (String url) {
-            Timer(const Duration(milliseconds: 500), () {
+            Timer(Duration.zero, () {
               if (mounted) {
                 setState(() {
                   _isLoading = false;
@@ -286,9 +286,9 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                             opacity: _isLoading
                                 ? 1.0
                                 : _fadeAnimationController!.isAnimating
-                                ? _fadeAnimation!.value
-                                : 0.0,
-                            duration: const Duration(milliseconds: 500),
+                                    ? _fadeAnimation!.value
+                                    : 0.0,
+                            duration: const Duration(milliseconds: 300),
                             child: Container(
                               color: appStyle.colors.background,
                               child: Center(
@@ -386,7 +386,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                   child: Center(
                     child: Majesticon(
                       Majesticon.chevronLeftLine,
-                      color: appStyle.colors.secondary,
+                      color: appStyle.colors.buttonDisabledIcon,
                       size: 22,
                     ),
                   ),
@@ -409,7 +409,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                   child: Center(
                     child: Majesticon(
                       Majesticon.menuLine,
-                      color: appStyle.colors.secondary,
+                      color: appStyle.colors.buttonDisabledIcon,
                       size: 22,
                     ),
                   ),

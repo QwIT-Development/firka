@@ -42,7 +42,7 @@ class _DomainBrowserWebviewWidgetState
     super.initState();
 
     _fadeAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     );
 
@@ -60,7 +60,7 @@ class _DomainBrowserWebviewWidgetState
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (String url) {
-            Timer(const Duration(milliseconds: 300), () {
+            Timer(Duration.zero, () {
               if (mounted) {
                 setState(() {
                   _isLoading = false;
@@ -188,7 +188,7 @@ class _DomainBrowserWebviewWidgetState
                                 : _fadeAnimationController!.isAnimating
                                     ? _fadeAnimation!.value
                                     : 0.0,
-                            duration: const Duration(milliseconds: 500),
+                            duration: const Duration(milliseconds: 300),
                             child: Container(
                               color: appStyle.colors.background,
                               child: Center(
