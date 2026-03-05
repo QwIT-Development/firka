@@ -116,8 +116,10 @@ class TimetableWidget : GlanceAppWidget() {
         val displayLessons = data.lessons.take(maxLessons)
         val lessonChunks = displayLessons.chunked(2)
         val showDate = maxLessons > 1
-        val maxRoomNameLen = displayLessons.maxOfOrNull { (it.roomName ?: "N/A").take(5).length } ?: 0
-        val roomBadgeWidthDp = if (maxRoomNameLen <= 3) 28f else 48f
+        val roomBadgeWidthDp = 48f
+        val minWidthForTimeAndChipDp = 8f + 40f + roomBadgeWidthDp
+        val subjectColumnWidthDp = (size.width.value - 2 * paddingDp - 32f - minWidthForTimeAndChipDp)
+            .coerceIn(80f, 226f)
         val dateSectionHeight = if (showDate) headerHeightDp + spacerDp else 0f
         val lessonListHeight = when (val n = displayLessons.size) {
             0 -> 0f
@@ -148,7 +150,12 @@ class TimetableWidget : GlanceAppWidget() {
                 for (chunk in lessonChunks) {
                     Column {
                         for (lesson in chunk) {
-                            LessonCard(lesson, data.colors, roomBadgeWidthDp = roomBadgeWidthDp)
+                            LessonCard(
+                                lesson,
+                                data.colors,
+                                roomBadgeWidthDp = roomBadgeWidthDp,
+                                subjectColumnWidthDp = subjectColumnWidthDp,
+                            )
                             Spacer(modifier = GlanceModifier.height(spacerDp.dp))
                         }
                     }

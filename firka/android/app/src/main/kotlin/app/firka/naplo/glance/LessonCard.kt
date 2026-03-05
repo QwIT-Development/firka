@@ -16,6 +16,7 @@ import androidx.glance.layout.padding
 import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
+import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import app.firka.naplo.model.Colors
 import app.firka.naplo.glance.WidgetLesson
@@ -31,6 +32,7 @@ fun LessonCard(
     colors: Colors,
     modifier: GlanceModifier = GlanceModifier,
     roomBadgeWidthDp: Float = 48f,
+    subjectColumnWidthDp: Float = 226f,
 ) {
     Box(modifier =
         modifier
@@ -49,17 +51,21 @@ fun LessonCard(
 
 
         Box(modifier = GlanceModifier.padding(12.dp)) {
-            Row {
+            Row(modifier = GlanceModifier.fillMaxWidth()) {
                 val badgeStyle = TextStyle(
                     color = ColorProvider(colors.textSecondary, colors.textSecondary),
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
                 )
                 val badgePadding = GlanceModifier.padding(8.dp, 4.dp)
                 val lessonNumberBadgeModifier = GlanceModifier.cornerRadius(16.dp).width(24.dp)
                 val roomBadgeModifier = GlanceModifier.cornerRadius(16.dp).width(roomBadgeWidthDp.dp)
 
-                Row(modifier = GlanceModifier.width(226.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = GlanceModifier.width(subjectColumnWidthDp.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     if (lesson.lessonNumber != null) {
                         Box(
                             modifier = lessonNumberBadgeModifier.background(bgColor),
@@ -79,12 +85,14 @@ fun LessonCard(
                     }
                     // TODO: Add subject icons
                     Text(
-                        lesson.name,
+                        text = lesson.name,
                         style = TextStyle(
                             color = ColorProvider(colors.textPrimary, colors.textPrimary),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold
                         ),
+                        maxLines = 1,
+                        modifier = GlanceModifier.fillMaxWidth(),
                     )
                 }
 
@@ -98,15 +106,18 @@ fun LessonCard(
                         ),
                     )
                     Spacer(modifier = GlanceModifier.width(8.dp))
-                    val roomName = (lesson.roomName ?: "N/A").take(5)
+                    val roomName = lesson.roomName ?: "N/A"
                     Box(
                         modifier = roomBadgeModifier.background(colors.a15p),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            roomName,
+                            text = roomName,
                             style = badgeStyle,
-                            modifier = GlanceModifier.padding(4.dp, 4.dp),
+                            maxLines = 1,
+                            modifier = GlanceModifier
+                                .fillMaxWidth()
+                                .padding(4.dp, 4.dp),
                         )
                     }
                 }
