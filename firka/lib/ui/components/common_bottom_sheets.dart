@@ -908,7 +908,8 @@ Future<void> showHomeworkBottomSheet(
                                       Text(
                                         data.l10n.mark_as_done,
                                         style: appStyle.fonts.B_16SB.apply(
-                                          color: appStyle.colors.textSecondary,
+                                          color:
+                                              appStyle.colors.textPrimaryLight,
                                         ),
                                       ),
                                     ],
@@ -930,7 +931,8 @@ Future<void> showHomeworkBottomSheet(
                                       Text(
                                         data.l10n.mark_as_not_done,
                                         style: appStyle.fonts.B_16SB.apply(
-                                          color: appStyle.colors.textSecondary,
+                                          color:
+                                              appStyle.colors.textPrimaryLight,
                                         ),
                                       ),
                                     ],
