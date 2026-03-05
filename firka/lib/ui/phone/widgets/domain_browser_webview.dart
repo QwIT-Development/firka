@@ -1,50 +1,41 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:firka/data/models/app_settings_model.dart';
-import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/app/app_state.dart';
-import 'package:firka/app/initialization.dart';
+import 'package:firka/core/state/firka_state.dart';
+import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:isar_community/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import 'package:firka/services/watch_sync_helper.dart';
-import 'package:firka/api/consts.dart';
-import 'package:firka/api/token_grant.dart';
-import 'package:firka/data/models/token_model.dart';
-import 'package:firka/core/state/firka_state.dart';
-import 'package:firka/core/settings.dart';
-import 'package:firka/ui/theme/style.dart';
+/// Lightweight in-app browser used outside the login flow (e.g. privacy policy).
+///
+/// This deliberately contains only generic WebView behaviour, keeping all
+/// login/token handling inside `login_webview.dart`.
+class DomainBrowserWebviewWidget extends StatefulWidget {
+  final AppInitialization? data;
+  final String? url;
 
-class LoginWebviewWidget extends StatefulWidget {
-  final AppInitialization data;
-  final String? username;
-  final String? schoolId;
-
-  const LoginWebviewWidget(
-    this.data, {
+  const DomainBrowserWebviewWidget({
     super.key,
-    this.username,
-    this.schoolId,
+    this.data,
+    this.url,
   });
 
   @override
-  State<LoginWebviewWidget> createState() => _LoginWebviewWidgetState();
+  State<DomainBrowserWebviewWidget> createState() =>
+      _DomainBrowserWebviewWidgetState();
 }
 
-class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
+class _DomainBrowserWebviewWidgetState
+    extends FirkaState<DomainBrowserWebviewWidget>
     with TickerProviderStateMixin {
   late WebViewController _webViewController;
   bool _isLoading = true;
   AnimationController? _fadeAnimationController;
   Animation<double>? _fadeAnimation;
-  late String _displayHost;
-  late String _displayPath;
 
   @override
   void initState() {
@@ -60,29 +51,16 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
       end: 0.0,
     ).animate(_fadeAnimationController!);
 
-    var loginUrl = KretaEndpoints.kretaLoginUrl;
-
-    if (widget.username != null && widget.schoolId != null) {
-      loginUrl = KretaEndpoints.kretaLoginUrlRefresh(
-        widget.username!,
-        widget.schoolId!,
-      );
-    }
-
-    final trimmed = loginUrl.replaceFirst(RegExp(r'^https?://'), '');
-    final parts = trimmed.split('/');
-    _displayHost = parts.isNotEmpty ? parts.first : trimmed;
-    _displayPath = parts.length > 1 ? '/${parts.sublist(1).join('/')}' : '';
-
-    logger.info("Using loginUrl: $loginUrl");
+    assert(widget.data != null && widget.url != null,
+        'DomainBrowserWebviewWidget requires non-null data and url');
 
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(Uri.parse(loginUrl))
+      ..loadRequest(Uri.parse(widget.url!))
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (String url) {
-            Timer(const Duration(milliseconds: 500), () {
+            Timer(const Duration(milliseconds: 300), () {
               if (mounted) {
                 setState(() {
                   _isLoading = false;
@@ -99,96 +77,6 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
             });
             _fadeAnimationController?.reset();
           },
-          onNavigationRequest: (NavigationRequest request) async {
-            var uri = Uri.parse(request.url);
-
-            if (uri.path == "/ellenorzo-student/prod/oauthredirect") {
-              var code = uri.queryParameters["code"]!;
-
-              try {
-                var isar = widget.data.isar;
-                var resp = await getAccessToken(code);
-
-                logger.info("getAccessToken(): $resp");
-
-                var tokenModel = TokenModel.fromResp(resp);
-
-                final accountPicker =
-                    (widget.data.settings.group(
-                          "profile_settings",
-                        )["e_kreta_account_picker"]
-                        as SettingsKretenAccountPicker);
-
-                var tokenId = 0;
-                var om = 0;
-                await isar.writeTxn(() async {
-                  om = await isar.tokenModels.put(tokenModel);
-                });
-
-                widget.data.tokens = await isar.tokenModels.where().findAll();
-                for (var i = 0; i < widget.data.tokens.length; i++) {
-                  if (widget.data.tokens[i].studentIdNorm == om) {
-                    tokenId = i;
-                    break;
-                  }
-                }
-
-                await isar.writeTxn(() async {
-                  accountPicker.accountIndex = tokenId;
-                  await accountPicker.save(widget.data.isar.appSettingsModels);
-                });
-
-                await accountPicker.postUpdate();
-
-                if (Platform.isIOS) {
-                  final watchInstalled =
-                      await WatchSyncHelper.isWatchAppInstalled();
-                  if (watchInstalled) {
-                    try {
-                      await WatchSyncHelper.saveTokenToiCloud(tokenModel);
-                    } catch (_) {}
-
-                    try {
-                      await WatchSyncHelper.sendTokenToWatch();
-                    } catch (_) {
-                      // Watch may be unavailable, ignore
-                    }
-                  }
-                }
-
-                if (!mounted) return NavigationDecision.prevent;
-
-                widget.data.reauthCubit?.clear();
-                if (Platform.isIOS) {
-                  LiveActivityService.clearTokenExpiration();
-                }
-
-                await initializeApp();
-
-                if (!mounted) return NavigationDecision.prevent;
-
-                if (mounted) {
-                  Navigator.of(context).pop();
-                  appRouter?.go('/home');
-                }
-              } catch (ex) {
-                if (ex is Error) {
-                  logger.shout(
-                    "oauthredirect failed:",
-                    ex.toString(),
-                    ex.stackTrace,
-                  );
-                } else {
-                  logger.shout("oauthredirect failed:", ex.toString());
-                }
-                appRouter?.go('/error', extra: ex.toString());
-              }
-
-              return NavigationDecision.prevent;
-            }
-
-            return NavigationDecision.navigate;
-          },
         ),
       );
   }
@@ -201,11 +89,22 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.data == null || widget.url == null) {
+      return const SizedBox.shrink();
+    }
+
+    final data = widget.data!;
     final mediaQuery = MediaQuery.of(context);
     final safePadding = mediaQuery.padding;
+    final displayUrl = (widget.url ?? '').replaceFirst(RegExp(r'^https?://'), '');
+    final displayParts = displayUrl.split('/');
+    final host = displayParts.isNotEmpty ? displayParts.first : displayUrl;
+    final path = displayParts.length > 1
+        ? '/${displayParts.sublist(1).join('/')}'
+        : '';
 
     return Material(
-      color: appStyle.colors.background, //why was this card? :sob:
+      color: appStyle.colors.background,
       child: Padding(
         padding: EdgeInsets.only(
           top: 61 + safePadding.top,
@@ -229,7 +128,8 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    widget.data.l10n.runningInDomainBrowser,
+                    widget.data?.l10n.runningInDomainBrowser ??
+                        'Domain Browser',
                     style: appStyle.fonts.B_16R.copyWith(
                       color: appStyle.colors.textPrimary,
                     ),
@@ -258,7 +158,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                       color: appStyle.colors.accent,
                       size: 16,
                     ),
-                  ),
+                    ),
                 ),
               ],
             ),
@@ -286,8 +186,8 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                             opacity: _isLoading
                                 ? 1.0
                                 : _fadeAnimationController!.isAnimating
-                                ? _fadeAnimation!.value
-                                : 0.0,
+                                    ? _fadeAnimation!.value
+                                    : 0.0,
                             duration: const Duration(milliseconds: 500),
                             child: Container(
                               color: appStyle.colors.background,
@@ -322,14 +222,14 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                         alignment: Alignment.centerLeft,
                         child: RichText(
                           text: TextSpan(
-                            text: _displayHost,
+                            text: host,
                             style: appStyle.fonts.B_14R.copyWith(
                               fontSize: 16,
                               color: appStyle.colors.textPrimary,
                             ),
                             children: [
                               TextSpan(
-                                text: _displayPath,
+                                text: path,
                                 style: appStyle.fonts.B_14R.copyWith(
                                   fontSize: 16,
                                   color: appStyle.colors.textTeritary ??

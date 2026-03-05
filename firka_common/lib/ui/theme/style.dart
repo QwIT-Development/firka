@@ -56,6 +56,7 @@ class FirkaColors {
   Color textPrimary;
   Color textSecondary;
   Color textTertiary;
+  Color? textTeritary;
 
   Color textPrimaryLight;
   Color textSecondaryLight;
@@ -97,6 +98,7 @@ class FirkaColors {
     required this.textPrimary,
     required this.textSecondary,
     required this.textTertiary,
+    this.textTeritary,
     required this.textPrimaryLight,
     required this.textSecondaryLight,
     required this.textTertiaryLight,
@@ -238,6 +240,7 @@ final FirkaStyle lightStyle = FirkaStyle(
     textPrimary: Color(0xFF394C0A),
     textSecondary: Color(0xCC394C0A),
     textTertiary: Color(0x80394C0A),
+    textTeritary: Color(0xFF97A474),
     textPrimaryLight: Color(0xFF394C0A),
     textSecondaryLight: Color(0xCC394C0A),
     textTertiaryLight: Color(0x80394C0A),
@@ -277,6 +280,7 @@ final FirkaStyle darkStyle = FirkaStyle(
     textPrimary: Color(0xFFEAF7CC),
     textSecondary: Color(0xB3EAF7CC),
     textTertiary: Color(0x80EAF7CC),
+    textTeritary: Color(0xFF97A474),
     textPrimaryLight: Color(0xFF394C0A),
     textSecondaryLight: Color(0xCC394C0A),
     textTertiaryLight: Color(0x80394C0A),

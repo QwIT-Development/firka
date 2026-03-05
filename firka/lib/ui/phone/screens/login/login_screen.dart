@@ -5,6 +5,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firka/ui/phone/widgets/domain_browser_webview.dart';
 import 'package:firka/ui/phone/widgets/login_webview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -12,7 +13,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:vibration/vibration.dart';
 
 import 'package:firka/core/bloc/theme_cubit.dart';
@@ -21,9 +21,8 @@ import 'package:firka/core/image_preloader.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/shared/delayed_spinner.dart';
 
-const String _privacyUrlHungarian =
-    'https://github.com/QwIT-Development/privacy-policy/blob/master/README.md';
-const String _privacyUrlOther = 'https://firka.app/privacy';
+const String _privacyUrlHungarian = 'https://firka.app/privacy-policy';
+const String _privacyUrlOther = 'https://firka.app/privacy-policy';
 
 class LoginScreen extends StatefulWidget {
   final AppInitialization data;
@@ -45,17 +44,27 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
   }
 
   String _getPrivacyPolicyUrl() {
-    final locale = Localizations.localeOf(context).languageCode;
-    return locale == 'hu' ? _privacyUrlHungarian : _privacyUrlOther;
+    return  "https://firka.app/privacy";
   }
 
-  Future<void> _launchPrivacyPolicy() async {
+  Future<void> _showPrivacyPolicyWebview() async {
     final url = _getPrivacyPolicyUrl();
-    try {
-      await launchUrl(Uri.parse(url));
-    } catch (e) {
-      logger.shout('LoginScreen: Error launching privacy policy URL: $e');
-    }
+    if (!mounted) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: false,
+      builder: (BuildContext context) {
+        return SizedBox(
+          height: MediaQuery.sizeOf(context).height,
+          child: DomainBrowserWebviewWidget(
+            data: widget.data,
+            url: url,
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _preloadImages() async {
@@ -513,7 +522,7 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
                     ),
                     const SizedBox(height: 20),
                     GestureDetector(
-                      onTap: _launchPrivacyPolicy,
+                      onTap: _showPrivacyPolicyWebview,
                       child: Text(
                         widget.data.l10n.privacyLabel,
                         textAlign: TextAlign.center,
