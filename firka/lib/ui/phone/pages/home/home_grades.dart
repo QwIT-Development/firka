@@ -183,7 +183,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
           );
         }
 
-        if (!avg.isNaN) {
+        if (!avg.isNaN && avg > 0) {
           subjectCount++;
           subjectAvg += avg;
           final rounding = widget.data.settings
@@ -324,7 +324,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                   FirkaCard(
                     left: [
                       Text(
-                        "Összesített átlag",
+                        widget.data.l10n.overall_avg,
                         style: appStyle.fonts.B_16SB.apply(
                           color: appStyle.colors.textPrimary,
                         ),

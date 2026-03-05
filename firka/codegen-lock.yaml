@@ -8,8 +8,8 @@ icons:
 l10n:
   "l10n.yml": "a57bc304cac4a2b0235593586f17f400a5165d67fc9aadeaa11893cfa36ee082"
   "lib/l10n/app_de.arb": "ecfbf13bd33be9d27a2b54bfd8fb61e46c1a1dce905869d3f30cd05b4aecf258"
-  "lib/l10n/app_en.arb": "8bb0064984deb02eefaec24c13ee019eb38758e115b678ce85335fd4d1b6b6d9"
-  "lib/l10n/app_hu.arb": "2d2c568a3767a5b0bcfde7d27f221fd74b653256bbe41789756c78422a159e4d"
+  "lib/l10n/app_en.arb": "7c43928f67b5b735283da04e3741f1afa2e9d41cdeb2e91c740e77fc84e7f046"
+  "lib/l10n/app_hu.arb": "696a1ea2e86be364e9c815e5f739d3a2f5f3da9c05066084d9d26defe5018e2c"
 isar:
   "lib/data/models/app_settings_model.dart": "5eb5af345f1347f104257f0999763650fe2673f9da1754bd12d3f756fe5c9723"
   "lib/data/models/generic_cache_model.dart": "79151d0467fb5d40c532eaaa08ad7c7e24a34304199280fbf49cf6e5adcce6bc"
