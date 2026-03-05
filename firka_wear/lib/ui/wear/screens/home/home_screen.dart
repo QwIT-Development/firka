@@ -296,10 +296,10 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
           if (nextLessonText.length > 10) {
             if (nextLesson.roomName!.length > 10) {
               nextLessonText =
-                  "${nextLesson.name}, ${nextLesson.roomName!.substring(0, 6)}...";
+                  "${nextLesson.name}, ${nextLesson.roomName!.substring(0, min(6, nextLesson.roomName!.length))}...";
             } else {
               nextLessonText =
-                  "${nextLesson.name.substring(0, 10)}..., ${nextLesson.roomName}";
+                  "${nextLesson.name.substring(0, min(10, nextLesson.name.length))}..., ${nextLesson.roomName}";
             }
           }
 
@@ -320,11 +320,12 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
             "${currentLesson.name}, ${currentLesson.roomName}";
         if (currentLessonText.length > 10) {
           if (currentLesson.roomName!.length > 10) {
+            final room = currentLesson.roomName!;
             currentLessonText =
-                "${currentLesson.name}, ${currentLesson.roomName?.substring(0, 6) ?? ''}...";
+                "${currentLesson.name}, ${room.substring(0, min(6, room.length))}...";
           } else {
             currentLessonText =
-                "${currentLesson.name.substring(0, 10)}..., ${currentLesson.roomName}";
+                "${currentLesson.name.substring(0, min(10, currentLesson.name.length))}..., ${currentLesson.roomName}";
           }
         }
 
