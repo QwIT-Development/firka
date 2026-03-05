@@ -108,11 +108,46 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
       var subjectAvg = 0.00;
       var subjectCount = 0;
       var subjectAvgRounded = 0.00;
-      final summaryAvg2 = calculateAverage(grades!.response!);
+      final allGrades = grades!.response!;
+      final bySubject = <String, List<Grade>>{};
+      for (final g in allGrades) {
+        bySubject.putIfAbsent(g.subject.uid, () => []).add(g);
+      }
+      final gradesForCalculation = <Grade>[];
+      for (final subjectGrades in bySubject.values) {
+        final feleviOrEvvegi = subjectGrades.where((g) {
+          final typeName = g.type.name?.toLowerCase() ?? '';
+          return typeName == 'felevi_jegy_ertekeles' ||
+              typeName == 'evvegi_jegy_ertekeles';
+        }).toList();
+        final hasOtherType = subjectGrades.any((g) {
+          final typeName = g.type.name?.toLowerCase() ?? '';
+          return typeName != 'felevi_jegy_ertekeles' &&
+              typeName != 'evvegi_jegy_ertekeles';
+        });
+        if (!hasOtherType && feleviOrEvvegi.isNotEmpty) {
+          final withValue = feleviOrEvvegi
+              .where((g) => g.numericValue != null && g.numericValue! > 0)
+              .toList();
+          if (withValue.isNotEmpty) {
+            withValue.sort((a, b) => a.recordDate.compareTo(b.recordDate));
+            gradesForCalculation.add(withValue.last);
+          }
+        } else {
+          gradesForCalculation.addAll(
+            subjectGrades.where((g) => !shouldIgnoreInAverage(g)),
+          );
+        }
+      }
+
+      final summaryAvg2 = calculateAverage(
+        gradesForCalculation,
+        applyIgnoreFilter: false,
+      );
       final List<Subject> subjects = List<Subject>.empty(growable: true);
       final List<Widget> gradeCards = [];
 
-      for (var grade in grades!.response!) {
+      for (var grade in allGrades) {
         if (subjects.where((s) => s.uid == grade.subject.uid).isEmpty) {
           subjects.add(grade.subject);
         }
@@ -140,19 +175,39 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
       subjects.sort((s1, s2) => s1.name.compareTo(s2.name));
 
       for (var subject in subjects) {
-        final subjectGrades = grades!.response!
+        final subjectGrades = allGrades
             .where((g) => g.subject.uid == subject.uid)
             .toList();
 
         double avg = double.nan;
         if (subjectGrades.isNotEmpty) {
-          avg = subjectGrades.getAverageBySubject(subject);
+          final feleviOrEvvegi = subjectGrades.where((g) {
+            final typeName = g.type.name?.toLowerCase() ?? '';
+            return typeName == 'felevi_jegy_ertekeles' ||
+                typeName == 'evvegi_jegy_ertekeles';
+          }).toList();
+          final hasOtherType = subjectGrades.any((g) {
+            final typeName = g.type.name?.toLowerCase() ?? '';
+            return typeName != 'felevi_jegy_ertekeles' &&
+                typeName != 'evvegi_jegy_ertekeles';
+          });
+          if (!hasOtherType && feleviOrEvvegi.isNotEmpty) {
+            final withValue = feleviOrEvvegi
+                .where((g) => g.numericValue != null && g.numericValue! > 0)
+                .toList();
+            if (withValue.isNotEmpty) {
+              withValue.sort((a, b) => a.recordDate.compareTo(b.recordDate));
+              avg = withValue.last.numericValue!.toDouble();
+            }
+          } else {
+            avg = subjectGrades.getAverageBySubject(subject);
+          }
         }
 
         if (avg.isNaN) {
           gradeCards.add(
             GestureDetector(
-              child: GradeSmallCard(grades!.response!, subject),
+              child: GradeSmallCard(allGrades, subject),
               onTap: () {
                 activeSubjectUid = subject.uid;
                 subjectName = subject.name;
@@ -168,7 +223,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
         } else {
           gradeCards.add(
             GestureDetector(
-              child: GradeSmallCard(grades!.response!, subject),
+              child: GradeSmallCard(allGrades, subject),
               onTap: () {
                 activeSubjectUid = subject.uid;
                 subjectName = subject.name;
@@ -235,10 +290,10 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                 ),
               ],
             ),
-            GradeChartWithInteraction(grades: grades?.response ?? []),
+            GradeChartWithInteraction(grades: gradesForCalculation),
             SizedBox(height: 2),
             GradeSummaryBar(
-              grades: grades?.response ?? [],
+              grades: gradesForCalculation,
               l10n: widget.data.l10n,
             ),
             SizedBox(height: 12),

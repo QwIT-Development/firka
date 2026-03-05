@@ -94,37 +94,47 @@ Color getGradeColor(
 
 extension GradeListExtension on List<Grade> {
   double getAverageBySubject(Subject subject) {
+    final subjectGrades = where((g) => g.subject.uid == subject.uid).toList();
+    if (subjectGrades.isEmpty) return double.nan;
+
+    final feleviOrEvvegi = subjectGrades.where((g) {
+      final typeName = g.type.name?.toLowerCase() ?? '';
+      return typeName == 'felevi_jegy_ertekeles' ||
+          typeName == 'evvegi_jegy_ertekeles';
+    }).toList();
+    final hasOtherType = subjectGrades.any((g) {
+      final typeName = g.type.name?.toLowerCase() ?? '';
+      return typeName != 'felevi_jegy_ertekeles' &&
+          typeName != 'evvegi_jegy_ertekeles';
+    });
+
+    if (!hasOtherType && feleviOrEvvegi.isNotEmpty) {
+      final withValue = feleviOrEvvegi
+          .where((g) => g.numericValue != null && g.numericValue! > 0)
+          .toList();
+      if (withValue.isEmpty) return double.nan;
+      withValue.sort((a, b) => a.recordDate.compareTo(b.recordDate));
+      return withValue.last.numericValue!.toDouble();
+    }
+
     var weightTotal = 0.00;
     var sum = 0.00;
-
-    for (var grade in this) {
-      if (grade.subject.uid == subject.uid) {
-        final valueTypeName = grade.valueType.name?.toLowerCase() ?? '';
-        final isPercentage =
-            valueTypeName.contains('szazalek') ||
-            valueTypeName.contains('percent');
-
-        final typeName = grade.type.name?.toLowerCase() ?? '';
-        final isHalfYear = typeName == 'felevi_jegy_ertekeles';
-        final isEndYear = typeName == 'evvegi_jegy_ertekeles';
-
-        if (isPercentage || isHalfYear || isEndYear) {
-          continue;
-        }
-
-        if (grade.numericValue != null) {
-          var weight = (grade.weightPercentage ?? 100) / 100.0;
-          weightTotal += weight;
-
-          sum += grade.numericValue! * weight;
-        }
+    for (var grade in subjectGrades) {
+      final valueTypeName = grade.valueType.name?.toLowerCase() ?? '';
+      final isPercentage =
+          valueTypeName.contains('szazalek') ||
+          valueTypeName.contains('percent');
+      final typeName = grade.type.name?.toLowerCase() ?? '';
+      final isHalfYear = typeName == 'felevi_jegy_ertekeles';
+      final isEndYear = typeName == 'evvegi_jegy_ertekeles';
+      if (isPercentage || isHalfYear || isEndYear) continue;
+      if (grade.numericValue != null) {
+        var weight = (grade.weightPercentage ?? 100) / 100.0;
+        weightTotal += weight;
+        sum += grade.numericValue! * weight;
       }
     }
-
-    if (weightTotal == 0) {
-      return double.nan;
-    }
-
+    if (weightTotal == 0) return double.nan;
     return sum / weightTotal;
   }
 }

@@ -5,7 +5,7 @@ bool _isPercentageGrade(Grade grade) {
   return name.contains('szazalek') || name.contains('percent');
 }
 
-bool _shouldIgnoreInAverage(Grade grade) {
+bool shouldIgnoreInAverage(Grade grade) {
   if (_isPercentageGrade(grade)) {
     return true;
   }
@@ -19,12 +19,24 @@ bool _shouldIgnoreInAverage(Grade grade) {
   return false;
 }
 
-double calculateAverage(List<Grade> sortedGrades) {
+double calculateAverage(List<Grade> sortedGrades, {bool applyIgnoreFilter = true}) {
   double totalWeight = 0.0;
   double weightedSum = 0.0;
 
+  if (applyIgnoreFilter &&
+      sortedGrades.isNotEmpty &&
+      sortedGrades.where((g) => !shouldIgnoreInAverage(g)).isEmpty) {
+    final grades = sortedGrades.where(
+      (g) => g.numericValue != null && g.numericValue! > 0,
+    );
+
+    if (grades.isNotEmpty) {
+      return grades.last.numericValue!.toDouble();
+    }
+  }
+
   for (final grade in sortedGrades) {
-    if (_shouldIgnoreInAverage(grade)) continue;
+    if (applyIgnoreFilter && shouldIgnoreInAverage(grade)) continue;
 
     final value = grade.numericValue;
     final weight = grade.weightPercentage;
