@@ -146,7 +146,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
 
         double avg = double.nan;
         if (subjectGrades.isNotEmpty) {
-          avg = grades!.response!.getAverageBySubject(subject);
+          avg = subjectGrades.getAverageBySubject(subject);
         }
 
         if (avg.isNaN) {

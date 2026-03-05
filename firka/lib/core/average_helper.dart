@@ -5,12 +5,26 @@ bool _isPercentageGrade(Grade grade) {
   return name.contains('szazalek') || name.contains('percent');
 }
 
+bool _shouldIgnoreInAverage(Grade grade) {
+  if (_isPercentageGrade(grade)) {
+    return true;
+  }
+
+  final typeName = grade.type.name?.toLowerCase() ?? '';
+  if (typeName == 'felevi_jegy_ertekeles' ||
+      typeName == 'evvegi_jegy_ertekeles') {
+    return true;
+  }
+
+  return false;
+}
+
 double calculateAverage(List<Grade> sortedGrades) {
   double totalWeight = 0.0;
   double weightedSum = 0.0;
 
   for (final grade in sortedGrades) {
-    if (_isPercentageGrade(grade)) continue;
+    if (_shouldIgnoreInAverage(grade)) continue;
 
     final value = grade.numericValue;
     final weight = grade.weightPercentage;

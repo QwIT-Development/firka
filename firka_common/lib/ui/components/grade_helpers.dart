@@ -65,9 +65,22 @@ Color getGradeColor(
 }
 
 (int total, List<int> countsByGrade) getGradeDistribution(List<Grade> grades) {
-  final filtered = grades
-      .where((g) => g.type.name != "felevi_jegy_ertekeles")
-      .toList();
+  final filtered = grades.where((g) {
+    final typeName = g.type.name?.toLowerCase() ?? '';
+    if (typeName == 'felevi_jegy_ertekeles' ||
+        typeName == 'evvegi_jegy_ertekeles') {
+      return false;
+    }
+
+    final valueTypeName = g.valueType.name?.toLowerCase() ?? '';
+    final isPercentage =
+        valueTypeName.contains('szazalek') || valueTypeName.contains('percent');
+    if (isPercentage) {
+      return false;
+    }
+
+    return true;
+  }).toList();
   final counts = [0, 0, 0, 0, 0];
   for (final g in filtered) {
     if (g.numericValue == null) continue;
@@ -86,11 +99,16 @@ extension GradeListExtension on List<Grade> {
 
     for (var grade in this) {
       if (grade.subject.uid == subject.uid) {
-        final name = grade.valueType.name?.toLowerCase() ?? '';
+        final valueTypeName = grade.valueType.name?.toLowerCase() ?? '';
         final isPercentage =
-            name.contains('szazalek') || name.contains('percent');
+            valueTypeName.contains('szazalek') ||
+            valueTypeName.contains('percent');
 
-        if (isPercentage) {
+        final typeName = grade.type.name?.toLowerCase() ?? '';
+        final isHalfYear = typeName == 'felevi_jegy_ertekeles';
+        final isEndYear = typeName == 'evvegi_jegy_ertekeles';
+
+        if (isPercentage || isHalfYear || isEndYear) {
           continue;
         }
 
