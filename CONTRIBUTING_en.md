@@ -1,41 +1,24 @@
-# Installing flutter
+# Installing Flutter
 
-To build firka you will have to use our custom Flutter fork,
-and to make a release build you will have to use our custom
-flutter engine.
-The documentation for installing flutter can be found [here](https://docs.flutter.dev/get-started/install).
-
-Instead of downloading the regular flutter zip, clone it from ([https://git.firka.app/firka/flutter/](https://git.firka.app/firka/flutter/)).
-
-# Brotli
-
-Firka uses brotli to compress libflutter during the build process to make the app smaller,
-so building Firka requires you to have brotli in your path
-
-## Windows
-- Download `brotli-x64-windows-static.zip` from [google/brotli](https://github.com/google/brotli/releases/latest)
-- Extract it to somewhere like C:\Users\\<username>\dev\brotli
-- Add the directory (ex. C:\Users\\<username>\dev\brotli) to your PATH
-- Don't forget to restart your IDE or terminal sessions for the PATH variable to update
-
-## Linux/MacOS
-Install it using your distro's package manager
+Flutter installation documentation can be found [here](https://docs.flutter.dev/get-started/install).
+The project currently uses Flutter SDK 3.41.2.
 
 # Keystore
 
-[Secrets docs](secrets/README_en.md)
+[Secrets documentation](secrets/README.md)
 
-# Flutter l10n
+# Generating files
 
-Generating flutter l10n files
+Generating Flutter l10n and other files
 
 ```shell
-flutter gen-l10n --template-arb-file app_hu.arb
+$ cd firka # or firka_wear
+$ dart run scripts/codegen.dart
 ```
 
 # Android debug build
 
-The dev build doesn't require using a custom keystore
+The dev build does not require using a keystore
 ```shell
 $ cd firka
 $ flutter build apk --debug --target-platform android-arm,android-arm64,android-x64
@@ -43,20 +26,10 @@ $ flutter build apk --debug --target-platform android-arm,android-arm64,android-
 
 # Android release build
 
-The release build requires using a custom keystore and our custom flutter fork
+The release build requires using a keystore.
 
-## Setting up our flutter engine fork
-
-```shell
-$ git clone https://git.firka.app/firka/flutter
-$ cd flutter
-$ . dev/tools/envsetup.sh
-$ gclient sync -D
-$ ./dev/tools/build_release.sh
-```
-
-## Building the release apk
+## Building the release appbundle (firka and firka_wear)
 
 ```shell
-$ ./tools/linux/build_apk.sh main
+$ ./build.sh
 ```

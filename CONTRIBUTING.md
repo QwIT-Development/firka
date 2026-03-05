@@ -1,35 +1,19 @@
 # Flutter telepítése
 
-A firka androidra való lebuildeléséhez kötelező a saját Flutter fork használata, illetve minden más fajta --release buildhez is.
-
 A Flutter telepítéséhez a dokumentáció [itt](https://docs.flutter.dev/get-started/install) található.
-
-A Flutter zip letöltése helyett a custom engine-t cloneold le ([https://git.firka.app/firka/flutter/](https://git.firka.app/firka/flutter/))
-
-# Brotli
-
-A firka brotlival compresseli a libflutter-t buildelés közben ezért szükséges a projekt
-buildeléséhez hogy a brotli a PATH-ben legyen
-
-## Windows
-- Töltsd le a `brotli-x64-windows-static.zip`-et a [google/brotli github repoból](https://github.com/google/brotli/releases/latest)
-- Csomagold ki valahol (pl. C:\Users\\<username>\dev\brotli)
-- Add hozzá a mappát ahova kicsomagoltad (C:\Users\\<username>\dev\brotli) a PATH-hez
-- Ne felejtsd el újraindítani az IDE-det illetve parancssorodat utánna hogy frissüljön a PATH
-
-## Linux/MacOS
-Telepítsd fel a brotli packaget a distro-d package managerével
+A projekt jelenleg a 3.41.2-es Flutter SDK-t használja.
 
 # Keystore
 
 [Secrets dokumentáció](secrets/README.md)
 
-# Flutter l10n
+# Fileok generálása
 
-Flutter l10n fileok generálása
+Flutter l10n és egyéb fileok generálása
 
 ```shell
-Flutter gen-l10n --template-arb-file app_hu.arb
+$ cd firka # vagy firka_wear
+$ dart run scripts/codegen.dart
 ```
 
 # Android debug build
@@ -42,20 +26,10 @@ $ Flutter build apk --debug --target-platform android-arm,android-arm64,android-
 
 # Android release build
 
-A release buildhez közelező egy keystore használata, illetve a saját Flutter engineünk használata.
+A release buildhez közelező egy keystore használata.
 
-## Custom Flutter engine setupolása
-
-```shell
-$ git clone https://git.firka.app/firka/flutter
-$ cd flutter
-$ . dev/tools/envsetup.sh
-$ gclient sync -D
-$ ./dev/tools/build_release.sh
-```
-
-## Release apk buildelése
+## Release appbundle buildelése (firka és firka_wear)
 
 ```shell
-$ ./tools/linux/build_apk.sh main
+$ ./build.sh
 ```
