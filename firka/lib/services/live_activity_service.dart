@@ -1137,7 +1137,7 @@ class LiveActivityService {
         await _saveLastUpdate();
 
         if (liveActivityEnabled) {
-          await _startPlaceholderActivity(allLessons, studentName);
+          await _startLiveActivityWithCurrentState(allLessons, studentName);
         }
 
         await _startTimetableMonitoring(
