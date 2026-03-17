@@ -178,6 +178,21 @@ class LiveActivityMethodChannelManager: NSObject {
                         }
                     }
                 }
+
+                // Monitor activity state for user dismissal (swipe away)
+                Task {
+                    for await state in newActivity.activityStateUpdates {
+                        if state == .dismissed || state == .ended {
+                            DispatchQueue.main.async { [weak self] in
+                                self?.channel.invokeMethod("onActivityDismissed", arguments: [
+                                    "activityId": activityId
+                                ])
+                            }
+                            break
+                        }
+                    }
+                }
+
                 result(activityId)
             } catch {
                 result(FlutterError(

@@ -328,6 +328,7 @@ class LiveActivityService {
       await LiveActivityManager.initialize();
 
       LiveActivityManager.setOnPushTokenReceived(_onPushTokenReceived);
+      LiveActivityManager.setOnActivityDismissed(_onActivityDismissed);
 
       final deviceToken =
           await LiveActivityManager.registerForPushNotifications();
@@ -781,6 +782,19 @@ class LiveActivityService {
       _stopTimetableMonitoring();
     } catch (e) {
       _logger.severe('Error handling token expiration for LiveActivity: $e');
+    }
+  }
+
+  /// Handle LiveActivity dismissed by user (swiped away)
+  static Future<void> _onActivityDismissed(String activityId) async {
+    _logger.info('LiveActivity dismissed by user, unregistering from backend...');
+    try {
+      await _backendClient.unregisterDevice();
+      _stopTimetableMonitoring();
+      await _clearCache();
+      _logger.info('Device unregistered after activity dismissal');
+    } catch (e) {
+      _logger.severe('Error handling activity dismissal: $e');
     }
   }
 
@@ -1517,94 +1531,112 @@ class LiveActivityService {
     await checkAndUpdateTimetable(client: client, studentName: studentName);
   }
 
-  /// Starts a minimal placeholder activity shell - backend will update with real data
-  static Future<void> _startPlaceholderActivity(
+  /// Start Live Activity with current timetable state (no placeholder)
+  static Future<void> _startLiveActivityWithCurrentState(
     List<Lesson> allLessons,
     String studentName, {
     bool isBackground = false,
   }) async {
     if (isBackground) {
       _logger.info(
-        '_startPlaceholderActivity: Called from background context, skipping to preserve existing activity',
+        '_startLiveActivityWithCurrentState: Called from background, skipping',
       );
       return;
     }
 
-    // Always end existing activities to ensure fresh token (8-hour expiration)
-    final activeActivities = await LiveActivityManager.getActiveActivities();
-    if (activeActivities.isNotEmpty) {
-      _logger.info(
-        '_startPlaceholderActivity: Ending existing activities before creating new one',
-      );
-      await LiveActivityManager.endAllActivities();
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
-
-    _logger.info(
-      '_startPlaceholderActivity: Creating minimal loading shell, backend will update.',
-    );
-
     final now = DateTime.now();
 
-    Lesson placeholderLesson;
-    if (allLessons.isNotEmpty) {
-      final template = allLessons.first;
-      placeholderLesson = Lesson(
-        uid: 'loading-placeholder',
-        date: now.toIso8601String(),
-        start: now,
-        end: now.add(const Duration(minutes: 1)),
-        name: 'Betöltés...',
-        type: template.type,
-        state: template.state,
-        canStudentEditHomework: false,
-        isHomeworkComplete: false,
-        attachments: [],
-        isDigitalLesson: false,
-        digitalSupportDeviceTypeList: [],
-        createdAt: now,
-        lastModifiedAt: now,
-      );
+    // Filter today's lessons
+    final todayLessons = allLessons.where((l) {
+      final lessonDate = DateTime.tryParse(l.date);
+      if (lessonDate == null) return false;
+      return lessonDate.year == now.year &&
+          lessonDate.month == now.month &&
+          lessonDate.day == now.day;
+    }).where((l) {
+      final isCancelled =
+          l.state.name?.toLowerCase().contains('elmarad') ?? false;
+      final hasSubstitute = l.substituteTeacher != null;
+      return (!isCancelled || hasSubstitute) && l.name.isNotEmpty;
+    }).toList();
+
+    todayLessons.sort((a, b) => a.start.compareTo(b.start));
+
+    if (todayLessons.isEmpty) {
+      _logger.info('_startLiveActivityWithCurrentState: No lessons today, skipping');
+      return;
+    }
+
+    // Find current/next lesson
+    Lesson? currentLesson;
+    Lesson? nextLesson;
+    bool isBreak = false;
+    String mode = 'lesson';
+
+    // Find the lesson we're currently in
+    currentLesson = todayLessons.cast<Lesson?>().firstWhere(
+      (l) => l!.start.isBefore(now) && l.end.isAfter(now),
+      orElse: () => null,
+    );
+
+    if (currentLesson != null) {
+      // We're in a lesson
+      final currentIndex = todayLessons.indexOf(currentLesson);
+      nextLesson = currentIndex + 1 < todayLessons.length
+          ? todayLessons[currentIndex + 1]
+          : null;
+      mode = 'lesson';
     } else {
-      final emptyType = NameUidDesc(
-        uid: 'placeholder',
-        name: 'Placeholder',
-        description: null,
-      );
-      final emptyState = NameUidDesc(
-        uid: 'active',
-        name: 'Active',
-        description: null,
+      // We're in a break or before school
+      nextLesson = todayLessons.cast<Lesson?>().firstWhere(
+        (l) => l!.start.isAfter(now),
+        orElse: () => null,
       );
 
-      placeholderLesson = Lesson(
-        uid: 'loading-placeholder',
-        date: now.toIso8601String(),
-        start: now,
-        end: now.add(const Duration(minutes: 1)),
-        name: 'Betöltés...',
-        type: emptyType,
-        state: emptyState,
-        canStudentEditHomework: false,
-        isHomeworkComplete: false,
-        attachments: [],
-        isDigitalLesson: false,
-        digitalSupportDeviceTypeList: [],
-        createdAt: now,
-        lastModifiedAt: now,
+      if (nextLesson == null) {
+        // All lessons are done
+        _logger.info('_startLiveActivityWithCurrentState: All lessons done today');
+        return;
+      }
+
+      // Find the previous lesson (for break detection)
+      final prevLesson = todayLessons.cast<Lesson?>().lastWhere(
+        (l) => l!.end.isBefore(now) || l.end.isAtSameMomentAs(now),
+        orElse: () => null,
       );
+
+      if (prevLesson != null) {
+        // We're in a break between lessons
+        isBreak = true;
+        mode = 'break';
+        // Create a synthetic break "lesson" for display
+        currentLesson = nextLesson;
+      } else {
+        // Before first lesson
+        mode = 'beforeSchool';
+        currentLesson = nextLesson;
+        nextLesson = todayLessons.length > 1 ? todayLessons[1] : null;
+      }
+    }
+
+    // End existing activities
+    final activeActivities = await LiveActivityManager.getActiveActivities();
+    if (activeActivities.isNotEmpty) {
+      await LiveActivityManager.endAllActivities();
+      await Future.delayed(const Duration(milliseconds: 500));
     }
 
     await LiveActivityManager.startActivity(
       studentName: studentName,
       schoolName: 'Iskola',
-      currentLesson: placeholderLesson,
-      isBreak: false,
-      mode: 'loading',
+      currentLesson: currentLesson!,
+      nextLesson: nextLesson,
+      isBreak: isBreak,
+      mode: mode,
     );
 
     _logger.info(
-      '_startPlaceholderActivity: Placeholder created, waiting for backend update.',
+      '_startLiveActivityWithCurrentState: Activity started with mode=$mode, lesson=${currentLesson.name}',
     );
   }
 

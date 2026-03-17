@@ -13,6 +13,7 @@ class LiveActivityManager {
   static String? _activityId;
   static bool _isActivityActive = false;
   static Function(String activityId, String pushToken)? _onPushTokenReceived;
+  static Function(String activityId)? _onActivityDismissed;
 
   static Future<void> initialize() async {
     if (!Platform.isIOS) return;
@@ -57,6 +58,14 @@ class LiveActivityManager {
         );
         _onPushTokenReceived?.call(activityId, pushToken);
         break;
+      case 'onActivityDismissed':
+        final args = call.arguments as Map;
+        final activityId = args['activityId'] as String;
+        _logger.info('LiveActivity dismissed by user: $activityId');
+        _activityId = null;
+        _isActivityActive = false;
+        _onActivityDismissed?.call(activityId);
+        break;
       default:
         _logger.warning('Unknown method call from Swift: ${call.method}');
     }
@@ -66,6 +75,12 @@ class LiveActivityManager {
     Function(String activityId, String pushToken) callback,
   ) {
     _onPushTokenReceived = callback;
+  }
+
+  static void setOnActivityDismissed(
+    Function(String activityId) callback,
+  ) {
+    _onActivityDismissed = callback;
   }
 
   static Future<String?> getDeviceToken() async {
