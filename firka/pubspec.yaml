@@ -50,6 +50,7 @@ dependencies:
   flutter_physics: ^0.2.0
   url_launcher: ^6.3.2
   shared_preferences: ^2.3.4
+  uuid: ^4.0.0
   flutter_dotenv: ^5.2.1
   xml: ^6.6.1
   confetti: ^0.8.0

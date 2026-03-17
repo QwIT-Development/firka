@@ -1,113 +1,66 @@
 import 'package:dio/dio.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:logging/logging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-/// Client for communicating with the LiveActivity backend service
-/// This backend handles device tokens and timetable data for push notifications
+/// Client for communicating with the refilc-live-server backend.
+/// Handles device registration, schedule uploads, and unregistration
+/// for Live Activity push notifications via APNs.
 class LiveActivityBackendClient {
   static final Logger _logger = Logger('LiveActivityBackendClient');
+  static const String _deviceIdKey = 'live_activity_server_device_id';
 
   final Dio _dio;
 
   LiveActivityBackendClient({Dio? dio}) : _dio = dio ?? Dio() {
-    final baseUrl = dotenv.env['BACKEND_BASE_URL'];
-    final apiKey = dotenv.env['BACKEND_API_KEY'] ?? '';
-
-    _dio.options.baseUrl = baseUrl!;
+    final baseUrl = dotenv.env['LIVE_ACTIVITY_SERVER_URL'] ?? 'https://firka-la.devbeni.lol';
+    _dio.options.baseUrl = baseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 10);
     _dio.options.receiveTimeout = const Duration(seconds: 10);
     _dio.options.headers = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'x-api-key': apiKey,
     };
-
-    _logger.info('LiveActivity backend configured successfully!');
+    _logger.info('LiveActivity backend configured: $baseUrl');
   }
 
-  /// Register device token and upload timetable data
+  /// Get or create a persistent device ID (UUID).
+  /// This ID is used to identify the device on the server side.
+  static Future<String> getDeviceId() async {
+    final prefs = await SharedPreferences.getInstance();
+    var deviceId = prefs.getString(_deviceIdKey);
+    if (deviceId == null) {
+      deviceId = const Uuid().v4();
+      await prefs.setString(_deviceIdKey, deviceId);
+      _logger.info('Created new device ID: ${deviceId.substring(0, 8)}...');
+    }
+    return deviceId;
+  }
+
+  /// Register device with APNs token and settings.
+  /// Called when a Live Activity push token is received.
   Future<bool> registerDevice({
-    required String deviceToken,
-    required List<Lesson> timetable,
-    String? language,
-    double? bellDelay,
-    int? morningNotificationTime,
-    bool? morningNotificationEnabled,
-    bool? liveActivityEnabled,
+    required String apnsToken,
+    required String bundleId,
+    String liveActivityColor = '#3C6E47',
   }) async {
     try {
-      final lessonsData = timetable.map((lesson) {
-        DateTime validLastModified = lesson.lastModifiedAt;
-        if (validLastModified.year < 1900) {
-          validLastModified = lesson.start;
-        }
+      final deviceId = await getDeviceId();
+      final response = await _dio.post('/register', data: {
+        'device_id': deviceId,
+        'apns_token': apnsToken,
+        'bundle_id': bundleId,
+        'app_type': 'firka',
+        'settings': {
+          'live_activity_color': liveActivityColor,
+        },
+      });
 
-        return {
-          'uid': lesson.uid,
-          'date': lesson.date,
-          'startTime': lesson.start.toIso8601String(),
-          'endTime': lesson.end.toIso8601String(),
-          'name': lesson.name,
-          'lessonNumber': lesson.lessonNumber,
-          'teacher': lesson.teacher,
-          'theme': lesson.theme,
-          'roomName': lesson.roomName,
-          'isSubstitution': lesson.substituteTeacher != null,
-          'substituteTeacher': lesson.substituteTeacher,
-          'isCancelled':
-              lesson.state.name?.toLowerCase().contains('elmarad') ?? false,
-          'lastModified': validLastModified.toIso8601String(),
-        };
-      }).toList();
-
-      final requestData = {
-        'deviceToken': deviceToken,
-        'lessons': lessonsData,
-        'lastUpdated': DateTime.now().toIso8601String(),
-      };
-
-      if (language != null) {
-        requestData['language'] = language;
-      }
-
-      if (bellDelay != null) {
-        requestData['bellDelay'] = bellDelay;
-      }
-
-      if (morningNotificationTime != null) {
-        requestData['morningNotificationTime'] = morningNotificationTime;
-      }
-
-      if (morningNotificationEnabled != null) {
-        requestData['morningNotificationEnabled'] = morningNotificationEnabled;
-      }
-
-      if (liveActivityEnabled != null) {
-        requestData['liveActivityEnabled'] = liveActivityEnabled;
-      }
-
-      _logger.info(
-        'Registering device with backend. Sending ${lessonsData.length} lessons.',
-      );
-      if (_logger.isLoggable(Level.FINE)) {
-        for (var lesson in lessonsData) {
-          _logger.fine('  Lesson data: $lesson');
-        }
-      }
-
-      final response = await _dio.post(
-        '/live-activity/register',
-        data: requestData,
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        _logger.info(
-          'Device registered successfully with ${timetable.length} lessons',
-        );
+      if (response.statusCode == 200) {
+        _logger.info('Device registered successfully');
         return true;
       }
-
       _logger.warning('Failed to register device: ${response.statusCode}');
       return false;
     } catch (e) {
@@ -116,88 +69,49 @@ class LiveActivityBackendClient {
     }
   }
 
-  /// Update timetable data for existing device
-  Future<bool> updateTimetable({
-    required String deviceToken,
-    required List<Lesson> timetable,
-    double? bellDelay,
+  /// Upload today's schedule (lessons + breaks).
+  /// The server uses this data to send APNs push updates every minute.
+  Future<bool> uploadSchedule({
+    required String date,
+    required List<Map<String, dynamic>> lessons,
   }) async {
     try {
-      final lessonsData = timetable.map((lesson) {
-        DateTime validLastModified = lesson.lastModifiedAt;
-        if (validLastModified.year < 1900) {
-          validLastModified = lesson.start;
-        }
-
-        return {
-          'uid': lesson.uid,
-          'date': lesson.date,
-          'startTime': lesson.start.toIso8601String(),
-          'endTime': lesson.end.toIso8601String(),
-          'name': lesson.name,
-          'lessonNumber': lesson.lessonNumber,
-          'teacher': lesson.teacher,
-          'theme': lesson.theme,
-          'roomName': lesson.roomName,
-          'isSubstitution': lesson.substituteTeacher != null,
-          'substituteTeacher': lesson.substituteTeacher,
-          'isCancelled':
-              lesson.state.name?.toLowerCase().contains('elmarad') ?? false,
-          'lastModified': validLastModified.toIso8601String(),
-        };
-      }).toList();
-
-      _logger.info(
-        'Updating timetable with backend. Sending ${lessonsData.length} lessons.',
-      );
-      if (_logger.isLoggable(Level.FINE)) {
-        for (var lesson in lessonsData) {
-          _logger.fine('  Lesson data: $lesson');
-        }
-      }
-
-      final requestData = {
-        'deviceToken': deviceToken,
-        'lessons': lessonsData,
-        'lastUpdated': DateTime.now().toIso8601String(),
-      };
-
-      if (bellDelay != null) {
-        requestData['bellDelay'] = bellDelay;
-      }
-
-      final response = await _dio.put(
-        '/live-activity/timetable',
-        data: requestData,
-      );
+      final deviceId = await getDeviceId();
+      final response = await _dio.post('/schedule', data: {
+        'device_id': deviceId,
+        'date': date,
+        'lessons': lessons,
+      });
 
       if (response.statusCode == 200) {
-        _logger.info('Timetable updated successfully');
+        _logger.info('Schedule uploaded: ${lessons.length} items for $date');
         return true;
       }
-
-      _logger.warning('Failed to update timetable: ${response.statusCode}');
+      if (response.statusCode == 401) {
+        _logger.warning('Device not registered, cannot upload schedule');
+        return false;
+      }
+      _logger.warning('Failed to upload schedule: ${response.statusCode}');
       return false;
     } catch (e) {
-      _logger.severe('Error updating timetable: $e');
+      _logger.severe('Error uploading schedule: $e');
       return false;
     }
   }
 
-  /// Unregister device (called when user logs out)
-  Future<bool> unregisterDevice({required String deviceToken}) async {
+  /// Unregister device (deletes device + all schedules from server).
+  Future<bool> unregisterDevice() async {
     try {
-      final response = await _dio.delete(
-        '/live-activity/unregister',
-        data: {'deviceToken': deviceToken},
-      );
+      final deviceId = await getDeviceId();
+      final response = await _dio.post('/unregister', data: {
+        'device_id': deviceId,
+      });
 
       if (response.statusCode == 200) {
         _logger.info('Device unregistered successfully');
         return true;
       }
-
-      _logger.warning('Failed to unregister device: ${response.statusCode}');
+      _logger.warning('Failed to unregister: ${response.statusCode}');
       return false;
     } catch (e) {
       _logger.severe('Error unregistering device: $e');
@@ -205,238 +119,116 @@ class LiveActivityBackendClient {
     }
   }
 
-  /// Check if timetable has changed on backend
-  Future<bool> checkTimetableChanges({
-    required String deviceToken,
-    required DateTime lastUpdated,
-  }) async {
-    try {
-      final response = await _dio.get(
-        '/live-activity/check-changes',
-        queryParameters: {
-          'deviceToken': deviceToken,
-          'lastUpdated': lastUpdated.toIso8601String(),
-        },
-      );
+  /// Convert Firka Lesson list to the server's LessonItem format.
+  /// Also generates break items between consecutive lessons.
+  static List<Map<String, dynamic>> lessonsToServerFormat(
+    List<Lesson> lessons, {
+    double bellDelayMinutes = 0.0,
+  }) {
+    // Filter out cancelled and empty lessons, then sort
+    final filtered = lessons.where((l) {
+      final isCancelled =
+          l.state.name?.toLowerCase().contains('elmarad') ?? false;
+      return !isCancelled && l.name.isNotEmpty;
+    }).toList();
+    filtered.sort((a, b) => a.start.compareTo(b.start));
 
-      if (response.statusCode == 200 && response.data is Map) {
-        final hasChanges = response.data['hasChanges'] as bool? ?? false;
-        return hasChanges;
-      }
+    if (filtered.isEmpty) return [];
 
-      return false;
-    } catch (e) {
-      _logger.severe('Error checking timetable changes: $e');
-      return false;
-    }
-  }
+    final bellDelayMs = (bellDelayMinutes * 60 * 1000).round();
+    final result = <Map<String, dynamic>>[];
 
-  /// Get current timetable from backend
-  Future<List<Lesson>?> getTimetable({required String deviceToken}) async {
-    try {
-      final response = await _dio.get(
-        '/live-activity/timetable',
-        queryParameters: {'deviceToken': deviceToken},
-      );
+    for (var i = 0; i < filtered.length; i++) {
+      final lesson = filtered[i];
+      final nextLesson = i + 1 < filtered.length ? filtered[i + 1] : null;
 
-      if (response.statusCode == 200 && response.data is Map) {
-        final lessonsData = response.data['lessons'] as List<dynamic>?;
-        if (lessonsData != null) {
-          return null;
+      // Add lesson item
+      result.add({
+        'type': 'lesson',
+        'index': '${lesson.lessonNumber ?? (i + 1)}',
+        'subject': lesson.name,
+        'icon': _subjectToIcon(lesson.name),
+        'room': lesson.roomName ?? '',
+        'description': lesson.theme ?? '',
+        'start': lesson.start.millisecondsSinceEpoch + bellDelayMs,
+        'end': lesson.end.millisecondsSinceEpoch + bellDelayMs,
+        'nextSubject': nextLesson?.name ?? '',
+        'nextRoom': nextLesson?.roomName ?? '',
+        'nextIndex': nextLesson != null
+            ? '${nextLesson.lessonNumber ?? (i + 2)}'
+            : '',
+        // Firka extra fields for server-side content state building
+        'teacher': lesson.teacher ?? '',
+        'theme': lesson.theme ?? '',
+        'isSubstitution': lesson.substituteTeacher != null,
+        'isCancelled': false,
+        'substituteTeacher': lesson.substituteTeacher ?? '',
+        'lessonNumber': lesson.lessonNumber,
+      });
+
+      // Add break between consecutive lessons
+      if (nextLesson != null) {
+        final breakStart = lesson.end.millisecondsSinceEpoch + bellDelayMs;
+        final breakEnd =
+            nextLesson.start.millisecondsSinceEpoch + bellDelayMs;
+        if (breakEnd > breakStart) {
+          result.add({
+            'type': 'break',
+            'index': '',
+            'subject': 'Szünet',
+            'icon': 'cup.and.saucer',
+            'room': '',
+            'description': '',
+            'start': breakStart,
+            'end': breakEnd,
+            'nextSubject': nextLesson.name,
+            'nextRoom': nextLesson.roomName ?? '',
+            'nextIndex': '${nextLesson.lessonNumber ?? (i + 2)}',
+            'teacher': '',
+            'theme': '',
+            'isSubstitution': false,
+            'isCancelled': false,
+            'substituteTeacher': '',
+            'lessonNumber': null,
+          });
         }
       }
-
-      return null;
-    } catch (e) {
-      _logger.severe('Error getting timetable: $e');
-      return null;
     }
+
+    return result;
   }
 
-  /// Update LiveActivity push token
-  Future<bool> updatePushToken({
-    required String deviceToken,
-    required String pushToken,
-  }) async {
-    try {
-      final response = await _dio.post(
-        '/live-activity/push-token',
-        data: {'deviceToken': deviceToken, 'pushToken': pushToken},
-      );
-
-      if (response.statusCode == 200) {
-        _logger.info('LiveActivity push token updated successfully');
-        return true;
-      }
-
-      _logger.warning('Failed to update push token: ${response.statusCode}');
-      return false;
-    } catch (e) {
-      _logger.severe('Error updating push token: $e');
-      return false;
+  /// Map Hungarian subject names to SF Symbol icon names.
+  static String _subjectToIcon(String subject) {
+    final lower = subject.toLowerCase();
+    if (lower.contains('matek') || lower.contains('matematika')) {
+      return 'function';
     }
-  }
-
-  /// Update normal APNs push token for regular notifications
-  Future<bool> updateApnsToken({
-    required String deviceToken,
-    required String apnsPushToken,
-  }) async {
-    try {
-      final response = await _dio.post(
-        '/live-activity/apns-token',
-        data: {'deviceToken': deviceToken, 'apnsPushToken': apnsPushToken},
-      );
-
-      if (response.statusCode == 200) {
-        _logger.info('APNs push token updated successfully');
-        return true;
-      }
-
-      _logger.warning(
-        'Failed to update APNs push token: ${response.statusCode}',
-      );
-      return false;
-    } catch (e) {
-      _logger.severe('Error updating APNs push token: $e');
-      return false;
+    if (lower.contains('fizika')) return 'atom';
+    if (lower.contains('kémia')) return 'flask';
+    if (lower.contains('biológia') || lower.contains('bio')) return 'leaf';
+    if (lower.contains('magyar') || lower.contains('irodalom')) return 'book';
+    if (lower.contains('történelem') || lower.contains('töri')) {
+      return 'clock';
     }
-  }
-
-  /// Send a test notification (for debugging)
-  Future<bool> sendTestNotification({required String deviceToken}) async {
-    try {
-      final response = await _dio.post(
-        '/live-activity/test-notification',
-        data: {'deviceToken': deviceToken},
-      );
-
-      if (response.statusCode == 200) {
-        _logger.info('Test notification sent successfully');
-        return true;
-      }
-
-      _logger.warning(
-        'Failed to send test notification: ${response.statusCode}',
-      );
-      return false;
-    } catch (e) {
-      _logger.severe('Error sending test notification: $e');
-      return false;
+    if (lower.contains('angol') ||
+        lower.contains('német') ||
+        lower.contains('nyelv')) {
+      return 'globe';
     }
-  }
-
-  /// Update language preference for device
-  Future<bool> updateLanguage({
-    required String deviceToken,
-    required String language,
-  }) async {
-    try {
-      final response = await _dio.put(
-        '/live-activity/language',
-        data: {'deviceToken': deviceToken, 'language': language},
-      );
-
-      if (response.statusCode == 200) {
-        _logger.info('Language updated to $language successfully');
-        return true;
-      }
-
-      _logger.warning('Failed to update language: ${response.statusCode}');
-      return false;
-    } catch (e) {
-      _logger.severe('Error updating language: $e');
-      return false;
+    if (lower.contains('informatika') || lower.contains('info')) {
+      return 'desktopcomputer';
     }
-  }
-
-  /// Update bellDelay preference for device
-  Future<bool> updateBellDelay({
-    required String deviceToken,
-    required double bellDelay,
-  }) async {
-    try {
-      final response = await _dio.put(
-        '/live-activity/bell-delay',
-        data: {'deviceToken': deviceToken, 'bellDelay': bellDelay},
-      );
-
-      if (response.statusCode == 200) {
-        _logger.info('BellDelay updated to $bellDelay minutes successfully');
-        return true;
-      }
-
-      _logger.warning('Failed to update bellDelay: ${response.statusCode}');
-      return false;
-    } catch (e) {
-      _logger.severe('Error updating bellDelay: $e');
-      return false;
+    if (lower.contains('rajz') || lower.contains('művészet')) {
+      return 'paintpalette';
     }
-  }
-
-  /// Update morning notification settings for device
-  Future<bool> updateMorningNotificationSettings({
-    required String deviceToken,
-    int? morningNotificationTime,
-    bool? morningNotificationEnabled,
-  }) async {
-    try {
-      final response = await _dio.put(
-        '/live-activity/morning-notification',
-        data: {
-          'deviceToken': deviceToken,
-          ...?(morningNotificationTime != null
-              ? {'morningNotificationTime': morningNotificationTime}
-              : null),
-          ...?(morningNotificationEnabled != null
-              ? {'morningNotificationEnabled': morningNotificationEnabled}
-              : null),
-        },
-      );
-
-      if (response.statusCode == 200) {
-        _logger.info(
-          'Morning notification settings updated successfully: enabled=$morningNotificationEnabled, time=$morningNotificationTime',
-        );
-        return true;
-      }
-
-      _logger.warning(
-        'Failed to update morning notification settings: ${response.statusCode}',
-      );
-      return false;
-    } catch (e) {
-      _logger.severe('Error updating morning notification settings: $e');
-      return false;
+    if (lower.contains('testnevelés') || lower.contains('tesi')) {
+      return 'sportscourt';
     }
-  }
-
-  /// Toggle Live Activity feature (enable/disable)
-  Future<bool> toggleLiveActivity({
-    required String deviceToken,
-    required bool liveActivityEnabled,
-  }) async {
-    try {
-      final response = await _dio.put(
-        '/live-activity/toggle',
-        data: {
-          'deviceToken': deviceToken,
-          'liveActivityEnabled': liveActivityEnabled,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        _logger.info(
-          'Live Activity ${liveActivityEnabled ? "enabled" : "disabled"} successfully',
-        );
-        return true;
-      }
-
-      _logger.warning('Failed to toggle Live Activity: ${response.statusCode}');
-      return false;
-    } catch (e) {
-      _logger.severe('Error toggling Live Activity: $e');
-      return false;
+    if (lower.contains('ének') || lower.contains('zene')) return 'music.note';
+    if (lower.contains('földrajz') || lower.contains('föci')) {
+      return 'globe.europe.africa';
     }
+    return 'book.closed';
   }
 }

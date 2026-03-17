@@ -295,40 +295,7 @@ class LiveActivityService {
     }
   }
 
-  /// Get current language code from settings
-  static String? _getCurrentLanguageCode() {
-    try {
-      if (!initDone) {
-        return 'hu';
-      }
 
-      final languageSetting =
-          initData.settings
-                  .group("settings")
-                  .subGroup("application")["language"]
-              as SettingsItemsRadio?;
-
-      if (languageSetting == null) return 'hu';
-
-      switch (languageSetting.activeIndex) {
-        case 1:
-          return 'hu';
-        case 2:
-          return 'en';
-        case 3:
-          return 'de';
-        default: // auto
-          final systemLang = Platform.localeName.split('_').first;
-          if (['hu', 'en', 'de'].contains(systemLang)) {
-            return systemLang;
-          }
-          return 'hu';
-      }
-    } catch (e) {
-      _logger.warning('Error getting current language: $e');
-      return 'hu';
-    }
-  }
 
   /// Update language preference on backend for Live Activity localization
   static Future<void> updateLanguagePreference(String languageCode) async {
@@ -341,24 +308,8 @@ class LiveActivityService {
         return;
       }
 
-      final prefs = await SharedPreferences.getInstance();
-      final deviceToken = prefs.getString(_deviceTokenKey);
-
-      if (deviceToken == null) {
-        _logger.warning('Cannot update language: device token not found');
-        return;
-      }
-
-      final success = await _backendClient.updateLanguage(
-        deviceToken: deviceToken,
-        language: languageCode,
-      );
-
-      if (success) {
-        _logger.info('Language preference updated to $languageCode');
-      } else {
-        _logger.warning('Failed to update language preference');
-      }
+      _logger.fine('Language update not supported on refilc-live-server, skipping');
+      return;
     } catch (e) {
       _logger.severe('Error updating language preference: $e');
     }
@@ -612,11 +563,35 @@ class LiveActivityService {
       _logger.info(
         'Background fetch: sending ${allLessons.length} lessons to backend',
       );
-      final success = await _backendClient.updateTimetable(
-        deviceToken: deviceToken,
-        timetable: allLessons,
-        bellDelay: userBellDelay,
+
+      // Register device to keep token fresh
+      await _backendClient.registerDevice(
+        apnsToken: deviceToken,
+        bundleId: 'app.firka.firka',
       );
+
+      // Upload today's schedule
+      final bgNow = DateTime.now();
+      final bgTodayStr = '${bgNow.year}-${bgNow.month.toString().padLeft(2, '0')}-${bgNow.day.toString().padLeft(2, '0')}';
+      final bgTodayLessons = allLessons.where((l) {
+        final lessonDate = DateTime.tryParse(l.date);
+        if (lessonDate == null) return false;
+        return lessonDate.year == bgNow.year &&
+            lessonDate.month == bgNow.month &&
+            lessonDate.day == bgNow.day;
+      }).toList();
+
+      bool success = true;
+      if (bgTodayLessons.isNotEmpty) {
+        final serverLessons = LiveActivityBackendClient.lessonsToServerFormat(
+          bgTodayLessons,
+          bellDelayMinutes: userBellDelay,
+        );
+        success = await _backendClient.uploadSchedule(
+          date: bgTodayStr,
+          lessons: serverLessons,
+        );
+      }
 
       if (success) {
         await _saveLastUpdate();
@@ -668,15 +643,8 @@ class LiveActivityService {
       }
 
       if (!enabled) {
-        final deviceToken =
-            _cachedDeviceToken ?? await LiveActivityManager.getDeviceToken();
-        if (deviceToken != null) {
-          _logger.info('Notifying backend that Live Activity is disabled');
-          await _backendClient.toggleLiveActivity(
-            deviceToken: deviceToken,
-            liveActivityEnabled: false,
-          );
-        }
+        _logger.info('Notifying backend that Live Activity is disabled');
+        await _backendClient.unregisterDevice();
 
         _logger.info('Ending all LiveActivities');
         await LiveActivityManager.endAllActivities();
@@ -708,9 +676,9 @@ class LiveActivityService {
 
           if (deviceToken != null) {
             _logger.info('Notifying backend that Live Activity is enabled');
-            await _backendClient.toggleLiveActivity(
-              deviceToken: deviceToken,
-              liveActivityEnabled: true,
+            await _backendClient.registerDevice(
+              apnsToken: deviceToken,
+              bundleId: 'app.firka.firka',
             );
           }
 
@@ -831,15 +799,15 @@ class LiveActivityService {
         return;
       }
 
-      final success = await _backendClient.updatePushToken(
-        deviceToken: deviceToken,
-        pushToken: pushToken,
+      final success = await _backendClient.registerDevice(
+        apnsToken: pushToken,
+        bundleId: 'app.firka.firka',
       );
 
       if (success) {
-        _logger.info('LiveActivity push token updated successfully in backend');
+        _logger.info('Device registered with LiveActivity push token');
       } else {
-        _logger.warning('Failed to update LiveActivity push token in backend');
+        _logger.warning('Failed to register device with push token');
       }
     } catch (e) {
       _logger.severe('Error updating LiveActivity push token: $e');
@@ -1119,24 +1087,36 @@ class LiveActivityService {
         return;
       }
 
-      String? currentLanguage = _getCurrentLanguageCode();
-
-      final userMorningNotificationTime =
-          await _getUserMorningNotificationTime();
-      final userMorningNotificationEnabled =
-          await _getUserMorningNotificationEnabled();
-      final userLiveActivityEnabled = await _getUserLiveActivityEnabled();
       final userBellDelay = await _getUserBellDelay();
 
-      final success = await _backendClient.registerDevice(
-        deviceToken: deviceToken,
-        timetable: allLessons,
-        language: currentLanguage,
-        bellDelay: userBellDelay,
-        morningNotificationTime: userMorningNotificationTime,
-        morningNotificationEnabled: userMorningNotificationEnabled,
-        liveActivityEnabled: userLiveActivityEnabled,
+      // Register device with APNs token
+      await _backendClient.registerDevice(
+        apnsToken: deviceToken,
+        bundleId: 'app.firka.firka',
       );
+
+      // Upload today's schedule
+      final loginNow = DateTime.now();
+      final loginTodayStr = '${loginNow.year}-${loginNow.month.toString().padLeft(2, '0')}-${loginNow.day.toString().padLeft(2, '0')}';
+      final todayLessons = allLessons.where((l) {
+        final lessonDate = DateTime.tryParse(l.date);
+        if (lessonDate == null) return false;
+        return lessonDate.year == loginNow.year &&
+            lessonDate.month == loginNow.month &&
+            lessonDate.day == loginNow.day;
+      }).toList();
+
+      bool success = true;
+      if (todayLessons.isNotEmpty) {
+        final serverLessons = LiveActivityBackendClient.lessonsToServerFormat(
+          todayLessons,
+          bellDelayMinutes: userBellDelay,
+        );
+        success = await _backendClient.uploadSchedule(
+          date: loginTodayStr,
+          lessons: serverLessons,
+        );
+      }
 
       if (success) {
         await _markAsRegistered();
@@ -1176,16 +1156,8 @@ class LiveActivityService {
       _logger.info('onUserLogout: Ending all activities');
       await LiveActivityManager.endAllActivities();
 
-      final deviceToken =
-          _cachedDeviceToken ?? await LiveActivityManager.getDeviceToken();
-      _logger.info(
-        'onUserLogout: Device token = ${deviceToken?.substring(0, 10)}...',
-      );
-
-      if (deviceToken != null) {
-        _logger.info('onUserLogout: Unregistering device from backend');
-        await _backendClient.unregisterDevice(deviceToken: deviceToken);
-      }
+      _logger.info('onUserLogout: Unregistering device from backend');
+      await _backendClient.unregisterDevice();
 
       _logger.info('onUserLogout: Clearing cache');
       await _clearCache();
@@ -1447,17 +1419,7 @@ class LiveActivityService {
       final deviceToken = await _getOrWaitDeviceToken();
       if (deviceToken == null) return;
 
-      bool shouldUpdate = forceUpdate;
-
-      if (!forceUpdate) {
-        final lastUpdate = await _getLastUpdate();
-        final hasChanges = await _backendClient.checkTimetableChanges(
-          deviceToken: deviceToken,
-          lastUpdated: lastUpdate,
-        );
-        shouldUpdate = hasChanges;
-      }
-
+      const shouldUpdate = true;
       if (shouldUpdate) {
         if (forceUpdate) {
           _logger.info(
@@ -1468,11 +1430,37 @@ class LiveActivityService {
         }
 
         final userBellDelay = await _getUserBellDelay();
-        final success = await _backendClient.updateTimetable(
-          deviceToken: deviceToken,
-          timetable: allLessons,
-          bellDelay: userBellDelay,
+
+        // Register device to keep token fresh
+        await _backendClient.registerDevice(
+          apnsToken: deviceToken,
+          bundleId: 'app.firka.firka',
         );
+
+        // Upload today's schedule
+        final updateNow = DateTime.now();
+        final updateTodayStr = '${updateNow.year}-${updateNow.month.toString().padLeft(2, '0')}-${updateNow.day.toString().padLeft(2, '0')}';
+        final updateTodayLessons = allLessons.where((l) {
+          final lessonDate = DateTime.tryParse(l.date);
+          if (lessonDate == null) return false;
+          return lessonDate.year == updateNow.year &&
+              lessonDate.month == updateNow.month &&
+              lessonDate.day == updateNow.day;
+        }).toList();
+
+        bool success = false;
+        if (updateTodayLessons.isNotEmpty) {
+          final serverLessons = LiveActivityBackendClient.lessonsToServerFormat(
+            updateTodayLessons,
+            bellDelayMinutes: userBellDelay,
+          );
+          success = await _backendClient.uploadSchedule(
+            date: updateTodayStr,
+            lessons: serverLessons,
+          );
+        } else {
+          success = true;
+        }
 
         if (success) {
           await _saveLastUpdate();
@@ -1694,28 +1682,8 @@ class LiveActivityService {
   static Future<bool> sendTestNotification() async {
     if (!Platform.isIOS || !_isInitialized) return false;
 
-    try {
-      final deviceToken = await _getOrWaitDeviceToken();
-      if (deviceToken == null) {
-        _logger.warning('No device token available for test notification');
-        return false;
-      }
-
-      final success = await _backendClient.sendTestNotification(
-        deviceToken: deviceToken,
-      );
-
-      if (success) {
-        _logger.info('Test notification sent successfully');
-      } else {
-        _logger.warning('Failed to send test notification');
-      }
-
-      return success;
-    } catch (e) {
-      _logger.severe('Error sending test notification: $e');
-      return false;
-    }
+    _logger.info('Test notification not supported on refilc-live-server');
+    return false;
   }
 
   /// Handle bellDelay change with debounce
@@ -1747,49 +1715,33 @@ class LiveActivityService {
     final bellDelayToSend = _pendingBellDelay!;
 
     if (_lastSentBellDelay == bellDelayToSend) {
-      _logger.info(
-        'BellDelay $bellDelayToSend already sent to backend, skipping',
-      );
+      _logger.info('BellDelay $bellDelayToSend already applied, skipping');
       _pendingBellDelay = null;
       return;
     }
 
     try {
-      final deviceToken = await _getOrWaitDeviceToken();
-      if (deviceToken == null) {
-        _logger.warning('No device token available to update bellDelay');
-        return;
-      }
-
+      _lastSentBellDelay = bellDelayToSend;
+      _pendingBellDelay = null;
       _logger.info(
-        'Sending bellDelay update to backend: $bellDelayToSend minutes',
+        'BellDelay changed to $bellDelayToSend, triggering schedule re-upload',
       );
 
-      final success = await _backendClient.updateBellDelay(
-        deviceToken: deviceToken,
-        bellDelay: bellDelayToSend,
-      );
-
-      if (success) {
-        _lastSentBellDelay = bellDelayToSend;
-        _logger.info('BellDelay updated successfully in backend');
-
-        if (_pendingBellDelay != bellDelayToSend) {
-          _logger.info(
-            'BellDelay changed to $_pendingBellDelay during update, scheduling another update',
-          );
-          _bellDelayDebounceTimer?.cancel();
-          _bellDelayDebounceTimer = Timer(_bellDelayDebounceInterval, () async {
-            await _sendBellDelayUpdate();
-          });
-        } else {
-          _pendingBellDelay = null;
-        }
-      } else {
-        _logger.warning('Failed to update bellDelay in backend');
+      // Trigger a timetable refresh to re-upload with new bell delay
+      if (initDone) {
+        final client = initData.client;
+        final studentResp = await client.getStudent();
+        final studentName =
+            studentResp.response?.name ?? client.model.studentId ?? 'Student';
+        await checkAndUpdateTimetable(
+          client: client,
+          studentName: studentName,
+          settingsStore: initData.settings,
+          forceUpdate: true,
+        );
       }
     } catch (e) {
-      _logger.severe('Error updating bellDelay: $e');
+      _logger.severe('Error handling bellDelay change: $e');
     }
   }
 
@@ -1860,91 +1812,71 @@ class LiveActivityService {
     }
 
     try {
-      final deviceToken = await _getOrWaitDeviceToken();
-      if (deviceToken == null) {
-        _logger.warning(
-          'No device token available to update morning notification settings',
+      _logger.info(
+        'Morning notification settings update: enabled=$enabledToSend, time=$timeToSend minutes (stored locally, not yet supported on refilc-live-server)',
+      );
+
+      final wasDisabled = _lastSentMorningNotificationEnabled == false;
+      final isNowEnabled = enabledToSend == true;
+
+      _lastSentMorningNotificationEnabled = enabledToSend;
+      _lastSentMorningNotificationTime = timeToSend;
+      _logger.info(
+        'Morning notification settings updated locally',
+      );
+
+      if (wasDisabled && isNowEnabled) {
+        _logger.info(
+          'Morning notifications re-enabled, fetching timetable to recreate notifications',
         );
-        return;
+        try {
+          final client = initData.client;
+          final settingsStore = initData.settings;
+
+          final studentResp = await client.getStudent();
+          final studentName =
+              studentResp.response?.name ??
+              client.model.studentId ??
+              'Student';
+
+          await checkAndUpdateTimetable(
+            client: client,
+            studentName: studentName,
+            settingsStore: settingsStore,
+            forceUpdate: true,
+          );
+          _logger.info(
+            'Timetable fetch completed after re-enabling notifications',
+          );
+        } catch (e) {
+          _logger.severe(
+            'Error fetching timetable after re-enabling notifications: $e',
+          );
+        }
       }
 
-      _logger.info(
-        'Sending morning notification settings update to backend: enabled=$enabledToSend, time=$timeToSend minutes',
-      );
+      final currentEnabled =
+          _pendingMorningNotificationEnabled ??
+          _getCurrentMorningNotificationEnabled();
+      final currentTime =
+          _pendingMorningNotificationTime ??
+          _getCurrentMorningNotificationTime();
 
-      final success = await _backendClient.updateMorningNotificationSettings(
-        deviceToken: deviceToken,
-        morningNotificationEnabled: enabledToSend,
-        morningNotificationTime: timeToSend?.toInt(),
-      );
-
-      if (success) {
-        final wasDisabled = _lastSentMorningNotificationEnabled == false;
-        final isNowEnabled = enabledToSend == true;
-
-        _lastSentMorningNotificationEnabled = enabledToSend;
-        _lastSentMorningNotificationTime = timeToSend;
+      if (_lastSentMorningNotificationEnabled != currentEnabled ||
+          _lastSentMorningNotificationTime != currentTime) {
         _logger.info(
-          'Morning notification settings updated successfully in backend',
+          'Morning notification settings changed during update, scheduling another update',
         );
-
-        if (wasDisabled && isNowEnabled) {
-          _logger.info(
-            'Morning notifications re-enabled, fetching timetable to recreate notifications',
-          );
-          try {
-            final client = initData.client;
-            final settingsStore = initData.settings;
-
-            final studentResp = await client.getStudent();
-            final studentName =
-                studentResp.response?.name ??
-                client.model.studentId ??
-                'Student';
-
-            await checkAndUpdateTimetable(
-              client: client,
-              studentName: studentName,
-              settingsStore: settingsStore,
-              forceUpdate: true,
-            );
-            _logger.info(
-              'Timetable fetch completed after re-enabling notifications',
-            );
-          } catch (e) {
-            _logger.severe(
-              'Error fetching timetable after re-enabling notifications: $e',
-            );
-          }
-        }
-
-        final currentEnabled =
-            _pendingMorningNotificationEnabled ??
-            _getCurrentMorningNotificationEnabled();
-        final currentTime =
-            _pendingMorningNotificationTime ??
-            _getCurrentMorningNotificationTime();
-
-        if (_lastSentMorningNotificationEnabled != currentEnabled ||
-            _lastSentMorningNotificationTime != currentTime) {
-          _logger.info(
-            'Morning notification settings changed during update, scheduling another update',
-          );
-          _morningNotificationDebounceTimer?.cancel();
-          _morningNotificationDebounceTimer = Timer(
-            _morningNotificationDebounceInterval,
-            () async {
-              await _sendMorningNotificationUpdate();
-            },
-          );
-        } else {
-          _pendingMorningNotificationEnabled = null;
-          _pendingMorningNotificationTime = null;
-        }
+        _morningNotificationDebounceTimer?.cancel();
+        _morningNotificationDebounceTimer = Timer(
+          _morningNotificationDebounceInterval,
+          () async {
+            await _sendMorningNotificationUpdate();
+          },
+        );
       } else {
-        _logger.warning(
-          'Failed to update morning notification settings in backend',
-        );
+        _pendingMorningNotificationEnabled = null;
+        _pendingMorningNotificationTime = null;
       }
     } catch (e) {
       _logger.severe('Error updating morning notification settings: $e');
