@@ -125,11 +125,12 @@ class LiveActivityBackendClient {
     List<Lesson> lessons, {
     double bellDelayMinutes = 0.0,
   }) {
-    // Filter out cancelled and empty lessons, then sort
+    // Filter out cancelled lessons (keep substituted ones) and empty lessons
     final filtered = lessons.where((l) {
       final isCancelled =
           l.state.name?.toLowerCase().contains('elmarad') ?? false;
-      return !isCancelled && l.name.isNotEmpty;
+      final hasSubstitute = l.substituteTeacher != null;
+      return (!isCancelled || hasSubstitute) && l.name.isNotEmpty;
     }).toList();
     filtered.sort((a, b) => a.start.compareTo(b.start));
 
