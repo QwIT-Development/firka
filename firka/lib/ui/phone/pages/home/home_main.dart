@@ -321,34 +321,31 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         noticeBoardWidgets.add((
           GestureDetector(
             child: FirkaCard(
-              left: [],
-              extra: Row(
-                children: [
-                  GradeWidget(grade),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          (grade.topic ?? grade.type.description!).firstUpper(),
-                          style: appStyle.fonts.B_16SB.apply(
-                            color: appStyle.colors.textPrimary,
-                          ),
+              left: [
+                GradeWidget(grade),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        (grade.topic ?? grade.type.description!).firstUpper(),
+                        style: appStyle.fonts.B_16SB.apply(
+                          color: appStyle.colors.textPrimary,
                         ),
-                        grade.mode?.description != null
-                            ? Text(
-                                grade.mode!.description!.firstUpper(),
-                                style: appStyle.fonts.B_16R.apply(
-                                  color: appStyle.colors.textSecondary,
-                                ),
-                              )
-                            : SizedBox(),
-                      ],
-                    ),
+                      ),
+                      grade.mode?.description != null
+                          ? Text(
+                              grade.mode!.description!.firstUpper(),
+                              style: appStyle.fonts.B_16R.apply(
+                                color: appStyle.colors.textSecondary,
+                              ),
+                            )
+                          : SizedBox(),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
             onTap: () {
               showGradeBottomSheet(context, widget.data, grade);

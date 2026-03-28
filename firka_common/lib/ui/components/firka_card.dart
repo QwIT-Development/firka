@@ -7,9 +7,9 @@ enum Attach { none, bottom, top }
 
 class FirkaCard extends StatelessWidget {
   final List<Widget> left;
-  final List<Widget>? center;
+  final List<Widget> center;
   final double? height;
-  final List<Widget>? right;
+  final List<Widget> right;
   final bool shadow;
   final Widget? extra;
   final Attach? attached;
@@ -19,10 +19,10 @@ class FirkaCard extends StatelessWidget {
   const FirkaCard({
     required this.left,
     this.shadow = true,
-    this.center,
-    this.right,
+    this.center = const [],
+    this.right = const [],
     this.extra,
-    this.attached,
+    this.attached = Attach.none,
     this.color,
     this.height,
     this.isLightMode,
@@ -31,107 +31,57 @@ class FirkaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var right = this.right ?? [];
-
-    var attached = this.attached != null ? this.attached! : Attach.none;
     final defaultRounding = 16.0;
     final attachedRounding = 8.0;
     final isLight =
         isLightMode ?? Theme.of(context).brightness == Brightness.light;
 
-    if (extra != null) {
-      return SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: height,
-        child: FirkaShadow(
-          shadow: shadow,
-          isLightMode: isLight,
-          child: Card(
-            color: color ?? appStyle.colors.card,
-            shadowColor: isLight && shadow ? null : Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(
-                  attached == Attach.top ? attachedRounding : defaultRounding,
-                ),
-                topRight: Radius.circular(
-                  attached == Attach.top ? attachedRounding : defaultRounding,
-                ),
-                bottomLeft: Radius.circular(
-                  attached == Attach.bottom
-                      ? attachedRounding
-                      : defaultRounding,
-                ),
-                bottomRight: Radius.circular(
-                  attached == Attach.bottom
-                      ? attachedRounding
-                      : defaultRounding,
-                ),
+    final leftRow = Row(children: this.left);
+
+    final alignedRow = this.right.isEmpty && this.center.isEmpty
+        ? leftRow
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              leftRow,
+              Row(children: this.center),
+              Row(children: this.right),
+            ],
+          );
+
+    return SizedBox(
+      width: MediaQuery.of(context).size.width,
+      height: height,
+      child: FirkaShadow(
+        shadow: shadow,
+        isLightMode: isLight,
+        child: Card(
+          color: color ?? appStyle.colors.card,
+          shadowColor: isLight && shadow ? null : Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(
+                attached == Attach.top ? attachedRounding : defaultRounding,
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(children: left),
-                      Row(children: center ?? []),
-                      Row(children: right),
-                    ],
-                  ),
-                  extra ?? const SizedBox(),
-                ],
+              topRight: Radius.circular(
+                attached == Attach.top ? attachedRounding : defaultRounding,
+              ),
+              bottomLeft: Radius.circular(
+                attached == Attach.bottom ? attachedRounding : defaultRounding,
+              ),
+              bottomRight: Radius.circular(
+                attached == Attach.bottom ? attachedRounding : defaultRounding,
               ),
             ),
           ),
-        ),
-      );
-    } else {
-      return SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: height,
-        child: FirkaShadow(
-          shadow: shadow,
-          isLightMode: isLight,
-          child: Card(
-            color: color ?? appStyle.colors.card,
-            shadowColor: isLight && shadow ? null : Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(
-                  attached == Attach.top ? attachedRounding : defaultRounding,
-                ),
-                topRight: Radius.circular(
-                  attached == Attach.top ? attachedRounding : defaultRounding,
-                ),
-                bottomLeft: Radius.circular(
-                  attached == Attach.bottom
-                      ? attachedRounding
-                      : defaultRounding,
-                ),
-                bottomRight: Radius.circular(
-                  attached == Attach.bottom
-                      ? attachedRounding
-                      : defaultRounding,
-                ),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(children: left),
-                  Row(children: center ?? []),
-                  Row(children: right),
-                ],
-              ),
-            ),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: this.extra == null
+                ? alignedRow
+                : Column(children: [alignedRow, this.extra!]),
           ),
         ),
-      );
-    }
+      ),
+    );
   }
 }
