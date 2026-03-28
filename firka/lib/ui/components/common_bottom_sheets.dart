@@ -1053,7 +1053,7 @@ class _GradeCalculatorSheetContentState
   int weightIndex = 1; // 0-based index into _snapPoints
   final List<(int grade, int weight)> entries = [];
 
-  static const _snapPoints = [50, 100, 200, 300, 500];
+  static const _snapPoints = [50, 100, 200, 300, 400, 500];
 
   int get weightPercent => _snapPoints[weightIndex];
 
