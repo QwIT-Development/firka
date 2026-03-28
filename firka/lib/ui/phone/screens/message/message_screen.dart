@@ -136,21 +136,28 @@ class MessageScreen extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: appStyle.colors.card,
-                            borderRadius: BorderRadius.all(Radius.circular(16)),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Text(
-                              info.contentText,
-                              style: appStyle.fonts.B_16R.apply(
-                                color: appStyle.colors.textPrimary,
+                      Flexible(
+                        fit: FlexFit.loose,
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: appStyle.colors.card,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(16),
                               ),
-                              textAlign: TextAlign.start,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: SingleChildScrollView(
+                                child: Text(
+                                  info.contentText,
+                                  style: appStyle.fonts.B_16R.apply(
+                                    color: appStyle.colors.textPrimary,
+                                  ),
+                                  textAlign: TextAlign.start,
+                                ),
+                              ),
                             ),
                           ),
                         ),
