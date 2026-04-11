@@ -1,8 +1,7 @@
 import 'generic.dart';
 import 'subject.dart';
 
-class Grade {
-  final String uid;
+class Grade extends UidObj {
   final DateTime recordDate;
   final DateTime creationDate;
   final DateTime? ackDate;
@@ -21,7 +20,7 @@ class Grade {
   final int sortIndex;
 
   Grade({
-    required this.uid,
+    required super.uid,
     required this.recordDate,
     required this.creationDate,
     this.ackDate,
@@ -50,18 +49,16 @@ class Grade {
           : null,
       subject: Subject.fromJson(json['Tantargy']),
       topic: json['Tema'],
-      type: NameUidDesc.fromJson(json['Tipus']),
-      mode: json['Mod'] != null ? NameUidDesc.fromJson(json['Mod']) : null,
-      valueType: NameUidDesc.fromJson(json['ErtekFajta']),
+      type: json.nameUidDesc('Tipus')!,
+      mode: json.nameUidDesc('Mod'),
+      valueType: json.nameUidDesc('ErtekFajta')!,
       teacher: json['ErtekeloTanarNeve'],
       kind: json['Kind'],
       numericValue: json['SzamErtek'],
       strValue: json['SzovegesErtek'],
       weightPercentage: json['SulySzazalekErteke'],
       shortStrValue: json['SzovegesErtekelesRovidNev'],
-      classGroup: json['OsztalyCsoport'] != null
-          ? UidObj.fromJson(json['OsztalyCsoport'])
-          : null,
+      classGroup: json.uid('OsztalyCsoport'),
       sortIndex: json['SortIndex'],
     );
   }

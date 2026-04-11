@@ -1581,12 +1581,12 @@ class LiveActivityService {
       final emptyType = NameUidDesc(
         uid: 'placeholder',
         name: 'Placeholder',
-        description: null,
+        description: '',
       );
       final emptyState = NameUidDesc(
         uid: 'active',
         name: 'Active',
-        description: null,
+        description: '',
       );
 
       placeholderLesson = Lesson(

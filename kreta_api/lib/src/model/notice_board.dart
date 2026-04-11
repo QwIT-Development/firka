@@ -1,7 +1,7 @@
+import '../extensions.dart';
 import 'generic.dart';
 
-class NoticeBoardItem {
-  final String uid;
+class NoticeBoardItem extends UidObj {
   final String author;
   final DateTime validFrom;
   final DateTime validTo;
@@ -10,7 +10,7 @@ class NoticeBoardItem {
   final String contentText;
 
   NoticeBoardItem({
-    required this.uid,
+    required super.uid,
     required this.author,
     required this.validFrom,
     required this.validTo,
@@ -23,8 +23,8 @@ class NoticeBoardItem {
     return NoticeBoardItem(
       uid: json['Uid'],
       author: json['RogzitoNeve'],
-      validFrom: DateTime.parse(json['ErvenyessegKezdete']),
-      validTo: DateTime.parse(json['ErvenyessegVege']),
+      validFrom: json.localDate('ErvenyessegKezdete')!,
+      validTo: json.localDate('ErvenyessegVege')!,
       title: json['Cim'],
       contentHTML: json['Tartalom'],
       contentText: json['TartalomText'],
@@ -45,8 +45,7 @@ class NoticeBoardItem {
   }
 }
 
-class InfoBoardItem {
-  final String uid;
+class InfoBoardItem extends UidObj {
   final String title;
   final DateTime date;
   final String author;
@@ -56,7 +55,7 @@ class InfoBoardItem {
   final NameUidDesc type;
 
   InfoBoardItem({
-    required this.uid,
+    required super.uid,
     required this.title,
     required this.date,
     required this.author,
@@ -70,12 +69,12 @@ class InfoBoardItem {
     return InfoBoardItem(
       uid: json['Uid'],
       title: json['Cim'],
-      date: DateTime.parse(json['Datum']),
+      date: json.localDate('Datum')!,
       author: json['KeszitoTanarNeve'],
-      createdAt: DateTime.parse(json['KeszitesDatuma']),
+      createdAt: json.localDate('KeszitesDatuma')!,
       contentText: json['Tartalom'],
       contentHTML: json['TartalomFormazott'],
-      type: NameUidDesc.fromJson(json['Tipus']),
+      type: json.nameUidDesc('Tipus')!,
     );
   }
 

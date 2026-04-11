@@ -1,3 +1,4 @@
+import '../extensions.dart';
 import 'generic.dart';
 
 class ClassGroup {
@@ -27,17 +28,11 @@ class ClassGroup {
     return ClassGroup(
       uid: json['Uid'],
       name: json['Nev'],
-      headTeacher: json['OsztalyFonok'] != null
-          ? UidObj.fromJson(json['OsztalyFonok'])
-          : null,
-      substituteHeadTeacher: json['OsztalyFonokHelyettes'] != null
-          ? UidObj.fromJson(json['OsztalyFonokHelyettes'])
-          : null,
-      studyGroup: NameUidDesc.fromJson(json['OktatasNevelesiKategoria']),
+      headTeacher: json.uid('OsztalyFonok'),
+      substituteHeadTeacher: json.uid('OsztalyFonokHelyettes'),
+      studyGroup: json.nameUidDesc('OktatasNevelesiKategoria')!,
       studyGroupSortIndex: json['OktatasNevelesiKategoriaSortIndex'],
-      studyTask: json['OktatasNevelesiFeladat'] != null
-          ? NameUidDesc.fromJson(json['OktatasNevelesiFeladat'])
-          : null,
+      studyTask: json.nameUidDesc('OktatasNevelesiFeladat'),
       isActive: json['IsAktiv'],
       type: json['Tipus'],
     );
@@ -59,9 +54,7 @@ class ClassGroup {
   }
 }
 
-class SubjectAverage {
-  final String uid;
-  final String name;
+class SubjectAverage extends NameUid {
   final String? teacherName;
   final String subjectCategoryId;
   final String subjectCategoryName;
@@ -72,8 +65,8 @@ class SubjectAverage {
   final int sortIndex;
 
   SubjectAverage({
-    required this.uid,
-    required this.name,
+    required super.uid,
+    required super.name,
     this.teacherName,
     required this.subjectCategoryId,
     required this.subjectCategoryName,
@@ -86,22 +79,18 @@ class SubjectAverage {
 
   factory SubjectAverage.fromJson(Map<String, dynamic> json) {
     final tantargy = json['Tantargy'] ?? {};
-    final kategori = tantargy['Kategoria'] ?? {};
+    final kategoria = tantargy['Kategoria'] ?? {};
 
     return SubjectAverage(
       uid: json['Uid'] ?? '',
       name: tantargy['Nev'] ?? '',
       teacherName: json['TeacherName'],
-      subjectCategoryId: kategori['Uid'] ?? '',
-      subjectCategoryName: kategori['Nev'] ?? '',
-      subjectCategoryDescription: kategori['Leiras'] ?? '',
-      average: json['Atlag'] != null ? (json['Atlag'] as num).toDouble() : null,
-      weightedSum: json['SulyozottOsztalyzatOsszege'] != null
-          ? (json['SulyozottOsztalyzatOsszege'] as num).toDouble()
-          : null,
-      weightedCount: json['SulyozottOsztalyzatSzama'] != null
-          ? (json['SulyozottOsztalyzatSzama'] as num).toDouble()
-          : null,
+      subjectCategoryId: kategoria['Uid'] ?? '',
+      subjectCategoryName: kategoria['Nev'] ?? '',
+      subjectCategoryDescription: kategoria['Leiras'] ?? '',
+      average: json.dbl('Atlag'),
+      weightedSum: json.dbl('SulyozottOsztalyzatOsszege'),
+      weightedCount: json.dbl('SulyozottOsztalyzatSzama'),
       sortIndex: tantargy['SortIndex'] ?? 0,
     );
   }
