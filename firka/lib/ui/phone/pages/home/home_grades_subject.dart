@@ -1,4 +1,5 @@
 import 'package:firka/ui/phone/widgets/grade_summary_bar.dart';
+import 'package:firka/ui/phone/widgets/info_card.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/ui/components/common_bottom_sheets.dart';
@@ -115,7 +116,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
             left: [
               Row(
                 children: [
-                  GradeWidget.gradeValue(e.$1),
+                  GradeWidget.gradeValue(e.$1, gradeWeight: e.$2),
                   SizedBox(width: 8),
                   Text(
                     '${widget.data.l10n.ghost_grade} ${e.$2}%',
@@ -156,50 +157,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
         );
         gradeWidgets.add(SizedBox(height: 8));
         for (var grade in group.value) {
-          gradeWidgets.add(
-            GestureDetector(
-              child: FirkaCard(
-                left: [
-                  Row(
-                    children: [
-                      GradeWidget(grade),
-                      SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width / 1.45,
-                            child: Text(
-                              (grade.topic ?? grade.type.description!)
-                                  .firstUpper(),
-                              style: appStyle.fonts.B_16SB.apply(
-                                color: appStyle.colors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          grade.mode?.description != null
-                              ? SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width / 1.45,
-                                  child: Text(
-                                    grade.mode!.description!.firstUpper(),
-                                    style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.textSecondary,
-                                    ),
-                                  ),
-                                )
-                              : SizedBox(),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              onTap: () {
-                showGradeBottomSheet(context, widget.data, grade);
-              },
-            ),
-          );
+          gradeWidgets.add(InfoCard.gradeDesc(grade));
         }
       }
 

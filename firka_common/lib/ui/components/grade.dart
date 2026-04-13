@@ -4,94 +4,114 @@ import 'package:kreta_api/kreta_api.dart';
 import 'package:firka_common/ui/components/grade_helpers.dart';
 import 'package:firka_common/ui/theme/style.dart';
 
+import 'filled_circle.dart';
+
 class GradeWidget extends StatelessWidget {
   const GradeWidget(this.grade, {super.key})
     : gradeValue = null,
-      _fromValue = false;
+      gradeWeight = null;
 
-  const GradeWidget.gradeValue(int value, {super.key})
-    : grade = null,
-      gradeValue = value,
-      _fromValue = true;
+  const GradeWidget.gradeValue(
+    this.gradeValue, {
+    this.gradeWeight = 100,
+    super.key,
+  }) : grade = null;
 
   final Grade? grade;
   final int? gradeValue;
-  final bool _fromValue;
+  final int? gradeWeight;
 
   @override
   Widget build(BuildContext context) {
-    if (_fromValue && gradeValue != null) {
-      return _buildNumericCircle(
-        gradeValue!,
-        getGradeColor(gradeValue!.toDouble()),
-      );
+    if (gradeValue != null && gradeValue != null) {
+      return _buildNumericCircle(gradeValue!, gradeWeight!);
     }
 
     final g = grade!;
-    Color gradeColor = appStyle.colors.grade1;
-    final gradeStr = g.numericValue?.toString() ?? '0';
+
+    if (g.numericValue == null) {
+      final gradeColor = appStyle.colors.accent;
+      return FilledCircle(
+        diameter: 36,
+        color: gradeColor.withAlpha(38),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('❝', style: appStyle.fonts.P_14.copyWith(color: gradeColor)),
+            Text('❠', style: appStyle.fonts.P_14.copyWith(color: gradeColor)),
+          ],
+        ),
+      );
+    }
 
     if (g.valueType.name == 'Szazalekos') {
-      if (g.numericValue != null) {
-        gradeColor = getGradeColor(
-          percentageToGrade(g.numericValue!).toDouble(),
-        );
-      }
-
-      final str = g.strValue.replaceAll('%', '');
-      return Card(
-        shape: const CircleBorder(),
-        shadowColor: Colors.transparent,
+      final gradeColor = getGradeColor(percentageToGrade(g.numericValue!));
+      return FilledCircle(
+        diameter: 36,
         color: gradeColor.withAlpha(38),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(str, style: appStyle.fonts.P_14.copyWith(color: gradeColor)),
-              Text('%', style: appStyle.fonts.P_12.copyWith(color: gradeColor)),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (g.numericValue != null) {
-      gradeColor = getGradeColor(g.numericValue!.toDouble());
-    }
-
-    if (gradeStr == '0') {
-      return Card(
-        shadowColor: Colors.transparent,
-        color: gradeColor.withAlpha(38),
-        child: Padding(
-          padding: const EdgeInsets.only(left: 8, right: 8, top: 2, bottom: 2),
-          child: Text(
-            g.strValue,
-            style: appStyle.fonts.H_H1.copyWith(
-              fontSize: 16,
-              color: gradeColor,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              g.numericValue!.toString(),
+              style: appStyle.fonts.P_14.copyWith(color: gradeColor),
             ),
-          ),
+            Text('%', style: appStyle.fonts.P_12.copyWith(color: gradeColor)),
+          ],
         ),
       );
     }
 
-    return _buildNumericCircle(g.numericValue!, gradeColor);
+    return _buildNumericCircle(g.numericValue!, g.weightPercentage ?? 100);
   }
 
-  Widget _buildNumericCircle(int value, Color gradeColor) {
-    return Card(
-      shape: const CircleBorder(),
-      shadowColor: Colors.transparent,
-      color: gradeColor.withAlpha(38),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 8, right: 8),
-        child: Text(
-          value.toString(),
-          style: appStyle.fonts.H_H1.copyWith(fontSize: 24, color: gradeColor),
+  Widget _buildNumericCircle(int value, int weight) {
+    final gradeColor = getGradeColor(value);
+    final size = 36.0;
+    final text = Text(
+      value.toString(),
+      style: weight < 100
+          ? appStyle.fonts.H_H1.copyWith(
+              foreground: Paint()
+                ..color = gradeColor
+                ..style = PaintingStyle.stroke
+                ..strokeJoin = StrokeJoin.round
+                ..strokeCap = StrokeCap.round
+                ..strokeWidth = 1.13,
+            )
+          : appStyle.fonts.H_H1.copyWith(color: gradeColor),
+    );
+
+    if (weight > 100) {
+      final circle_size = 30.0;
+      final circle = FilledCircle(
+        diameter: circle_size,
+        color: gradeColor.withAlpha(38),
+        child: SizedBox(),
+      );
+      return SizedBox(
+        width: size,
+        height: size,
+        child: Stack(
+          children: [
+            Transform.translate(
+              offset: Offset(size - circle_size, 0),
+              child: circle,
+            ),
+            Transform.translate(
+              offset: Offset(0, size - circle_size),
+              child: circle,
+            ),
+            Center(child: text),
+          ],
         ),
-      ),
+      );
+    }
+
+    return FilledCircle(
+      diameter: 36,
+      color: gradeColor.withAlpha(38),
+      child: text,
     );
   }
 }

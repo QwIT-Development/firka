@@ -1,23 +1,20 @@
 import 'dart:async';
 
 import 'package:firka/api/client/kreta_stream.dart';
+import 'package:firka/ui/phone/widgets/info_card.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
-import 'package:firka/ui/components/common_bottom_sheets.dart';
 import 'package:firka/ui/phone/widgets/home_main_starting_soon.dart';
 import 'package:firka/ui/phone/widgets/homework.dart';
-import 'package:firka/ui/phone/widgets/info_board_item.dart';
 import 'package:firka/ui/phone/widgets/lesson_small.dart';
 import 'package:firka/ui/shared/delayed_spinner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/ui/components/firka_card.dart';
-import 'package:firka/ui/components/grade.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
 import 'package:firka/ui/theme/style.dart';
@@ -306,60 +303,15 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
       final noticeBoardWidgets = <(Widget, DateTime)>[];
 
       for (final item in infoItems) {
-        noticeBoardWidgets.add((
-          GestureDetector(
-            child: InfoBoardItemWidget(item),
-            onTap: () {
-              context.push('/message', extra: item);
-            },
-          ),
-          item.date,
-        ));
+        noticeBoardWidgets.add((InfoCard.infoBoardItem(item), item.date));
       }
 
       for (final grade in gradeItems) {
-        noticeBoardWidgets.add((
-          GestureDetector(
-            child: FirkaCard(
-              left: [
-                GradeWidget(grade),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        (grade.topic ?? grade.type.description!).firstUpper(),
-                        style: appStyle.fonts.B_16SB.apply(
-                          color: appStyle.colors.textPrimary,
-                        ),
-                      ),
-                      grade.mode?.description != null
-                          ? Text(
-                              grade.mode!.description!.firstUpper(),
-                              style: appStyle.fonts.B_16R.apply(
-                                color: appStyle.colors.textSecondary,
-                              ),
-                            )
-                          : SizedBox(),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            onTap: () {
-              showGradeBottomSheet(context, widget.data, grade);
-            },
-          ),
-          grade.recordDate,
-        ));
+        noticeBoardWidgets.add((InfoCard.gradeSubj(grade), grade.recordDate));
       }
 
       for (final entry in homeworkItems) {
-        noticeBoardWidgets.add((
-          HomeworkWidget(widget.data, entry),
-          entry.creationDate,
-        ));
+        noticeBoardWidgets.add((InfoCard.homework(entry), entry.creationDate));
       }
 
       noticeBoardWidgets.sort(
