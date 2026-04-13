@@ -4,7 +4,7 @@ import 'package:firka_common/ui/theme/style.dart';
 import 'package:kreta_api/kreta_api.dart';
 
 int roundGrade(
-  double grade, {
+  num grade, {
   double t1 = 1,
   double t2 = 0.5,
   double t3 = 0.5,
@@ -44,7 +44,7 @@ int percentageToGrade(int grade) {
 }
 
 Color getGradeColor(
-  double grade, {
+  num grade, {
   double t1 = 1,
   double t2 = 0.5,
   double t3 = 0.5,
