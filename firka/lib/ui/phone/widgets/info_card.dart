@@ -118,9 +118,6 @@ class InfoCard extends StatelessWidget {
     Grade grade, {
     void Function(BuildContext)? onTap,
   }) {
-    if (grade.type.description == null) {
-      logger.info(grade);
-    }
     List<String> texts = [
       (grade.mode?.description ?? grade.type.description!).firstUpper(),
     ];
