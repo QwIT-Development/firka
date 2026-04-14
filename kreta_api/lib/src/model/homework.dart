@@ -1,8 +1,8 @@
+import '../extensions.dart';
 import 'generic.dart';
 import 'subject.dart';
 
-class Homework {
-  final String uid;
+class Homework extends UidObj {
   final Subject subject;
   final String subjectName;
   final String teacherName;
@@ -17,7 +17,7 @@ class Homework {
   final bool canAttach;
 
   Homework({
-    required this.uid,
+    required super.uid,
     required this.subject,
     required this.subjectName,
     required this.teacherName,
@@ -39,13 +39,13 @@ class Homework {
       subjectName: json["TantargyNeve"],
       teacherName: json["RogzitoTanarNeve"],
       description: json["Szoveg"],
-      startDate: DateTime.parse(json["FeladasDatuma"]).toLocal(),
-      dueDate: DateTime.parse(json["HataridoDatuma"]).toLocal(),
-      creationDate: DateTime.parse(json["RogzitesIdopontja"]).toLocal(),
+      startDate: json.localDate("FeladasDatuma")!,
+      dueDate: json.localDate("HataridoDatuma")!,
+      creationDate: json.localDate("RogzitesIdopontja")!,
       isCreatedByTeacher: json["IsTanarRogzitette"],
       isDone: json["IsMegoldva"],
       canBeSubmitted: json["IsBeadhato"],
-      classGroup: UidObj.fromJson(json["OsztalyCsoport"]),
+      classGroup: json.uid("OsztalyCsoport")!,
       canAttach: json["IsCsatolasEngedelyezes"],
     );
   }

@@ -1,8 +1,8 @@
+import '../extensions.dart';
 import 'generic.dart';
 import 'subject.dart';
 
-class Test {
-  final String uid;
+class Test extends UidObj {
   final DateTime date;
   final DateTime reportDate;
   final String teacherName;
@@ -14,7 +14,7 @@ class Test {
   final UidObj classGroup;
 
   Test({
-    required this.uid,
+    required super.uid,
     required this.date,
     required this.reportDate,
     required this.teacherName,
@@ -29,15 +29,15 @@ class Test {
   factory Test.fromJson(Map<String, dynamic> json) {
     return Test(
       uid: json['Uid'],
-      date: DateTime.parse(json['Datum']).toLocal(),
-      reportDate: DateTime.parse(json['BejelentesDatuma']).toLocal(),
+      date: json.localDate('Datum')!,
+      reportDate: json.localDate('BejelentesDatuma')!,
       teacherName: json['RogzitoTanarNeve'],
       lessonNumber: json['OrarendiOraOraszama'],
       subject: Subject.fromJson(json['Tantargy']),
       subjectName: json['TantargyNeve'],
       theme: json['Temaja'],
-      method: NameUidDesc.fromJson(json['Modja']),
-      classGroup: UidObj.fromJson(json['OsztalyCsoport']),
+      method: json.nameUidDesc('Modja')!,
+      classGroup: json.uid('OsztalyCsoport')!,
     );
   }
 

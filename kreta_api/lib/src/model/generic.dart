@@ -1,11 +1,9 @@
-class NameUidDesc {
-  final String uid;
-  final String? name;
-  final String? description;
+class NameUidDesc extends NameUid {
+  final String description;
 
   NameUidDesc({
-    required this.uid,
-    required this.name,
+    required super.uid,
+    required super.name,
     required this.description,
   });
 
@@ -31,11 +29,10 @@ class NameUidDesc {
   }
 }
 
-class NameUid {
-  final String uid;
+class NameUid extends UidObj {
   final String name;
 
-  NameUid({required this.uid, required this.name});
+  NameUid({required super.uid, required this.name});
 
   factory NameUid.fromJson(Map<String, dynamic> json) {
     return NameUid(uid: json['Uid'], name: json['Nev']);
@@ -60,5 +57,31 @@ class UidObj {
     return 'UidObj('
         'uid: "$uid"'
         ')';
+  }
+}
+
+extension ToUidObj on Map<String, dynamic> {
+  UidObj? uid(String key) {
+    final value = this[key];
+    if (value == null) {
+      return null;
+    }
+    return UidObj.fromJson(value);
+  }
+
+  NameUid? nameUid(String key) {
+    final value = this[key];
+    if (value == null) {
+      return null;
+    }
+    return NameUid.fromJson(value);
+  }
+
+  NameUidDesc? nameUidDesc(String key) {
+    final value = this[key];
+    if (value == null) {
+      return null;
+    }
+    return NameUidDesc.fromJson(value);
   }
 }

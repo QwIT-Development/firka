@@ -1,4 +1,6 @@
+import '../extensions.dart';
 import 'generic.dart';
+import 'subject.dart';
 
 class ClassGroup {
   final String uid;
@@ -27,17 +29,11 @@ class ClassGroup {
     return ClassGroup(
       uid: json['Uid'],
       name: json['Nev'],
-      headTeacher: json['OsztalyFonok'] != null
-          ? UidObj.fromJson(json['OsztalyFonok'])
-          : null,
-      substituteHeadTeacher: json['OsztalyFonokHelyettes'] != null
-          ? UidObj.fromJson(json['OsztalyFonokHelyettes'])
-          : null,
-      studyGroup: NameUidDesc.fromJson(json['OktatasNevelesiKategoria']),
+      headTeacher: json.uid('OsztalyFonok'),
+      substituteHeadTeacher: json.uid('OsztalyFonokHelyettes'),
+      studyGroup: json.nameUidDesc('OktatasNevelesiKategoria')!,
       studyGroupSortIndex: json['OktatasNevelesiKategoriaSortIndex'],
-      studyTask: json['OktatasNevelesiFeladat'] != null
-          ? NameUidDesc.fromJson(json['OktatasNevelesiFeladat'])
-          : null,
+      studyTask: json.nameUidDesc('OktatasNevelesiFeladat'),
       isActive: json['IsAktiv'],
       type: json['Tipus'],
     );
@@ -59,55 +55,32 @@ class ClassGroup {
   }
 }
 
-class SubjectAverage {
-  final String uid;
-  final String name;
-  final String? teacherName;
-  final String subjectCategoryId;
-  final String subjectCategoryName;
-  final String subjectCategoryDescription;
+class SubjectAverage extends UidObj {
+  final Subject subject;
   final double? average;
   final double? weightedSum;
   final double? weightedCount;
-  final int sortIndex;
 
   SubjectAverage({
-    required this.uid,
-    required this.name,
-    this.teacherName,
-    required this.subjectCategoryId,
-    required this.subjectCategoryName,
-    required this.subjectCategoryDescription,
+    required super.uid,
+    required this.subject,
     this.average,
     this.weightedSum,
     this.weightedCount,
-    required this.sortIndex,
   });
 
   factory SubjectAverage.fromJson(Map<String, dynamic> json) {
-    final tantargy = json['Tantargy'] ?? {};
-    final kategori = tantargy['Kategoria'] ?? {};
-
     return SubjectAverage(
-      uid: json['Uid'] ?? '',
-      name: tantargy['Nev'] ?? '',
-      teacherName: json['TeacherName'],
-      subjectCategoryId: kategori['Uid'] ?? '',
-      subjectCategoryName: kategori['Nev'] ?? '',
-      subjectCategoryDescription: kategori['Leiras'] ?? '',
-      average: json['Atlag'] != null ? (json['Atlag'] as num).toDouble() : null,
-      weightedSum: json['SulyozottOsztalyzatOsszege'] != null
-          ? (json['SulyozottOsztalyzatOsszege'] as num).toDouble()
-          : null,
-      weightedCount: json['SulyozottOsztalyzatSzama'] != null
-          ? (json['SulyozottOsztalyzatSzama'] as num).toDouble()
-          : null,
-      sortIndex: tantargy['SortIndex'] ?? 0,
+      uid: json['Uid'],
+      subject: Subject.fromJson(json['Tantargy']),
+      average: json.dbl('Atlag'),
+      weightedSum: json.dbl('SulyozottOsztalyzatOsszege'),
+      weightedCount: json.dbl('SulyozottOsztalyzatSzama'),
     );
   }
 
   @override
   String toString() {
-    return 'SubjectAverage(uid: "$uid", name: "$name", category: "$subjectCategoryName", average: $average)';
+    return 'SubjectAverage(uid: "$uid", name: "${subject.name}", category: "${subject.category.name}", average: $average)';
   }
 }

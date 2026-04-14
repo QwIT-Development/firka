@@ -1,14 +1,15 @@
-class Institution {
+import 'generic.dart';
+
+class Institution extends UidObj {
   final CustomizationSettings customizationSettings;
   final String shortName;
   final List<SystemModule> systemModuleList;
-  final String uid;
 
   Institution({
     required this.customizationSettings,
     required this.shortName,
     required this.systemModuleList,
-    required this.uid,
+    required super.uid,
   });
 
   factory Institution.fromJson(Map<String, dynamic> json) {

@@ -1,16 +1,16 @@
-class Guardian {
+import 'generic.dart';
+
+class Guardian extends NameUid {
   final String? email;
   final bool isLegalRepresentative;
-  final String? name;
   final String? phoneNumber;
-  final String uid;
 
   Guardian({
     required this.email,
     required this.isLegalRepresentative,
-    required this.name,
+    required super.name,
     required this.phoneNumber,
-    required this.uid,
+    required super.uid,
   });
 
   factory Guardian.fromJson(Map<String, dynamic> json) {

@@ -1,8 +1,8 @@
+import '../extensions.dart';
 import 'generic.dart';
 import 'subject.dart';
 
-class Omission {
-  final String uid;
+class Omission extends UidObj {
   final Subject subject;
   final Class? c;
   final DateTime date;
@@ -16,7 +16,7 @@ class Omission {
   final UidObj? classGroup;
 
   Omission({
-    required this.uid,
+    required super.uid,
     required this.subject,
     required this.c,
     required this.date,
@@ -35,19 +35,15 @@ class Omission {
       uid: json['Uid'],
       subject: Subject.fromJson(json['Tantargy']),
       c: json['Osztaly'] != null ? Class.fromJson(json['Osztaly']) : null,
-      date: DateTime.parse(json['Datum']).toLocal(),
+      date: json.localDate('Datum')!,
       teacher: json['RogzitoTanarNeve'],
-      type: json['Tipus'] != null ? NameUidDesc.fromJson(json['Tipus']) : null,
-      mode: json['Mod'] != null ? NameUidDesc.fromJson(json['Mod']) : null,
+      type: json.nameUidDesc('Tipus'),
+      mode: json.nameUidDesc('Mod'),
       lateForMin: json['KesesPercben'],
-      createdAt: DateTime.parse(json['KeszitesDatuma']).toLocal(),
+      createdAt: json.localDate('KeszitesDatuma')!,
       state: json['IgazolasAllapota'],
-      proofType: json['IgazolasTipusa'] != null
-          ? NameUidDesc.fromJson(json['IgazolasTipusa'])
-          : null,
-      classGroup: json['OsztalyCsoport'] != null
-          ? UidObj.fromJson(json['OsztalyCsoport'])
-          : null,
+      proofType: json.nameUidDesc('IgazolasTipusa'),
+      classGroup: json.uid('OsztalyCsoport'),
     );
   }
 
@@ -79,8 +75,8 @@ class Class {
 
   factory Class.fromJson(Map<String, dynamic> json) {
     return Class(
-      start: DateTime.parse(json['KezdoDatum']).toLocal(),
-      end: DateTime.parse(json['VegDatum']).toLocal(),
+      start: json.localDate('KezdoDatum')!,
+      end: json.localDate('VegDatum')!,
       classNo: json['Oraszam'],
     );
   }

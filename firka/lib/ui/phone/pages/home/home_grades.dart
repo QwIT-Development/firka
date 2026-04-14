@@ -156,18 +156,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
       if (lessons != null && lessons!.response != null) {
         for (var lesson in lessons!.response!) {
           if (subjects.where((s) => s.uid == lesson.uid).isEmpty) {
-            subjects.add(
-              Subject(
-                uid: lesson.uid,
-                name: lesson.name,
-                category: NameUidDesc(
-                  uid: lesson.subjectCategoryId,
-                  name: lesson.subjectCategoryName,
-                  description: lesson.subjectCategoryDescription,
-                ),
-                sortIndex: lesson.sortIndex,
-              ),
-            );
+            subjects.add(lesson.subject);
           }
         }
       }
