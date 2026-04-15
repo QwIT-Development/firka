@@ -135,7 +135,6 @@ class _GradeChartState extends State<GradeChart> {
   @override
   Widget build(BuildContext context) {
     return FirkaCard.single(
-      padding: 0,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: AspectRatio(aspectRatio: 1.82, child: LineChart(avgData())),

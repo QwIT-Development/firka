@@ -34,12 +34,9 @@ class GradeWidget extends StatelessWidget {
       return FilledCircle(
         diameter: 36,
         color: gradeColor.withAlpha(38),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('❝', style: appStyle.fonts.P_14.copyWith(color: gradeColor)),
-            Text('❠', style: appStyle.fonts.P_14.copyWith(color: gradeColor)),
-          ],
+        child: Text(
+          '❝❠',
+          style: appStyle.fonts.B_16SB.copyWith(color: gradeColor),
         ),
       );
     }
@@ -68,10 +65,14 @@ class GradeWidget extends StatelessWidget {
   Widget _buildNumericCircle(int value, int weight) {
     final gradeColor = getGradeColor(value);
     final size = 36.0;
+    final textStyle = appStyle.fonts.H_H1.copyWith(
+      color: gradeColor,
+      fontSize: 27,
+    );
     final text = Text(
       value.toString(),
       style: weight < 100
-          ? appStyle.fonts.H_H1.copyWith(
+          ? textStyle.copyWith(
               foreground: Paint()
                 ..color = gradeColor
                 ..style = PaintingStyle.stroke
@@ -79,7 +80,7 @@ class GradeWidget extends StatelessWidget {
                 ..strokeCap = StrokeCap.round
                 ..strokeWidth = 1.13,
             )
-          : appStyle.fonts.H_H1.copyWith(color: gradeColor),
+          : textStyle,
     );
 
     if (weight > 100) {

@@ -52,7 +52,7 @@ class FirkaCard extends StatelessWidget {
   }
 
   const FirkaCard.single({
-    this.padding = 12,
+    this.padding = 0,
     this.shadow = true,
     this.attached = Attach.none,
     this.color,

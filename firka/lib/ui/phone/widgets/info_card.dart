@@ -23,7 +23,7 @@ class InfoCard extends StatelessWidget {
 
   final List<TextStyle> textSyles = [
     appStyle.fonts.B_16SB.apply(color: appStyle.colors.textPrimary),
-    appStyle.fonts.B_16R.apply(color: appStyle.colors.textSecondary),
+    appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
   ];
 
   InfoCard({
@@ -168,18 +168,22 @@ class InfoCard extends StatelessWidget {
     }
     return GestureDetector(
       child: FirkaCard.single(
-        padding: 16,
+        height: 68,
         child: Row(
           spacing: 12,
           children: [
+            SizedBox(width: 4),
             icon,
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                spacing: 2,
                 children: children,
               ),
             ),
             ...right,
+            SizedBox(width: 4),
           ],
         ),
       ),
