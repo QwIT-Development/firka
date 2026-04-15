@@ -280,7 +280,7 @@ extension LessonExtension on List<Lesson> {
   }
 
   Lesson? getPrevLesson(DateTime now) {
-    return firstWhereOrNull(
+    return reversed.firstWhereOrNull(
       (lesson) => lesson.end.isBefore(now.add(Duration(milliseconds: 1))),
     );
   }
