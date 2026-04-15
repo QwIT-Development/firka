@@ -48,7 +48,7 @@ class InfoCard extends StatelessWidget {
     );
   }
 
-  factory InfoCard.infoBoardItem(InfoBoardItem item) {
+  factory InfoCard.messageItem(MessageItem item) {
     return InfoCard(
       icon: FilledCircle(
         diameter: 36,

@@ -84,7 +84,7 @@ GoRouter createAppRouter() {
       GoRoute(
         path: '/message',
         builder: (context, state) {
-          final info = state.extra as InfoBoardItem?;
+          final info = state.extra as MessageItem?;
           if (info == null) {
             return const SizedBox.shrink();
           }

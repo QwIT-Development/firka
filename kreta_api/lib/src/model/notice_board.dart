@@ -1,22 +1,38 @@
 import '../extensions.dart';
 import 'generic.dart';
 
-class NoticeBoardItem extends UidObj {
-  final String author;
-  final DateTime validFrom;
-  final DateTime validTo;
+abstract class MessageItem extends UidObj {
   final String title;
+  final String author;
   final String contentHTML;
   final String contentText;
 
-  NoticeBoardItem({
+  MessageItem({
     required super.uid,
-    required this.author,
-    required this.validFrom,
-    required this.validTo,
     required this.title,
+    required this.author,
     required this.contentHTML,
     required this.contentText,
+  });
+
+  DateTime get date;
+}
+
+class NoticeBoardItem extends MessageItem {
+  final DateTime validFrom;
+  final DateTime validTo;
+
+  @override
+  DateTime get date => validFrom;
+
+  NoticeBoardItem({
+    required super.uid,
+    required super.title,
+    required super.author,
+    required super.contentHTML,
+    required super.contentText,
+    required this.validFrom,
+    required this.validTo,
   });
 
   factory NoticeBoardItem.fromJson(Map<String, dynamic> json) {
@@ -45,23 +61,19 @@ class NoticeBoardItem extends UidObj {
   }
 }
 
-class InfoBoardItem extends UidObj {
-  final String title;
+class InfoBoardItem extends MessageItem {
   final DateTime date;
-  final String author;
   final DateTime createdAt;
-  final String contentHTML;
-  final String contentText;
   final NameUidDesc type;
 
   InfoBoardItem({
     required super.uid,
-    required this.title,
-    required this.date,
-    required this.author,
+    required super.title,
+    required super.author,
+    required super.contentHTML,
+    required super.contentText,
     required this.createdAt,
-    required this.contentHTML,
-    required this.contentText,
+    required this.date,
     required this.type,
   });
 

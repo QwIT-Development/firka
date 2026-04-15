@@ -10,9 +10,9 @@ import 'package:firka/ui/shared/firka_icon.dart';
 
 class MessageScreen extends StatelessWidget {
   final AppInitialization data;
-  final InfoBoardItem info;
+  final MessageItem message;
 
-  const MessageScreen(this.data, this.info, {super.key});
+  const MessageScreen(this.data, this.message, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +68,7 @@ class MessageScreen extends StatelessWidget {
                           SizedBox(
                             width: MediaQuery.of(context).size.width * 0.85,
                             child: Text(
-                              info.title,
+                              message.title,
                               textAlign: TextAlign.center,
                               style: appStyle.fonts.H_H2.apply(
                                 color: appStyle.colors.textPrimary,
@@ -82,7 +82,7 @@ class MessageScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            info.date.format(data.l10n, FormatMode.yyyymmdd),
+                            message.date.format(data.l10n, FormatMode.yyyymmdd),
                             textAlign: TextAlign.center,
                             style: appStyle.fonts.B_16R.apply(
                               color: appStyle.colors.textSecondary,
@@ -107,7 +107,7 @@ class MessageScreen extends StatelessWidget {
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 6),
                                     child: Text(
-                                      info.author[0],
+                                      message.author[0],
                                       style: appStyle.fonts.H_18px.copyWith(
                                         fontSize: 20,
                                         color: appStyle.colors.textPrimary,
@@ -125,7 +125,7 @@ class MessageScreen extends StatelessWidget {
                               SizedBox(
                                 width: MediaQuery.of(context).size.width / 1.4,
                                 child: Text(
-                                  info.author,
+                                  message.author,
                                   style: appStyle.fonts.B_16SB.apply(
                                     color: appStyle.colors.textPrimary,
                                   ),
@@ -151,7 +151,7 @@ class MessageScreen extends StatelessWidget {
                               padding: const EdgeInsets.all(12),
                               child: SingleChildScrollView(
                                 child: Text(
-                                  info.contentText,
+                                  message.contentText,
                                   style: appStyle.fonts.B_16R.apply(
                                     color: appStyle.colors.textPrimary,
                                   ),
