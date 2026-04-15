@@ -124,8 +124,8 @@ class InfoCard extends StatelessWidget {
     return InfoCard(
       icon: GradeWidget(grade),
       texts: [
-        (grade.topic ??
-                value ??
+        (value ??
+                grade.topic ??
                 grade.mode?.description ??
                 grade.type.description!)
             .firstUpper(),
