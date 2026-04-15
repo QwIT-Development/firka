@@ -312,7 +312,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
       }
 
       for (final grade in gradeItems) {
-        noticeBoardWidgets.add((InfoCard.gradeSubj(grade), grade.recordDate));
+        noticeBoardWidgets.add((InfoCard.gradeSubj(grade), grade.creationDate));
       }
 
       for (final entry in homeworkItems) {
