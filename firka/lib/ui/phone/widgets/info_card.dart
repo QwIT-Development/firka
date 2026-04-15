@@ -120,10 +120,14 @@ class InfoCard extends StatelessWidget {
     Grade grade, {
     void Function(BuildContext)? onTap,
   }) {
+    String? value = grade.numericValue == null ? grade.strValue : null;
     return InfoCard(
       icon: GradeWidget(grade),
       texts: [
-        (grade.topic ?? grade.mode?.description ?? grade.type.description!)
+        (grade.topic ??
+                value ??
+                grade.mode?.description ??
+                grade.type.description!)
             .firstUpper(),
         grade.subject.name.firstUpper(),
       ],
