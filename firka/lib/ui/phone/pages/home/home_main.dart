@@ -299,11 +299,16 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     if (student != null && lessons != null) {
       final infoItems = [...(infoBoard ?? []), ...(noticeBoard ?? [])];
       final gradeItems = grades ?? [];
+      final testItems = tests ?? [];
       final homeworkItems = homework ?? [];
       final noticeBoardWidgets = <(Widget, DateTime)>[];
 
       for (final item in infoItems) {
         noticeBoardWidgets.add((InfoCard.messageItem(item), item.date));
+      }
+
+      for (final test in testItems) {
+        noticeBoardWidgets.add((InfoCard.test(test), test.reportDate));
       }
 
       for (final grade in gradeItems) {

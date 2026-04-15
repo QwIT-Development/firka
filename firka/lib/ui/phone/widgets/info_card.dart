@@ -48,6 +48,25 @@ class InfoCard extends StatelessWidget {
     );
   }
 
+  factory InfoCard.test(Test test) {
+    final color = appStyle.colors.accent;
+
+    return InfoCard(
+      icon: FilledCircle(
+        diameter: 36,
+        color: color.withAlpha(38),
+        child: FirkaIconWidget(
+          FirkaIconType.majesticons,
+          Majesticon.editPen4Solid,
+          color: color,
+          size: 24,
+        ),
+      ),
+      texts: [test.theme.firstUpper(), test.subject.name.firstUpper()],
+      right: [buildSubject(color, test.subject)],
+    );
+  }
+
   factory InfoCard.messageItem(MessageItem item) {
     return InfoCard(
       icon: FilledCircle(
