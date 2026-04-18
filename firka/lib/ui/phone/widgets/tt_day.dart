@@ -1,3 +1,4 @@
+import 'package:firka/core/settings.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/ui/components/firka_card.dart';
@@ -5,6 +6,7 @@ import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import 'lesson.dart';
 
@@ -30,11 +32,10 @@ class TimeTableDayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget noLessonsWidget = SizedBox();
-    List<Widget> ttBody = List.empty(growable: true);
+    Widget ttBody;
 
     if (lessons.isEmpty) {
-      noLessonsWidget = Column(
+      ttBody = Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -70,9 +71,10 @@ class TimeTableDayWidget extends StatelessWidget {
         ],
       );
     } else {
+      List<Widget> ttLessons = List.empty(growable: true);
       for (var i = 0; i < events.length; i++) {
         var event = events[i];
-        ttBody.add(
+        ttLessons.add(
           FirkaCard(
             left: [
               Text(
@@ -85,43 +87,71 @@ class TimeTableDayWidget extends StatelessWidget {
           ),
         );
       }
+
+      var showBreak = data.settings
+          .group("settings")
+          .subGroup("timetable_toast")
+          .boolean("breaks");
+
       for (var i = 0; i < lessons.length; i++) {
         var lesson = lessons[i];
-        Lesson? nextLesson = lessons.length > i + 1 ? lessons[i + 1] : null;
-        ttBody.add(
+        var nextLesson = lessons.length > i + 1 ? lessons[i + 1] : null;
+        ttLessons.add(
           LessonWidget(
             data,
-            week,
-            day,
             lessons.getLessonNo(lesson),
             lesson,
             tests.firstWhereOrNull(
               (test) => test.lessonNumber == lesson.lessonNumber,
             ),
-            nextLesson,
+          ),
+        );
+
+        if (!showBreak || nextLesson == null) {
+          continue;
+        }
+
+        var breakMins = nextLesson.start.difference(lesson.end).inMinutes;
+        ttLessons.add(
+          FirkaCard(
+            color: appStyle.colors.cardTranslucent,
+            margin: EdgeInsets.all(0),
+            padding: EdgeInsets.symmetric(vertical: 11, horizontal: 16),
+            shadow: false,
+            left: [
+              Text(
+                initData.l10n.breakTxt,
+                style: appStyle.fonts.B_14SB.copyWith(
+                  color: appStyle.colors.textSecondary,
+                ),
+              ),
+            ],
+            right: [
+              Text(
+                "$breakMins ${breakMins > 1 ? initData.l10n.starting_min_plural : initData.l10n.starting_min}",
+                style: appStyle.fonts.B_14R.copyWith(
+                  color: appStyle.colors.textSecondary,
+                ),
+              ),
+            ],
           ),
         );
       }
+
+      ttBody = Padding(
+        padding: const EdgeInsets.only(top: 70 + 16 + 20, left: 20, right: 20),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 16,
+            children: [...ttLessons, SizedBox(height: 55)],
+          ),
+        ),
+      );
     }
 
-    return SizedBox(
-      width: MediaQuery.of(context).size.width / 1.1,
-      child: ttBody.isEmpty
-          ? noLessonsWidget
-          : Padding(
-              padding: const EdgeInsets.only(
-                top: 70 + 16 + 20,
-                left: 4,
-                right: 4,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [...ttBody, SizedBox(height: 24)],
-                ),
-              ),
-            ),
-    );
+    return ttBody;
   }
 }

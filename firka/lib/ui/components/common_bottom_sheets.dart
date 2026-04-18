@@ -654,8 +654,6 @@ Future<void> showGradeBottomSheet(
                           SizedBox(height: 20),
                           LessonWidget(
                             data,
-                            [],
-                            [],
                             null,
                             Lesson(
                               uid: "-2",
@@ -683,8 +681,6 @@ Future<void> showGradeBottomSheet(
                               lastModifiedAt: timeNow(),
                             ),
                             null,
-                            null,
-                            placeholderMode: true,
                           ),
                           FirkaCard(
                             left: [
@@ -827,8 +823,6 @@ Future<void> showHomeworkBottomSheet(
                     SizedBox(height: 8),
                     LessonWidget(
                       data,
-                      [],
-                      [],
                       null,
                       Lesson(
                         uid: "-1",
@@ -848,8 +842,6 @@ Future<void> showHomeworkBottomSheet(
                         lastModifiedAt: timeNow(),
                       ),
                       null,
-                      null,
-                      placeholderMode: true,
                     ),
                     SizedBox(
                       width: double.infinity,
