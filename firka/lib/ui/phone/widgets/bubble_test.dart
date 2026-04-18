@@ -19,12 +19,12 @@ class BubbleTest extends StatelessWidget {
           height: 24,
         ),
         Transform.translate(
-          offset: Offset(3, 6),
+          offset: Offset(2, 4),
           child: FirkaIconWidget(
             FirkaIconType.majesticons,
-            Majesticon.editPen4Line,
+            Majesticon.editPen4Solid,
             color: appStyle.colors.accent,
-            size: 14,
+            size: 16,
           ),
         ),
       ],
