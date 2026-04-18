@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firka/api/client/kreta_stream.dart';
+import 'package:intl/intl.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/extensions.dart';
@@ -287,7 +288,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     active = -1;
 
     const double cardWidth = 40.0;
-    const double spacing = 18.0;
+    const double spacing = 16.0;
     final double totalCardWidth = cardWidth + spacing;
 
     // Calculate animation positions based on real display indices
@@ -409,7 +410,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
           Stack(
             children: [
               ttWidget,
-              Transform.translate(offset: Offset(38, -10), child: BubbleTest()),
+              Transform.translate(offset: Offset(34, -9), child: BubbleTest()),
             ],
           ),
         );
@@ -464,10 +465,11 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
       );
     }
 
-    Widget ttAnimatedCard = Card(
-      color: Colors.transparent,
-      shadowColor: Colors.transparent,
-      child: SizedBox(width: 40, height: 54),
+    Widget ttAnimatedCard = BottomTimeTableNavIconWidget(
+      widget.data.l10n,
+      () => {},
+      false,
+      null,
     );
 
     if (_cardOffsetAnimation != null && _showAnimatedCard) {
@@ -476,10 +478,11 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
         builder: (context, child) {
           return Transform.translate(
             offset: _cardOffsetAnimation!.value,
-            child: Card(
-              color: appStyle.colors.buttonSecondaryFill,
-              shadowColor: Colors.transparent,
-              child: SizedBox(width: 40, height: 54),
+            child: BottomTimeTableNavIconWidget(
+              widget.data.l10n,
+              () => {},
+              true,
+              null,
             ),
           );
         },
@@ -600,6 +603,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                         ),
                         GestureDetector(
                           child: Row(
+                            spacing: 4,
                             children: [
                               Text(
                                 now!.format(
@@ -610,7 +614,6 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                                   color: appStyle.colors.textPrimary,
                                 ),
                               ),
-                              SizedBox(width: 4),
                               if (showABTimetable) ...[
                                 Text(
                                   "•",
@@ -618,7 +621,6 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                                     color: appStyle.colors.accent,
                                   ),
                                 ),
-                                SizedBox(width: 4),
                                 Text(
                                   now!.isAWeek()
                                       ? widget.data.l10n.a_week
@@ -672,6 +674,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
         ),
         Column(
           mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: TransparentPointer(
@@ -701,7 +704,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
               ),
             ),
             Container(
-              padding: EdgeInsets.only(bottom: 12),
+              padding: EdgeInsets.only(bottom: 2),
               decoration: ShapeDecoration(
                 color: Colors.transparent,
                 shape: RoundedRectangleBorder(
@@ -710,17 +713,18 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                 shadows: [
                   BoxShadow(
                     color: appStyle.colors.background,
-                    blurRadius: 30,
-                    spreadRadius: 20,
-                    offset: Offset(0, -25),
+                    blurRadius: 36,
+                    offset: Offset(0, -27),
                   ),
                 ],
               ),
-              child: Stack(
-                children: [
-                  ttAnimatedCard,
-                  Wrap(spacing: 10, children: ttWidgets),
-                ],
+              child: Center(
+                child: Stack(
+                  children: [
+                    ttAnimatedCard,
+                    Wrap(spacing: 16, children: ttWidgets),
+                  ],
+                ),
               ),
             ),
           ],
