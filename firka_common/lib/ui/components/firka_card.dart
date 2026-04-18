@@ -6,8 +6,10 @@ import 'package:firka_common/ui/theme/style.dart';
 enum Attach { none, bottom, top }
 
 class FirkaCard extends StatelessWidget {
-  final double padding;
+  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry margin;
   final double? height;
+  final double? width;
   final bool shadow;
   final Attach attached;
   final Color? color;
@@ -16,7 +18,8 @@ class FirkaCard extends StatelessWidget {
 
   factory FirkaCard({
     required List<Widget> left,
-    double padding = 12,
+    EdgeInsetsGeometry padding = const EdgeInsets.all(12),
+    EdgeInsetsGeometry margin = const EdgeInsets.all(4),
     bool shadow = true,
     List<Widget> center = const [],
     List<Widget> right = const [],
@@ -24,6 +27,7 @@ class FirkaCard extends StatelessWidget {
     Attach attached = Attach.none,
     Color? color,
     double? height,
+    double? width,
     bool? isLightMode,
   }) {
     final leftRow = Row(children: left);
@@ -40,6 +44,7 @@ class FirkaCard extends StatelessWidget {
           );
     return FirkaCard.single(
       padding: padding,
+      margin: margin,
       attached: attached,
       color: color,
       height: height,
@@ -52,11 +57,13 @@ class FirkaCard extends StatelessWidget {
   }
 
   const FirkaCard.single({
-    this.padding = 0,
+    this.padding = const EdgeInsets.all(0),
+    this.margin = const EdgeInsets.all(4),
     this.shadow = true,
     this.attached = Attach.none,
     this.color,
     this.height,
+    this.width,
     this.isLightMode,
     required this.child,
     super.key,
@@ -69,28 +76,33 @@ class FirkaCard extends StatelessWidget {
     final isLight =
         isLightMode ?? Theme.of(context).brightness == Brightness.light;
 
-    return SizedBox(
-      width: MediaQuery.of(context).size.width,
+    return Container(
       height: height,
-      child: FirkaShadow(
-        shadow: shadow,
-        isLightMode: isLight,
-        child: Card(
-          color: color ?? appStyle.colors.card,
-          shadowColor: isLight && shadow ? null : Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(
-                attached == Attach.top ? attachedRounding : defaultRounding,
-              ),
-              bottom: Radius.circular(
-                attached == Attach.bottom ? attachedRounding : defaultRounding,
-              ),
+      width: width,
+      padding: padding,
+      margin: margin,
+      decoration: ShapeDecoration(
+        shadows: shadow && !isLight
+            ? [
+                BoxShadow(
+                  color: appStyle.colors.shadowColor,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : [],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(
+              attached == Attach.top ? attachedRounding : defaultRounding,
+            ),
+            bottom: Radius.circular(
+              attached == Attach.bottom ? attachedRounding : defaultRounding,
             ),
           ),
-          child: Padding(padding: EdgeInsets.all(this.padding), child: child),
         ),
+        color: color ?? appStyle.colors.card,
       ),
+      child: child,
     );
   }
 }
