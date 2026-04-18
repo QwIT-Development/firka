@@ -146,7 +146,7 @@ class LessonWidget extends StatelessWidget {
                   spacing: 12,
                   children: [
                     LimitedBox(
-                      maxWidth: 150,
+                      maxWidth: 155,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
@@ -239,32 +239,46 @@ class LessonWidget extends StatelessWidget {
               test,
             );
           },
-          child: FirkaCard(
+          child: FirkaCard.single(
+            height: 48,
+            padding: EdgeInsets.symmetric(horizontal: 16),
             margin: EdgeInsets.only(top: 4),
             attached: Attach.top,
-            left: [
-              FirkaIconWidget(
-                FirkaIconType.majesticons,
-                Majesticon.editPen4Solid,
-                color: appStyle.colors.accent,
-                size: 20,
-              ),
-              SizedBox(width: 8),
-              Text(
-                theme,
-                style: appStyle.fonts.B_16SB.apply(
-                  color: appStyle.colors.textPrimary,
+            child: Row(
+              children: [
+                FirkaIconWidget(
+                  FirkaIconType.majesticons,
+                  Majesticon.editPen4Solid,
+                  color: appStyle.colors.accent,
+                  size: 20,
                 ),
-              ),
-            ],
-            right: [
-              Text(
-                method,
-                style: appStyle.fonts.B_14R.apply(
-                  color: appStyle.colors.textSecondary,
+                SizedBox(width: 8),
+                LimitedBox(
+                  maxWidth: 160,
+                  child: Text(
+                    theme,
+                    style: appStyle.fonts.B_16SB.apply(
+                      color: appStyle.colors.textPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(width: 12),
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      method,
+                      style: appStyle.fonts.B_14R.apply(
+                        color: appStyle.colors.textSecondary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
