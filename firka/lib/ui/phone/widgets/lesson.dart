@@ -267,7 +267,7 @@ class LessonWidget extends StatelessWidget {
                 Flexible(
                   fit: FlexFit.loose,
                   child: Align(
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.centerRight,
                     child: Text(
                       method,
                       style: appStyle.fonts.B_14R.apply(
