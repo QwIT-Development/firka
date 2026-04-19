@@ -7,17 +7,19 @@ import 'package:firka_common/ui/theme/style.dart';
 import 'filled_circle.dart';
 
 class GradeWidget extends StatelessWidget {
-  const GradeWidget(this.grade, {super.key})
+  const GradeWidget(this.grade, {this.size = 36, super.key})
     : gradeValue = null,
       gradeWeight = null;
 
   const GradeWidget.gradeValue(
     this.gradeValue, {
     this.gradeWeight = 100,
+    this.size = 36,
     super.key,
   }) : grade = null;
 
   final Grade? grade;
+  final double size;
   final int? gradeValue;
   final int? gradeWeight;
 
@@ -32,7 +34,7 @@ class GradeWidget extends StatelessWidget {
     if (g.numericValue == null) {
       final gradeColor = appStyle.colors.accent;
       return FilledCircle(
-        diameter: 36,
+        diameter: size,
         color: gradeColor.withAlpha(38),
         child: Text(
           '❝❠',
@@ -44,7 +46,7 @@ class GradeWidget extends StatelessWidget {
     if (g.valueType.name == 'Szazalekos') {
       final gradeColor = getGradeColor(percentageToGrade(g.numericValue!));
       return FilledCircle(
-        diameter: 36,
+        diameter: size,
         color: gradeColor.withAlpha(38),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -64,10 +66,9 @@ class GradeWidget extends StatelessWidget {
 
   Widget _buildNumericCircle(int value, int weight) {
     final gradeColor = getGradeColor(value);
-    final size = 36.0;
     final textStyle = appStyle.fonts.H_H1.copyWith(
       color: gradeColor,
-      fontSize: 27,
+      fontSize: size * 0.75,
     );
     final text = Text(
       value.toString(),
@@ -84,7 +85,7 @@ class GradeWidget extends StatelessWidget {
     );
 
     if (weight > 100) {
-      final circle_size = 30.0;
+      final circle_size = size * 0.8;
       final circle = FilledCircle(
         diameter: circle_size,
         color: gradeColor.withAlpha(38),
@@ -110,7 +111,7 @@ class GradeWidget extends StatelessWidget {
     }
 
     return FilledCircle(
-      diameter: 36,
+      diameter: size,
       color: gradeColor.withAlpha(38),
       child: text,
     );
