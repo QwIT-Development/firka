@@ -1,3 +1,6 @@
+import 'package:firka/ui/phone/widgets/info_card.dart';
+import 'package:firka_common/ui/components/filled_circle.dart';
+import 'package:firka_common/ui/shared/grade_small_card.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/data/models/homework_cache_model.dart';
 import 'package:firka/core/debug_helper.dart';
@@ -23,6 +26,53 @@ import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/ui/components/grade.dart';
 import 'package:firka/ui/components/grade_helpers.dart';
 
+Future<void> showFirkaBottomSheet(
+  BuildContext context,
+  List<Widget> children,
+) async {
+  showModalBottomSheet(
+    context: context,
+    elevation: 100,
+    isScrollControlled: true,
+    enableDrag: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: appStyle.colors.a15p,
+    builder: (BuildContext context) => Align(
+      alignment: AlignmentGeometry.bottomCenter,
+      child: Container(
+        padding: const EdgeInsets.all(20) - EdgeInsets.only(top: 20),
+        decoration: BoxDecoration(
+          color: appStyle.colors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Align(
+              heightFactor: 0,
+              alignment: Alignment.topCenter,
+              child: Container(
+                margin: EdgeInsets.only(top: 18),
+                width: 40,
+                height: 4,
+                foregroundDecoration: ShapeDecoration(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadiusGeometry.circular(2),
+                  ),
+                  color: appStyle.colors.shadowColor,
+                ),
+              ),
+            ),
+            SizedBox(height: 40),
+            ...children,
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 Future<void> showLessonBottomSheet(
   BuildContext context,
   AppInitialization data,
@@ -38,283 +88,146 @@ Future<void> showLessonBottomSheet(
       .subGroup("developer")
       .boolean("stats_for_nerds");
 
-  final showTests = data.settings
-      .group("settings")
-      .subGroup("timetable_toast")
-      .boolean("tests_and_homework");
-  showModalBottomSheet(
-    context: context,
-    elevation: 100,
-    isScrollControlled: true,
-    enableDrag: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: appStyle.colors.a15p,
-    builder: (BuildContext context) {
-      Widget statsForNerds = SizedBox();
+  Widget? statsForNerds;
 
-      final y2k = DateTime(2000, 1);
+  final y2k = DateTime(2000, 1);
 
-      if (statsForNerdsEnabled) {
-        final stats =
-            "${data.l10n.stats_date}: ${lesson.start.isAfter(y2k) ? lesson.start.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
-            "${data.l10n.stats_created_at}: ${lesson.createdAt.isAfter(y2k) ? lesson.createdAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
-            "${data.l10n.stats_last_mod}: ${lesson.lastModifiedAt.isAfter(y2k) ? lesson.lastModifiedAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}";
-        statsForNerds = Text(
-          stats,
-          style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
-        );
-      }
-
-      return Stack(
-        children: [
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              behavior: HitTestBehavior.opaque,
-              child: Container(color: Colors.transparent),
-            ),
+  if (statsForNerdsEnabled) {
+    final stats =
+        "${data.l10n.stats_date}: ${lesson.start.isAfter(y2k) ? lesson.start.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
+        "${data.l10n.stats_created_at}: ${lesson.createdAt.isAfter(y2k) ? lesson.createdAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
+        "${data.l10n.stats_last_mod}: ${lesson.lastModifiedAt.isAfter(y2k) ? lesson.lastModifiedAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}";
+    statsForNerds = Text(
+      stats,
+      style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
+    );
+  }
+  showFirkaBottomSheet(context, [
+    Row(
+      children: [
+        SizedBox(
+          width: 24,
+          height: 24,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              SvgPicture.asset(
+                "assets/icons/subtract.svg",
+                color: bgColor,
+                width: 24,
+                height: 24,
+              ),
+              Text(
+                lessonNo.toString(),
+                style: appStyle.fonts.B_16R.apply(color: secondary),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              decoration: BoxDecoration(
-                color: appStyle.colors.background,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        FilledCircle(
+          diameter: 40,
+          color: bgColor,
+          child: ClassIconWidget(
+            uid: lesson.uid,
+            className: lesson.name,
+            category: subjectName,
+            color: accent,
+            size: 26,
+          ),
+        ),
+      ],
+    ),
+    SizedBox(height: 20),
+    Row(
+      children: [
+        Text(
+          "${lesson.name} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
+          style: appStyle.fonts.H_18px.apply(
+            color: appStyle.colors.textPrimary,
+          ),
+        ),
+      ],
+    ),
+    SizedBox(height: 2),
+    Text(
+      lesson.teacher ?? 'N/A',
+      style: appStyle.fonts.B_14R.apply(
+        color: appStyle.colors.textSecondary,
+        decoration: lesson.substituteTeacher != null
+            ? TextDecoration.lineThrough
+            : TextDecoration.none,
+      ),
+    ),
+    if (lesson.substituteTeacher != null)
+      Text(
+        lesson.substituteTeacher!,
+        style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
+      ),
+    SizedBox(height: 8),
+    Text(
+      '${lesson.start.format(data.l10n, FormatMode.hmm)} - ${lesson.end.format(data.l10n, FormatMode.hmm)}',
+      style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
+    ),
+    SizedBox(height: 20),
+    FirkaCard(
+      margin: EdgeInsets.all(0),
+      padding: EdgeInsets.all(14),
+      left: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 8,
+          children: [
+            Text(
+              data.l10n.lesson_subject,
+              style: appStyle.fonts.H_14px.apply(
+                color: appStyle.colors.textPrimary,
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16) + EdgeInsets.only(bottom: 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              SvgPicture.asset(
-                                "assets/icons/subtract.svg",
-                                color: bgColor,
-                                width: 18,
-                                height: 18,
-                              ),
-                              Text(
-                                lessonNo.toString(),
-                                style: appStyle.fonts.B_12R.apply(
-                                  color: secondary,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
-                        Transform.translate(
-                          offset: Offset(-4, 0),
-                          child: Card(
-                            shadowColor: Colors.transparent,
-                            color: bgColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsetsGeometry.all(4),
-                              child: ClassIconWidget(
-                                color: accent,
-                                size: 20,
-                                uid: lesson.uid,
-                                className: lesson.name,
-                                category: lesson.subject?.name != null
-                                    ? lesson.subject!.name.firstUpper()
-                                    : '',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 6),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                "${lesson.name} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
-                                style: appStyle.fonts.H_18px.apply(
-                                  color: appStyle.colors.textPrimary,
-                                ),
-                              ),
-                              Card(
-                                shadowColor: Colors.transparent,
-                                color: appStyle.colors.a15p,
-                                child: Padding(
-                                  padding: EdgeInsets.all(5),
-                                  child: Text(
-                                    lesson.roomName ?? 'N/A',
-                                    style: appStyle.fonts.B_12R.apply(
-                                      color: appStyle.colors.secondary,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            lesson.teacher ?? 'N/A',
-                            style: appStyle.fonts.B_16R.apply(
-                              color: appStyle.colors.textPrimary,
-                            ),
-                          ),
-                          Text(
-                            '${lesson.start.format(data.l10n, FormatMode.hmm)} - ${lesson.end.format(data.l10n, FormatMode.hmm)}',
-                            style: appStyle.fonts.B_16R.apply(
-                              color: appStyle.colors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    FirkaCard(
-                      left: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              data.l10n.lesson_subject,
-                              style: appStyle.fonts.H_14px.apply(
-                                color: appStyle.colors.textPrimary,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.7,
-                              child: Text(
-                                lesson.theme ?? 'N/A',
-                                style: appStyle.fonts.B_16R.apply(
-                                  color: appStyle.colors.textPrimary,
-                                ),
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            statsForNerds,
-                          ],
-                        ),
-                      ],
-                    ),
-                    if (test != null && showTests)
-                      FirkaCard(
-                        left: [
-                          Container(
-                            decoration: ShapeDecoration(
-                              color: appStyle.colors.a15p,
-                              shape: CircleBorder(),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: FirkaIconWidget(
-                                FirkaIconType.majesticons,
-                                Majesticon.editPen4Solid,
-                                size: 26.0,
-                                color: appStyle.colors.accent,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 12),
-                          Container(
-                            alignment: Alignment.centerLeft,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.6,
-                                  child: Text(
-                                    test.theme,
-                                    style: appStyle.fonts.B_16SB.apply(
-                                      color: appStyle.colors.textPrimary,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.6,
-                                  child: Text(
-                                    test.method.description ?? 'N/A',
-                                    style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.textSecondary,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            decoration: ShapeDecoration(
-                              color: appStyle.colors.a15p,
-                              shape: CircleBorder(),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: FirkaIconWidget(
-                                FirkaIconType.majesticons,
-                                Majesticon.tooltipsSolid,
-                                size: 26.0,
-                                color: appStyle.colors.accent,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    SizedBox(height: 8),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 1.1,
-                      child: GestureDetector(
-                        child: FirkaCard(
-                          left: [],
-                          center: [
-                            Text(
-                              data.l10n.view_subject_btn,
-                              style: appStyle.fonts.B_16R.apply(
-                                color: appStyle.colors.textSecondary,
-                              ),
-                            ),
-                          ],
-                          color: appStyle.colors.buttonSecondaryFill,
-                        ),
-                        onTap: () {
-                          activeSubjectUid = lesson.subject!.uid;
-                          subjectName = lesson.subject!.name;
-                          subjectId = lesson.subject!.uid;
-                          subjectCategory = lesson.subject!.category.name ?? "";
-                          subjectInfo = [];
-                          Navigator.pop(context);
-                          context.push(
-                            '/timetable/subject/${lesson.subject!.uid}',
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+            ),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.7,
+              child: Text(
+                lesson.theme ?? 'N/A',
+                style: appStyle.fonts.B_16R.apply(
+                  color: appStyle.colors.textPrimary,
                 ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
+            ),
+            ?statsForNerds,
+          ],
+        ),
+      ],
+    ),
+    SizedBox(height: 6),
+    if (test != null) InfoCard.testDesc(test),
+    SizedBox(height: 16),
+    GestureDetector(
+      child: FirkaCard(
+        margin: EdgeInsets.all(0),
+        left: [],
+        center: [
+          Text(
+            data.l10n.view_subject_btn,
+            style: appStyle.fonts.B_16R.apply(
+              color: appStyle.colors.textSecondary,
             ),
           ),
         ],
-      );
-    },
-  );
+        color: appStyle.colors.buttonSecondaryFill,
+      ),
+      onTap: () {
+        activeSubjectUid = lesson.subject!.uid;
+        subjectName = lesson.subject!.name;
+        subjectId = lesson.subject!.uid;
+        subjectCategory = lesson.subject!.category.name;
+        subjectInfo = [];
+        Navigator.pop(context);
+        context.push('/timetable/subject/${lesson.subject!.uid}');
+      },
+    ),
+  ]);
 }
 
 Future<void> showTestBottomSheet(
@@ -325,261 +238,70 @@ Future<void> showTestBottomSheet(
   Color accent,
   Color secondary,
   Color bgColor,
-  Test? test,
+  Test test,
 ) async {
   final date = lesson.start;
-  final formattedDate = DateFormat(
-    'MMMM d, EEEE',
-    data.l10n.localeName,
-  ).format(date);
-  final formattedTime = DateFormat(
-    'MMMM d, HH:mm',
-    data.l10n.localeName,
-  ).format(date);
+  final formattedDate =
+      "${date.format(data.l10n, FormatMode.grades)}, ${DateFormat.EEEE(data.l10n.localeName).format(date).firstUpper()}";
 
   final statsForNerdsEnabled = data.settings
       .group("settings")
       .subGroup("developer")
       .boolean("stats_for_nerds");
 
-  final showTests = data.settings
-      .group("settings")
-      .subGroup("timetable_toast")
-      .boolean("tests_and_homework");
-  showModalBottomSheet(
-    context: context,
-    elevation: 100,
-    isScrollControlled: true,
-    enableDrag: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: appStyle.colors.a15p,
-    builder: (BuildContext context) {
-      Widget statsForNerds = SizedBox();
-
-      final y2k = DateTime(2000, 1);
-      if (statsForNerdsEnabled) {
-        final stats =
-            "${data.l10n.stats_date}: ${lesson.start.isAfter(y2k) ? lesson.start.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
-            "${data.l10n.stats_created_at}: ${lesson.createdAt.isAfter(y2k) ? lesson.createdAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
-            "${data.l10n.stats_last_mod}: ${lesson.lastModifiedAt.isAfter(y2k) ? lesson.lastModifiedAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}";
-        statsForNerds = Text(
-          stats,
-          style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
-        );
-      }
-
-      return Stack(
-        children: [
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              behavior: HitTestBehavior.opaque,
-              child: Container(color: Colors.transparent),
-            ),
+  showFirkaBottomSheet(context, [
+    FilledCircle(
+      diameter: 40,
+      color: appStyle.colors.a15p,
+      child: FirkaIconWidget(
+        FirkaIconType.majesticons,
+        Majesticon.editPen4Solid,
+        size: 26.0,
+        color: appStyle.colors.accent,
+      ),
+    ),
+    SizedBox(height: 20),
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      spacing: 4,
+      children: [
+        Text(
+          "${test.theme} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
+          style: appStyle.fonts.H_18px.apply(
+            color: appStyle.colors.textPrimary,
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              decoration: BoxDecoration(
-                color: appStyle.colors.background,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16) + EdgeInsets.only(bottom: 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      decoration: ShapeDecoration(
-                        color: appStyle.colors.a15p,
-                        shape: CircleBorder(),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: FirkaIconWidget(
-                          FirkaIconType.majesticons,
-                          Majesticon.editPen4Solid,
-                          size: 22.0,
-                          color: appStyle.colors.accent,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 6),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  "${test?.theme ?? 'N/A'} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
-                                  style: appStyle.fonts.H_18px.apply(
-                                    color: appStyle.colors.textPrimary,
-                                  ),
-                                  maxLines: 4,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            test?.method.description ?? 'N/A',
-                            style: appStyle.fonts.B_16R.apply(
-                              color: appStyle.colors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    FirkaCard(
-                      left: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(height: 4),
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.7,
-                              child: Text(
-                                "${data.l10n.data}: $formattedDate",
-                                style: appStyle.fonts.B_16R.apply(
-                                  color: appStyle.colors.textPrimary,
-                                ),
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            statsForNerds,
-                          ],
-                        ),
-                      ],
-                    ),
-                    if (test != null && showTests)
-                      FirkaCard(
-                        left: [
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Stack(
-                                  children: [
-                                    SvgPicture.asset(
-                                      "assets/icons/subtract.svg",
-                                      color: bgColor,
-                                      width: 24,
-                                      height: 24,
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 8, top: 4),
-                                      child: Text(
-                                        lessonNo.toString(),
-                                        style: appStyle.fonts.B_12R.apply(
-                                          color: secondary,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Transform.translate(
-                                offset: Offset(-4, 0),
-                                child: Card(
-                                  shadowColor: Colors.transparent,
-                                  color: bgColor,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsetsGeometry.all(4),
-                                    child: ClassIconWidget(
-                                      color: accent,
-                                      size: 28,
-                                      uid: lesson.uid,
-                                      className: lesson.name,
-                                      category: lesson.subject?.name != null
-                                          ? lesson.subject!.name.firstUpper()
-                                          : '',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(width: 12),
-                          Container(
-                            alignment: Alignment.centerLeft,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.3,
-                                  child: Text(
-                                    lesson.name,
-                                    style: appStyle.fonts.B_16SB.apply(
-                                      color: appStyle.colors.textPrimary,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        right: [
-                          Text(
-                            formattedTime,
-                            style: appStyle.fonts.B_14R.apply(
-                              color: appStyle.colors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    SizedBox(height: 8),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 1.1,
-                      child: GestureDetector(
-                        child: FirkaCard(
-                          left: [],
-                          center: [
-                            Text(
-                              data.l10n.view_lesson_btn,
-                              style: appStyle.fonts.B_16R.apply(
-                                color: appStyle.colors.textSecondary,
-                              ),
-                            ),
-                          ],
-                          color: appStyle.colors.buttonSecondaryFill,
-                        ),
-                        onTap: () {
-                          showLessonBottomSheet(
-                            context,
-                            data,
-                            lesson,
-                            lessonNo,
-                            accent,
-                            secondary,
-                            bgColor,
-                            test,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+        ),
+        Text(
+          test.method.description,
+          style: appStyle.fonts.B_16R.apply(
+            color: appStyle.colors.textSecondary,
+          ),
+        ),
+      ],
+    ),
+    SizedBox(height: 20),
+    FirkaCard.single(
+      height: 48,
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      margin: EdgeInsets.all(0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            "${data.l10n.date}: $formattedDate",
+            style: appStyle.fonts.B_16R.apply(
+              color: appStyle.colors.textPrimary,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
-      );
-    },
-  );
+      ),
+    ),
+    SizedBox(height: 10),
+    LessonWidget(data, lessonNo, lesson, null),
+  ]);
 }
 
 Future<void> showGradeBottomSheet(
@@ -587,170 +309,99 @@ Future<void> showGradeBottomSheet(
   AppInitialization data,
   Grade grade,
 ) async {
-  showModalBottomSheet(
-    context: context,
-    elevation: 100,
-    isScrollControlled: true,
-    enableDrag: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: appStyle.colors.a15p,
-    constraints: BoxConstraints(
-      minHeight: MediaQuery.of(context).size.height * 0.34,
-    ),
-    builder: (BuildContext context) {
-      final gradeCreationDate = grade.creationDate;
-      final formattedDate = DateFormat(
-        'yyyy. MMMM d., EEEE',
-        data.l10n.localeName,
-      ).format(gradeCreationDate);
-
-      return Stack(
-        children: [
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              behavior: HitTestBehavior.opaque,
-              child: Container(color: Colors.transparent),
+  showFirkaBottomSheet(context, [
+    grade.numericValue == null
+        ? Container(
+            height: 40,
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            decoration: ShapeDecoration(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              color: appStyle.colors.a15p,
             ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              decoration: BoxDecoration(
-                color: appStyle.colors.background,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16) + EdgeInsets.only(bottom: 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(children: [GradeWidget(grade)]),
-                    SizedBox(height: 4),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 6),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            grade.topic ?? grade.type.description!,
-                            style: appStyle.fonts.H_18px.apply(
-                              color: appStyle.colors.textPrimary,
-                            ),
-                          ),
-                          grade.mode?.description != null
-                              ? SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width / 1.45,
-                                  child: Text(
-                                    grade.mode!.description!,
-                                    style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.textSecondary,
-                                    ),
-                                  ),
-                                )
-                              : SizedBox(),
-                          SizedBox(height: 20),
-                          LessonWidget(
-                            data,
-                            null,
-                            Lesson(
-                              uid: "-2",
-                              date: "",
-                              start: grade.creationDate,
-                              end: grade.creationDate,
-                              name: grade.subject.name,
-                              type: NameUidDesc(
-                                uid: "",
-                                name: "",
-                                description: "",
-                              ),
-                              state: NameUidDesc(
-                                uid: "",
-                                name: "",
-                                description: "",
-                              ),
-                              canStudentEditHomework: false,
-                              isHomeworkComplete: false,
-                              attachments: [],
-                              isDigitalLesson: false,
-                              digitalSupportDeviceTypeList: [],
-                              createdAt: timeNow(),
-                              subject: grade.subject,
-                              lastModifiedAt: timeNow(),
-                            ),
-                            null,
-                          ),
-                          FirkaCard(
-                            left: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "${data.l10n.tt_added}$formattedDate",
-                                    style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.textPrimary,
-                                    ),
-                                  ),
-                                  Text(
-                                    "${data.l10n.grade_teacherName}${grade.teacher}",
-                                    style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.textPrimary,
-                                    ),
-                                  ),
-                                  Text(
-                                    "${data.l10n.grade_strValue}${grade.strValue}",
-                                    style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.textPrimary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 8),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width / 1.1,
-                            child: GestureDetector(
-                              child: FirkaCard(
-                                left: [],
-                                center: [
-                                  Text(
-                                    data.l10n.view_subject_btn,
-                                    style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                                color: appStyle.colors.buttonSecondaryFill,
-                              ),
-                              onTap: () {
-                                activeSubjectUid = grade.subject.uid;
-                                subjectName = grade.subject.name;
-                                subjectId = grade.subject.uid;
-                                subjectCategory =
-                                    grade.subject.category.name ?? "";
-                                subjectInfo = [];
-                                Navigator.pop(context);
-                                context.go(
-                                  '/grades/subject/${grade.subject.uid}',
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  grade.strValue,
+                  style: appStyle.fonts.H_18px.apply(
+                    color: appStyle.colors.accent,
+                  ),
                 ),
+              ],
+            ),
+          )
+        : GradeWidget(grade, size: 40),
+    SizedBox(height: 20),
+    Text(
+      (grade.topic ?? grade.type.description).firstUpper(),
+      style: appStyle.fonts.H_18px.apply(color: appStyle.colors.textPrimary),
+    ),
+    grade.mode != null
+        ? Text(
+            grade.mode!.description,
+            style: appStyle.fonts.B_16R.apply(
+              color: appStyle.colors.textSecondary,
+            ),
+          )
+        : SizedBox(),
+    SizedBox(height: 8),
+    Text(
+      grade.recordDate.format(data.l10n, FormatMode.yyyymmdd),
+      style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
+    ),
+    SizedBox(height: 20),
+    GradeSmallCard([], grade.subject),
+    SizedBox(height: 10),
+    FirkaCard(
+      margin: EdgeInsets.all(0),
+      left: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "${data.l10n.grade_teacherName}${grade.teacher}",
+              style: appStyle.fonts.B_16R.apply(
+                color: appStyle.colors.textPrimary,
               ),
+            ),
+            Text(
+              "${data.l10n.tt_added}${grade.creationDate.format(data.l10n, FormatMode.yyyymmdd)}",
+              style: appStyle.fonts.B_16R.apply(
+                color: appStyle.colors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+    SizedBox(height: 20),
+    GestureDetector(
+      child: FirkaCard(
+        margin: EdgeInsets.all(0),
+        left: [],
+        center: [
+          Text(
+            data.l10n.view_subject_btn,
+            style: appStyle.fonts.B_16R.apply(
+              color: appStyle.colors.textSecondary,
             ),
           ),
         ],
-      );
-    },
-  );
+        color: appStyle.colors.buttonSecondaryFill,
+      ),
+      onTap: () {
+        activeSubjectUid = grade.subject.uid;
+        subjectName = grade.subject.name;
+        subjectId = grade.subject.uid;
+        subjectCategory = grade.subject.category.name;
+        subjectInfo = [];
+        Navigator.pop(context);
+        context.go('/grades/subject/${grade.subject.uid}');
+      },
+    ),
+  ]);
 }
 
 Future<void> showHomeworkBottomSheet(
@@ -758,223 +409,97 @@ Future<void> showHomeworkBottomSheet(
   AppInitialization data,
   Homework homework,
 ) async {
-  showModalBottomSheet(
-    context: context,
-    elevation: 100,
-    isScrollControlled: true,
-    enableDrag: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: appStyle.colors.a15p,
-    constraints: BoxConstraints(
-      minHeight: MediaQuery.of(context).size.height * 0.34,
+  showFirkaBottomSheet(context, [
+    Text(
+      data.l10n.homework,
+      style: appStyle.fonts.H_18px.apply(color: appStyle.colors.textPrimary),
     ),
-    builder: (BuildContext context) {
-      final formattedDate = DateFormat(
-        'yyyy. MMMM d.',
-        data.l10n.localeName,
-      ).format(homework.dueDate);
-
-      return Stack(
-        children: [
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              behavior: HitTestBehavior.opaque,
-              child: Container(color: Colors.transparent),
+    SizedBox(height: 4),
+    Text(
+      homework.dueDate.format(data.l10n, FormatMode.yyyymmdd),
+      style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
+    ),
+    SizedBox(height: 20),
+    GradeSmallCard([], homework.subject),
+    SizedBox(height: 20),
+    Flexible(
+      fit: FlexFit.loose,
+      child: FirkaCard.single(
+        margin: EdgeInsets.all(0),
+        padding: EdgeInsets.all(12),
+        child: Html(
+          data: homework.description,
+          style: {
+            "*": Style.fromTextStyle(
+              appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
             ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              decoration: BoxDecoration(
-                color: appStyle.colors.background,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16) + EdgeInsets.only(bottom: 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 6),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                data.l10n.homework,
-                                style: appStyle.fonts.H_18px.apply(
-                                  color: appStyle.colors.textPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            formattedDate,
-                            style: appStyle.fonts.B_16R.apply(
-                              color: appStyle.colors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    LessonWidget(
-                      data,
-                      null,
-                      Lesson(
-                        uid: "-1",
-                        date: "",
-                        start: homework.startDate,
-                        end: homework.dueDate,
-                        name: homework.subjectName,
-                        type: NameUidDesc(uid: "", name: "", description: ""),
-                        state: NameUidDesc(uid: "", name: "", description: ""),
-                        canStudentEditHomework: false,
-                        isHomeworkComplete: false,
-                        attachments: [],
-                        isDigitalLesson: false,
-                        digitalSupportDeviceTypeList: [],
-                        createdAt: timeNow(),
-                        subject: homework.subject,
-                        lastModifiedAt: timeNow(),
-                      ),
-                      null,
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FirkaShadow(
-                        shadow: true,
-                        child: Card(
-                          color: appStyle.colors.card,
-                          shadowColor:
-                              context.watch<ThemeCubit>().state.isLightMode
-                              ? null
-                              : Colors.transparent,
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20.0,
-                                vertical: 20.0,
-                              ),
-                              child: Html(
-                                data: homework.description,
-                                style: {
-                                  "*": Style(
-                                    color: appStyle.colors.textPrimary,
-                                    fontSize: FontSize(16),
-                                    fontFamily: appStyle.fonts.B_16R.fontFamily,
-                                    margin: Margins.zero,
-                                    padding: HtmlPaddings.zero,
-                                    textAlign: TextAlign.start,
-                                    textDecoration: TextDecoration.none,
-                                  ),
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    FutureBuilder<bool>(
-                      future: isHomeworkDone(data.isar, homework.uid),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return SizedBox(); // or a loading indicator
-                        }
+          },
+        ),
+      ),
+    ),
+    SizedBox(height: 20),
+    FutureBuilder<bool>(
+      future: isHomeworkDone(data.isar, homework.uid),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return SizedBox(); // or a loading indicator
+        }
 
-                        final done = snapshot.data!;
+        final done = snapshot.data!;
 
-                        return Column(
-                          children: [
-                            if (!done)
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width / 1.1,
-                                child: GestureDetector(
-                                  child: FirkaCard(
-                                    left: [],
-                                    center: [
-                                      Text(
-                                        data.l10n.mark_as_done,
-                                        style: appStyle.fonts.B_16SB.apply(
-                                          color:
-                                              appStyle.colors.textPrimaryLight,
-                                        ),
-                                      ),
-                                    ],
-                                    color: appStyle.colors.accent,
-                                  ),
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    markAsDone(data.isar, homework.uid);
-                                  },
-                                ),
-                              ),
-                            if (done)
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width / 1.1,
-                                child: GestureDetector(
-                                  child: FirkaCard(
-                                    left: [],
-                                    center: [
-                                      Text(
-                                        data.l10n.mark_as_not_done,
-                                        style: appStyle.fonts.B_16SB.apply(
-                                          color:
-                                              appStyle.colors.textPrimaryLight,
-                                        ),
-                                      ),
-                                    ],
-                                    color: appStyle.colors.accent,
-                                  ),
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    markAsNotDone(data.isar, homework.uid);
-                                  },
-                                ),
-                              ),
-                          ],
-                        );
-                      },
+        return Column(
+          children: [
+            GestureDetector(
+              child: FirkaCard(
+                margin: EdgeInsets.all(0),
+                left: [],
+                center: [
+                  Text(
+                    !done ? data.l10n.mark_as_done : data.l10n.mark_as_not_done,
+                    style: appStyle.fonts.B_16SB.apply(
+                      color: appStyle.colors.textPrimaryLight,
                     ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 1.1,
-                      child: GestureDetector(
-                        child: FirkaCard(
-                          left: [],
-                          center: [
-                            Text(
-                              data.l10n.view_subject_btn,
-                              style: appStyle.fonts.B_16R.apply(
-                                color: appStyle.colors.textSecondary,
-                              ),
-                            ),
-                          ],
-                          color: appStyle.colors.buttonSecondaryFill,
-                        ),
-                        onTap: () {
-                          activeSubjectUid = homework.subject.uid;
-                          subjectName = homework.subjectName;
-                          subjectId = homework.subject.uid;
-                          subjectCategory = "";
-                          subjectInfo = [];
-                          Navigator.pop(context);
-                          context.push('/home/subject/${homework.subject.uid}');
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
+                color: appStyle.colors.accent,
               ),
+              onTap: () {
+                Navigator.pop(context);
+                !done
+                    ? markAsDone(data.isar, homework.uid)
+                    : markAsNotDone(data.isar, homework.uid);
+              },
+            ),
+          ],
+        );
+      },
+    ),
+    SizedBox(height: 8),
+    GestureDetector(
+      child: FirkaCard(
+        margin: EdgeInsets.all(0),
+        left: [],
+        center: [
+          Text(
+            data.l10n.view_subject_btn,
+            style: appStyle.fonts.B_16R.apply(
+              color: appStyle.colors.textSecondary,
             ),
           ),
         ],
-      );
-    },
-  );
+        color: appStyle.colors.buttonSecondaryFill,
+      ),
+      onTap: () {
+        activeSubjectUid = homework.subject.uid;
+        subjectName = homework.subjectName;
+        subjectId = homework.subject.uid;
+        subjectCategory = "";
+        subjectInfo = [];
+        Navigator.pop(context);
+        context.push('/home/subject/${homework.subject.uid}');
+      },
+    ),
+  ]);
 }
 
 Future<void> showGradeCalculatorBottomSheet(
@@ -983,44 +508,9 @@ Future<void> showGradeCalculatorBottomSheet(
   Subject subject, {
   void Function(int grade, int weight)? onAdd,
 }) async {
-  showModalBottomSheet(
-    context: context,
-    elevation: 100,
-    isScrollControlled: true,
-    enableDrag: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: appStyle.colors.a15p,
-    builder: (BuildContext context) {
-      return Stack(
-        children: [
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              behavior: HitTestBehavior.opaque,
-              child: Container(color: Colors.transparent),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              decoration: BoxDecoration(
-                color: appStyle.colors.background,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
-                child: _GradeCalculatorSheetContent(
-                  data: data,
-                  subject: subject,
-                  onAdd: onAdd,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    },
-  );
+  showFirkaBottomSheet(context, [
+    _GradeCalculatorSheetContent(data: data, subject: subject, onAdd: onAdd),
+  ]);
 }
 
 class _GradeCalculatorSheetContent extends StatefulWidget {
@@ -1055,17 +545,6 @@ class _GradeCalculatorSheetContentState
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Center(
-          child: Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: appStyle.colors.a15p,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-        ),
-        SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -1121,7 +600,6 @@ class _GradeCalculatorSheetContentState
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [1, 2, 3, 4, 5].map((grade) {
               final isSelected = selectedGrade == grade;
-              final gradeColor = getGradeColor(grade.toDouble());
               return GestureDetector(
                 onTap: () => setState(() => selectedGrade = grade),
                 child: Container(
@@ -1131,26 +609,11 @@ class _GradeCalculatorSheetContentState
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? appStyle.colors.buttonSecondaryFill
+                        ? getGradeColor(grade.toDouble()).withAlpha(15)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: gradeColor.withAlpha(38),
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '$grade',
-                      style: appStyle.fonts.H_14px.copyWith(
-                        fontSize: 18,
-                        color: gradeColor,
-                      ),
-                    ),
-                  ),
+                  child: Center(child: GradeWidget.gradeValue(grade, size: 32)),
                 ),
               );
             }).toList(),
@@ -1227,7 +690,7 @@ class _GradeCalculatorSheetContentState
             child: Text(
               widget.data.l10n.grade_calculator_add,
               style: appStyle.fonts.H_18px.apply(
-                color: appStyle.colors.textPrimary,
+                color: appStyle.colors.textPrimaryLight,
               ),
             ),
           ),
@@ -1243,101 +706,44 @@ Future<void> showSubjectBottomSheetSettings(
   Subject subject, {
   void Function(int grade, int weight)? onAddFromCalculator,
 }) async {
-  final parentContext = context;
-  showModalBottomSheet(
-    context: context,
-    elevation: 100,
-    isScrollControlled: true,
-    enableDrag: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: appStyle.colors.a15p,
-    builder: (BuildContext sheetContext) {
-      return Stack(
-        children: [
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () => Navigator.pop(sheetContext),
-              behavior: HitTestBehavior.opaque,
-              child: Container(color: Colors.transparent),
+  showFirkaBottomSheet(context, [
+    Text(
+      data.l10n.subject,
+      style: appStyle.fonts.H_H2.apply(color: appStyle.colors.textPrimary),
+    ),
+    SizedBox(height: 20),
+    GestureDetector(
+      onTap: () {
+        Navigator.pop(context);
+        showGradeCalculatorBottomSheet(
+          context,
+          data,
+          subject,
+          onAdd: onAddFromCalculator,
+        );
+      },
+      child: FirkaCard.single(
+        margin: EdgeInsets.all(0),
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            FirkaIconWidget(
+              FirkaIconType.majesticons,
+              Majesticon.calculatorSolid,
+              size: 24,
+              color: appStyle.colors.accent,
             ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              decoration: BoxDecoration(
-                color: appStyle.colors.background,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: appStyle.colors.a15p,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Text(
-                      data.l10n.subject,
-                      style: appStyle.fonts.H_H2.apply(
-                        color: appStyle.colors.textPrimary,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(sheetContext);
-                        showGradeCalculatorBottomSheet(
-                          parentContext,
-                          data,
-                          subject,
-                          onAdd: onAddFromCalculator,
-                        );
-                      },
-                      child: Container(
-                        height: 56,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: appStyle.colors.card,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            FirkaIconWidget(
-                              FirkaIconType.majesticons,
-                              Majesticon.calculatorSolid,
-                              size: 24,
-                              color: appStyle.colors.accent,
-                            ),
-                            SizedBox(width: 12),
-                            Text(
-                              data.l10n.grade_calculator,
-                              style: appStyle.fonts.B_16SB.apply(
-                                color: appStyle.colors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+            SizedBox(width: 8),
+            Text(
+              data.l10n.grade_calculator,
+              style: appStyle.fonts.B_16SB.apply(
+                color: appStyle.colors.textPrimary,
               ),
             ),
-          ),
-        ],
-      );
-    },
-  );
+          ],
+        ),
+      ),
+    ),
+  ]);
 }

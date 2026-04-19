@@ -236,7 +236,7 @@ class LessonWidget extends StatelessWidget {
               accent,
               secondary,
               bgColor,
-              test,
+              test!,
             );
           },
           child: FirkaCard.single(
