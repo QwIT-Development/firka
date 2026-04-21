@@ -156,6 +156,19 @@ class InfoCard extends StatelessWidget {
     );
   }
 
+  factory InfoCard.gradeGhost(
+    int gradeValue,
+    int gradeWeigth, {
+    void Function(BuildContext)? onTap,
+  }) {
+    return InfoCard(
+      icon: GradeWidget.gradeValue(gradeValue, gradeWeight: gradeWeigth),
+      texts: ["${initData.l10n.ghost_grade} ($gradeWeigth%)"],
+      right: [],
+      onTap: onTap,
+    );
+  }
+
   factory InfoCard.gradeDesc(
     Grade grade, {
     void Function(BuildContext)? onTap,
