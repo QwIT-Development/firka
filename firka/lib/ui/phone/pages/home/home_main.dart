@@ -5,7 +5,6 @@ import 'package:firka/ui/phone/widgets/info_card.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/ui/phone/widgets/home_main_starting_soon.dart';
-import 'package:firka/ui/phone/widgets/homework.dart';
 import 'package:firka/ui/phone/widgets/lesson_small.dart';
 import 'package:firka/ui/shared/delayed_spinner.dart';
 import 'package:flutter/material.dart';
@@ -338,7 +337,26 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
             nextTest != null ? SizedBox(height: 12) : SizedBox(height: 0),
             Expanded(
               child: ListView(
-                children: noticeBoardWidgets.map((e) => e.$1).toList(),
+                children: noticeBoardWidgets
+                    .groupList((e) => e.$2)
+                    .entries
+                    .map(
+                      (e) => Column(
+                        spacing: 10,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            e.key.format(widget.data.l10n, FormatMode.main),
+                            style: appStyle.fonts.B_16R.apply(
+                              color: appStyle.colors.textSecondary,
+                            ),
+                          ),
+                          ...e.value.map((v) => v.$1),
+                          SizedBox(height: 10),
+                        ],
+                      ),
+                    )
+                    .toList(),
               ),
             ),
           ],

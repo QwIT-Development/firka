@@ -73,6 +73,8 @@ extension DurationExtension on Duration {
 
 enum FormatMode {
   yearly,
+  mmmd,
+  main,
   grades,
   welcome,
   hmm,
@@ -88,7 +90,7 @@ enum FormatMode {
 enum Cycle { morning, day, afternoon, night }
 
 extension DateExtension on DateTime {
-  String format(AppLocalizations l10n, FormatMode mode) {
+  String? translatedDay(AppLocalizations l10n) {
     var today = timeNow().getMidnight();
 
     var tomorrowLim = today.add(Duration(days: 2));
@@ -96,32 +98,43 @@ extension DateExtension on DateTime {
     var yesterday = today.subtract(Duration(days: 1));
     var yesterdayLim = today.subtract(Duration(days: 2));
 
-    var weekStart = subtract(Duration(days: weekday - 1));
+    if (isAfter(yesterdayLim) && isBefore(today)) {
+      return l10n.yesterday;
+    }
+    if (isAfter(yesterday) && isBefore(tomorrow)) {
+      return l10n.today;
+    }
+    if (isAfter(today) && isBefore(tomorrowLim)) {
+      return l10n.tomorrow;
+    }
+
+    return null;
+  }
+
+  String format(AppLocalizations l10n, FormatMode mode) {
+    var weekStart = getMonday();
     var weekEnd = weekStart.add(Duration(days: 6));
 
     switch (mode) {
+      case FormatMode.main:
+        var lastWeek = timeNow().getMidnight().subtract(Duration(days: 8));
+        var isLastWeek =
+            lastWeek.millisecondsSinceEpoch <
+            getMidnight().millisecondsSinceEpoch;
+        final dayName = DateFormat(
+          'EEEE',
+          l10n.localeName,
+        ).format(this).firstUpper();
+        return translatedDay(l10n) ??
+            (isLastWeek
+                ? "$dayName (${format(l10n, FormatMode.mmmd).firstUpper()})"
+                : "${format(l10n, FormatMode.yearly).firstUpper()} ($dayName)");
       case FormatMode.grades:
-        if (isBefore(yesterdayLim)) {
-          final month = DateFormat(
-            'MMMM',
-            l10n.localeName,
-          ).format(this).firstUpper();
-          final day = DateFormat('d', l10n.localeName).format(this);
-          return "$month $day";
-        }
-        if (isAfter(yesterdayLim) && isBefore(today)) {
-          return l10n.yesterday;
-        }
-        if (isAfter(yesterday) && isBefore(tomorrow)) {
-          return l10n.today;
-        }
-        if (isAfter(today) && isBefore(tomorrowLim)) {
-          return l10n.tomorrow;
-        }
-
-        return format(l10n, FormatMode.yearly);
+        return translatedDay(l10n) ?? format(l10n, FormatMode.yearly);
       case FormatMode.yearly:
-        return DateFormat('MMMM dd', l10n.localeName).format(this);
+        return DateFormat('MMMM d', l10n.localeName).format(this);
+      case FormatMode.mmmd:
+        return DateFormat('MMM d', l10n.localeName).format(this);
       case FormatMode.hmm:
         return DateFormat('H:mm', l10n.localeName).format(this);
       case FormatMode.welcome:
@@ -155,7 +168,10 @@ extension DateExtension on DateTime {
       case FormatMode.yyyymmdd:
         return DateFormat('yyyy. MM. dd.', l10n.localeName).format(this);
       case FormatMode.yyyymmddhhmmss:
-        return DateFormat('yyyy-MM-dd hh:mm:ss', l10n.localeName).format(this);
+        return DateFormat(
+          'yyyy. MM. dd. H:mm:ss',
+          l10n.localeName,
+        ).format(this);
     }
   }
 
@@ -207,55 +223,9 @@ extension DateGrouper<T> on Iterable<T> {
   Map<DateTime, List<T>> groupList(DateTime Function(T elem) getDate) {
     Map<DateTime, List<T>> newList = {};
 
-    var today = timeNow();
-    today = today.subtract(
-      Duration(
-        hours: today.hour,
-        minutes: today.minute,
-        seconds: today.second,
-        milliseconds: today.millisecond,
-      ),
-    );
-
-    var tomorrow = today.add(Duration(days: 1));
-    var yesterday = today.subtract(Duration(days: 1));
-
     for (var elem in this) {
       var date = getDate(elem);
-      var day = date.subtract(
-        Duration(
-          hours: date.hour,
-          minutes: date.minute,
-          seconds: date.second,
-          milliseconds: date.millisecond,
-        ),
-      );
-
-      if (date.isAfter(tomorrow.add(Duration(days: 1)))) {
-        if (newList[day] == null) {
-          newList[day] = List<T>.empty(growable: true);
-        }
-
-        newList[day]!.add(elem);
-        continue;
-      }
-      if (date.isAfter(today)) {
-        if (newList[tomorrow] == null) {
-          newList[tomorrow] = List<T>.empty(growable: true);
-        }
-
-        newList[tomorrow]!.add(elem);
-        continue;
-      }
-      if (date.isAfter(yesterday.subtract(Duration(days: 1))) &&
-          date.isBefore(today)) {
-        if (newList[yesterday] == null) {
-          newList[yesterday] = List<T>.empty(growable: true);
-        }
-
-        newList[yesterday]!.add(elem);
-        continue;
-      }
+      var day = date.getMidnight();
 
       if (newList[day] == null) {
         newList[day] = List<T>.empty(growable: true);

@@ -192,10 +192,11 @@ class InfoCard extends StatelessWidget {
     return GestureDetector(
       child: FirkaCard.single(
         height: 68,
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        margin: EdgeInsets.all(0),
         child: Row(
           spacing: 12,
           children: [
-            SizedBox(width: 4),
             icon,
             Expanded(
               child: Column(
@@ -206,7 +207,6 @@ class InfoCard extends StatelessWidget {
               ),
             ),
             ...right,
-            SizedBox(width: 4),
           ],
         ),
       ),
