@@ -285,7 +285,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
               grades: gradesForCalculation,
               l10n: widget.data.l10n,
             ),
-            SizedBox(height: 12),
+            SizedBox(height: 20),
             Expanded(
               child: ListView(
                 children: [
@@ -296,7 +296,11 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                     ),
                   ),
                   SizedBox(height: 16),
-                  ...gradeCards,
+                  Column(
+                    spacing: 16,
+                    mainAxisSize: MainAxisSize.min,
+                    children: gradeCards,
+                  ),
                   SizedBox(height: 16),
                   Text(
                     widget.data.l10n.data,
