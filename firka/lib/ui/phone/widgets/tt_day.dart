@@ -1,4 +1,5 @@
 import 'package:firka/core/settings.dart';
+import 'package:firka_common/firka_common.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/ui/components/firka_card.dart';
@@ -103,6 +104,10 @@ class TimeTableDayWidget extends StatelessWidget {
             lesson,
             tests.firstWhereOrNull(
               (test) => test.lessonNumber == lesson.lessonNumber,
+            ),
+            active: timeNow().isBetween(
+              i > 0 ? lessons[i - 1].end : lesson.start,
+              lesson.end,
             ),
           ),
         );

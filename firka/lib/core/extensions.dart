@@ -14,10 +14,9 @@ extension TimetableExtension on Iterable<Lesson> {
     for (var lesson in this) {
       if (lesson.lessonNumber == null) continue;
 
-      if (lessons.firstWhereOrNull(
-            (lesson2) => lesson.lessonNumber == lesson2.lessonNumber,
-          ) ==
-          null) {
+      if (!lessons.any(
+        (lesson2) => lesson.lessonNumber == lesson2.lessonNumber,
+      )) {
         final ref = reference.start;
         final newStart = DateTime(
           ref.year,
@@ -69,6 +68,14 @@ extension DurationExtension on Duration {
     String seconds = inSeconds.remainder(60).toString().padLeft(2, '0');
     return "$hours:$minutes:$seconds";
   }
+
+  String timeLeft(AppLocalizations l10n) {
+    return inMinutes > 1
+        ? "$inMinutes ${inMinutes == 1 ? l10n.starting_min : l10n.starting_min_plural}"
+        : inSeconds > 0
+        ? "$inSeconds ${inSeconds == 1 ? l10n.starting_sec : l10n.starting_sec_plural}"
+        : "- ${l10n.starting_sec}";
+  }
 }
 
 enum FormatMode {
@@ -88,6 +95,20 @@ enum FormatMode {
 }
 
 enum Cycle { morning, day, afternoon, night }
+
+extension ComparableExtension<T extends Comparable<T>> on Comparable<T> {
+  T min(T other) {
+    return compareTo(other) < 0 ? this as T : other;
+  }
+
+  bool isBetween(T from, T to) {
+    return compareTo(from) > 0 && compareTo(to) < 0;
+  }
+
+  T max(T other) {
+    return compareTo(other) > 0 ? this as T : other;
+  }
+}
 
 extension DateExtension on DateTime {
   String? translatedDay(AppLocalizations l10n) {
