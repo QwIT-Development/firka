@@ -6,8 +6,9 @@ import 'package:firka_common/ui/theme/style.dart';
 enum Attach { none, bottom, top }
 
 class FirkaCard extends StatelessWidget {
-  final EdgeInsetsGeometry padding;
-  final EdgeInsetsGeometry margin;
+  final EdgeInsets padding;
+  final EdgeInsets margin;
+  final Color? borderColor;
   final double? height;
   final double? width;
   final bool shadow;
@@ -18,8 +19,8 @@ class FirkaCard extends StatelessWidget {
 
   factory FirkaCard({
     required List<Widget> left,
-    EdgeInsetsGeometry padding = const EdgeInsets.all(12),
-    EdgeInsetsGeometry margin = const EdgeInsets.all(4),
+    EdgeInsets padding = const EdgeInsets.all(12),
+    EdgeInsets margin = const EdgeInsets.all(4),
     bool shadow = true,
     List<Widget> center = const [],
     List<Widget> right = const [],
@@ -61,6 +62,7 @@ class FirkaCard extends StatelessWidget {
     this.margin = const EdgeInsets.all(4),
     this.shadow = true,
     this.attached = Attach.none,
+    this.borderColor,
     this.color,
     this.height,
     this.width,
@@ -91,6 +93,9 @@ class FirkaCard extends StatelessWidget {
               ]
             : [],
         shape: RoundedRectangleBorder(
+          side: borderColor == null
+              ? BorderSide.none
+              : BorderSide(color: borderColor!),
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(
               attached == Attach.top ? attachedRounding : defaultRounding,
