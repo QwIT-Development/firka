@@ -1,7 +1,11 @@
 import 'dart:async';
 
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firka/api/client/kreta_stream.dart';
 import 'package:firka/ui/phone/widgets/info_card.dart';
+import 'package:firka/ui/phone/widgets/lesson.dart';
+import 'package:firka_common/ui/components/filled_circle.dart';
+import 'package:flutter/rendering.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/ui/phone/widgets/home_main_starting_soon.dart';
@@ -34,12 +38,15 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   _HomeMainScreen();
 
   DateTime now = timeNow();
+  int swipeBack = 0;
+  int activeLessonIndex = 0;
   List<Lesson>? lessons;
   List<NoticeBoardItem>? noticeBoard;
   List<InfoBoardItem>? infoBoard;
   List<Test>? tests;
   List<Grade>? grades;
   List<Homework>? homework;
+  CarouselSliderController controller = CarouselSliderController();
   Student? student;
   Timer? timer;
 
@@ -177,6 +184,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     })();
 
     timer = Timer.periodic(Duration(seconds: 1), (timer) async {
+      if (swipeBack > 0) swipeBack -= 1;
       if (!mounted) return;
       setState(() {
         now = timeNow();
@@ -203,98 +211,6 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   }
 
   Widget _buildContent(BuildContext context) {
-    Widget welcomeWidget = SizedBox();
-    Widget nextClass = SizedBox();
-    Widget? nextTest;
-    bool lessonActive = false;
-
-    if (lessons != null && lessons!.isNotEmpty) {
-      if (now.isBefore(lessons!.first.start)) {
-        welcomeWidget = StartingSoonWidget(widget.data.l10n, now, lessons!);
-      } else {
-        var currentLesson = lessons!.firstWhereOrNull(
-          (lesson) => now.isAfter(lesson.start) && now.isBefore(lesson.end),
-        );
-        var prevLesson = lessons!.getPrevLesson(now);
-        var nextLesson = lessons!.getNextLesson(now);
-        int? lessonIndex;
-
-        if (currentLesson != null) {
-          lessonIndex = lessons!.getLessonNo(currentLesson);
-          lessonActive = true;
-        }
-
-        welcomeWidget = LessonBigWidget(
-          widget.data.l10n,
-          now,
-          lessonIndex,
-          currentLesson,
-          prevLesson,
-          nextLesson,
-          lessons!,
-          tests ?? [],
-        );
-      }
-    }
-    if (lessons != null && lessons!.isNotEmpty) {
-      var nextLesson = lessons!.getNextLesson(now);
-      if (nextLesson != null) {
-        nextClass = LessonSmallWidget(
-          widget.data.l10n,
-          nextLesson,
-          lessonActive,
-        );
-
-        if (tests != null) {
-          final testsOnDate = tests!
-              .where(
-                (test) =>
-                    test.date.isAfter(
-                      nextLesson.start.getMidnight().subtract(
-                        Duration(seconds: 1),
-                      ),
-                    ) &&
-                    test.date.isBefore(
-                      nextLesson.end.getMidnight().add(
-                        Duration(hours: 23, minutes: 59),
-                      ),
-                    ) &&
-                    test.subject.uid == nextLesson.subject?.uid,
-              )
-              .toList();
-
-          if (testsOnDate.isNotEmpty) {
-            final test = testsOnDate.first;
-
-            nextTest = FirkaCard(
-              left: [
-                FirkaIconWidget(
-                  FirkaIconType.majesticons,
-                  Majesticon.editPen4Solid,
-                  color: appStyle.colors.accent,
-                ),
-                SizedBox(width: 6),
-                Text(
-                  test.theme,
-                  style: appStyle.fonts.B_16SB.apply(
-                    color: appStyle.colors.textSecondary,
-                  ),
-                ),
-              ],
-              right: [
-                Text(
-                  test.method.description ?? "N/A",
-                  style: appStyle.fonts.B_16R.apply(
-                    color: appStyle.colors.textTertiary,
-                  ),
-                ),
-              ],
-            );
-          }
-        }
-      }
-    }
-
     if (student != null && lessons != null) {
       final infoItems = [...(infoBoard ?? []), ...(noticeBoard ?? [])];
       final gradeItems = grades ?? [];
@@ -322,6 +238,48 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         (item1, item2) => item2.$2.difference(item1.$2).inMilliseconds,
       );
 
+      var currentLesson = lessons!.firstWhereOrNull(
+        (lesson) => now.isBefore(lesson.end),
+      );
+
+      Map<Lesson, Test?> lessonTestMap = Map.fromEntries(
+        lessons!.indexed.map(
+          (i) => MapEntry(
+            i.$2,
+            testItems.firstWhereOrNull(
+              (t) =>
+                  t.date.getMidnight() == i.$2.start.getMidnight() &&
+                  (i.$2.lessonNumber ?? i.$1) == t.lessonNumber,
+            ),
+          ),
+        ),
+      );
+
+      int tmpIndex = lessons!.isEmpty || now.isBefore(lessons!.first.start)
+          ? 0
+          : currentLesson == null
+          ? lessons!.length + 1
+          : lessons!.indexOf(currentLesson) + 1;
+
+      if (tmpIndex != activeLessonIndex) {
+        activeLessonIndex = tmpIndex;
+        swipeBack = 0;
+      }
+
+      if (controller.ready && swipeBack == 0) {
+        controller.animateToPage(activeLessonIndex);
+      }
+
+      int testsTomorrow = testItems
+          .where(
+            (test) =>
+                test.date.isAfter(
+                  now.getMidnight().add(Duration(hours: 23, minutes: 59)),
+                ) &&
+                test.date.isBefore(now.getMidnight().add(Duration(days: 1))),
+          )
+          .length;
+
       return Padding(
         padding: const EdgeInsets.only(left: 20.0, top: 24.0, right: 20.0),
         child: Column(
@@ -329,34 +287,181 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
           children: [
             WelcomeWidget(widget.data.l10n, now, student!, lessons!),
             SizedBox(height: 48),
-            welcomeWidget,
-            lessonActive ? SizedBox(height: 5) : SizedBox(height: 0),
-            nextClass,
-            nextTest != null ? SizedBox(height: 12) : SizedBox(height: 0),
-            nextTest ?? SizedBox(),
-            nextTest != null ? SizedBox(height: 12) : SizedBox(height: 0),
-            Expanded(
-              child: ListView(
-                children: noticeBoardWidgets
-                    .groupList((e) => e.$2)
-                    .entries
-                    .map(
-                      (e) => Column(
-                        spacing: 10,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            e.key.format(widget.data.l10n, FormatMode.main),
-                            style: appStyle.fonts.B_16R.apply(
-                              color: appStyle.colors.textSecondary,
-                            ),
-                          ),
-                          ...e.value.map((v) => v.$1),
-                          SizedBox(height: 10),
-                        ],
+            if (lessons!.isNotEmpty)
+              OverflowBox(
+                maxWidth: MediaQuery.widthOf(context),
+                fit: OverflowBoxFit.deferToChild,
+                child: CarouselSlider(
+                  items: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 5),
+                      child: StartingSoonWidget(
+                        widget.data.l10n,
+                        now,
+                        lessons!,
                       ),
-                    )
-                    .toList(),
+                    ),
+                    ...lessonTestMap.entries.map(
+                      (entry) => Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 5),
+                        child: LessonWidget(
+                          widget.data,
+                          lessons!.getLessonNo(entry.key),
+                          entry.key,
+                          entry.value,
+                          active: currentLesson == entry.key,
+                          expanded: true,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 5),
+                      child: FirkaCard.single(
+                        padding: EdgeInsets.all(16),
+                        margin: EdgeInsets.only(bottom: 1),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                FilledCircle(
+                                  diameter: 32,
+                                  color: appStyle.colors.a15p,
+                                  child: FirkaIconWidget(
+                                    FirkaIconType.majesticons,
+                                    Majesticon.moonSolid,
+                                    size: 20,
+                                    color: appStyle.colors.accent,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  testsTomorrow == 0
+                                      ? widget.data.l10n.tt_no_classes_l2
+                                      : widget.data.l10n.get_ready,
+                                  style: appStyle.fonts.B_16R.apply(
+                                    color: appStyle.colors.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              height: 28,
+                              padding: EdgeInsets.symmetric(horizontal: 6),
+                              decoration: ShapeDecoration(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                color: appStyle.colors.background,
+                              ),
+                              child: Row(
+                                children: [
+                                  FirkaIconWidget(
+                                    FirkaIconType.majesticons,
+                                    Majesticon.editPen4Solid,
+                                    size: 12,
+                                    color: appStyle.colors.accent,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    testsTomorrow == 0
+                                        ? widget.data.l10n.no_tests_tomorrow
+                                        : widget.data.l10n.tests_tomorrow(
+                                            testsTomorrow.toString(),
+                                          ),
+                                    style: appStyle.fonts.B_16R.apply(
+                                      color: appStyle.colors.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                  carouselController: controller,
+                  options: CarouselOptions(
+                    initialPage: activeLessonIndex,
+                    height: 106,
+                    viewportFraction: 346 / 376,
+                    enableInfiniteScroll: false,
+                    onPageChanged: (index, reason) {
+                      if (index == activeLessonIndex) {
+                        swipeBack = -1;
+                      } else if (reason == CarouselPageChangedReason.manual) {
+                        swipeBack = 5;
+                      }
+                    },
+                  ),
+                ),
+              ),
+            if (lessons!.isNotEmpty) SizedBox(height: 12),
+            if (lessons!.isNotEmpty)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 8,
+                children: [
+                  FirkaIconWidget(
+                    FirkaIconType.majesticonsLocal,
+                    "sunSolid",
+                    color: activeLessonIndex == 0
+                        ? appStyle.colors.accent
+                        : appStyle.colors.accent.withAlpha(128),
+                    size: activeLessonIndex == 0 ? 16 : 12,
+                  ),
+                  ...lessons!.indexed.map(
+                    (i) => FilledCircle(
+                      diameter: activeLessonIndex == i.$1 + 1 ? 10 : 8,
+                      color: activeLessonIndex == i.$1 + 1
+                          ? appStyle.colors.accent
+                          : appStyle.colors.accent.withAlpha(128),
+                      child: SizedBox(),
+                    ),
+                  ),
+                  FirkaIconWidget(
+                    FirkaIconType.majesticons,
+                    Majesticon.moonSolid,
+                    color: activeLessonIndex == lessons!.length + 1
+                        ? appStyle.colors.accent
+                        : appStyle.colors.accent.withAlpha(128),
+                    size: activeLessonIndex == lessons!.length + 1 ? 14 : 10,
+                  ),
+                ],
+              ),
+            if (lessons!.isNotEmpty) SizedBox(height: 12),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => fetchData(),
+                notificationPredicate: (ScrollNotification notification) {
+                  return notification.depth == 0;
+                },
+                triggerMode: RefreshIndicatorTriggerMode.onEdge,
+                displacement: 0,
+                child: ListView(
+                  children: noticeBoardWidgets
+                      .groupList((e) => e.$2)
+                      .entries
+                      .map(
+                        (e) => Column(
+                          spacing: 10,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              e.key.format(widget.data.l10n, FormatMode.main),
+                              style: appStyle.fonts.B_16R.apply(
+                                color: appStyle.colors.textSecondary,
+                              ),
+                            ),
+                            ...e.value.map((v) => v.$1),
+                            SizedBox(height: 10),
+                          ],
+                        ),
+                      )
+                      .toList(),
+                ),
               ),
             ),
           ],
