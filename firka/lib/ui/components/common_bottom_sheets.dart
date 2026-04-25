@@ -242,7 +242,7 @@ Future<void> showTestBottomSheet(
 ) async {
   final date = lesson.start;
   final formattedDate =
-      "${date.format(data.l10n, FormatMode.grades)}, ${DateFormat.EEEE(data.l10n.localeName).format(date).firstUpper()}";
+      "${date.format(data.l10n, FormatMode.yearly).firstUpper()}, ${DateFormat.EEEE(data.l10n.localeName).format(date).firstUpper()}";
 
   final statsForNerdsEnabled = data.settings
       .group("settings")
