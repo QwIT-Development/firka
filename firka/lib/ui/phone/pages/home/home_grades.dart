@@ -1,5 +1,7 @@
+import 'dart:collection';
+
+import 'package:firka/core/extensions.dart';
 import 'package:kreta_api/kreta_api.dart';
-import 'package:firka/core/average_helper.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/ui/components/grade_helpers.dart';
 import 'package:firka/ui/phone/widgets/grade_chart.dart';
@@ -26,12 +28,6 @@ class HomeGradesScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _HomeGradesScreen();
 }
-
-String activeSubjectUid = "";
-String subjectName = "";
-String subjectId = "";
-String subjectCategory = "";
-List<Subject> subjectInfo = [];
 
 class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
   ApiResponse<List<Grade>>? grades;
@@ -105,164 +101,31 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
         ),
       );
     } else {
-      var subjectAvg = 0.00;
-      var subjectCount = 0;
-      var subjectAvgRounded = 0.00;
       final allGrades = grades!.response!;
-      final bySubject = <String, List<Grade>>{};
-      for (final g in allGrades) {
-        bySubject.putIfAbsent(g.subject.uid, () => []).add(g);
-      }
-      final gradesForCalculation = <Grade>[];
-      for (final subjectGrades in bySubject.values) {
-        final feleviOrEvvegi = subjectGrades.where((g) {
-          final typeName = g.type.name?.toLowerCase() ?? '';
-          return typeName == 'felevi_jegy_ertekeles' ||
-              typeName == 'evvegi_jegy_ertekeles';
-        }).toList();
-        final hasOtherType = subjectGrades.any((g) {
-          final typeName = g.type.name?.toLowerCase() ?? '';
-          return typeName != 'felevi_jegy_ertekeles' &&
-              typeName != 'evvegi_jegy_ertekeles';
-        });
-        if (!hasOtherType && feleviOrEvvegi.isNotEmpty) {
-          final withValue = feleviOrEvvegi
-              .where((g) => g.numericValue != null && g.numericValue! > 0)
-              .toList();
-          if (withValue.isNotEmpty) {
-            withValue.sort((a, b) => a.recordDate.compareTo(b.recordDate));
-            gradesForCalculation.add(withValue.last);
-          }
-        } else {
-          gradesForCalculation.addAll(
-            subjectGrades.where((g) => !shouldIgnoreInAverage(g)),
-          );
-        }
-      }
+      final allLessons = lessons!.response!;
 
-      final summaryAvg2 = calculateAverage(
-        gradesForCalculation,
-        applyIgnoreFilter: false,
+      final subjectAverage = allGrades.getSubjectAverage();
+
+      final Set<Subject> subjects = HashSet(
+        hashCode: (s) => s.uid.hashCode,
+        equals: (s, s2) => s.uid == s2.uid,
       );
-      final List<Subject> subjects = List<Subject>.empty(growable: true);
       final List<Widget> gradeCards = [];
 
-      for (var grade in allGrades) {
-        if (subjects.where((s) => s.uid == grade.subject.uid).isEmpty) {
-          subjects.add(grade.subject);
-        }
+      allGrades.map((g) => g.subject).forEach(subjects.add);
+      allLessons.map((l) => l.subject).forEach(subjects.add);
+
+      for (var subject
+          in subjects.toList()..sort((s1, s2) => s1.name.compareTo(s2.name))) {
+        gradeCards.add(
+          GestureDetector(
+            child: GradeSmallCard(allGrades, subject),
+            onTap: () {
+              context.go('/grades/subject', extra: subject);
+            },
+          ),
+        );
       }
-
-      if (lessons != null && lessons!.response != null) {
-        for (var lesson in lessons!.response!) {
-          if (subjects.where((s) => s.uid == lesson.uid).isEmpty) {
-            subjects.add(lesson.subject);
-          }
-        }
-      }
-
-      subjects.sort((s1, s2) => s1.name.compareTo(s2.name));
-
-      for (var subject in subjects) {
-        final subjectGrades = allGrades
-            .where((g) => g.subject.uid == subject.uid)
-            .toList();
-
-        double avg = double.nan;
-        if (subjectGrades.isNotEmpty) {
-          final feleviOrEvvegi = subjectGrades.where((g) {
-            final typeName = g.type.name?.toLowerCase() ?? '';
-            return typeName == 'felevi_jegy_ertekeles' ||
-                typeName == 'evvegi_jegy_ertekeles';
-          }).toList();
-          final hasOtherType = subjectGrades.any((g) {
-            final typeName = g.type.name?.toLowerCase() ?? '';
-            return typeName != 'felevi_jegy_ertekeles' &&
-                typeName != 'evvegi_jegy_ertekeles';
-          });
-          if (!hasOtherType && feleviOrEvvegi.isNotEmpty) {
-            final withValue = feleviOrEvvegi
-                .where((g) => g.numericValue != null && g.numericValue! > 0)
-                .toList();
-            if (withValue.isNotEmpty) {
-              withValue.sort((a, b) => a.recordDate.compareTo(b.recordDate));
-              avg = withValue.last.numericValue!.toDouble();
-            }
-          } else {
-            avg = subjectGrades.getAverageBySubject(subject);
-          }
-        }
-
-        if (avg.isNaN) {
-          gradeCards.add(
-            GestureDetector(
-              child: GradeSmallCard(allGrades, subject),
-              onTap: () {
-                activeSubjectUid = subject.uid;
-                subjectName = subject.name;
-                subjectId = subject.uid;
-                subjectCategory = subject.category.name!;
-                subjectInfo = subjects
-                    .where((s) => s.uid == subject.uid)
-                    .toList();
-                context.go('/grades/subject/${subject.uid}');
-              },
-            ),
-          );
-        } else {
-          gradeCards.add(
-            GestureDetector(
-              child: GradeSmallCard(allGrades, subject),
-              onTap: () {
-                activeSubjectUid = subject.uid;
-                subjectName = subject.name;
-                subjectId = subject.uid;
-                subjectCategory = subject.category.name!;
-                subjectInfo = subjects
-                    .where((s) => s.uid == subject.uid)
-                    .toList();
-                context.go('/grades/subject/${subject.uid}');
-              },
-            ),
-          );
-        }
-
-        if (!avg.isNaN && avg > 0) {
-          subjectCount++;
-          subjectAvg += avg;
-          final rounding = widget.data.settings
-              .group("settings")
-              .subGroup("application")
-              .subGroup("rounding");
-          subjectAvgRounded += roundGrade(
-            avg,
-            t1: rounding.dbl("1"),
-            t2: rounding.dbl("2"),
-            t3: rounding.dbl("3"),
-            t4: rounding.dbl("4"),
-          );
-        }
-      }
-
-      subjectAvg /= subjectCount;
-      subjectAvgRounded /= subjectCount;
-
-      if (subjectCount == 0) {
-        subjectAvg = 0.00;
-        subjectAvgRounded = 0.00;
-      }
-
-      final rounding = widget.data.settings
-          .group("settings")
-          .subGroup("application")
-          .subGroup("rounding");
-      var subjectAvgColor = getGradeColor(
-        subjectAvg,
-        t1: rounding.dbl("1"),
-        t2: rounding.dbl("2"),
-        t3: rounding.dbl("3"),
-        t4: rounding.dbl("4"),
-      );
 
       return Padding(
         padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 12.0),
@@ -279,12 +142,9 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                 ),
               ],
             ),
-            GradeChartWithInteraction(grades: gradesForCalculation),
+            GradeChartWithInteraction(grades: allGrades),
             SizedBox(height: 2),
-            GradeSummaryBar(
-              grades: gradesForCalculation,
-              l10n: widget.data.l10n,
-            ),
+            GradeSummaryBar(grades: allGrades, l10n: widget.data.l10n),
             SizedBox(height: 20),
             Expanded(
               child: ListView(
@@ -319,84 +179,25 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                       ),
                     ],
                     right: [
-                      Card(
-                        shadowColor: Colors.transparent,
-                        color: subjectAvgColor.withAlpha(38),
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            left: 8,
-                            right: 8,
-                            top: 4,
-                            bottom: 4,
+                      if (subjectAverage != null)
+                        Container(
+                          width: 48,
+                          height: 26,
+                          decoration: ShapeDecoration(
+                            color: getGradeColor(subjectAverage).withAlpha(38),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          child: Text(
-                            subjectAvg.toStringAsFixed(2),
-                            style: appStyle.fonts.B_16SB.apply(
-                              color: subjectAvgColor,
+                          child: Center(
+                            child: Text(
+                              subjectAverage.toStringAsFixed(2),
+                              style: appStyle.fonts.B_16R.apply(
+                                color: getGradeColor(subjectAverage),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  FirkaCard(
-                    left: [
-                      Text(
-                        widget.data.l10n.subject_avg_rounded,
-                        style: appStyle.fonts.B_16SB.apply(
-                          color: appStyle.colors.textPrimary,
-                        ),
-                      ),
-                    ],
-                    right: [
-                      Card(
-                        shadowColor: Colors.transparent,
-                        color: subjectAvgColor.withAlpha(38),
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            left: 8,
-                            right: 8,
-                            top: 4,
-                            bottom: 4,
-                          ),
-                          child: Text(
-                            subjectAvgRounded.toStringAsFixed(2),
-                            style: appStyle.fonts.B_16SB.apply(
-                              color: subjectAvgColor,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  FirkaCard(
-                    left: [
-                      Text(
-                        widget.data.l10n.overall_avg,
-                        style: appStyle.fonts.B_16SB.apply(
-                          color: appStyle.colors.textPrimary,
-                        ),
-                      ),
-                    ],
-                    right: [
-                      Card(
-                        shadowColor: Colors.transparent,
-                        color: subjectAvgColor.withAlpha(38),
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            left: 8,
-                            right: 8,
-                            top: 4,
-                            bottom: 4,
-                          ),
-                          child: Text(
-                            summaryAvg2.toStringAsFixed(2),
-                            style: appStyle.fonts.B_16SB.apply(
-                              color: subjectAvgColor,
-                            ),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                   FirkaCard(

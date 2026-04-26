@@ -38,13 +38,7 @@ class InfoCard extends StatelessWidget {
     return FilledCircle(
       diameter: 32,
       color: color.withAlpha(38),
-      child: ClassIconWidget(
-        uid: subject.uid,
-        className: subject.name,
-        category: subject.category.name!,
-        color: color,
-        size: 20,
-      ),
+      child: ClassIconWidget.subject(subject: subject, color: color, size: 20),
     );
   }
 

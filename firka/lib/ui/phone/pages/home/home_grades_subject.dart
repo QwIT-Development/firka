@@ -23,8 +23,9 @@ import 'package:firka/ui/theme/style.dart';
 
 class HomeGradesSubjectScreen extends StatefulWidget {
   final AppInitialization data;
+  final Subject subject;
 
-  const HomeGradesSubjectScreen(this.data, {super.key});
+  const HomeGradesSubjectScreen(this.subject, this.data, {super.key});
 
   @override
   State<StatefulWidget> createState() => _HomeGradesSubjectScreen();
@@ -36,9 +37,9 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
 
   void _onRefreshRequested(BuildContext context) async {
     final cubit = context.read<HomeRefreshCubit>();
-    grades = (await widget.data.client.getGrades(forceCache: false)).response!
-        .where((grade) => grade.subject.uid == activeSubjectUid)
-        .where((grade) => grade.type.name != "felevi_jegy_ertekeles");
+    grades = (await widget.data.client.getGrades(
+      forceCache: false,
+    )).response!.where((grade) => grade.subject.uid == widget.subject.uid);
 
     if (mounted) {
       setState(() {});
@@ -51,9 +52,9 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
     super.initState();
 
     (() async {
-      grades = (await widget.data.client.getGrades()).response!
-          .where((grade) => grade.subject.uid == activeSubjectUid)
-          .where((grade) => grade.type.name != "felevi_jegy_ertekeles");
+      grades = (await widget.data.client.getGrades()).response!.where(
+        (grade) => grade.subject.uid == widget.subject.uid,
+      );
 
       if (mounted) setState(() {});
     })();
@@ -107,7 +108,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
   }
 
   Widget _buildContent(BuildContext context) {
-    if (grades == null || grades!.isEmpty || activeSubjectUid == "") {
+    if (grades == null || grades!.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
@@ -152,17 +153,15 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                     ),
                     child: Padding(
                       padding: EdgeInsetsGeometry.all(6),
-                      child: ClassIconWidget(
-                        uid: subjectId,
-                        className: subjectName,
-                        category: subjectCategory,
+                      child: ClassIconWidget.subject(
+                        subject: widget.subject,
                         color: appStyle.colors.accent,
                       ),
                     ),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    subjectName,
+                    widget.subject.name,
                     style: appStyle.fonts.H_H2.apply(
                       color: appStyle.colors.textPrimary,
                     ),
@@ -289,10 +288,8 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                     FilledCircle(
                       diameter: 36,
                       color: appStyle.colors.a15p,
-                      child: ClassIconWidget(
-                        uid: aGrade.subject.uid,
-                        className: aGrade.subject.name,
-                        category: aGrade.subject.category.name!,
+                      child: ClassIconWidget.subject(
+                        subject: aGrade.subject,
                         color: appStyle.colors.accent,
                         size: 24,
                       ),

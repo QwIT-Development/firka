@@ -128,10 +128,8 @@ Future<void> showLessonBottomSheet(
         FilledCircle(
           diameter: 40,
           color: bgColor,
-          child: ClassIconWidget(
-            uid: lesson.uid,
-            className: lesson.name,
-            category: subjectName,
+          child: ClassIconWidget.subject(
+            subject: lesson.subject!,
             color: accent,
             size: 26,
           ),
@@ -218,13 +216,7 @@ Future<void> showLessonBottomSheet(
         color: appStyle.colors.buttonSecondaryFill,
       ),
       onTap: () {
-        activeSubjectUid = lesson.subject!.uid;
-        subjectName = lesson.subject!.name;
-        subjectId = lesson.subject!.uid;
-        subjectCategory = lesson.subject!.category.name;
-        subjectInfo = [];
-        Navigator.pop(context);
-        context.push('/timetable/subject/${lesson.subject!.uid}');
+        context.go('/timetable/subject', extra: lesson.subject);
       },
     ),
   ]);
@@ -392,13 +384,8 @@ Future<void> showGradeBottomSheet(
         color: appStyle.colors.buttonSecondaryFill,
       ),
       onTap: () {
-        activeSubjectUid = grade.subject.uid;
-        subjectName = grade.subject.name;
-        subjectId = grade.subject.uid;
-        subjectCategory = grade.subject.category.name;
-        subjectInfo = [];
         Navigator.pop(context);
-        context.go('/grades/subject/${grade.subject.uid}');
+        context.go('/grades/subject', extra: grade.subject);
       },
     ),
   ]);
@@ -490,13 +477,7 @@ Future<void> showHomeworkBottomSheet(
         color: appStyle.colors.buttonSecondaryFill,
       ),
       onTap: () {
-        activeSubjectUid = homework.subject.uid;
-        subjectName = homework.subjectName;
-        subjectId = homework.subject.uid;
-        subjectCategory = "";
-        subjectInfo = [];
-        Navigator.pop(context);
-        context.push('/home/subject/${homework.subject.uid}');
+        context.go('/home/subject', extra: homework.subject);
       },
     ),
   ]);

@@ -6,13 +6,12 @@ import 'package:firka_common/ui/components/grade_helpers.dart';
 import 'package:firka_common/ui/shared/class_icon.dart';
 import 'package:firka_common/ui/theme/style.dart';
 
-import '../../firka_common.dart';
-
 class GradeSmallCard extends StatelessWidget {
-  final List<Grade> grades;
+  final double? average;
   final Subject subject;
 
-  GradeSmallCard(this.grades, this.subject, {super.key});
+  GradeSmallCard(List<Grade> grades, this.subject, {super.key})
+    : average = grades.getAverageBySubject(subject);
 
   @override
   Widget build(BuildContext context) {
@@ -39,26 +38,22 @@ class GradeSmallCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          grades.getAverageBySubject(subject).isNaN
+          average == null
               ? const SizedBox()
               : Container(
                   width: 48,
                   height: 26,
                   decoration: ShapeDecoration(
-                    color: getGradeColor(
-                      grades.getAverageBySubject(subject),
-                    ).withAlpha(38),
+                    color: getGradeColor(average!).withAlpha(38),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: Center(
                     child: Text(
-                      grades.getAverageBySubject(subject).toStringAsFixed(2),
+                      average!.toStringAsFixed(2),
                       style: appStyle.fonts.B_16R.apply(
-                        color: getGradeColor(
-                          grades.getAverageBySubject(subject),
-                        ),
+                        color: getGradeColor(average!),
                       ),
                     ),
                   ),

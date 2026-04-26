@@ -5,8 +5,6 @@ import 'package:firka_common/firka_common.dart';
 import 'package:intl/intl.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/routing/chart_interaction_scope.dart';
-import 'package:firka/ui/components/grade_helpers.dart';
-import 'package:firka/ui/theme/style.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -31,46 +29,6 @@ class _GradeChartState extends State<GradeChart> {
 
   late List<DateSpot> spots;
 
-  double? _subjectAverageInList(List<Grade> grades, String subjectUid) {
-    double weightedSum = 0;
-    double totalWeight = 0;
-    for (final g in grades) {
-      if (g.subject.uid != subjectUid) continue;
-      final name = g.valueType.name?.toLowerCase() ?? '';
-      final isPercentage =
-          name.contains('szazalek') || name.contains('percent');
-      if (isPercentage) continue;
-      final v = g.numericValue;
-      final w = g.weightPercentage;
-      if (v != null && w != null) {
-        final effectiveValue = g.valueType.name == "Szazalekos"
-            ? percentageToGrade(v).toDouble()
-            : v.toDouble();
-        weightedSum += effectiveValue * w;
-        totalWeight += w;
-      }
-    }
-    return totalWeight > 0 ? weightedSum / totalWeight : null;
-  }
-
-  double _runningSubjectAverage(List<Grade> sortedGrades, int upToInclusive) {
-    final sublist = sortedGrades.sublist(
-      0,
-      (upToInclusive + 1).clamp(0, sortedGrades.length),
-    );
-    final subjectUids = sublist.map((g) => g.subject.uid).toSet();
-    double sum = 0;
-    int count = 0;
-    for (final uid in subjectUids) {
-      final avg = _subjectAverageInList(sublist, uid);
-      if (avg != null) {
-        sum += avg;
-        count++;
-      }
-    }
-    return count > 0 ? sum / count : 0;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -79,12 +37,7 @@ class _GradeChartState extends State<GradeChart> {
 
   void _computeSpots() {
     final sortedGrades =
-        widget.grades
-            .where(
-              (grade) =>
-                  grade.numericValue != null && grade.weightPercentage != null,
-            )
-            .toList()
+        widget.grades.where((grade) => grade.shouldIncludeInAverage()).toList()
           ..sort((a, b) => a.recordDate.compareTo(b.recordDate));
 
     if (sortedGrades.isEmpty) {
@@ -98,8 +51,10 @@ class _GradeChartState extends State<GradeChart> {
 
     spots = [];
     for (var i = 0; i < sortedGrades.length; i++) {
-      final partialAvg = _runningSubjectAverage(sortedGrades, i);
-      spots.add(DateSpot(i.toDouble(), partialAvg, sortedGrades[i].recordDate));
+      final partialAvg = sortedGrades.take(i + 1).getSubjectAverage();
+      spots.add(
+        DateSpot(i.toDouble(), partialAvg!, sortedGrades[i].recordDate),
+      );
     }
   }
 

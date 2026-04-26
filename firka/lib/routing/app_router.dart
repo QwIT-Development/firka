@@ -24,6 +24,16 @@ import 'package:go_router/go_router.dart';
 import 'package:kreta_api/kreta_api.dart';
 
 GoRouter createAppRouter() {
+  final subjectRoute = GoRoute(
+    path: 'subject',
+    builder: (context, state) {
+      return DefaultAssetBundle(
+        bundle: FirkaBundle(),
+        child: HomeGradesSubjectScreen(state.extra as Subject, initData),
+      );
+    },
+  );
+
   return GoRouter(
     navigatorKey: navigatorKey,
     initialLocation: _initialLocation,
@@ -124,19 +134,7 @@ GoRouter createAppRouter() {
                     child: HomeMainScreen(initData),
                   ),
                 ),
-                routes: [
-                  GoRoute(
-                    path: 'subject/:uid',
-                    builder: (context, state) {
-                      final uid = state.pathParameters['uid'] ?? '';
-                      activeSubjectUid = uid;
-                      return DefaultAssetBundle(
-                        bundle: FirkaBundle(),
-                        child: HomeGradesSubjectScreen(initData),
-                      );
-                    },
-                  ),
-                ],
+                routes: [subjectRoute],
               ),
             ],
           ),
@@ -151,19 +149,7 @@ GoRouter createAppRouter() {
                     child: HomeGradesScreen(initData),
                   ),
                 ),
-                routes: [
-                  GoRoute(
-                    path: 'subject/:uid',
-                    builder: (context, state) {
-                      final uid = state.pathParameters['uid'] ?? '';
-                      activeSubjectUid = uid;
-                      return DefaultAssetBundle(
-                        bundle: FirkaBundle(),
-                        child: HomeGradesSubjectScreen(initData),
-                      );
-                    },
-                  ),
-                ],
+                routes: [subjectRoute],
               ),
             ],
           ),
@@ -186,17 +172,7 @@ GoRouter createAppRouter() {
                       child: HomeTimetableMonthlyScreen(initData),
                     ),
                   ),
-                  GoRoute(
-                    path: 'subject/:uid',
-                    builder: (context, state) {
-                      final uid = state.pathParameters['uid'] ?? '';
-                      activeSubjectUid = uid;
-                      return DefaultAssetBundle(
-                        bundle: FirkaBundle(),
-                        child: HomeGradesSubjectScreen(initData),
-                      );
-                    },
-                  ),
+                  subjectRoute,
                 ],
               ),
             ],

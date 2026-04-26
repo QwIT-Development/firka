@@ -3,12 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:firka_common/core/icon_helper.dart';
 import 'package:firka_common/ui/shared/firka_icon.dart';
 
+import 'package:kreta_api/kreta_api.dart';
+
 class ClassIconWidget extends StatelessWidget {
   final String _uid;
   final String _className;
   final String _category;
   final Color color;
   final double? size;
+
+  ClassIconWidget.subject({
+    super.key,
+    required Subject subject,
+    this.color = Colors.white,
+    this.size,
+  }) : _className = subject.name,
+       _uid = subject.uid,
+       _category = subject.category.name;
 
   const ClassIconWidget({
     super.key,
