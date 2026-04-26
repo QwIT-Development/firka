@@ -168,7 +168,10 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                 if (!mounted) return NavigationDecision.prevent;
 
                 if (mounted) {
-                  Navigator.of(context).pop();
+                  final isReauth = widget.username != null;
+                  if (isReauth) {
+                    Navigator.of(context).pop();
+                  }
                   appRouter?.go('/home');
                 }
               } catch (ex) {
