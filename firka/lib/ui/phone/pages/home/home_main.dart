@@ -40,6 +40,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   DateTime now = timeNow();
   int swipeBack = 0;
   int activeLessonIndex = 0;
+  int centeredPageIndex = 0;
   List<Lesson>? lessons;
   List<NoticeBoardItem>? noticeBoard;
   List<InfoBoardItem>? infoBoard;
@@ -389,47 +390,56 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
                     viewportFraction: 346 / 376,
                     enableInfiniteScroll: false,
                     onPageChanged: (index, reason) {
+                      centeredPageIndex = index;
                       if (index == activeLessonIndex) {
                         swipeBack = -1;
                       } else if (reason == CarouselPageChangedReason.manual) {
                         swipeBack = 5;
+                      } else {
+                        return;
                       }
+                      setState(() {
+                        centeredPageIndex = index;
+                      });
                     },
                   ),
                 ),
               ),
             if (lessons!.isNotEmpty) SizedBox(height: 12),
             if (lessons!.isNotEmpty)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 8,
-                children: [
-                  FirkaIconWidget(
-                    FirkaIconType.majesticonsLocal,
-                    "sunSolid",
-                    color: activeLessonIndex == 0
-                        ? appStyle.colors.accent
-                        : appStyle.colors.accent.withAlpha(128),
-                    size: activeLessonIndex == 0 ? 16 : 12,
-                  ),
-                  ...lessons!.indexed.map(
-                    (i) => FilledCircle(
-                      diameter: activeLessonIndex == i.$1 + 1 ? 10 : 8,
-                      color: activeLessonIndex == i.$1 + 1
+              SizedBox(
+                height: 16,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 8,
+                  children: [
+                    FirkaIconWidget(
+                      FirkaIconType.majesticonsLocal,
+                      "sunSolid",
+                      color: centeredPageIndex == 0
                           ? appStyle.colors.accent
                           : appStyle.colors.accent.withAlpha(128),
-                      child: SizedBox(),
+                      size: centeredPageIndex == 0 ? 16 : 12,
                     ),
-                  ),
-                  FirkaIconWidget(
-                    FirkaIconType.majesticons,
-                    Majesticon.moonSolid,
-                    color: activeLessonIndex == lessons!.length + 1
-                        ? appStyle.colors.accent
-                        : appStyle.colors.accent.withAlpha(128),
-                    size: activeLessonIndex == lessons!.length + 1 ? 14 : 10,
-                  ),
-                ],
+                    ...lessons!.indexed.map(
+                      (i) => FilledCircle(
+                        diameter: centeredPageIndex == i.$1 + 1 ? 10 : 8,
+                        color: centeredPageIndex == i.$1 + 1
+                            ? appStyle.colors.accent
+                            : appStyle.colors.accent.withAlpha(128),
+                        child: SizedBox(),
+                      ),
+                    ),
+                    FirkaIconWidget(
+                      FirkaIconType.majesticons,
+                      Majesticon.moonSolid,
+                      color: centeredPageIndex == lessons!.length + 1
+                          ? appStyle.colors.accent
+                          : appStyle.colors.accent.withAlpha(128),
+                      size: centeredPageIndex == lessons!.length + 1 ? 16 : 12,
+                    ),
+                  ],
+                ),
               ),
             if (lessons!.isNotEmpty) SizedBox(height: 12),
             Expanded(
