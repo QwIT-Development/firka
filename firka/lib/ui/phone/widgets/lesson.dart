@@ -250,8 +250,9 @@ class LessonWidget extends StatelessWidget {
                       children: [
                         Text(
                           lesson.end
-                              .difference(timeNow().max(lesson.start))
-                              .timeLeft(initData.l10n),
+                                  .difference(timeNow().max(lesson.start))
+                                  .timeLeft(initData.l10n) ??
+                              "",
                           style: appStyle.fonts.B_14R.apply(
                             color: appStyle.colors.textSecondary,
                           ),
