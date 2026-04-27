@@ -109,7 +109,8 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
 
   Widget _buildContent(BuildContext context) {
     if (grades == null || grades!.isEmpty) {
-      return Padding(
+      return Container(
+        color: appStyle.colors.background,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,7 +219,8 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
         .toList()
         .reversed;
 
-    return Padding(
+    return Container(
+      color: appStyle.colors.background,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
