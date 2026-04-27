@@ -119,7 +119,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
           .nonNulls;
 
       double? classAverage = classAverages.isNotEmpty
-          ? classAverages.reduce((f, s) => f + s)
+          ? classAverages.reduce((f, s) => f + s) / classAverages.length
           : null;
 
       final Set<Subject> subjects = HashSet(
