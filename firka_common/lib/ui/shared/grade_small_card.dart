@@ -7,11 +7,16 @@ import 'package:firka_common/ui/shared/class_icon.dart';
 import 'package:firka_common/ui/theme/style.dart';
 
 class GradeSmallCard extends StatelessWidget {
-  final double? average;
+  final double? studentAverage;
+  final double? classAverage;
   final Subject subject;
 
-  GradeSmallCard(List<Grade> grades, this.subject, {super.key})
-    : average = grades.getAverageBySubject(subject);
+  GradeSmallCard(
+    List<Grade> grades,
+    this.classAverage,
+    this.subject, {
+    super.key,
+  }) : studentAverage = grades.getAverageBySubject(subject);
 
   @override
   Widget build(BuildContext context) {
@@ -38,26 +43,45 @@ class GradeSmallCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          average == null
-              ? const SizedBox()
-              : Container(
-                  width: 48,
-                  height: 26,
-                  decoration: ShapeDecoration(
-                    color: getGradeColor(average!).withAlpha(38),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      average!.toStringAsFixed(2),
-                      style: appStyle.fonts.B_16R.apply(
-                        color: getGradeColor(average!),
-                      ),
-                    ),
+          if (classAverage != null)
+            Container(
+              width: 48,
+              height: 26,
+              decoration: ShapeDecoration(
+                color: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(color: getGradeColor(classAverage!)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  classAverage!.toStringAsFixed(2),
+                  style: appStyle.fonts.B_16R.apply(
+                    color: getGradeColor(classAverage!),
                   ),
                 ),
+              ),
+            ),
+          if (studentAverage != null)
+            Container(
+              width: 48,
+              height: 26,
+              decoration: ShapeDecoration(
+                color: getGradeColor(studentAverage!).withAlpha(38),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  studentAverage!.toStringAsFixed(2),
+                  style: appStyle.fonts.B_16R.apply(
+                    color: getGradeColor(studentAverage!),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

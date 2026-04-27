@@ -34,6 +34,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
   ApiResponse<List<Lesson>>? week;
   ApiResponse<List<ClassGroup>>? classGroups;
   ApiResponse<List<SubjectAverage>>? lessons;
+  ApiResponse<List<ClassGroupSubjectAverage>>? classAvgs;
 
   void _onRefreshRequested(BuildContext context) async {
     final cubit = context.read<HomeRefreshCubit>();
@@ -47,6 +48,10 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
     if (classGroups?.response?.isNotEmpty ?? false) {
       var group = classGroups!.response!.first;
       lessons = await widget.data.client.getSubjectAverage(
+        group,
+        forceCache: false,
+      );
+      classAvgs = await widget.data.client.getClassGroupAverages(
         group,
         forceCache: false,
       );
@@ -73,6 +78,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
       if (classGroups?.response?.isNotEmpty ?? false) {
         var group = classGroups!.response!.first;
         lessons = await widget.data.client.getSubjectAverage(group);
+        classAvgs = await widget.data.client.getClassGroupAverages(group);
         await Future.delayed(Duration(milliseconds: 100));
       }
       if (mounted) setState(() {});
@@ -92,7 +98,10 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
   }
 
   Widget _buildContent(BuildContext context) {
-    if (grades == null || week == null) {
+    if (grades == null ||
+        lessons == null ||
+        classAvgs == null ||
+        week == null) {
       return SizedBox(
         height: MediaQuery.of(context).size.height / 1.35,
         child: Column(
@@ -105,6 +114,13 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
       final allLessons = lessons!.response!;
 
       final subjectAverage = allGrades.getSubjectAverage();
+      final classAverages = classAvgs!.response!
+          .map((c) => c.classGroupAverage)
+          .nonNulls;
+
+      double? classAverage = classAverages.isNotEmpty
+          ? classAverages.reduce((f, s) => f + s)
+          : null;
 
       final Set<Subject> subjects = HashSet(
         hashCode: (s) => s.uid.hashCode,
@@ -119,7 +135,13 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
           in subjects.toList()..sort((s1, s2) => s1.name.compareTo(s2.name))) {
         gradeCards.add(
           GestureDetector(
-            child: GradeSmallCard(allGrades, subject),
+            child: GradeSmallCard(
+              allGrades,
+              classAvgs!.response!
+                  .firstWhereOrNull((s) => s.subject.uid == subject.uid)
+                  ?.classGroupAverage,
+              subject,
+            ),
             onTap: () {
               context.go('/grades/subject', extra: subject);
             },
@@ -208,6 +230,30 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                           color: appStyle.colors.textPrimary,
                         ),
                       ),
+                    ],
+                    right: [
+                      if (classAverage != null)
+                        Container(
+                          width: 48,
+                          height: 26,
+                          decoration: ShapeDecoration(
+                            color: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                color: getGradeColor(classAverage),
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              classAverage.toStringAsFixed(2),
+                              style: appStyle.fonts.B_16R.apply(
+                                color: getGradeColor(classAverage),
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                   FirkaCard(

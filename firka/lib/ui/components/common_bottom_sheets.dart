@@ -344,7 +344,7 @@ Future<void> showGradeBottomSheet(
       style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
     ),
     SizedBox(height: 20),
-    GradeSmallCard([], grade.subject),
+    GradeSmallCard([], null, grade.subject),
     SizedBox(height: 10),
     FirkaCard(
       margin: EdgeInsets.all(0),
@@ -384,7 +384,6 @@ Future<void> showGradeBottomSheet(
         color: appStyle.colors.buttonSecondaryFill,
       ),
       onTap: () {
-        Navigator.pop(context);
         context.go('/grades/subject', extra: grade.subject);
       },
     ),
@@ -407,7 +406,7 @@ Future<void> showHomeworkBottomSheet(
       style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
     ),
     SizedBox(height: 20),
-    GradeSmallCard([], homework.subject),
+    GradeSmallCard([], null, homework.subject),
     SizedBox(height: 20),
     Flexible(
       fit: FlexFit.loose,

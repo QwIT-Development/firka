@@ -84,3 +84,30 @@ class SubjectAverage extends UidObj {
     return 'SubjectAverage(uid: "$uid", name: "${subject.name}", category: "${subject.category.name}", average: $average)';
   }
 }
+
+class ClassGroupSubjectAverage extends UidObj {
+  final Subject subject;
+  final double? studentAverage;
+  final double? classGroupAverage;
+
+  ClassGroupSubjectAverage({
+    required super.uid,
+    required this.subject,
+    this.classGroupAverage,
+    this.studentAverage,
+  });
+
+  factory ClassGroupSubjectAverage.fromJson(Map<String, dynamic> json) {
+    return ClassGroupSubjectAverage(
+      uid: json['Uid'],
+      subject: Subject.fromJson(json['Tantargy']),
+      studentAverage: json.dbl('TanuloAtlag'),
+      classGroupAverage: json.dbl('OsztalyCsoportAtlag'),
+    );
+  }
+
+  @override
+  String toString() {
+    return 'ClassGroupSubjectAverage(uid: "$uid", subject: $subject)';
+  }
+}

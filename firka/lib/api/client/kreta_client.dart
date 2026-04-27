@@ -495,6 +495,51 @@ class KretaClient {
     return (resp, statusCode, null, false);
   }
 
+  ApiResponse<List<ClassGroupSubjectAverage>>? classGroupAveragesCache;
+
+  Future<ApiResponse<List<ClassGroupSubjectAverage>>> getClassGroupAverages(
+    ClassGroup classGroup, {
+    bool forceCache = true,
+  }) async {
+    String? err;
+    if (classGroup.studyTask == null) {
+      err = "classGroup.studyTask is null";
+      logger.warning(err);
+      return ApiResponse([], 0, err, false);
+    }
+    if (!forceCache) {
+      classGroupAveragesCache = null;
+    } else if (classGroupAveragesCache != null) {
+      return classGroupAveragesCache!;
+    }
+    var studyTaskUid = classGroup.studyTask!.uid.toString().split(",").first;
+    var (resp, status, ex, cached) = await _cachingGet(
+      CacheId.getClassGroupAvg,
+      KretaEndpoints.getClassGroupAvg(model.iss!, studyTaskUid),
+      forceCache,
+      0,
+    );
+
+    var items = List<ClassGroupSubjectAverage>.empty(growable: true);
+    try {
+      List<dynamic> rawItems = resp;
+      for (var item in rawItems) {
+        items.add(ClassGroupSubjectAverage.fromJson(item));
+      }
+    } catch (ex) {
+      err = ex.toString();
+    }
+
+    if (ex != null) {
+      err = ex.toString();
+    }
+
+    if (ex == null) {
+      classGroupAveragesCache = ApiResponse(items, 200, null, true);
+    }
+    return ApiResponse(items, status, err, cached);
+  }
+
   ApiResponse<Student>? studentCache;
 
   Future<ApiResponse<Student>> getStudent({bool forceCache = true}) async {
