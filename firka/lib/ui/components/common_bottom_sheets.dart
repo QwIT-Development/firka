@@ -37,38 +37,43 @@ Future<void> showFirkaBottomSheet(
     enableDrag: true,
     backgroundColor: Colors.transparent,
     barrierColor: appStyle.colors.a15p,
-    builder: (BuildContext context) => Align(
-      alignment: AlignmentGeometry.bottomCenter,
-      child: Container(
-        padding: const EdgeInsets.all(20) - EdgeInsets.only(top: 20),
-        decoration: BoxDecoration(
-          color: appStyle.colors.background,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Align(
-              heightFactor: 0,
-              alignment: Alignment.topCenter,
-              child: Container(
-                margin: EdgeInsets.only(top: 18),
-                width: 40,
-                height: 4,
-                foregroundDecoration: ShapeDecoration(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadiusGeometry.circular(2),
-                  ),
-                  color: appStyle.colors.shadowColor,
-                ),
-              ),
+    builder: (BuildContext context) => Stack(
+      children: [
+        Positioned.fill(child: GestureDetector(onTap: () => context.pop())),
+        Align(
+          alignment: AlignmentGeometry.bottomCenter,
+          child: Container(
+            padding: const EdgeInsets.all(20) - EdgeInsets.only(top: 20),
+            decoration: BoxDecoration(
+              color: appStyle.colors.background,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            SizedBox(height: 40),
-            ...children,
-          ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Align(
+                  heightFactor: 0,
+                  alignment: Alignment.topCenter,
+                  child: Container(
+                    margin: EdgeInsets.only(top: 18),
+                    width: 40,
+                    height: 4,
+                    foregroundDecoration: ShapeDecoration(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadiusGeometry.circular(2),
+                      ),
+                      color: appStyle.colors.shadowColor,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 40),
+                ...children,
+              ],
+            ),
+          ),
         ),
-      ),
+      ],
     ),
   );
 }
