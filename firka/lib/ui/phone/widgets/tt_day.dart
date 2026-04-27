@@ -76,16 +76,22 @@ class TimeTableDayWidget extends StatelessWidget {
       for (var i = 0; i < events.length; i++) {
         var event = events[i];
         ttLessons.add(
-          FirkaCard(
-            left: [
-              Text(
-                event.name,
-                style: appStyle.fonts.B_16R.apply(
-                  color: appStyle.colors.textPrimary,
-                ),
+          FirkaCard.single(
+            margin: EdgeInsets.zero,
+            padding: EdgeInsets.all(16),
+            child: Text(
+              event.name,
+              style: appStyle.fonts.B_16R.apply(
+                color: appStyle.colors.textPrimary,
               ),
-            ],
+            ),
           ),
+        );
+      }
+
+      if (events.isNotEmpty) {
+        ttLessons.add(
+          SizedBox()
         );
       }
 
