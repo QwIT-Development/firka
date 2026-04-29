@@ -69,12 +69,12 @@ extension DurationExtension on Duration {
     return "$hours:$minutes:$seconds";
   }
 
-  String timeLeft(AppLocalizations l10n) {
+  String? timeLeft(AppLocalizations l10n) {
     return inMinutes > 1
         ? "$inMinutes ${inMinutes == 1 ? l10n.starting_min : l10n.starting_min_plural}"
         : inSeconds > 0
         ? "$inSeconds ${inSeconds == 1 ? l10n.starting_sec : l10n.starting_sec_plural}"
-        : "- ${l10n.starting_sec}";
+        : null;
   }
 }
 
