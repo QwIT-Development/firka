@@ -21,7 +21,6 @@ class LessonWidget extends StatelessWidget {
   final AppInitialization data;
   final int? lessonNo;
   final Lesson lesson;
-  final bool expanded;
   final bool active;
   final Test? test;
 
@@ -31,7 +30,6 @@ class LessonWidget extends StatelessWidget {
     this.lesson,
     this.test, {
     this.active = false,
-    this.expanded = false,
     super.key,
   });
 
@@ -78,8 +76,6 @@ class LessonWidget extends StatelessWidget {
 
     var roomName = lesson.roomName ?? 'N/A';
 
-    final spacing = expanded ? 8.0 : 12.0;
-
     elements.add(
       GestureDetector(
         onTap: () {
@@ -96,16 +92,14 @@ class LessonWidget extends StatelessWidget {
           );
         },
         child: FirkaCard.single(
-          height: expanded ? 104 : 64,
+          height: 64,
           borderColor: active ? appStyle.colors.accent : null,
           margin: EdgeInsets.all(0),
-          padding: EdgeInsets.only(left: expanded ? 16 : 14, right: 16),
+          padding: EdgeInsets.only(left: 14, right: 16),
           color: isDismissed
               ? appStyle.colors.cardTranslucent
               : appStyle.colors.card,
-          attached: !expanded && showTests && test != null
-              ? Attach.bottom
-              : Attach.none,
+          attached: showTests && test != null ? Attach.bottom : Attach.none,
           shadow: !isDismissed,
           child: Column(
             spacing: 12,
@@ -138,19 +132,19 @@ class LessonWidget extends StatelessWidget {
                           ),
                         ),
                   FilledCircle(
-                    diameter: expanded ? 32 : 36,
+                    diameter: 36,
                     color: bgColor,
                     child: ClassIconWidget(
                       uid: lesson.uid,
                       className: lesson.name,
                       category: subjectName,
                       color: accent,
-                      size: expanded ? 20 : 24,
+                      size: 24,
                     ),
                   ),
                   SizedOverflowBox(
-                    size: Size(spacing, 0),
-                    child: !expanded && !showTests && test != null
+                    size: Size(12, 0),
+                    child: !showTests && test != null
                         ? Transform.translate(
                             offset: Offset(4, -20),
                             child: BubbleTest(),
@@ -160,7 +154,7 @@ class LessonWidget extends StatelessWidget {
                   Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      spacing: spacing,
+                      spacing: 12,
                       children: [
                         LimitedBox(
                           maxWidth: 155,
@@ -227,92 +221,23 @@ class LessonWidget extends StatelessWidget {
                           color: appStyle.colors.textPrimary,
                         ),
                       ),
-                      if (!expanded)
-                        Text(
-                          lesson.end.toLocal().format(
-                            data.l10n,
-                            FormatMode.hmm,
-                          ),
-                          style: appStyle.fonts.B_14R.apply(
-                            color: appStyle.colors.textPrimary,
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-              if (expanded && test == null)
-                Column(
-                  spacing: 4,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          lesson.end
-                                  .difference(timeNow().max(lesson.start))
-                                  .timeLeft(initData.l10n) ??
-                              "",
-                          style: appStyle.fonts.B_14R.apply(
-                            color: appStyle.colors.textSecondary,
-                          ),
-                        ),
-                        Text(
-                          lesson.end.format(initData.l10n, FormatMode.hmm),
-                          style: appStyle.fonts.B_14R.apply(
-                            color: appStyle.colors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: LinearProgressIndicator(
-                        value:
-                            timeNow().difference(lesson.start).inMilliseconds /
-                            lesson.end.difference(lesson.start).inMilliseconds,
-                        backgroundColor: appStyle.colors.a15p,
-                        color: appStyle.colors.accent,
-                        minHeight: 8,
-                      ),
-                    ),
-                  ],
-                ),
-              if (expanded && test != null)
-                Container(
-                  height: 28,
-                  padding: EdgeInsets.symmetric(horizontal: 6),
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    color: appStyle.colors.background,
-                  ),
-                  child: Row(
-                    children: [
-                      FirkaIconWidget(
-                        FirkaIconType.majesticons,
-                        Majesticon.editPen4Solid,
-                        size: 12,
-                        color: appStyle.colors.accent,
-                      ),
-                      SizedBox(width: 8),
                       Text(
-                        test!.theme,
-                        style: appStyle.fonts.B_16R.apply(
+                        lesson.end.toLocal().format(data.l10n, FormatMode.hmm),
+                        style: appStyle.fonts.B_14R.apply(
                           color: appStyle.colors.textPrimary,
                         ),
                       ),
                     ],
                   ),
-                ),
+                ],
+              ),
             ],
           ),
         ),
       ),
     );
 
-    if (!expanded && test != null && showTests) {
+    if (test != null && showTests) {
       var theme = test!.theme.firstUpper();
       var method = test!.method.description.firstUpper();
 

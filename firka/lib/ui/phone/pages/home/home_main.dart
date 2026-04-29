@@ -307,13 +307,12 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
                     ...lessonTestMap.entries.map(
                       (entry) => Padding(
                         padding: EdgeInsets.symmetric(horizontal: 5),
-                        child: LessonWidget(
+                        child: LessonBigWidget(
                           widget.data,
                           lessons!.getLessonNo(entry.key),
                           entry.key,
                           entry.value,
                           active: currentLesson == entry.key,
-                          expanded: true,
                         ),
                       ),
                     ),
