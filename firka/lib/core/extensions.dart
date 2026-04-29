@@ -70,8 +70,8 @@ extension DurationExtension on Duration {
   }
 
   String? timeLeft(AppLocalizations l10n) {
-    return inMinutes > 1
-        ? "$inMinutes ${inMinutes == 1 ? l10n.starting_min : l10n.starting_min_plural}"
+    return inMinutes > 0
+        ? "${inMinutes + 1} ${l10n.starting_min_plural}"
         : inSeconds > 0
         ? "$inSeconds ${inSeconds == 1 ? l10n.starting_sec : l10n.starting_sec_plural}"
         : null;
