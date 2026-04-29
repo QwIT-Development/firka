@@ -38,9 +38,9 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   _HomeMainScreen();
 
   DateTime now = timeNow();
-  int swipeBack = 0;
-  int activeLessonIndex = 0;
-  int centeredPageIndex = 0;
+  int? swipeBack;
+  int? activeLessonIndex;
+  int? centeredPageIndex;
   List<Lesson>? lessons;
   List<NoticeBoardItem>? noticeBoard;
   List<InfoBoardItem>? infoBoard;
@@ -185,7 +185,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     })();
 
     timer = Timer.periodic(Duration(seconds: 1), (timer) async {
-      if (swipeBack > 0) swipeBack -= 1;
+      if (swipeBack != null) swipeBack = swipeBack! - 1;
       if (!mounted) return;
       setState(() {
         now = timeNow();
@@ -262,13 +262,15 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
           ? lessons!.length + 1
           : lessons!.indexOf(currentLesson) + 1;
 
-      if (tmpIndex != activeLessonIndex) {
+      if (activeLessonIndex == null || tmpIndex != activeLessonIndex) {
         activeLessonIndex = tmpIndex;
         swipeBack = 0;
       }
 
+      centeredPageIndex ??= activeLessonIndex!;
+
       if (controller.ready && swipeBack == 0) {
-        controller.animateToPage(activeLessonIndex);
+        controller.animateToPage(activeLessonIndex!);
       }
 
       int testsTomorrow = testItems
@@ -385,22 +387,20 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
                   ],
                   carouselController: controller,
                   options: CarouselOptions(
-                    initialPage: activeLessonIndex,
+                    initialPage: activeLessonIndex!,
                     height: 106,
                     viewportFraction: 346 / 376,
                     enableInfiniteScroll: false,
                     onPageChanged: (index, reason) {
                       centeredPageIndex = index;
                       if (index == activeLessonIndex) {
-                        swipeBack = -1;
+                        swipeBack = null;
                       } else if (reason == CarouselPageChangedReason.manual) {
                         swipeBack = 5;
                       } else {
                         return;
                       }
-                      setState(() {
-                        centeredPageIndex = index;
-                      });
+                      setState(() {});
                     },
                   ),
                 ),
