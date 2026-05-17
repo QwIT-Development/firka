@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:firka/data/models/token_model.dart';
-import 'package:kreta_api/kreta_api.dart' hide KretaEndpoints;
 
 import 'package:firka/app/app_state.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'consts.dart';
 
 Future<TokenGrantResponse> getAccessToken(String code) async {
@@ -14,7 +14,7 @@ Future<TokenGrantResponse> getAccessToken(String code) async {
 
   final formData = <String, String>{
     "code": code,
-    "code_verifier": KretaEndpoints.codeVerifier,
+    "code_verifier": KretaLoginEndpoints.codeVerifier,
     "redirect_uri":
         "https://mobil.e-kreta.hu/ellenorzo-student/prod/oauthredirect",
     "client_id": Constants.clientId,
@@ -23,7 +23,7 @@ Future<TokenGrantResponse> getAccessToken(String code) async {
 
   try {
     final response = await dio.post(
-      KretaEndpoints.tokenGrantUrl,
+      KretaLoginEndpoints.tokenGrantUrl,
       options: Options(headers: headers),
       data: formData,
     );
@@ -76,7 +76,7 @@ Future<TokenGrantResponse> extendToken(TokenModel model) async {
       }
 
       final response = await dio.post(
-        KretaEndpoints.tokenGrantUrl,
+        KretaLoginEndpoints.tokenGrantUrl,
         options: Options(headers: headers),
         data: formData,
       );
