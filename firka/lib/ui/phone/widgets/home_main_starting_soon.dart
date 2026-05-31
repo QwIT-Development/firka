@@ -2,6 +2,8 @@ import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/shared/counter_digit.dart';
+import 'package:firka_common/firka_common.dart';
+import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:flutter/material.dart';
 
 import 'package:kreta_api/kreta_api.dart';
@@ -24,89 +26,72 @@ class StartingSoonWidget extends StatelessWidget {
     var minTxt = hour == 1 ? l10n.starting_min : l10n.starting_min_plural;
     var secTxt = hour == 1 ? l10n.starting_sec : l10n.starting_sec_plural;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        FirkaCard(
-          attached: Attach.bottom,
-          left: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    SizedBox(width: 6),
-                    Text(
-                      l10n.starting_soon,
-                      style: appStyle.fonts.H_16px.apply(
-                        color: appStyle.colors.textPrimary,
-                      ),
-                    ),
-                  ],
+    return FirkaCard.single(
+      margin: EdgeInsets.only(bottom: 1),
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              FilledCircle(
+                diameter: 32,
+                color: appStyle.colors.a15p,
+                child: FirkaIconWidget(
+                  FirkaIconType.majesticonsLocal,
+                  "sunSolid",
+                  size: 20,
+                  color: appStyle.colors.accent,
                 ),
-                Row(
-                  children: [
-                    CounterDigitWidget(
-                      hour.toString(),
-                      appStyle.fonts.H_16px.apply(
-                        color: appStyle.colors.textPrimary,
-                      ),
-                    ),
-                    SizedBox(width: 2),
-                    Text(
-                      hourTxt,
-                      style: appStyle.fonts.B_16R.apply(
-                        color: appStyle.colors.textPrimary,
-                      ),
-                    ),
-                    SizedBox(width: 4),
-                    CounterDigitWidget(
-                      (min / 10).floor().toString(),
-                      appStyle.fonts.H_16px.apply(
-                        color: appStyle.colors.textPrimary,
-                      ),
-                    ),
-                    CounterDigitWidget(
-                      ((min % 10)).toString(),
-                      appStyle.fonts.H_16px.apply(
-                        color: appStyle.colors.textPrimary,
-                      ),
-                    ),
-                    SizedBox(width: 2),
-                    Text(
-                      minTxt,
-                      style: appStyle.fonts.B_16R.apply(
-                        color: appStyle.colors.textPrimary,
-                      ),
-                    ),
-                    SizedBox(width: 4),
-                    CounterDigitWidget(
-                      (sec / 10).floor().toString(),
-                      appStyle.fonts.H_16px.apply(
-                        color: appStyle.colors.textPrimary,
-                      ),
-                    ),
-                    CounterDigitWidget(
-                      ((sec % 10)).toString(),
-                      appStyle.fonts.H_16px.apply(
-                        color: appStyle.colors.textPrimary,
-                      ),
-                    ),
-                    SizedBox(width: 2),
-                    Text(
-                      secTxt,
-                      style: appStyle.fonts.B_16R.apply(
-                        color: appStyle.colors.textPrimary,
-                      ),
-                    ),
-                  ],
+              ),
+              SizedBox(width: 8),
+              Text(
+                l10n.starting_soon,
+                style: appStyle.fonts.B_16SB.apply(
+                  color: appStyle.colors.textPrimary,
                 ),
-              ],
-            ),
-          ],
-          right: [],
-        ),
-      ],
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              CounterDigitWidget((hour / 10).floor().toString()),
+              SizedBox(width: 4),
+              CounterDigitWidget(((hour % 10)).toString()),
+              SizedBox(width: 8),
+              Text(
+                hourTxt,
+                style: appStyle.fonts.B_16R.apply(
+                  color: appStyle.colors.textSecondary,
+                ),
+              ),
+              SizedBox(width: 8),
+              CounterDigitWidget((min / 10).floor().toString()),
+              SizedBox(width: 4),
+              CounterDigitWidget(((min % 10)).toString()),
+              SizedBox(width: 8),
+              Text(
+                minTxt,
+                style: appStyle.fonts.B_16R.apply(
+                  color: appStyle.colors.textSecondary,
+                ),
+              ),
+              SizedBox(width: 8),
+              CounterDigitWidget((sec / 10).floor().toString()),
+              SizedBox(width: 4),
+              CounterDigitWidget(((sec % 10)).toString()),
+              SizedBox(width: 8),
+              Text(
+                secTxt,
+                style: appStyle.fonts.B_16R.apply(
+                  color: appStyle.colors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

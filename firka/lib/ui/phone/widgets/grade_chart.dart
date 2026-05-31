@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+import 'package:firka/app/app_state.dart';
+import 'package:firka/core/settings.dart';
+import 'package:firka_common/firka_common.dart';
+import 'package:intl/intl.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/routing/chart_interaction_scope.dart';
-import 'package:firka/ui/components/grade_helpers.dart';
-import 'package:firka/ui/theme/style.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -13,60 +16,18 @@ class GradeChart extends StatefulWidget {
   State<GradeChart> createState() => _GradeChartState();
 }
 
+class DateSpot extends FlSpot {
+  final DateTime date;
+
+  const DateSpot(super.x, super.y, this.date);
+}
+
 class _GradeChartState extends State<GradeChart> {
-  bool _tooltipActive = false;
   double? _tooltipY;
   int? _touchedIndex;
+  DateFormat tooltipFormat = DateFormat("MM.dd.");
 
-  List<Color> gradientColors = [
-    appStyle.colors.grade5,
-    appStyle.colors.grade4,
-    appStyle.colors.grade3,
-    appStyle.colors.grade2,
-    appStyle.colors.grade1,
-  ];
-
-  late List<FlSpot> spots;
-
-  double? _subjectAverageInList(List<Grade> grades, String subjectUid) {
-    double weightedSum = 0;
-    double totalWeight = 0;
-    for (final g in grades) {
-      if (g.subject.uid != subjectUid) continue;
-      final name = g.valueType.name?.toLowerCase() ?? '';
-      final isPercentage =
-          name.contains('szazalek') || name.contains('percent');
-      if (isPercentage) continue;
-      final v = g.numericValue;
-      final w = g.weightPercentage;
-      if (v != null && w != null) {
-        final effectiveValue = g.valueType.name == "Szazalekos"
-            ? percentageToGrade(v).toDouble()
-            : v.toDouble();
-        weightedSum += effectiveValue * w;
-        totalWeight += w;
-      }
-    }
-    return totalWeight > 0 ? weightedSum / totalWeight : null;
-  }
-
-  double _runningSubjectAverage(List<Grade> sortedGrades, int upToInclusive) {
-    final sublist = sortedGrades.sublist(
-      0,
-      (upToInclusive + 1).clamp(0, sortedGrades.length),
-    );
-    final subjectUids = sublist.map((g) => g.subject.uid).toSet();
-    double sum = 0;
-    int count = 0;
-    for (final uid in subjectUids) {
-      final avg = _subjectAverageInList(sublist, uid);
-      if (avg != null) {
-        sum += avg;
-        count++;
-      }
-    }
-    return count > 0 ? sum / count : 0;
-  }
+  late List<DateSpot> spots;
 
   @override
   void initState() {
@@ -75,25 +36,25 @@ class _GradeChartState extends State<GradeChart> {
   }
 
   void _computeSpots() {
-    final sortedGrades = List<Grade>.from(widget.grades)
-      ..sort((a, b) => a.creationDate.compareTo(b.creationDate));
+    final sortedGrades =
+        widget.grades.where((grade) => grade.shouldIncludeInAverage()).toList()
+          ..sort((a, b) => a.recordDate.compareTo(b.recordDate));
 
     if (sortedGrades.isEmpty) {
-      spots = [const FlSpot(0, 0)];
+      spots = [DateSpot(0, 0, DateTime.now()), DateSpot(1, 0, DateTime.now())];
       return;
+    }
+
+    if (sortedGrades.length == 1) {
+      sortedGrades.insert(0, sortedGrades[0]);
     }
 
     spots = [];
     for (var i = 0; i < sortedGrades.length; i++) {
-      final grade = sortedGrades[i];
-      if (grade.numericValue != null && grade.weightPercentage != null) {
-        final partialAvg = _runningSubjectAverage(sortedGrades, i);
-        spots.add(FlSpot(i.toDouble(), partialAvg));
-      }
-    }
-
-    if (spots.isEmpty) {
-      spots = [const FlSpot(0, 0)];
+      final partialAvg = sortedGrades.take(i + 1).getSubjectAverage();
+      spots.add(
+        DateSpot(i.toDouble(), partialAvg!, sortedGrades[i].recordDate),
+      );
     }
   }
 
@@ -128,48 +89,56 @@ class _GradeChartState extends State<GradeChart> {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: DecoratedBox(
-        decoration: BoxDecoration(color: appStyle.colors.card),
-        child: AspectRatio(
-          aspectRatio: 1.90,
-          child: Padding(
-            padding: const EdgeInsets.only(
-              right: 28,
-              left: 12,
-              top: 6,
-              bottom: 12,
-            ),
-            child: LineChart(avgData()),
-          ),
-        ),
+    return FirkaCard.single(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: AspectRatio(aspectRatio: 1.82, child: LineChart(avgData())),
       ),
     );
   }
 
   Widget bottomTitleWidgets(double value, TitleMeta meta) {
-    final style = TextStyle(
-      fontFamily: appStyle.fonts.B_16R.fontFamily,
-      fontWeight: FontWeight.bold,
-      fontSize: 16,
-      color: appStyle.colors.textSecondary,
-    );
-
     final firstX = spots.first.x.toInt();
     final lastX = spots.last.x.toInt();
-    String text = '';
-    const epsilon = 0.01;
+    String content = '';
 
-    if ((value - firstX).abs() < epsilon) {
-      text = 'Szeptember';
-    } else if ((value - lastX).abs() < epsilon) {
-      text = 'Most';
+    final shouldHideNow =
+        _touchedIndex != null &&
+        meta.parentAxisSize / lastX * _touchedIndex! > meta.parentAxisSize - 62;
+
+    if (value == _touchedIndex) {
+      final date = spots[_touchedIndex!].date;
+      content = tooltipFormat.format(date);
+    } else if (value == firstX) {
+      content = 'Szeptember';
+    } else if (value == lastX && !shouldHideNow) {
+      content = 'Most';
     }
+
+    final text = Text(
+      content,
+      style: appStyle.fonts.B_12R.apply(color: appStyle.colors.textSecondary),
+    );
 
     return SideTitleWidget(
       meta: meta,
-      child: Text(text, style: style),
+      space: 0,
+      fitInside: SideTitleFitInsideData.fromTitleMeta(
+        meta,
+        distanceFromEdge: value == lastX ? 12 : 0,
+      ),
+      child: value == _touchedIndex
+          ? Container(
+              padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+              decoration: ShapeDecoration(
+                color: appStyle.colors.background,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(27),
+                ),
+              ),
+              child: text,
+            )
+          : text,
     );
   }
 
@@ -200,38 +169,55 @@ class _GradeChartState extends State<GradeChart> {
     );
   }
 
+  Color colorForY(double y) {
+    final rounding = initData.settings
+        .group("settings")
+        .subGroup("application")
+        .subGroup("rounding");
+    return y == 0
+        ? appStyle.colors.card
+        : getGradeColor(
+            y,
+            t1: rounding.dbl("1"),
+            t2: rounding.dbl("2"),
+            t3: rounding.dbl("3"),
+            t4: rounding.dbl("4"),
+          );
+  }
+
   Widget leftTitleWidgets(double value, TitleMeta meta) {
-    String text = switch (value.toInt()) {
-      1 => '1',
-      2 => '2',
-      3 => '3',
-      4 => '4',
-      5 => '5',
-      _ => '',
-    };
-    Color gradeColor;
-    if (text != "") {
-      gradeColor = getGradeColor(int.parse(text).toDouble());
-    } else {
-      gradeColor = getGradeColor(0);
+    if (value == 0) {
+      return SizedBox();
     }
-    final currentValue = _tooltipActive && _tooltipY != null
-        ? _tooltipY!.round()
-        : spots.last.y.round();
-    final isActive = text == currentValue.toString();
+
+    final rounding = initData.settings
+        .group("settings")
+        .subGroup("application")
+        .subGroup("rounding");
+    final currentValue = spots.first.y == 0
+        ? 0
+        : roundGrade(
+            _tooltipY ?? spots.first.y,
+            t1: rounding.dbl("1"),
+            t2: rounding.dbl("2"),
+            t3: rounding.dbl("3"),
+            t4: rounding.dbl("4"),
+          );
+    final isActive = value == currentValue;
 
     if (isActive) {
+      final gradeColor = getGradeColor(value);
       return buildCircle(
-        text: text,
+        text: value.toStringAsFixed(0),
         bgColor: gradeColor.withAlpha(38),
         textColor: gradeColor,
       );
     }
 
     return buildCircle(
-      text: text,
+      text: value.toStringAsFixed(0),
       bgColor: appStyle.colors.card,
-      textColor: appStyle.colors.textPrimary.withValues(alpha: 0.2),
+      textColor: appStyle.colors.textTertiary,
     );
 
     // return Text(text, style: style, textAlign: TextAlign.left);
@@ -240,29 +226,6 @@ class _GradeChartState extends State<GradeChart> {
   LineChartData avgData() {
     final smoothedSpots = _smoothSpots(spots);
 
-    var firstX = smoothedSpots.first.x;
-    var lastX = smoothedSpots.last.x;
-    if (firstX == lastX) {
-      lastX = firstX + 1;
-    }
-
-    Color colorForY(double y) {
-      switch (y.round()) {
-        case 1:
-          return appStyle.colors.grade1;
-        case 2:
-          return appStyle.colors.grade2;
-        case 3:
-          return appStyle.colors.grade3;
-        case 4:
-          return appStyle.colors.grade4;
-        case 5:
-          return appStyle.colors.grade5;
-        default:
-          return appStyle.colors.grade1;
-      }
-    }
-
     return LineChartData(
       lineTouchData: LineTouchData(
         handleBuiltInTouches: true,
@@ -270,49 +233,41 @@ class _GradeChartState extends State<GradeChart> {
         enabled: true,
         touchCallback: (FlTouchEvent event, LineTouchResponse? response) {
           setState(() {
-            if (event is FlLongPressEnd ||
-                event is FlPanEndEvent ||
-                event is FlTapUpEvent) {
-              _tooltipActive = false;
-              _tooltipY = null;
-              _touchedIndex = null;
-              return;
+            if (event.isInterestedForInteractions) {
+              _touchedIndex = response!.lineBarSpots!.first.spotIndex;
+              _tooltipY = spots[_touchedIndex!].y;
+              if (_tooltipY! > 0) {
+                return;
+              }
             }
-
-            if (response?.lineBarSpots != null &&
-                response!.lineBarSpots!.isNotEmpty) {
-              final spot = response.lineBarSpots!.first;
-
-              _tooltipActive = true;
-              _tooltipY = spot.y;
-              _touchedIndex = spot.spotIndex;
-            }
+            _tooltipY = null;
+            _touchedIndex = null;
           });
         },
         touchTooltipData: LineTouchTooltipData(
-          tooltipMargin: 0,
+          tooltipMargin: 4,
           getTooltipColor: (touchedSpot) => appStyle.colors.buttonSecondaryFill,
-          tooltipBorderRadius: BorderRadius.circular(90),
-          fitInsideVertically: true,
+          tooltipBorderRadius: BorderRadius.circular(27),
+          tooltipPadding: EdgeInsets.symmetric(vertical: 2, horizontal: 6),
+          fitInsideHorizontally: true,
 
-          showOnTopOfTheChartBoxArea: true,
+          showOnTopOfTheChartBoxArea: false,
           getTooltipItems: (touchedSpots) {
             return touchedSpots.map((LineBarSpot touchedSpot) {
-              final textStyle = TextStyle(
-                color: colorForY(touchedSpot.y),
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
+              if (touchedSpot.y == 0) {
+                return null;
+              }
+              final spot = spots[touchedSpot.spotIndex];
+              final textStyle = appStyle.fonts.B_14SB.apply(
+                color: colorForY(spot.y),
               );
-              return LineTooltipItem(
-                touchedSpot.y.toStringAsFixed(2),
-                textStyle,
-              );
+              return LineTooltipItem(spot.y.toStringAsFixed(2), textStyle);
             }).toList();
           },
         ),
         getTouchedSpotIndicator: (barData, spotIndexes) {
           return spotIndexes.map((index) {
-            final touchedSpot = barData.spots[index];
+            final touchedSpot = spots[index];
             return TouchedSpotIndicatorData(
               FlLine(color: colorForY(touchedSpot.y), strokeWidth: 3),
               FlDotData(show: false),
@@ -320,33 +275,24 @@ class _GradeChartState extends State<GradeChart> {
           }).toList();
         },
       ),
-      backgroundColor: appStyle.colors.card,
+      backgroundColor: Colors.transparent,
+      extraLinesData: ExtraLinesData(
+        horizontalLines: [
+          HorizontalLine(
+            y: 5,
+            color: const Color(0xFFC8C8C8),
+            strokeWidth: 1.0,
+            dashArray: [8, 12],
+          ),
+        ],
+        extraLinesOnTop: false,
+      ),
       gridData: FlGridData(
         show: true,
         drawHorizontalLine: true,
         drawVerticalLine: false,
         horizontalInterval: 1,
         getDrawingHorizontalLine: (value) {
-          if (!_tooltipActive || _tooltipY == null) {
-            return FlLine(
-              color: const Color(0xFFC8C8C8),
-              strokeWidth: 1.0,
-              dashArray: [8, 12],
-            );
-          }
-
-          const epsilon = 0.01;
-          if ((value - _tooltipY!.round()).abs() < epsilon) {
-            // return FlLine(
-            //   color: const Color(0xFFC8C8C8),
-            //   strokeWidth: 1.2,
-            // );
-            return FlLine(
-              color: const Color(0xFFC8C8C8),
-              strokeWidth: 1.0,
-              dashArray: [8, 12],
-            );
-          }
           return FlLine(
             color: const Color(0xFFC8C8C8),
             strokeWidth: 1.0,
@@ -359,30 +305,35 @@ class _GradeChartState extends State<GradeChart> {
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            reservedSize: 30,
             getTitlesWidget: bottomTitleWidgets,
             interval: 1,
           ),
+          drawBelowEverything: false,
+          sideTitleAlignment: SideTitleAlignment.inside,
         ),
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
             getTitlesWidget: leftTitleWidgets,
-            reservedSize: 35,
+            reservedSize: 26,
             interval: 1,
           ),
         ),
-        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        topTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 20,
+            getTitlesWidget: (v, meta) => SizedBox(),
+          ),
+        ),
         rightTitles: const AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
       ),
       borderData: FlBorderData(show: false),
 
-      minX: firstX,
-      maxX: lastX,
       minY: 0,
-      maxY: 6,
+      maxY: 5,
 
       lineBarsData: [
         LineChartBarData(

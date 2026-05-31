@@ -84,6 +84,9 @@ class KretaEndpoints {
   static String getClassGroups(String iss) =>
       ka.KretaEndpoints.getClassGroups(iss);
 
+  static String getClassGroupAvg(String iss, String studyGroupId) =>
+      ka.KretaEndpoints.getClassGroupAvg(iss, studyGroupId);
+
   static String getNoticeBoard(String iss) =>
       ka.KretaEndpoints.getNoticeBoard(iss);
 

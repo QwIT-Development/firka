@@ -1,18 +1,20 @@
 import 'package:firka/core/extensions.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class MessageScreen extends StatelessWidget {
   final AppInitialization data;
-  final InfoBoardItem info;
+  final MessageItem message;
 
-  const MessageScreen(this.data, this.info, {super.key});
+  const MessageScreen(this.data, this.message, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +70,7 @@ class MessageScreen extends StatelessWidget {
                           SizedBox(
                             width: MediaQuery.of(context).size.width * 0.85,
                             child: Text(
-                              info.title,
+                              message.title,
                               textAlign: TextAlign.center,
                               style: appStyle.fonts.H_H2.apply(
                                 color: appStyle.colors.textPrimary,
@@ -82,7 +84,7 @@ class MessageScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            info.date.format(data.l10n, FormatMode.yyyymmdd),
+                            message.date.format(data.l10n, FormatMode.yyyymmdd),
                             textAlign: TextAlign.center,
                             style: appStyle.fonts.B_16R.apply(
                               color: appStyle.colors.textSecondary,
@@ -107,7 +109,7 @@ class MessageScreen extends StatelessWidget {
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 6),
                                     child: Text(
-                                      info.author[0],
+                                      message.author[0],
                                       style: appStyle.fonts.H_18px.copyWith(
                                         fontSize: 20,
                                         color: appStyle.colors.textPrimary,
@@ -125,7 +127,7 @@ class MessageScreen extends StatelessWidget {
                               SizedBox(
                                 width: MediaQuery.of(context).size.width / 1.4,
                                 child: Text(
-                                  info.author,
+                                  message.author,
                                   style: appStyle.fonts.B_16SB.apply(
                                     color: appStyle.colors.textPrimary,
                                   ),
@@ -136,21 +138,34 @@ class MessageScreen extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: appStyle.colors.card,
-                            borderRadius: BorderRadius.all(Radius.circular(16)),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Text(
-                              info.contentText,
-                              style: appStyle.fonts.B_16R.apply(
-                                color: appStyle.colors.textPrimary,
+                      Flexible(
+                        fit: FlexFit.loose,
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: appStyle.colors.card,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(16),
                               ),
-                              textAlign: TextAlign.start,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: SingleChildScrollView(
+                                child: Html(
+                                  data: message.contentHTML,
+                                  onLinkTap: (url, map, element) => {
+                                    if (url != null) launchUrlString(url),
+                                  },
+                                  style: {
+                                    "*": Style.fromTextStyle(
+                                      appStyle.fonts.B_16R.apply(
+                                        color: appStyle.colors.textPrimary,
+                                      ),
+                                    ),
+                                  },
+                                ),
+                              ),
                             ),
                           ),
                         ),

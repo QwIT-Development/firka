@@ -1,4 +1,3 @@
-import 'package:firka/core/average_helper.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/ui/components/grade.dart';
 import 'package:firka/ui/components/grade_helpers.dart';
@@ -30,17 +29,9 @@ class _GradeSummaryBarState extends State<GradeSummaryBar> {
 
   @override
   Widget build(BuildContext context) {
-    final (total, countsByGrade) = getGradeDistribution(widget.grades);
-    final gradeColors = [
-      appStyle.colors.grade1,
-      appStyle.colors.grade2,
-      appStyle.colors.grade3,
-      appStyle.colors.grade4,
-      appStyle.colors.grade5,
-    ];
-    final totalCounted = countsByGrade.reduce((a, b) => a + b);
+    final (total, countsByGrade) = widget.grades.getGradeDistribution();
     final averageText = widget.showAverage
-        ? calculateAverage(widget.grades).toStringAsFixed(2)
+        ? (widget.grades.getAverage() ?? 0).toStringAsFixed(2)
         : '';
 
     return Card(
@@ -72,10 +63,13 @@ class _GradeSummaryBarState extends State<GradeSummaryBar> {
                       borderRadius: BorderRadius.circular(4),
                       child: Row(
                         children: List.generate(5, (i) {
-                          final flex = totalCounted > 0 ? countsByGrade[i] : 1;
+                          final flex = total > 0 ? countsByGrade[i] : 1;
                           return Expanded(
                             flex: flex,
-                            child: Container(height: 10, color: gradeColors[i]),
+                            child: Container(
+                              height: 10,
+                              color: getGradeColor(i + 1),
+                            ),
                           );
                         }),
                       ),

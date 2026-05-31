@@ -6,132 +6,108 @@ import 'package:firka_common/ui/theme/style.dart';
 enum Attach { none, bottom, top }
 
 class FirkaCard extends StatelessWidget {
-  final List<Widget> left;
-  final List<Widget>? center;
+  final EdgeInsets padding;
+  final EdgeInsets margin;
+  final Color? borderColor;
   final double? height;
-  final List<Widget>? right;
+  final double? width;
   final bool shadow;
-  final Widget? extra;
-  final Attach? attached;
+  final Attach attached;
   final Color? color;
   final bool? isLightMode;
+  final Widget child;
 
-  const FirkaCard({
-    required this.left,
+  factory FirkaCard({
+    required List<Widget> left,
+    EdgeInsets padding = const EdgeInsets.all(12),
+    EdgeInsets margin = const EdgeInsets.all(4),
+    bool shadow = true,
+    List<Widget> center = const [],
+    List<Widget> right = const [],
+    Widget? extra,
+    Attach attached = Attach.none,
+    Color? color,
+    double? height,
+    double? width,
+    bool? isLightMode,
+  }) {
+    final leftRow = Row(children: left);
+
+    final alignedRow = right.isEmpty && center.isEmpty
+        ? leftRow
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              leftRow,
+              Row(children: center),
+              Row(children: right),
+            ],
+          );
+    return FirkaCard.single(
+      padding: padding,
+      margin: margin,
+      attached: attached,
+      color: color,
+      height: height,
+      shadow: shadow,
+      isLightMode: isLightMode,
+      child: extra == null
+          ? alignedRow
+          : Column(children: [alignedRow, extra!]),
+    );
+  }
+
+  const FirkaCard.single({
+    this.padding = const EdgeInsets.all(0),
+    this.margin = const EdgeInsets.all(4),
     this.shadow = true,
-    this.center,
-    this.right,
-    this.extra,
-    this.attached,
+    this.attached = Attach.none,
+    this.borderColor,
     this.color,
     this.height,
+    this.width,
     this.isLightMode,
+    required this.child,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    var right = this.right ?? [];
-
-    var attached = this.attached != null ? this.attached! : Attach.none;
     final defaultRounding = 16.0;
     final attachedRounding = 8.0;
     final isLight =
         isLightMode ?? Theme.of(context).brightness == Brightness.light;
 
-    if (extra != null) {
-      return SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: height,
-        child: FirkaShadow(
-          shadow: shadow,
-          isLightMode: isLight,
-          child: Card(
-            color: color ?? appStyle.colors.card,
-            shadowColor: isLight && shadow ? null : Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(
-                  attached == Attach.top ? attachedRounding : defaultRounding,
+    return Container(
+      height: height,
+      width: width,
+      padding: padding,
+      margin: margin,
+      decoration: ShapeDecoration(
+        shadows: shadow && !isLight
+            ? [
+                BoxShadow(
+                  color: appStyle.colors.shadowColor,
+                  offset: const Offset(0, 1),
                 ),
-                topRight: Radius.circular(
-                  attached == Attach.top ? attachedRounding : defaultRounding,
-                ),
-                bottomLeft: Radius.circular(
-                  attached == Attach.bottom
-                      ? attachedRounding
-                      : defaultRounding,
-                ),
-                bottomRight: Radius.circular(
-                  attached == Attach.bottom
-                      ? attachedRounding
-                      : defaultRounding,
-                ),
-              ),
+              ]
+            : [],
+        shape: RoundedRectangleBorder(
+          side: borderColor == null
+              ? BorderSide.none
+              : BorderSide(color: borderColor!),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(
+              attached == Attach.top ? attachedRounding : defaultRounding,
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(children: left),
-                      Row(children: center ?? []),
-                      Row(children: right),
-                    ],
-                  ),
-                  extra ?? const SizedBox(),
-                ],
-              ),
+            bottom: Radius.circular(
+              attached == Attach.bottom ? attachedRounding : defaultRounding,
             ),
           ),
         ),
-      );
-    } else {
-      return SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: height,
-        child: FirkaShadow(
-          shadow: shadow,
-          isLightMode: isLight,
-          child: Card(
-            color: color ?? appStyle.colors.card,
-            shadowColor: isLight && shadow ? null : Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(
-                  attached == Attach.top ? attachedRounding : defaultRounding,
-                ),
-                topRight: Radius.circular(
-                  attached == Attach.top ? attachedRounding : defaultRounding,
-                ),
-                bottomLeft: Radius.circular(
-                  attached == Attach.bottom
-                      ? attachedRounding
-                      : defaultRounding,
-                ),
-                bottomRight: Radius.circular(
-                  attached == Attach.bottom
-                      ? attachedRounding
-                      : defaultRounding,
-                ),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(children: left),
-                  Row(children: center ?? []),
-                  Row(children: right),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
+        color: color ?? appStyle.colors.card,
+      ),
+      child: child,
+    );
   }
 }

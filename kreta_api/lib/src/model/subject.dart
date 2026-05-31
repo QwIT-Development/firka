@@ -1,15 +1,13 @@
 import 'generic.dart';
 
-class Subject {
-  final String uid;
-  final String name;
+class Subject extends NameUid {
   final NameUidDesc category;
   final int sortIndex;
   final String? teacherName;
 
   Subject({
-    required this.uid,
-    required this.name,
+    required super.uid,
+    required super.name,
     required this.category,
     required this.sortIndex,
     this.teacherName,
@@ -19,7 +17,7 @@ class Subject {
     return Subject(
       uid: json['Uid'],
       name: json['Nev'],
-      category: NameUidDesc.fromJson(json['Kategoria']),
+      category: json.nameUidDesc('Kategoria')!,
       sortIndex: json['SortIndex'],
       teacherName: json['alkalmazottNev'],
     );

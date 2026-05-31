@@ -1,10 +1,11 @@
+import 'package:kreta_api/kreta_api.dart';
+
 import 'dart:ui';
 
 import 'package:firka_common/ui/theme/style.dart';
-import 'package:kreta_api/kreta_api.dart';
 
 int roundGrade(
-  double grade, {
+  num grade, {
   double t1 = 1,
   double t2 = 0.5,
   double t3 = 0.5,
@@ -26,25 +27,8 @@ int roundGrade(
   return 5;
 }
 
-int percentageToGrade(int grade) {
-  if (grade < 50) {
-    return 1;
-  }
-  if (grade < 60) {
-    return 2;
-  }
-  if (grade < 70) {
-    return 3;
-  }
-  if (grade < 80) {
-    return 4;
-  }
-
-  return 5;
-}
-
 Color getGradeColor(
-  double grade, {
+  num grade, {
   double t1 = 1,
   double t2 = 0.5,
   double t3 = 0.5,
@@ -64,77 +48,80 @@ Color getGradeColor(
   }
 }
 
-(int total, List<int> countsByGrade) getGradeDistribution(List<Grade> grades) {
-  final filtered = grades.where((g) {
-    final typeName = g.type.name?.toLowerCase() ?? '';
+extension GradeListExtension on Iterable<Grade> {
+  (int total, List<int> countsByGrade) getGradeDistribution() {
+    final filtered = where((g) => g.shouldIncludeInAverage());
+    final counts = [0, 0, 0, 0, 0];
+    for (final g in filtered) {
+      counts[g.numericValue! - 1]++;
+    }
+    return (filtered.length, counts);
+  }
+
+  double? getAverageBySubject(Subject subject) {
+    return where(
+      (g) => g.subject.uid == subject.uid && g.shouldIncludeInAverage(),
+    ).getAverage();
+  }
+
+  double? getSubjectAverage() {
+    final averages = map(
+      (g) => g.subject,
+    ).toSet().map((subject) => getAverageBySubject(subject)).nonNulls;
+
+    if (averages.isEmpty) {
+      return null;
+    }
+
+    return averages.reduce((sum, avg) => sum + avg) / averages.length;
+  }
+
+  double? getAverage() {
+    if (isEmpty) {
+      return null;
+    }
+
+    double weightTotal = 0;
+    double sum = 0;
+    for (Grade grade in this) {
+      if (!grade.shouldIncludeInAverage()) {
+        continue;
+      }
+
+      double weight = (grade.weightPercentage ?? 100) / 100.0;
+      weightTotal += weight;
+      sum += grade.numericValue! * weight;
+    }
+
+    if (sum == 0) {
+      return null;
+    }
+
+    return sum / weightTotal;
+  }
+}
+
+extension GradeExtension on Grade {
+  bool isInPercentage() {
+    final name = valueType.name.toLowerCase();
+    return name.contains('szazalek') || name.contains('percent');
+  }
+
+  bool shouldIncludeInAverage() {
+    if (isInPercentage()) {
+      return false;
+    }
+
+    final typeName = type.name.toLowerCase();
     if (typeName == 'felevi_jegy_ertekeles' ||
         typeName == 'evvegi_jegy_ertekeles') {
       return false;
     }
 
-    final valueTypeName = g.valueType.name?.toLowerCase() ?? '';
-    final isPercentage =
-        valueTypeName.contains('szazalek') || valueTypeName.contains('percent');
-    if (isPercentage) {
+    if (numericValue == null) {
       return false;
     }
 
     return true;
-  }).toList();
-  final counts = [0, 0, 0, 0, 0];
-  for (final g in filtered) {
-    if (g.numericValue == null) continue;
-    final value = g.valueType.name == "Szazalekos"
-        ? percentageToGrade(g.numericValue!.round())
-        : g.numericValue!.round().clamp(1, 5);
-    counts[value - 1]++;
-  }
-  return (filtered.length, counts);
-}
-
-extension GradeListExtension on List<Grade> {
-  double getAverageBySubject(Subject subject) {
-    final subjectGrades = where((g) => g.subject.uid == subject.uid).toList();
-    if (subjectGrades.isEmpty) return double.nan;
-
-    final feleviOrEvvegi = subjectGrades.where((g) {
-      final typeName = g.type.name?.toLowerCase() ?? '';
-      return typeName == 'felevi_jegy_ertekeles' ||
-          typeName == 'evvegi_jegy_ertekeles';
-    }).toList();
-    final hasOtherType = subjectGrades.any((g) {
-      final typeName = g.type.name?.toLowerCase() ?? '';
-      return typeName != 'felevi_jegy_ertekeles' &&
-          typeName != 'evvegi_jegy_ertekeles';
-    });
-
-    if (!hasOtherType && feleviOrEvvegi.isNotEmpty) {
-      final withValue = feleviOrEvvegi
-          .where((g) => g.numericValue != null && g.numericValue! > 0)
-          .toList();
-      if (withValue.isEmpty) return double.nan;
-      withValue.sort((a, b) => a.recordDate.compareTo(b.recordDate));
-      return withValue.last.numericValue!.toDouble();
-    }
-
-    var weightTotal = 0.00;
-    var sum = 0.00;
-    for (var grade in subjectGrades) {
-      final valueTypeName = grade.valueType.name?.toLowerCase() ?? '';
-      final isPercentage =
-          valueTypeName.contains('szazalek') ||
-          valueTypeName.contains('percent');
-      final typeName = grade.type.name?.toLowerCase() ?? '';
-      final isHalfYear = typeName == 'felevi_jegy_ertekeles';
-      final isEndYear = typeName == 'evvegi_jegy_ertekeles';
-      if (isPercentage || isHalfYear || isEndYear) continue;
-      if (grade.numericValue != null) {
-        var weight = (grade.weightPercentage ?? 100) / 100.0;
-        weightTotal += weight;
-        sum += grade.numericValue! * weight;
-      }
-    }
-    if (weightTotal == 0) return double.nan;
-    return sum / weightTotal;
   }
 }

@@ -1,30 +1,46 @@
+import '../extensions.dart';
 import 'generic.dart';
 
-class NoticeBoardItem {
-  final String uid;
-  final String author;
-  final DateTime validFrom;
-  final DateTime validTo;
+abstract class MessageItem extends UidObj {
   final String title;
+  final String author;
   final String contentHTML;
   final String contentText;
 
-  NoticeBoardItem({
-    required this.uid,
-    required this.author,
-    required this.validFrom,
-    required this.validTo,
+  MessageItem({
+    required super.uid,
     required this.title,
+    required this.author,
     required this.contentHTML,
     required this.contentText,
+  });
+
+  DateTime get date;
+}
+
+class NoticeBoardItem extends MessageItem {
+  final DateTime validFrom;
+  final DateTime validTo;
+
+  @override
+  DateTime get date => validFrom;
+
+  NoticeBoardItem({
+    required super.uid,
+    required super.title,
+    required super.author,
+    required super.contentHTML,
+    required super.contentText,
+    required this.validFrom,
+    required this.validTo,
   });
 
   factory NoticeBoardItem.fromJson(Map<String, dynamic> json) {
     return NoticeBoardItem(
       uid: json['Uid'],
       author: json['RogzitoNeve'],
-      validFrom: DateTime.parse(json['ErvenyessegKezdete']),
-      validTo: DateTime.parse(json['ErvenyessegVege']),
+      validFrom: json.localDate('ErvenyessegKezdete')!,
+      validTo: json.localDate('ErvenyessegVege')!,
       title: json['Cim'],
       contentHTML: json['Tartalom'],
       contentText: json['TartalomText'],
@@ -45,24 +61,19 @@ class NoticeBoardItem {
   }
 }
 
-class InfoBoardItem {
-  final String uid;
-  final String title;
+class InfoBoardItem extends MessageItem {
   final DateTime date;
-  final String author;
   final DateTime createdAt;
-  final String contentHTML;
-  final String contentText;
   final NameUidDesc type;
 
   InfoBoardItem({
-    required this.uid,
-    required this.title,
-    required this.date,
-    required this.author,
+    required super.uid,
+    required super.title,
+    required super.author,
+    required super.contentHTML,
+    required super.contentText,
     required this.createdAt,
-    required this.contentHTML,
-    required this.contentText,
+    required this.date,
     required this.type,
   });
 
@@ -70,12 +81,12 @@ class InfoBoardItem {
     return InfoBoardItem(
       uid: json['Uid'],
       title: json['Cim'],
-      date: DateTime.parse(json['Datum']),
+      date: json.localDate('Datum')!,
       author: json['KeszitoTanarNeve'],
-      createdAt: DateTime.parse(json['KeszitesDatuma']),
+      createdAt: json.localDate('KeszitesDatuma')!,
       contentText: json['Tartalom'],
       contentHTML: json['TartalomFormazott'],
-      type: NameUidDesc.fromJson(json['Tipus']),
+      type: json.nameUidDesc('Tipus')!,
     );
   }
 

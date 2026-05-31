@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firka/api/client/kreta_stream.dart';
+import 'package:intl/intl.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/extensions.dart';
@@ -287,7 +288,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     active = -1;
 
     const double cardWidth = 40.0;
-    const double spacing = 8.0;
+    const double spacing = 16.0;
     final double totalCardWidth = cardWidth + spacing;
 
     // Calculate animation positions based on real display indices
@@ -365,193 +366,169 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
   }
 
   Widget _buildContent(BuildContext context) {
-    if (lessons != null && tests != null && events != null && dates != null) {
-      List<Widget> ttWidgets = [];
-      List<Widget> ttDays = [];
-      final showABTimetable = widget.data.settings
-          .group("settings")
-          .subGroup("timetable_toast")
-          .boolean("ab_timetable");
-      // Build navigation icons using original dates
-      for (var i = 0; i < dates!.length; i++) {
-        final date = dates![i];
-        final realIndex = i; // Always use real index for nav icons
+    if (lessons == null || tests == null || events == null || dates == null) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [DelayedSpinnerWidget()],
+          ),
+        ],
+      );
+    }
 
-        final testsOnDate = tests!
-            .where(
-              (test) =>
-                  test.date.isAfter(date.subtract(Duration(seconds: 1))) &&
-                  test.date.isBefore(
-                    date.add(Duration(hours: 23, minutes: 59)),
-                  ),
-            )
-            .toList();
+    List<Widget> ttWidgets = [];
+    List<Widget> ttDays = [];
+    final showABTimetable = widget.data.settings
+        .group("settings")
+        .subGroup("timetable_toast")
+        .boolean("ab_timetable");
+    // Build navigation icons using original dates
+    for (var i = 0; i < dates!.length; i++) {
+      final date = dates![i];
+      final realIndex = i; // Always use real index for nav icons
 
-        if (testsOnDate.isNotEmpty) {
-          ttWidgets.add(
-            Stack(
-              children: [
-                BottomTimeTableNavIconWidget(
-                  widget.data.l10n,
-                  () {
-                    _handleNavTap(active, realIndex);
-                  },
-                  active == i,
-                  date,
-                ),
-                Transform.translate(
-                  offset: Offset(38, -10),
-                  child: BubbleTest(),
-                ),
-              ],
-            ),
-          );
-        } else {
-          ttWidgets.add(
-            BottomTimeTableNavIconWidget(
-              widget.data.l10n,
-              () {
-                _handleNavTap(active, realIndex);
-              },
-              active == i,
-              date,
-            ),
-          );
-        }
-      }
+      final testsOnDate = tests!
+          .where(
+            (test) =>
+                test.date.isAfter(date.subtract(Duration(seconds: 1))) &&
+                test.date.isBefore(date.add(Duration(hours: 23, minutes: 59))),
+          )
+          .toList();
 
-      // Build carousel pages using animation dates
-      for (var i = 0; i < _animationDates!.length; i++) {
-        final date = _animationDates![i];
-
-        final lessonsOnDate = lessons!
-            .where(
-              (lesson) =>
-                  lesson.start.isAfter(date) &&
-                  lesson.end.isBefore(date.add(Duration(hours: 24))),
-            )
-            .toList();
-        final lessonsOnDay = lessons!
-            .where(
-              (lesson) =>
-                  lesson.start.getMidnight().millisecondsSinceEpoch ==
-                  date.getMidnight().millisecondsSinceEpoch,
-            )
-            .toList();
-        final eventsOnDate = events!
-            .where(
-              (lesson) =>
-                  lesson.start.isAfter(date.subtract(Duration(seconds: 1))) &&
-                  lesson.end.isBefore(
-                    date.add(Duration(hours: 23, minutes: 59)),
-                  ),
-            )
-            .toList();
-        final testsOnDate = tests!
-            .where(
-              (test) =>
-                  test.date.isAfter(date.subtract(Duration(seconds: 1))) &&
-                  test.date.isBefore(
-                    date.add(Duration(hours: 23, minutes: 59)),
-                  ),
-            )
-            .toList();
-
-        ttDays.add(
-          TimeTableDayWidget(
-            widget.data,
-            date,
-            lessons!,
-            lessonsOnDate,
-            eventsOnDate,
-            testsOnDate,
-            lessonsOnDay,
+      Widget ttWidget = BottomTimeTableNavIconWidget(
+        widget.data.l10n,
+        () {
+          _handleNavTap(active, realIndex);
+        },
+        active == i,
+        date,
+      );
+      if (testsOnDate.isNotEmpty) {
+        ttWidgets.add(
+          Stack(
+            children: [
+              ttWidget,
+              Transform.translate(offset: Offset(34, -9), child: BubbleTest()),
+            ],
           ),
         );
-      }
-
-      List<Widget> ttEmptyCards = List.empty(growable: true);
-
-      if (animating || _showAnimatedCard) {
-        for (var i = 0; i < ttDays.length; i++) {
-          if (i == 0) {
-            Widget cardWidget = Card(
-              color: appStyle.colors.buttonSecondaryFill,
-              shadowColor: Colors.transparent,
-              child: SizedBox(width: 40, height: 54),
-            );
-
-            if (_showAnimatedCard && _cardOffsetAnimation != null) {
-              ttEmptyCards.add(
-                AnimatedBuilder(
-                  animation: _cardOffsetAnimation!,
-                  builder: (context, child) {
-                    return Transform.translate(
-                      offset: _cardOffsetAnimation!.value,
-                      child: cardWidget,
-                    );
-                  },
-                ),
-              );
-            } else {
-              ttEmptyCards.add(
-                Transform.translate(offset: Offset(0, 0), child: cardWidget),
-              );
-            }
-          } else {
-            ttEmptyCards.add(
-              Card(
-                color: Colors.transparent,
-                shadowColor: Colors.transparent,
-                child: SizedBox(width: 40, height: 54),
-              ),
-            );
-          }
-        }
       } else {
-        ttEmptyCards.clear();
+        ttWidgets.add(ttWidget);
       }
+    }
 
-      return Stack(
-        children: [
-          Column(
-            children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width,
-                height: 74 + 16,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            widget.data.l10n.timetable,
-                            style: appStyle.fonts.H_H2.apply(
-                              color: appStyle.colors.textPrimary,
-                            ),
+    // Build carousel pages using animation dates
+    for (var i = 0; i < _animationDates!.length; i++) {
+      final date = _animationDates![i];
+
+      final lessonsOnDate = lessons!
+          .where(
+            (lesson) =>
+                lesson.start.isAfter(date) &&
+                lesson.end.isBefore(date.add(Duration(hours: 24))),
+          )
+          .toList();
+      final lessonsOnDay = lessons!
+          .where(
+            (lesson) =>
+                lesson.start.getMidnight().millisecondsSinceEpoch ==
+                date.getMidnight().millisecondsSinceEpoch,
+          )
+          .toList();
+      final eventsOnDate = events!
+          .where(
+            (lesson) =>
+                lesson.start.isAfter(date.subtract(Duration(seconds: 1))) &&
+                lesson.end.isBefore(date.add(Duration(hours: 23, minutes: 59))),
+          )
+          .toList();
+      final testsOnDate = tests!
+          .where(
+            (test) =>
+                test.date.isAfter(date.subtract(Duration(seconds: 1))) &&
+                test.date.isBefore(date.add(Duration(hours: 23, minutes: 59))),
+          )
+          .toList();
+
+      ttDays.add(
+        TimeTableDayWidget(
+          widget.data,
+          date,
+          lessons!,
+          lessonsOnDate,
+          eventsOnDate,
+          testsOnDate,
+          lessonsOnDay,
+        ),
+      );
+    }
+
+    Widget ttAnimatedCard = BottomTimeTableNavIconWidget(
+      widget.data.l10n,
+      () => {},
+      false,
+      null,
+    );
+
+    if (_cardOffsetAnimation != null && _showAnimatedCard) {
+      ttAnimatedCard = AnimatedBuilder(
+        animation: _cardOffsetAnimation!,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: _cardOffsetAnimation!.value,
+            child: BottomTimeTableNavIconWidget(
+              widget.data.l10n,
+              () => {},
+              true,
+              null,
+            ),
+          );
+        },
+      );
+    }
+
+    return Stack(
+      children: [
+        Column(
+          children: [
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: 74 + 16,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          widget.data.l10n.timetable,
+                          style: appStyle.fonts.H_H2.apply(
+                            color: appStyle.colors.textPrimary,
                           ),
-                          Row(
-                            children: [
-                              GestureDetector(
-                                child: Card(
-                                  color: appStyle.colors.buttonSecondaryFill,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: FirkaIconWidget(
-                                      FirkaIconType.majesticons,
-                                      Majesticon.tableSolid,
-                                      size: 26.0,
-                                      color: appStyle.colors.accent,
-                                    ),
+                        ),
+                        Row(
+                          children: [
+                            GestureDetector(
+                              child: Card(
+                                color: appStyle.colors.buttonSecondaryFill,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: FirkaIconWidget(
+                                    FirkaIconType.majesticons,
+                                    Majesticon.tableSolid,
+                                    size: 26.0,
+                                    color: appStyle.colors.accent,
                                   ),
                                 ),
-                                onTap: () {
-                                  context.push('/timetable/monthly');
-                                },
                               ),
-                              /* TODO: 1.1.0
+                              onTap: () {
+                                context.push('/timetable/monthly');
+                              },
+                            ),
+                            /* TODO: 1.1.0
 
                         Card(
                           color: appStyle.colors.buttonSecondaryFill,
@@ -566,205 +543,193 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                           ),
                         ),
                         */
-                              GestureDetector(
-                                child: Card(
-                                  color: appStyle.colors.buttonSecondaryFill,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: FirkaIconWidget(
-                                      FirkaIconType.majesticons,
-                                      Majesticon.settingsCogSolid,
-                                      size: 26.0,
-                                      color: appStyle.colors.accent,
-                                    ),
+                            GestureDetector(
+                              child: Card(
+                                color: appStyle.colors.buttonSecondaryFill,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: FirkaIconWidget(
+                                    FirkaIconType.majesticons,
+                                    Majesticon.settingsCogSolid,
+                                    size: 26.0,
+                                    color: appStyle.colors.accent,
                                   ),
                                 ),
-                                onTap: () {
-                                  showSettingsSheet(
-                                    context,
-                                    MediaQuery.of(context).size.height * 0.4,
-                                    widget.data,
-                                    widget.data.settings
-                                        .group("settings")
-                                        .subGroup("timetable_toast"),
-                                  );
-                                },
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            child: SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: FirkaIconWidget(
-                                FirkaIconType.icons,
-                                "dropdownLeft",
-                                size: 24,
-                                color: appStyle.colors.accent,
-                              ),
+                              onTap: () {
+                                showSettingsSheet(
+                                  context,
+                                  MediaQuery.of(context).size.height * 0.4,
+                                  widget.data,
+                                  widget.data.settings
+                                      .group("settings")
+                                      .subGroup("timetable_toast"),
+                                );
+                              },
                             ),
-                            onTap: () async {
-                              var newNow = now!.subtract(Duration(days: 7));
-                              if (!mounted) return;
-                              setState(() {
-                                now = newNow;
-                                lessons = null;
-                                dates = null;
-                              });
-                              await initForWeek(newNow);
-                              setState(() {
-                                now = newNow;
-                              });
-                            },
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: FirkaIconWidget(
+                              FirkaIconType.icons,
+                              "dropdownLeft",
+                              size: 24,
+                              color: appStyle.colors.accent,
+                            ),
                           ),
-                          GestureDetector(
-                            child: Row(
-                              children: [
+                          onTap: () async {
+                            var newNow = now!.subtract(Duration(days: 7));
+                            if (!mounted) return;
+                            setState(() {
+                              now = newNow;
+                              lessons = null;
+                              dates = null;
+                            });
+                            await initForWeek(newNow);
+                            setState(() {
+                              now = newNow;
+                            });
+                          },
+                        ),
+                        GestureDetector(
+                          child: Row(
+                            spacing: 4,
+                            children: [
+                              Text(
+                                now!.format(
+                                  widget.data.l10n,
+                                  FormatMode.yyyymmddwedd,
+                                ),
+                                style: appStyle.fonts.B_16R.apply(
+                                  color: appStyle.colors.textPrimary,
+                                ),
+                              ),
+                              if (showABTimetable) ...[
                                 Text(
-                                  now!.format(
-                                    widget.data.l10n,
-                                    FormatMode.yyyymmddwedd,
+                                  "•",
+                                  style: appStyle.fonts.B_16R.apply(
+                                    color: appStyle.colors.accent,
                                   ),
+                                ),
+                                Text(
+                                  now!.isAWeek()
+                                      ? widget.data.l10n.a_week
+                                      : widget.data.l10n.b_week,
                                   style: appStyle.fonts.B_16R.apply(
                                     color: appStyle.colors.textPrimary,
                                   ),
                                 ),
-                                SizedBox(width: 4),
-                                if (showABTimetable) ...[
-                                  Text(
-                                    "•",
-                                    style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.accent,
-                                    ),
-                                  ),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    now!.isAWeek()
-                                        ? widget.data.l10n.a_week
-                                        : widget.data.l10n.b_week,
-                                    style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.textPrimary,
-                                    ),
-                                  ),
-                                ],
                               ],
-                            ),
-                            onTap: () {
-                              now = timeNow();
-                              setActiveToToday();
-                              _controller.jumpToPage(active);
-                            },
+                            ],
                           ),
-                          GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            child: SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: FirkaIconWidget(
-                                FirkaIconType.icons,
-                                "dropdownRight",
-                                size: 24,
-                                color: appStyle.colors.accent,
-                              ),
+                          onTap: () {
+                            now = timeNow();
+                            setActiveToToday();
+                            _controller.jumpToPage(active);
+                          },
+                        ),
+                        GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: FirkaIconWidget(
+                              FirkaIconType.icons,
+                              "dropdownRight",
+                              size: 24,
+                              color: appStyle.colors.accent,
                             ),
-                            onTap: () async {
-                              var newNow = now!.add(Duration(days: 7));
-                              if (!mounted) return;
-                              setState(() {
-                                now = newNow;
-                                lessons = null;
-                                dates = null;
-                              });
-                              await initForWeek(newNow);
-                              setState(() {
-                                now = newNow;
-                              });
-                            },
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Expanded(
-                child: TransparentPointer(
-                  child: CarouselSlider(
-                    items: ttDays,
-                    carouselController: _controller,
-                    options: CarouselOptions(
-                      height: MediaQuery.of(context).size.height,
-                      viewportFraction: 1,
-                      enableInfiniteScroll: false,
-                      initialPage: active,
-                      onPageChanged: (i, _) {
-                        if (animating || !mounted) return;
-
-                        HapticFeedback.mediumImpact();
-
-                        // Convert animation index to display index
-                        final displayIndex = dates!.indexOf(
-                          _animationDates![i],
-                        );
-                        maybeCacheNextWeek(displayIndex);
-                        maybeCachePreviousWeek(displayIndex);
-                        setState(() {
-                          active = displayIndex;
-                        });
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.only(bottom: 12),
-                decoration: ShapeDecoration(
-                  color: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(0),
-                  ),
-                  shadows: [
-                    BoxShadow(
-                      color: appStyle.colors.background,
-                      blurRadius: 30,
-                      spreadRadius: 20,
-                      offset: Offset(0, -25),
+                          onTap: () async {
+                            var newNow = now!.add(Duration(days: 7));
+                            if (!mounted) return;
+                            setState(() {
+                              now = newNow;
+                              lessons = null;
+                              dates = null;
+                            });
+                            await initForWeek(newNow);
+                            setState(() {
+                              now = newNow;
+                            });
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
+              ),
+            ),
+          ],
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: TransparentPointer(
+                child: CarouselSlider(
+                  items: ttDays,
+                  carouselController: _controller,
+                  options: CarouselOptions(
+                    height: MediaQuery.of(context).size.height,
+                    viewportFraction: 1,
+                    enableInfiniteScroll: false,
+                    initialPage: active,
+                    onPageChanged: (i, _) {
+                      if (animating || !mounted) return;
+
+                      HapticFeedback.mediumImpact();
+
+                      // Convert animation index to display index
+                      final displayIndex = dates!.indexOf(_animationDates![i]);
+                      maybeCacheNextWeek(displayIndex);
+                      maybeCachePreviousWeek(displayIndex);
+                      setState(() {
+                        active = displayIndex;
+                      });
+                    },
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.only(bottom: 2),
+              decoration: ShapeDecoration(
+                color: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(0),
+                ),
+                shadows: [
+                  BoxShadow(
+                    color: appStyle.colors.background,
+                    blurRadius: 36,
+                    offset: Offset(0, -27),
+                  ),
+                ],
+              ),
+              child: Center(
                 child: Stack(
                   children: [
-                    Wrap(spacing: 10, children: ttEmptyCards),
-                    Wrap(spacing: 10, children: ttWidgets),
+                    ttAnimatedCard,
+                    Wrap(spacing: 16, children: ttWidgets),
                   ],
                 ),
               ),
-            ],
-          ),
-        ],
-      );
-    } else {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [DelayedSpinnerWidget()],
-          ),
-        ],
-      );
-    }
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

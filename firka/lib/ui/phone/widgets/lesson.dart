@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
+import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
@@ -16,24 +19,20 @@ import 'bubble_test.dart';
 
 class LessonWidget extends StatelessWidget {
   final AppInitialization data;
-  final List<Lesson> week;
-  final List<Lesson> day;
   final int? lessonNo;
   final Lesson lesson;
+  final bool expanded;
+  final bool active;
   final Test? test;
-  final Lesson? nextLesson;
-  final bool? placeholderMode;
 
   const LessonWidget(
     this.data,
-    this.week,
-    this.day,
     this.lessonNo,
     this.lesson,
-    this.test,
-    this.nextLesson, {
+    this.test, {
+    this.active = false,
+    this.expanded = false,
     super.key,
-    this.placeholderMode,
   });
 
   @override
@@ -42,26 +41,22 @@ class LessonWidget extends StatelessWidget {
         .group("settings")
         .subGroup("timetable_toast")
         .boolean("tests_and_homework");
-    final showSubstitutions = data.settings
-        .group("settings")
-        .subGroup("timetable_toast")
-        .boolean("substitution");
-    final showLessonNos = data.settings
-        .group("settings")
-        .subGroup("timetable_toast")
-        .boolean("lesson_no");
+
     final isSubstituted = lesson.substituteTeacher != null;
+    final showSubstitutions =
+        isSubstituted &&
+        data.settings
+            .group("settings")
+            .subGroup("timetable_toast")
+            .boolean("substitution");
+    final showLessonNos =
+        lessonNo != null &&
+        data.settings
+            .group("settings")
+            .subGroup("timetable_toast")
+            .boolean("lesson_no");
     final isDismissed = lesson.type.name == "UresOra";
 
-    var showBreak = false;
-    if (week.isNotEmpty) {
-      showBreak =
-          timeNow().isAfter(lesson.start) && timeNow().isBefore(lesson.end) ||
-          timeNow().isAfter(week.last.end) ||
-          lesson.start.getMidnight() != timeNow().getMidnight() ||
-          timeNow().isAfter(day.last.end) ||
-          timeNow().isBefore(day.first.start);
-    }
     var accent = appStyle.colors.accent;
     var secondary = appStyle.colors.secondary;
     var bgColor = appStyle.colors.a15p;
@@ -79,16 +74,11 @@ class LessonWidget extends StatelessWidget {
 
     List<Widget> elements = [];
 
-    var subjectName = lesson.subject?.name ?? 'N/A';
-    if (subjectName.length >= 19) {
-      subjectName = "${subjectName.substring(0, 19 - 3)}...";
-    }
-    subjectName = subjectName.firstUpper();
+    var subjectName = lesson.subject?.name.firstUpper() ?? 'N/A';
 
     var roomName = lesson.roomName ?? 'N/A';
-    if (roomName.length >= 11) {
-      roomName = "${roomName.substring(0, 11 - 3)}...";
-    }
+
+    final spacing = expanded ? 8.0 : 12.0;
 
     elements.add(
       GestureDetector(
@@ -105,144 +95,226 @@ class LessonWidget extends StatelessWidget {
             test,
           );
         },
-        child: FirkaCard(
+        child: FirkaCard.single(
+          height: expanded ? 104 : 64,
+          borderColor: active ? appStyle.colors.accent : null,
+          margin: EdgeInsets.all(0),
+          padding: EdgeInsets.only(left: expanded ? 16 : 14, right: 16),
           color: isDismissed
               ? appStyle.colors.cardTranslucent
               : appStyle.colors.card,
+          attached: !expanded && showTests && test != null
+              ? Attach.bottom
+              : Attach.none,
           shadow: !isDismissed,
-          left: [
-            showLessonNos == false || lessonNo == null
-                ? SizedBox()
-                : SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        SvgPicture.asset(
-                          "assets/icons/subtract.svg",
-                          color: bgColor,
+          child: Column(
+            spacing: 12,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  !showLessonNos
+                      ? SizedBox()
+                      : SizedBox(
                           width: 18,
                           height: 18,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              SvgPicture.asset(
+                                "assets/icons/subtract.svg",
+                                color: bgColor,
+                                width: 18,
+                                height: 18,
+                              ),
+                              Text(
+                                lessonNo.toString(),
+                                style: appStyle.fonts.B_12R.apply(
+                                  color: secondary,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
-                        Text(
-                          lessonNo.toString(),
-                          style: appStyle.fonts.B_12R.apply(color: secondary),
-                          textAlign: TextAlign.center,
+                  FilledCircle(
+                    diameter: expanded ? 32 : 36,
+                    color: bgColor,
+                    child: ClassIconWidget(
+                      uid: lesson.uid,
+                      className: lesson.name,
+                      category: subjectName,
+                      color: accent,
+                      size: expanded ? 20 : 24,
+                    ),
+                  ),
+                  SizedOverflowBox(
+                    size: Size(spacing, 0),
+                    child: !expanded && !showTests && test != null
+                        ? Transform.translate(
+                            offset: Offset(4, -20),
+                            child: BubbleTest(),
+                          )
+                        : SizedBox(),
+                  ),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      spacing: spacing,
+                      children: [
+                        LimitedBox(
+                          maxWidth: 155,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                subjectName,
+                                style: appStyle.fonts.B_16SB.apply(
+                                  color: !isDismissed
+                                      ? appStyle.colors.textPrimary
+                                      : appStyle.colors.textSecondary,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              showSubstitutions
+                                  ? Text(
+                                      lesson.substituteTeacher!,
+                                      style: appStyle.fonts.B_14R.apply(
+                                        color: appStyle.colors.textSecondary,
+                                      ),
+                                    )
+                                  : SizedBox(),
+                            ],
+                          ),
+                        ),
+                        Flexible(
+                          fit: FlexFit.loose,
+                          child: Card(
+                            shadowColor: Colors.transparent,
+                            color: appStyle.colors.a15p,
+                            margin: EdgeInsets.all(0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 6),
+                              child: Text(
+                                roomName,
+                                style: appStyle.fonts.B_12R.apply(
+                                  color: appStyle.colors.textSecondary,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
-            Transform.translate(
-              offset: Offset(-4, 0),
-              child: Card(
-                shadowColor: Colors.transparent,
-                color: bgColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: EdgeInsetsGeometry.all(4),
-                      child: ClassIconWidget(
-                        color: accent,
-                        size: 20,
-                        uid: lesson.uid,
-                        className: lesson.name,
-                        category: lesson.subject?.name != null
-                            ? lesson.subject!.name.firstUpper()
-                            : '',
+                  SizedBox(width: 8),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        lesson.start.toLocal().format(
+                          data.l10n,
+                          FormatMode.hmm,
+                        ),
+                        style: appStyle.fonts.B_14R.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
                       ),
-                    ),
-                    !showTests && test != null
-                        ? Transform.translate(
-                            offset: Offset(26, -18),
-                            child: BubbleTest(),
-                          )
-                        : SizedBox(),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(width: !showTests && test != null ? 16 : 8),
-            Text(
-              subjectName,
-              style: appStyle.fonts.B_15SB.apply(
-                color: appStyle.colors.textPrimary,
-              ),
-            ),
-          ],
-          right: [
-            placeholderMode == true
-                ? SizedBox()
-                : Text(
-                    isDismissed
-                        ? data.l10n.class_dismissed
-                        : lesson.start.toLocal().format(
+                      if (!expanded)
+                        Text(
+                          lesson.end.toLocal().format(
                             data.l10n,
                             FormatMode.hmm,
                           ),
-                    style: appStyle.fonts.B_14R.apply(
-                      color: appStyle.colors.textPrimary,
-                    ),
-                  ),
-            placeholderMode == true
-                ? SizedBox()
-                : isDismissed
-                ? SizedBox()
-                : Card(
-                    shadowColor: Colors.transparent,
-                    color: appStyle.colors.a15p,
-                    child: Padding(
-                      padding: EdgeInsets.all(5),
-                      child: Text(
-                        roomName,
-                        style: appStyle.fonts.B_12R.apply(
-                          color: appStyle.colors.secondary,
+                          style: appStyle.fonts.B_14R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
                         ),
+                    ],
+                  ),
+                ],
+              ),
+              if (expanded && test == null)
+                Column(
+                  spacing: 4,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          lesson.end
+                                  .difference(timeNow().max(lesson.start))
+                                  .timeLeft(initData.l10n) ??
+                              "",
+                          style: appStyle.fonts.B_14R.apply(
+                            color: appStyle.colors.textSecondary,
+                          ),
+                        ),
+                        Text(
+                          lesson.end.format(initData.l10n, FormatMode.hmm),
+                          style: appStyle.fonts.B_14R.apply(
+                            color: appStyle.colors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: LinearProgressIndicator(
+                        value:
+                            timeNow().difference(lesson.start).inMilliseconds /
+                            lesson.end.difference(lesson.start).inMilliseconds,
+                        backgroundColor: appStyle.colors.a15p,
+                        color: appStyle.colors.accent,
+                        minHeight: 8,
                       ),
                     ),
+                  ],
+                ),
+              if (expanded && test != null)
+                Container(
+                  height: 28,
+                  padding: EdgeInsets.symmetric(horizontal: 6),
+                  decoration: ShapeDecoration(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    color: appStyle.colors.background,
                   ),
-          ],
+                  child: Row(
+                    children: [
+                      FirkaIconWidget(
+                        FirkaIconType.majesticons,
+                        Majesticon.editPen4Solid,
+                        size: 12,
+                        color: appStyle.colors.accent,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        test!.theme,
+                        style: appStyle.fonts.B_16R.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
 
-    if (isSubstituted && showSubstitutions) {
-      elements.add(
-        FirkaCard(
-          left: [
-            Text(
-              data.l10n.class_substitution,
-              style: appStyle.fonts.H_16px.apply(
-                color: appStyle.colors.textPrimary,
-              ),
-            ),
-          ],
-          right: [
-            Text(
-              lesson.substituteTeacher!,
-              style: appStyle.fonts.B_16R.apply(
-                color: appStyle.colors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (test != null && showTests) {
-      var theme = test!.theme;
-      if (theme.length >= 20) {
-        theme = "${theme.substring(0, 20)}...";
-      }
-      var method = test!.method.description ?? 'N/A';
-      if (method.length >= 15) {
-        method = "${method.substring(0, 15)}...";
-      }
-      theme = theme.firstUpper();
-      method = method.firstUpper();
+    if (!expanded && test != null && showTests) {
+      var theme = test!.theme.firstUpper();
+      var method = test!.method.description.firstUpper();
 
       elements.add(
         GestureDetector(
@@ -255,230 +327,52 @@ class LessonWidget extends StatelessWidget {
               accent,
               secondary,
               bgColor,
-              test,
+              test!,
             );
           },
-          child: FirkaCard(
-            left: [
-              FirkaIconWidget(
-                FirkaIconType.majesticons,
-                Majesticon.editPen4Solid,
-                color: appStyle.colors.accent,
-              ),
-              SizedBox(width: 6),
-              Text(
-                theme,
-                style: appStyle.fonts.B_16SB.apply(
-                  color: appStyle.colors.textSecondary,
+          child: FirkaCard.single(
+            height: 48,
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            margin: EdgeInsets.only(top: 4),
+            attached: Attach.top,
+            child: Row(
+              children: [
+                FirkaIconWidget(
+                  FirkaIconType.majesticons,
+                  Majesticon.editPen4Solid,
+                  color: appStyle.colors.accent,
+                  size: 20,
                 ),
-              ),
-            ],
-            right: [
-              Text(
-                method,
-                style: appStyle.fonts.B_16R.apply(
-                  color: appStyle.colors.textTertiary,
+                SizedBox(width: 8),
+                LimitedBox(
+                  maxWidth: 160,
+                  child: Text(
+                    theme,
+                    style: appStyle.fonts.B_16SB.apply(
+                      color: appStyle.colors.textPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(width: 12),
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      method,
+                      style: appStyle.fonts.B_14R.apply(
+                        color: appStyle.colors.textSecondary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
-    }
-
-    if (nextLesson != null) {
-      var breakMins = nextLesson!.start.difference(lesson.end).inMinutes;
-      var seqSchedule = week.getAllSeqs(lesson);
-
-      if (breakMins > 45) {
-        final breakEnd = lesson.end.add(Duration(minutes: breakMins));
-        final emptyClass = seqSchedule.firstWhereOrNull(
-          (lesson2) =>
-              lesson2.start.isAfter(lesson.end) &&
-              lesson2.end.isBefore(breakEnd),
-        );
-
-        if (emptyClass != null) {
-          final preBreak = emptyClass.start.difference(lesson.end).inMinutes;
-          final postBreak = breakEnd.difference(emptyClass.end).inMinutes;
-
-          if (data.settings
-                  .group("settings")
-                  .subGroup("timetable_toast")
-                  .boolean("breaks") &&
-              showBreak) {
-            elements.add(
-              FirkaCard(
-                color: appStyle.colors.cardTranslucent,
-                shadow: false,
-                left: [
-                  Text(
-                    data.l10n.breakTxt,
-                    style: appStyle.fonts.B_16SB.apply(
-                      color: appStyle.colors.textSecondary,
-                    ),
-                  ),
-                ],
-                right: [
-                  Text(
-                    "$preBreak ${preBreak == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                    style: appStyle.fonts.B_16R.apply(
-                      color: appStyle.colors.textTertiary,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          elements.add(
-            FirkaCard(
-              left: [
-                SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: Stack(
-                    children: [
-                      SvgPicture.asset(
-                        "assets/icons/subtract.svg",
-                        color: bgColor,
-                        width: 18,
-                        height: 18,
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 5),
-                        child: Text(
-                          emptyClass.lessonNumber.toString(),
-                          style: appStyle.fonts.B_12R.apply(color: secondary),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Transform.translate(
-                  offset: Offset(-4, 0),
-                  child: Card(
-                    shadowColor: Colors.transparent,
-                    color: bgColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsetsGeometry.all(4),
-                      child: FirkaIconWidget(
-                        FirkaIconType.majesticonsLocal,
-                        'cupFilled',
-                        color: appStyle.colors.accent,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8),
-                Text(
-                  data.l10n.empty_class,
-                  style: appStyle.fonts.B_16SB.apply(
-                    color: appStyle.colors.textPrimary,
-                  ),
-                ),
-              ],
-              right: [
-                Text(
-                  isDismissed
-                      ? data.l10n.class_dismissed
-                      : "${emptyClass.start.toLocal().format(data.l10n, FormatMode.hmm)} - ${emptyClass.end.toLocal().format(data.l10n, FormatMode.hmm)}",
-                  style: appStyle.fonts.B_16R.apply(
-                    color: appStyle.colors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          );
-
-          if (data.settings
-                  .group("settings")
-                  .subGroup("timetable_toast")
-                  .boolean("breaks") &&
-              showBreak) {
-            elements.add(
-              FirkaCard(
-                color: appStyle.colors.cardTranslucent,
-                shadow: false,
-                left: [
-                  Text(
-                    data.l10n.breakTxt,
-                    style: appStyle.fonts.B_16SB.apply(
-                      color: appStyle.colors.textSecondary,
-                    ),
-                  ),
-                ],
-                right: [
-                  Text(
-                    "$postBreak ${postBreak == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                    style: appStyle.fonts.B_16R.apply(
-                      color: appStyle.colors.textTertiary,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-        } else if (data.settings
-                .group("settings")
-                .subGroup("timetable_toast")
-                .boolean("breaks") &&
-            showBreak) {
-          elements.add(
-            FirkaCard(
-              color: appStyle.colors.cardTranslucent,
-              shadow: false,
-              left: [
-                Text(
-                  data.l10n.breakTxt,
-                  style: appStyle.fonts.B_16SB.apply(
-                    color: appStyle.colors.textSecondary,
-                  ),
-                ),
-              ],
-              right: [
-                Text(
-                  "$breakMins ${breakMins == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                  style: appStyle.fonts.B_16R.apply(
-                    color: appStyle.colors.textTertiary,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-      } else if (data.settings
-              .group("settings")
-              .subGroup("timetable_toast")
-              .boolean("breaks") &&
-          showBreak) {
-        elements.add(
-          FirkaCard(
-            color: appStyle.colors.cardTranslucent,
-            shadow: false,
-            left: [
-              Text(
-                data.l10n.breakTxt,
-                style: appStyle.fonts.B_16SB.apply(
-                  color: appStyle.colors.textSecondary,
-                ),
-              ),
-            ],
-            right: [
-              Text(
-                "$breakMins ${breakMins == 1 ? data.l10n.starting_min : data.l10n.starting_min_plural}",
-                style: appStyle.fonts.B_16R.apply(
-                  color: appStyle.colors.textTertiary,
-                ),
-              ),
-            ],
-          ),
-        );
-      }
     }
 
     return Column(

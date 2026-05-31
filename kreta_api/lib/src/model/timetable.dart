@@ -1,12 +1,11 @@
+import '../extensions.dart';
 import 'generic.dart';
 import 'subject.dart';
 
-class Lesson {
-  final String uid;
+class Lesson extends NameUid {
   final String date;
   final DateTime start;
   final DateTime end;
-  final String name;
   final int? lessonNumber;
   final int? lessonSeqNumber;
   final NameUid? classGroup;
@@ -33,11 +32,11 @@ class Lesson {
   final DateTime lastModifiedAt;
 
   Lesson({
-    required this.uid,
+    required super.uid,
     required this.date,
     required this.start,
     required this.end,
-    required this.name,
+    required super.name,
     this.lessonNumber,
     this.lessonSeqNumber,
     this.classGroup,
@@ -74,25 +73,21 @@ class Lesson {
     return Lesson(
       uid: json['Uid'],
       date: json['Datum'],
-      start: DateTime.parse(json['KezdetIdopont']).toLocal(),
-      end: DateTime.parse(json['VegIdopont']).toLocal(),
+      start: json.localDate('KezdetIdopont')!,
+      end: json.localDate('VegIdopont')!,
       name: json['Nev'],
       lessonNumber: json['Oraszam'],
       lessonSeqNumber: json['OraEvesSorszama'],
-      classGroup: json['OsztalyCsoport'] != null
-          ? NameUid.fromJson(json['OsztalyCsoport'])
-          : null,
+      classGroup: json.nameUid('OsztalyCsoport'),
       teacher: json['TanarNeve'],
       subject: json['Tantargy'] != null
           ? Subject.fromJson(json['Tantargy'])
           : null,
       theme: json['Tema'],
       roomName: json['TeremNeve'],
-      type: NameUidDesc.fromJson(json['Tipus']),
-      studentPresence: json['TanuloJelenlet'] != null
-          ? NameUidDesc.fromJson(json['TanuloJelenlet'])
-          : null,
-      state: NameUidDesc.fromJson(json['Allapot']),
+      type: json.nameUidDesc('Tipus')!,
+      studentPresence: json.nameUidDesc('TanuloJelenlet'),
+      state: json.nameUidDesc('Allapot')!,
       substituteTeacher: json['HelyettesTanarNeve'],
       homeworkUid: json['HaziFeladatUid'],
       taskGroupUid: json['FeladatGroupUid'],
@@ -108,8 +103,8 @@ class Lesson {
           json['DigitalisTamogatoEszkozTipusList'] != null
           ? List<String>.from(json['DigitalisTamogatoEszkozTipusList'])
           : List<String>.empty(),
-      createdAt: DateTime.parse(json['Letrehozas']).toLocal(),
-      lastModifiedAt: DateTime.parse(json['UtolsoModositas']).toLocal(),
+      createdAt: json.localDate('Letrehozas')!,
+      lastModifiedAt: json.localDate('UtolsoModositas')!,
     );
   }
 

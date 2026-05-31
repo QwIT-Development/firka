@@ -29,6 +29,9 @@ class KretaEndpoints {
   static String getSubjectAvg(String iss, String studyGroupId) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/Ertekelesek/Atlagok/TantargyiAtlagok?oktatasiNevelesiFeladatUid=$studyGroupId&oktatasiNevelesiFeladatUid=$studyGroupId";
 
+  static String getClassGroupAvg(String iss, String studyGroupId) =>
+      "${kreta(iss)}/ellenorzo/v3/sajat/Ertekelesek/Atlagok/OsztalyAtlagok?oktatasiNevelesiFeladatUid=$studyGroupId&oktatasiNevelesiFeladatUid=$studyGroupId";
+
   static String getTimeTable(String iss) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/OrarendElemek";
 
