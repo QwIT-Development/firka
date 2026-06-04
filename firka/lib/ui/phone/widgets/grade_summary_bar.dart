@@ -1,3 +1,4 @@
+import 'package:firka/ui/components/firka_card.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/ui/components/grade.dart';
 import 'package:firka/ui/components/grade_helpers.dart';
@@ -33,89 +34,75 @@ class _GradeSummaryBarState extends State<GradeSummaryBar> {
     final averageText = widget.showAverage
         ? (widget.grades.getAverage() ?? 0).toStringAsFixed(2)
         : '';
+    final bar = ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Row(
+        children: List.generate(5, (i) {
+          final flex = total > 0 ? countsByGrade[i] : 1;
+          return Expanded(
+            flex: flex,
+            child: Container(height: 12, color: getGradeColor(i + 1)),
+          );
+        }),
+      ),
+    );
 
-    return Card(
-      shadowColor: Colors.transparent,
-      color: appStyle.colors.a15p,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: () => setState(() => _expanded = !_expanded),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    widget.showAverage
-                        ? '${widget.l10n.gradesCount(total)} ($averageText)'
-                        : widget.l10n.gradesCount(total),
-                    style: appStyle.fonts.B_16SB.apply(
-                      color: appStyle.colors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Row(
-                        children: List.generate(5, (i) {
-                          final flex = total > 0 ? countsByGrade[i] : 1;
-                          return Expanded(
-                            flex: flex,
-                            child: Container(
-                              height: 10,
-                              color: getGradeColor(i + 1),
-                            ),
-                          );
-                        }),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  FirkaIconWidget(
-                    FirkaIconType.majesticons,
-                    _expanded
-                        ? Majesticon.chevronUpLine
-                        : Majesticon.chevronDownLine,
+    return GestureDetector(
+      onTap: () => setState(() => _expanded = !_expanded),
+      child: FirkaCard.single(
+        margin: EdgeInsets.zero,
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        height: _expanded ? 115 : 52,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 12,
+          children: [
+            Row(
+              spacing: 12,
+              children: [
+                Text(
+                  widget.showAverage
+                      ? '${widget.l10n.gradesCount(total)} ($averageText)'
+                      : widget.l10n.gradesCount(total),
+                  style: appStyle.fonts.B_16SB.apply(
                     color: appStyle.colors.textPrimary,
-                    size: 24,
                   ),
-                ],
-              ),
-              if (_expanded) ...[
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(5, (i) {
-                    final grade = i + 1;
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: 32,
-                          height: 32,
-                          child: FittedBox(
-                            child: GradeWidget.gradeValue(grade),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          countsByGrade[i].toString(),
-                          style: appStyle.fonts.B_16SB.apply(
-                            color: appStyle.colors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    );
-                  }),
+                ),
+                Expanded(child: _expanded ? SizedBox() : bar),
+                FirkaIconWidget(
+                  FirkaIconType.majesticons,
+                  _expanded
+                      ? Majesticon.chevronUpLine
+                      : Majesticon.chevronDownLine,
+                  color: appStyle.colors.textPrimary,
+                  size: 24,
                 ),
               ],
+            ),
+            if (_expanded) ...[
+              bar,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(5, (i) {
+                  final grade = i + 1;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: 6,
+                    children: [
+                      GradeWidget.gradeValue(grade, size: 27),
+                      Text(
+                        countsByGrade[i].toString(),
+                        style: appStyle.fonts.B_16SB.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );

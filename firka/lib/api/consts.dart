@@ -16,7 +16,7 @@ class Constants {
   }
 
   static const applicationId = "hu.ekreta.student";
-  static const applicationVersion = "5.7.0";
+  static const applicationVersion = "5.15.0";
 
   static String get userAgent {
     if (Platform.isAndroid) {

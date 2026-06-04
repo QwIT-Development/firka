@@ -1,7 +1,7 @@
-import 'dart:math' as math;
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka_common/firka_common.dart';
+import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:intl/intl.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/routing/chart_interaction_scope.dart';
@@ -90,6 +90,7 @@ class _GradeChartState extends State<GradeChart> {
   @override
   Widget build(BuildContext context) {
     return FirkaCard.single(
+      margin: EdgeInsets.all(0),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: AspectRatio(aspectRatio: 1.82, child: LineChart(avgData())),
@@ -147,24 +148,13 @@ class _GradeChartState extends State<GradeChart> {
     required Color bgColor,
     required Color textColor,
   }) {
-    return SizedBox(
-      width: 24,
-      height: 24,
-      child: Material(
-        shape: const CircleBorder(),
-        color: bgColor,
-        child: Center(
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              fontFamily: appStyle.fonts.B_14SB.fontFamily,
-            ),
-          ),
-        ),
+    return FilledCircle(
+      diameter: 18,
+      color: bgColor,
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: appStyle.fonts.H_14px.copyWith(color: textColor),
       ),
     );
   }

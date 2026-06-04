@@ -60,7 +60,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   }
 
   Future<void> fetchData({bool cacheOnly = false}) async {
-    final midnight = now.getMidnight();
+    final midnight = timeNow().getMidnight();
 
     var lessonsFetched = 0;
     var noticeBoardFetched = 0;
@@ -213,6 +213,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
 
   Widget _buildContent(BuildContext context) {
     if (student != null && lessons != null) {
+      final now = timeNow();
       final infoItems = [...(infoBoard ?? []), ...(noticeBoard ?? [])];
       final gradeItems = grades ?? [];
       final testItems = tests ?? [];
@@ -239,11 +240,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         (item1, item2) => item2.$2.difference(item1.$2).inMilliseconds,
       );
 
-      var currentLesson = lessons!.firstWhereOrNull(
-        (lesson) => now.isBefore(lesson.end),
-      );
-
-      Map<Lesson, Test?> lessonTestMap = Map.fromEntries(
+      LinkedHashMap<Lesson, Test?> lessonTestMap = LinkedHashMap.fromEntries(
         lessons!.indexed.map(
           (i) => MapEntry(
             i.$2,
@@ -256,30 +253,13 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         ),
       );
 
-      int tmpIndex = lessons!.isEmpty || now.isBefore(lessons!.first.start)
-          ? 0
-          : currentLesson == null
-          ? lessons!.length + 1
-          : lessons!.indexOf(currentLesson) + 1;
-
-      if (activeLessonIndex == null || tmpIndex != activeLessonIndex) {
-        activeLessonIndex = tmpIndex;
-        swipeBack = 0;
-      }
-
-      centeredPageIndex ??= activeLessonIndex!;
-
-      if (controller.ready && swipeBack == 0) {
-        controller.animateToPage(activeLessonIndex!);
-      }
-
       int testsTomorrow = testItems
           .where(
             (test) =>
                 test.date.isAfter(
                   now.getMidnight().add(Duration(hours: 23, minutes: 59)),
                 ) &&
-                test.date.isBefore(now.getMidnight().add(Duration(days: 1))),
+                test.date.isBefore(now.getMidnight().add(Duration(days: 2))),
           )
           .length;
 
@@ -290,157 +270,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
           children: [
             WelcomeWidget(widget.data.l10n, now, student!, lessons!),
             SizedBox(height: 48),
-            if (lessons!.isNotEmpty)
-              OverflowBox(
-                maxWidth: MediaQuery.widthOf(context),
-                fit: OverflowBoxFit.deferToChild,
-                child: CarouselSlider(
-                  items: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 5),
-                      child: StartingSoonWidget(
-                        widget.data.l10n,
-                        now,
-                        lessons!,
-                      ),
-                    ),
-                    ...lessonTestMap.entries.map(
-                      (entry) => Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 5),
-                        child: LessonBigWidget(
-                          widget.data,
-                          lessons!.getLessonNo(entry.key),
-                          entry.key,
-                          entry.value,
-                          active: currentLesson == entry.key,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 5),
-                      child: FirkaCard.single(
-                        padding: EdgeInsets.all(16),
-                        margin: EdgeInsets.only(bottom: 1),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                FilledCircle(
-                                  diameter: 32,
-                                  color: appStyle.colors.a15p,
-                                  child: FirkaIconWidget(
-                                    FirkaIconType.majesticons,
-                                    Majesticon.moonSolid,
-                                    size: 20,
-                                    color: appStyle.colors.accent,
-                                  ),
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  testsTomorrow == 0
-                                      ? widget.data.l10n.tt_no_classes_l2
-                                      : widget.data.l10n.get_ready,
-                                  style: appStyle.fonts.B_16R.apply(
-                                    color: appStyle.colors.textPrimary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              height: 28,
-                              padding: EdgeInsets.symmetric(horizontal: 6),
-                              decoration: ShapeDecoration(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                color: appStyle.colors.background,
-                              ),
-                              child: Row(
-                                children: [
-                                  FirkaIconWidget(
-                                    FirkaIconType.majesticons,
-                                    Majesticon.editPen4Solid,
-                                    size: 12,
-                                    color: appStyle.colors.accent,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    testsTomorrow == 0
-                                        ? widget.data.l10n.no_tests_tomorrow
-                                        : widget.data.l10n.tests_tomorrow(
-                                            testsTomorrow.toString(),
-                                          ),
-                                    style: appStyle.fonts.B_16R.apply(
-                                      color: appStyle.colors.textPrimary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                  carouselController: controller,
-                  options: CarouselOptions(
-                    initialPage: activeLessonIndex!,
-                    height: 106,
-                    viewportFraction: 346 / 376,
-                    enableInfiniteScroll: false,
-                    onPageChanged: (index, reason) {
-                      centeredPageIndex = index;
-                      if (index == activeLessonIndex) {
-                        swipeBack = null;
-                      } else if (reason == CarouselPageChangedReason.manual) {
-                        swipeBack = 5;
-                      } else {
-                        return;
-                      }
-                      setState(() {});
-                    },
-                  ),
-                ),
-              ),
-            if (lessons!.isNotEmpty) SizedBox(height: 12),
-            if (lessons!.isNotEmpty)
-              SizedBox(
-                height: 16,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  spacing: 8,
-                  children: [
-                    FirkaIconWidget(
-                      FirkaIconType.majesticonsLocal,
-                      "sunSolid",
-                      color: centeredPageIndex == 0
-                          ? appStyle.colors.accent
-                          : appStyle.colors.accent.withAlpha(128),
-                      size: centeredPageIndex == 0 ? 16 : 12,
-                    ),
-                    ...lessons!.indexed.map(
-                      (i) => FilledCircle(
-                        diameter: centeredPageIndex == i.$1 + 1 ? 10 : 8,
-                        color: centeredPageIndex == i.$1 + 1
-                            ? appStyle.colors.accent
-                            : appStyle.colors.accent.withAlpha(128),
-                        child: SizedBox(),
-                      ),
-                    ),
-                    FirkaIconWidget(
-                      FirkaIconType.majesticons,
-                      Majesticon.moonSolid,
-                      color: centeredPageIndex == lessons!.length + 1
-                          ? appStyle.colors.accent
-                          : appStyle.colors.accent.withAlpha(128),
-                      size: centeredPageIndex == lessons!.length + 1 ? 16 : 12,
-                    ),
-                  ],
-                ),
-              ),
-            if (lessons!.isNotEmpty) SizedBox(height: 12),
+            LessonSlider(lessonTestMap, testsTomorrow),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () => fetchData(),

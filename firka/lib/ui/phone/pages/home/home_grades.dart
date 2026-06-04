@@ -164,8 +164,9 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                 ),
               ],
             ),
+            SizedBox(height: 20),
             GradeChartWithInteraction(grades: allGrades),
-            SizedBox(height: 2),
+            SizedBox(height: 10),
             GradeSummaryBar(grades: allGrades, l10n: widget.data.l10n),
             SizedBox(height: 20),
             Expanded(

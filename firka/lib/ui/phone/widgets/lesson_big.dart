@@ -1,5 +1,4 @@
 import 'package:firka/core/extensions.dart';
-import 'package:firka/core/settings.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
@@ -13,7 +12,6 @@ import 'package:firka/core/debug_helper.dart';
 import 'package:firka/ui/components/common_bottom_sheets.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
-import 'bubble_test.dart';
 
 class LessonBigWidget extends StatelessWidget {
   final AppInitialization data;
@@ -96,7 +94,7 @@ class LessonBigWidget extends StatelessWidget {
           )
         : Container(
             height: 28,
-            padding: EdgeInsets.symmetric(horizontal: 6),
+            padding: EdgeInsets.symmetric(horizontal: 8),
             decoration: ShapeDecoration(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -112,12 +110,14 @@ class LessonBigWidget extends StatelessWidget {
                   color: appStyle.colors.accent,
                 ),
                 SizedBox(width: 8),
-                Text(
-                  test!.theme,
-                  style: appStyle.fonts.B_16R.apply(
-                    color: appStyle.colors.textPrimary,
+                Expanded(
+                  child: Text(
+                    test!.theme,
+                    style: appStyle.fonts.B_16R.apply(
+                      color: appStyle.colors.textPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -129,7 +129,6 @@ class LessonBigWidget extends StatelessWidget {
           context,
           data,
           lesson,
-          lessonNo,
           accent,
           secondary,
           bgColor,
@@ -139,7 +138,7 @@ class LessonBigWidget extends StatelessWidget {
       child: FirkaCard.single(
         height: 104,
         borderColor: active ? appStyle.colors.accent : null,
-        margin: EdgeInsets.all(0),
+        margin: EdgeInsets.only(bottom: active ? 0 : 1),
         padding: EdgeInsets.only(left: 16, right: 16),
         color: isDismissed
             ? appStyle.colors.cardTranslucent
@@ -165,7 +164,7 @@ class LessonBigWidget extends StatelessWidget {
                       ),
                       Text(
                         lessonNo.toString(),
-                        style: appStyle.fonts.B_12R.apply(color: secondary),
+                        style: appStyle.fonts.B_14SB.apply(color: secondary),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -227,8 +226,8 @@ class LessonBigWidget extends StatelessWidget {
                             padding: EdgeInsets.symmetric(horizontal: 6),
                             child: Text(
                               roomName,
-                              style: appStyle.fonts.B_12R.apply(
-                                color: appStyle.colors.textSecondary,
+                              style: appStyle.fonts.B_14R.apply(
+                                color: appStyle.colors.secondary,
                               ),
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,

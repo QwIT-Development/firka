@@ -90,9 +90,7 @@ class TimeTableDayWidget extends StatelessWidget {
       }
 
       if (events.isNotEmpty) {
-        ttLessons.add(
-          SizedBox()
-        );
+        ttLessons.add(SizedBox());
       }
 
       var showBreak = data.settings
@@ -106,7 +104,6 @@ class TimeTableDayWidget extends StatelessWidget {
         ttLessons.add(
           LessonWidget(
             data,
-            lessons.getLessonNo(lesson),
             lesson,
             tests.firstWhereOrNull(
               (test) => test.lessonNumber == lesson.lessonNumber,

@@ -1,0 +1,235 @@
+import 'dart:async';
+import 'dart:collection';
+
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firka/app/app_state.dart';
+import 'package:firka/core/extensions.dart';
+import 'package:firka/ui/phone/widgets/home_main_starting_soon.dart';
+import 'package:firka/ui/phone/widgets/lesson_big.dart';
+import 'package:firka/ui/shared/firka_icon.dart';
+import 'package:firka_common/firka_common.dart';
+import 'package:firka_common/ui/components/filled_circle.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/rendering.dart';
+import 'package:kreta_api/kreta_api.dart';
+import 'package:majesticons_flutter/majesticons_flutter.dart';
+
+class _LessonSliderState extends State<LessonSlider> {
+  DateTime now = timeNow();
+  int? swipeBack;
+  late Timer timer;
+  int? activeLessonIndex;
+  int? centeredPageIndex;
+  CarouselSliderController controller = CarouselSliderController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    timer = Timer.periodic(Duration(seconds: 1), (timer) async {
+      if (widget.lessons.isEmpty || !mounted) return;
+      setState(() {
+        if (swipeBack != null) swipeBack = swipeBack! - 1;
+        now = timeNow();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.lessons.isEmpty) {
+      return SizedBox();
+    }
+
+    var lessons = widget.lessons.keys.toList();
+
+    var currentLesson = widget.lessons.keys.firstWhereOrNull(
+      (lesson) => now.isBefore(lesson.end),
+    );
+
+    int tmpIndex = lessons.isEmpty || now.isBefore(lessons.first.start)
+        ? 0
+        : currentLesson == null
+        ? lessons.length + 1
+        : lessons.indexOf(currentLesson) + 1;
+
+    if (activeLessonIndex == null || tmpIndex != activeLessonIndex) {
+      activeLessonIndex = tmpIndex;
+      swipeBack = 0;
+    }
+
+    centeredPageIndex ??= activeLessonIndex!;
+
+    if (controller.ready && swipeBack == 0) {
+      controller.animateToPage(activeLessonIndex!);
+    }
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      spacing: 12,
+      children: [
+        OverflowBox(
+          maxWidth: MediaQuery.widthOf(context),
+          fit: OverflowBoxFit.deferToChild,
+          child: CarouselSlider(
+            items: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 5),
+                child: StartingSoonWidget(initData.l10n, now, lessons),
+              ),
+              ...widget.lessons.entries.map(
+                (entry) => Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 5),
+                  child: LessonBigWidget(
+                    initData,
+                    lessons.getLessonNo(entry.key),
+                    entry.key,
+                    entry.value,
+                    active: currentLesson == entry.key,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 5),
+                child: FirkaCard.single(
+                  padding: EdgeInsets.all(16),
+                  margin: EdgeInsets.only(bottom: 1),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          FilledCircle(
+                            diameter: 32,
+                            color: appStyle.colors.a15p,
+                            child: FirkaIconWidget(
+                              FirkaIconType.majesticons,
+                              Majesticon.moonSolid,
+                              size: 20,
+                              color: appStyle.colors.accent,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            widget.tomorrowTestAmount == 0
+                                ? initData.l10n.tt_no_classes_l2
+                                : initData.l10n.get_ready,
+                            style: appStyle.fonts.B_16R.apply(
+                              color: appStyle.colors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        height: 28,
+                        padding: EdgeInsets.symmetric(horizontal: 6),
+                        decoration: ShapeDecoration(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          color: appStyle.colors.background,
+                        ),
+                        child: Row(
+                          children: [
+                            FirkaIconWidget(
+                              FirkaIconType.majesticons,
+                              Majesticon.editPen4Solid,
+                              size: 12,
+                              color: appStyle.colors.accent,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              widget.tomorrowTestAmount == 0
+                                  ? initData.l10n.no_tests_tomorrow
+                                  : initData.l10n.tests_tomorrow(
+                                      widget.tomorrowTestAmount.toString(),
+                                    ),
+                              style: appStyle.fonts.B_16R.apply(
+                                color: appStyle.colors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            carouselController: controller,
+            options: CarouselOptions(
+              initialPage: activeLessonIndex!,
+              height: 106,
+              viewportFraction: 346 / 376,
+              enableInfiniteScroll: false,
+              onPageChanged: (index, reason) {
+                centeredPageIndex = index;
+                if (index == activeLessonIndex) {
+                  swipeBack = null;
+                } else if (reason == CarouselPageChangedReason.manual) {
+                  swipeBack = 5;
+                } else {
+                  return;
+                }
+                setState(() {});
+              },
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 16,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 8,
+            children: [
+              FirkaIconWidget(
+                FirkaIconType.majesticonsLocal,
+                "sunSolid",
+                color: centeredPageIndex == 0
+                    ? appStyle.colors.accent
+                    : appStyle.colors.accent.withAlpha(128),
+                size: centeredPageIndex == 0 ? 16 : 12,
+              ),
+              ...widget.lessons.keys.indexed.map(
+                (i) => FilledCircle(
+                  diameter: centeredPageIndex == i.$1 + 1 ? 10 : 8,
+                  color: centeredPageIndex == i.$1 + 1
+                      ? appStyle.colors.accent
+                      : appStyle.colors.accent.withAlpha(128),
+                  child: SizedBox(),
+                ),
+              ),
+              FirkaIconWidget(
+                FirkaIconType.majesticons,
+                Majesticon.moonSolid,
+                color: centeredPageIndex == widget.lessons.keys.length + 1
+                    ? appStyle.colors.accent
+                    : appStyle.colors.accent.withAlpha(128),
+                size: centeredPageIndex == widget.lessons.keys.length + 1
+                    ? 16
+                    : 12,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class LessonSlider extends StatefulWidget {
+  final LinkedHashMap<Lesson, Test?> lessons;
+  final int tomorrowTestAmount;
+
+  const LessonSlider(this.lessons, this.tomorrowTestAmount, {super.key});
+
+  @override
+  State<StatefulWidget> createState() => _LessonSliderState();
+}

@@ -58,6 +58,7 @@ class InfoCard extends StatelessWidget {
       ),
       texts: [test.theme.firstUpper(), test.subject.name.firstUpper()],
       right: [buildSubject(color, test.subject)],
+      onTap: (context) => showTestBottomSheet(context, initData, test),
     );
   }
 
@@ -77,6 +78,7 @@ class InfoCard extends StatelessWidget {
       ),
       texts: [test.theme.firstUpper(), test.method.description.firstUpper()],
       right: [buildSubject(color, test.subject)],
+      onTap: (context) => showTestBottomSheet(context, initData, test),
     );
   }
 

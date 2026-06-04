@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/ui/components/firka_card.dart';
@@ -11,7 +9,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import 'package:kreta_api/kreta_api.dart';
-import 'package:firka/core/debug_helper.dart';
 import 'package:firka/ui/components/common_bottom_sheets.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
@@ -19,14 +16,12 @@ import 'bubble_test.dart';
 
 class LessonWidget extends StatelessWidget {
   final AppInitialization data;
-  final int? lessonNo;
   final Lesson lesson;
   final bool active;
   final Test? test;
 
   const LessonWidget(
     this.data,
-    this.lessonNo,
     this.lesson,
     this.test, {
     this.active = false,
@@ -48,7 +43,7 @@ class LessonWidget extends StatelessWidget {
             .subGroup("timetable_toast")
             .boolean("substitution");
     final showLessonNos =
-        lessonNo != null &&
+        lesson.lessonNumber != null &&
         data.settings
             .group("settings")
             .subGroup("timetable_toast")
@@ -79,12 +74,10 @@ class LessonWidget extends StatelessWidget {
     elements.add(
       GestureDetector(
         onTap: () {
-          if (lessonNo == null) return;
           showLessonBottomSheet(
             context,
             data,
             lesson,
-            lessonNo,
             accent,
             secondary,
             bgColor,
@@ -122,8 +115,8 @@ class LessonWidget extends StatelessWidget {
                                 height: 18,
                               ),
                               Text(
-                                lessonNo.toString(),
-                                style: appStyle.fonts.B_12R.apply(
+                                lesson.lessonNumber!.toString(),
+                                style: appStyle.fonts.B_14SB.apply(
                                   color: secondary,
                                 ),
                                 textAlign: TextAlign.center,
@@ -195,8 +188,8 @@ class LessonWidget extends StatelessWidget {
                               padding: EdgeInsets.symmetric(horizontal: 6),
                               child: Text(
                                 roomName,
-                                style: appStyle.fonts.B_12R.apply(
-                                  color: appStyle.colors.textSecondary,
+                                style: appStyle.fonts.B_14R.apply(
+                                  color: appStyle.colors.secondary,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
@@ -244,16 +237,7 @@ class LessonWidget extends StatelessWidget {
       elements.add(
         GestureDetector(
           onTap: () {
-            showTestBottomSheet(
-              context,
-              data,
-              lesson,
-              lessonNo,
-              accent,
-              secondary,
-              bgColor,
-              test!,
-            );
+            showTestBottomSheet(context, data, test!);
           },
           child: FirkaCard.single(
             height: 48,
