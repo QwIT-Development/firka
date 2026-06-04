@@ -13,7 +13,7 @@ class Test extends UidObj {
   final NameUidDesc method;
   final UidObj classGroup;
 
-  Test({
+  const Test({
     required super.uid,
     required this.date,
     required this.reportDate,

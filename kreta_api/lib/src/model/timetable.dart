@@ -31,7 +31,7 @@ class Lesson extends NameUid {
   final DateTime createdAt;
   final DateTime lastModifiedAt;
 
-  Lesson({
+  const Lesson({
     required super.uid,
     required this.date,
     required this.start,

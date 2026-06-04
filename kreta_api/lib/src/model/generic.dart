@@ -1,7 +1,8 @@
 class NameUidDesc extends NameUid {
+  static final EMPTY = NameUidDesc(name: "", uid: "", description: "");
   final String description;
 
-  NameUidDesc({
+  const NameUidDesc({
     required super.uid,
     required super.name,
     required this.description,
@@ -32,7 +33,7 @@ class NameUidDesc extends NameUid {
 class NameUid extends UidObj {
   final String name;
 
-  NameUid({required super.uid, required this.name});
+  const NameUid({required super.uid, required this.name});
 
   factory NameUid.fromJson(Map<String, dynamic> json) {
     return NameUid(uid: json['Uid'], name: json['Nev']);
@@ -46,7 +47,7 @@ class NameUid extends UidObj {
 class UidObj {
   final String uid;
 
-  UidObj({required this.uid});
+  const UidObj({required this.uid});
 
   factory UidObj.fromJson(Map<String, dynamic> json) {
     return UidObj(uid: json['Uid']);
