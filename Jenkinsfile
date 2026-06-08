@@ -1,10 +1,10 @@
 pipeline {
     agent any
     environment {
-        FLUTTER_ROOT = "/home/jenkins/flutter"
-        FLUTTER = "/home/jenkins/flutter/bin/flutter"
-        DART = "/home/jenkins/flutter/bin/dart"
-    }
+    FLUTTER_ROOT = "/opt/flutter"
+    FLUTTER = "/opt/flutter/bin/flutter"
+    DART = "/opt/flutter/bin/dart"
+}
     stages {
         stage('Clone Submodules') {
             steps {
