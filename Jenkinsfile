@@ -5,6 +5,17 @@ pipeline {
         PATH = "/home/jenkins/flutter/bin:${env.PATH}"
     }
     stages {
+
+    stage('Debug') {
+    steps {
+        sh '''
+            echo "shell binary: $(readlink /proc/$$/exe)"
+            echo "which bash: $(which bash)"
+            echo "which flutter: $(which flutter || echo NOT FOUND)"
+            /home/jenkins/flutter/bin/flutter --version
+        '''
+    }
+}
         stage('Clone Submodules') {
             steps {
                 sh 'git submodule update --init --recursive'
