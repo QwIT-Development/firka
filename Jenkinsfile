@@ -24,8 +24,7 @@ pipeline {
         stage('Setup') {
     steps {
         sh '''
-            cp -r /opt/secrets firka/
-            ls firka/secrets/
+            cp -r /opt/secrets ./
         '''
     }
 }
