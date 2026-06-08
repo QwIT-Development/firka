@@ -13,15 +13,6 @@ pipeline {
                 sh 'git submodule update --init --recursive'
             }
         }
-        stage('Environment') {
-            steps {
-                sh '''
-                    $FLUTTER --version
-                    $DART --version
-                    $FLUTTER doctor -v
-                '''
-            }
-        }
         stage('Dependencies') {
             steps {
                 sh '''
@@ -31,10 +22,13 @@ pipeline {
             }
         }
         stage('Setup') {
-            steps {
-                sh 'cp -r /opt/secrets firka/'
-            }
-        }
+    steps {
+        sh '''
+            cp -r /opt/secrets firka/
+            ls firka/secrets/
+        '''
+    }
+}
         stage('Codegen') {
             steps {
                 sh '''
