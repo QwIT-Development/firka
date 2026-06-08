@@ -41,57 +41,33 @@ class ShellWithNavBar extends StatelessWidget {
         child: SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(55, 0, 55, 12),
+            padding: const EdgeInsets.fromLTRB(55, 16, 55, 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                BottomNavIconWidget(
-                  () {
-                    if (currentIndex != 0) {
-                      navigationShell.goBranch(0);
-                    }
-                  },
-                  currentIndex == 0,
-                  currentIndex == 0
-                      ? Majesticon.homeSolid
-                      : Majesticon.homeLine,
-                  data.l10n.home,
-                  currentIndex == 0
-                      ? appStyle.colors.accent
-                      : appStyle.colors.secondary,
-                  appStyle.colors.textPrimary,
-                ),
-                BottomNavIconWidget(
-                  () {
-                    if (currentIndex != 1) {
-                      navigationShell.goBranch(1);
-                    }
-                  },
-                  currentIndex == 1,
-                  currentIndex == 1
-                      ? Majesticon.bookmarkSolid
-                      : Majesticon.bookmarkLine,
-                  data.l10n.grades,
-                  currentIndex == 1
-                      ? appStyle.colors.accent
-                      : appStyle.colors.secondary,
-                  appStyle.colors.textPrimary,
-                ),
-                BottomNavIconWidget(
-                  () {
-                    if (currentIndex != 2) {
-                      navigationShell.goBranch(2);
-                    }
-                  },
-                  currentIndex == 2,
-                  currentIndex == 2
-                      ? Majesticon.calendarSolid
-                      : Majesticon.calendarLine,
-                  data.l10n.timetable,
-                  currentIndex == 2
-                      ? appStyle.colors.accent
-                      : appStyle.colors.secondary,
-                  appStyle.colors.textPrimary,
+                ...[
+                  (data.l10n.home, Majesticon.homeSolid, Majesticon.homeLine),
+                  (
+                    data.l10n.grades,
+                    Majesticon.bookmarkSolid,
+                    Majesticon.bookmarkLine,
+                  ),
+                  (
+                    data.l10n.timetable,
+                    Majesticon.calendarSolid,
+                    Majesticon.calendarLine,
+                  ),
+                ].indexed.map(
+                  (nav) => BottomNavIconWidget(
+                    () {
+                      if (currentIndex != nav.$1) {
+                        navigationShell.goBranch(nav.$1);
+                      }
+                    },
+                    currentIndex == nav.$1,
+                    currentIndex == nav.$1 ? nav.$2.$2 : nav.$2.$3,
+                    nav.$2.$1,
+                  ),
                 ),
                 BottomNavIconWidget(
                   () {
@@ -102,8 +78,6 @@ class ShellWithNavBar extends StatelessWidget {
                       ? data.profilePicture!
                       : Majesticon.menuLine,
                   data.l10n.other,
-                  appStyle.colors.secondary,
-                  appStyle.colors.textPrimary,
                   isProfilePicture: data.profilePicture != null,
                 ),
               ],
