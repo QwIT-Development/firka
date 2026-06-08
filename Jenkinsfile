@@ -42,6 +42,7 @@ pipeline {
             steps {
                 sh '''
                     cd firka
+                    $FLUTTER config --android-sdk /opt/android-sdk
                     $FLUTTER build apk --debug
                 '''
             }
