@@ -37,7 +37,7 @@ stages {
         steps {
             sh '''
                 cd firka
-                flutter dart run scripts/codegen.dart
+                dart run scripts/codegen.dart
             '''
         }
     }
