@@ -1,6 +1,11 @@
 pipeline {
 agent any
 
+environment {
+    FLUTTER_ROOT = "/home/jenkins/flutter"
+    PATH = "/home/jenkins/flutter/bin:${env.PATH}"
+}
+
 stages {
     stage('Clone Submodules') {
         steps {
