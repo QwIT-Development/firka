@@ -288,55 +288,50 @@ Future<void> showTestBottomSheet(
       margin: EdgeInsets.all(0),
       padding: EdgeInsets.only(left: 14, right: 16),
       color: appStyle.colors.card,
-      child: Column(
-        spacing: 12,
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
-          Row(
-            children: [
-              SizedBox(
-                width: 18,
-                height: 18,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      "assets/icons/subtract.svg",
-                      color: appStyle.colors.a15p,
-                      width: 18,
-                      height: 18,
-                    ),
-                    Text(
-                      test.lessonNumber.toString(),
-                      style: appStyle.fonts.B_14SB.apply(
-                        color: appStyle.colors.secondary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+          SizedBox(
+            width: 18,
+            height: 18,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SvgPicture.asset(
+                  "assets/icons/subtract.svg",
+                  color: appStyle.colors.a15p,
+                  width: 18,
+                  height: 18,
                 ),
-              ),
-              FilledCircle(
-                diameter: 36,
-                color: appStyle.colors.a15p,
-                child: ClassIconWidget(
-                  uid: test.uid,
-                  className: test.subjectName,
-                  category: test.subject.name,
-                  color: appStyle.colors.accent,
-                  size: 24,
-                ),
-              ),
-              Expanded(
-                child: Text(
-                  test.subject.name,
-                  style: appStyle.fonts.B_16SB.apply(
-                    color: appStyle.colors.textPrimary,
+                Text(
+                  test.lessonNumber.toString(),
+                  style: appStyle.fonts.B_14SB.apply(
+                    color: appStyle.colors.secondary,
                   ),
-                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                 ),
+              ],
+            ),
+          ),
+          FilledCircle(
+            diameter: 36,
+            color: appStyle.colors.a15p,
+            child: ClassIconWidget(
+              uid: test.uid,
+              className: test.subjectName,
+              category: test.subject.name,
+              color: appStyle.colors.accent,
+              size: 24,
+            ),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              test.subject.name,
+              style: appStyle.fonts.B_16SB.apply(
+                color: appStyle.colors.textPrimary,
               ),
-            ],
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
