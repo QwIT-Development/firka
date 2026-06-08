@@ -2,7 +2,8 @@ pipeline {
     agent any
     environment {
         FLUTTER_ROOT = "/home/jenkins/flutter"
-        PATH = "/home/jenkins/flutter/bin:${env.PATH}"
+        FLUTTER = "/home/jenkins/flutter/bin/flutter"
+        DART = "/home/jenkins/flutter/bin/dart"
     }
     stages {
         stage('Clone Submodules') {
@@ -13,9 +14,9 @@ pipeline {
         stage('Environment') {
             steps {
                 sh '''
-                    flutter --version
-                    dart --version
-                    flutter doctor -v
+                    $FLUTTER --version
+                    $DART --version
+                    $FLUTTER doctor -v
                 '''
             }
         }
@@ -23,7 +24,7 @@ pipeline {
             steps {
                 sh '''
                     cd firka
-                    flutter pub get
+                    $FLUTTER pub get
                 '''
             }
         }
@@ -31,7 +32,7 @@ pipeline {
             steps {
                 sh '''
                     cd firka
-                    dart run scripts/codegen.dart
+                    $DART run scripts/codegen.dart
                 '''
             }
         }
@@ -39,7 +40,7 @@ pipeline {
             steps {
                 sh '''
                     cd firka
-                    flutter build apk --debug
+                    $FLUTTER build apk --debug
                 '''
             }
         }
