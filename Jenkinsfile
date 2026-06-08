@@ -1,7 +1,6 @@
 pipeline {
 agent any
 
-```
 stages {
     stage('Clone Submodules') {
         steps {
@@ -67,6 +66,4 @@ post {
         deleteDir()
     }
 }
-```
-
 }
