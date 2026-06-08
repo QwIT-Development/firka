@@ -30,6 +30,11 @@ pipeline {
                 '''
             }
         }
+        stage('Setup') {
+            steps {
+                sh 'cp -r /home/jenkins/secrets firka/'
+            }
+        }
         stage('Codegen') {
             steps {
                 sh '''
