@@ -29,13 +29,13 @@ pipeline {
             }
         }
         stage('Codegen') {
-            steps {
-                sh '''
-                    cd firka
-                    $DART run scripts/codegen.dart
-                '''
-            }
-        }
+    steps {
+        sh '''
+            cd firka
+            PATH="/opt/flutter/bin:$PATH" $DART run scripts/codegen.dart
+        '''
+    }
+}
         stage('Build') {
             steps {
                 sh '''
