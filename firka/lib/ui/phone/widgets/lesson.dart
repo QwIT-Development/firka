@@ -175,53 +175,66 @@ class LessonWidget extends StatelessWidget {
                             ],
                           ),
                         ),
-                        Flexible(
-                          fit: FlexFit.loose,
-                          child: Card(
-                            shadowColor: Colors.transparent,
-                            color: appStyle.colors.a15p,
-                            margin: EdgeInsets.all(0),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 6),
-                              child: Text(
-                                roomName,
+                        isDismissed
+                            ? Text(
+                                data.l10n.class_dismissed,
                                 style: appStyle.fonts.B_14R.apply(
-                                  color: appStyle.colors.secondary,
+                                  color: appStyle.colors.textSecondary,
                                 ),
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
+                              )
+                            : Flexible(
+                                fit: FlexFit.loose,
+                                child: Card(
+                                  shadowColor: Colors.transparent,
+                                  color: appStyle.colors.a15p,
+                                  margin: EdgeInsets.all(0),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                    ),
+                                    child: Text(
+                                      roomName,
+                                      style: appStyle.fonts.B_14R.apply(
+                                        color: appStyle.colors.secondary,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                      ],
+                    ),
+                  ),
+                  if (!isDismissed) SizedBox(width: 8),
+                  if (!isDismissed)
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          lesson.start.toLocal().format(
+                            data.l10n,
+                            FormatMode.hmm,
+                          ),
+                          style: appStyle.fonts.B_14R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          lesson.end.toLocal().format(
+                            data.l10n,
+                            FormatMode.hmm,
+                          ),
+                          style: appStyle.fonts.B_14R.apply(
+                            color: appStyle.colors.textPrimary,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  SizedBox(width: 8),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        lesson.start.toLocal().format(
-                          data.l10n,
-                          FormatMode.hmm,
-                        ),
-                        style: appStyle.fonts.B_14R.apply(
-                          color: appStyle.colors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        lesson.end.toLocal().format(data.l10n, FormatMode.hmm),
-                        style: appStyle.fonts.B_14R.apply(
-                          color: appStyle.colors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ],
