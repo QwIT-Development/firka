@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firka/api/client/kreta_stream.dart';
 import 'package:firka/ui/phone/widgets/info_card.dart';
 import 'package:firka/ui/phone/widgets/lesson.dart';
+import 'package:firka/ui/phone/widgets/lesson_slider.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:flutter/rendering.dart';
 import 'package:kreta_api/kreta_api.dart';
@@ -37,17 +39,12 @@ class HomeMainScreen extends StatefulWidget {
 class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   _HomeMainScreen();
 
-  DateTime now = timeNow();
-  int? swipeBack;
-  int? activeLessonIndex;
-  int? centeredPageIndex;
   List<Lesson>? lessons;
   List<NoticeBoardItem>? noticeBoard;
   List<InfoBoardItem>? infoBoard;
   List<Test>? tests;
   List<Grade>? grades;
   List<Homework>? homework;
-  CarouselSliderController controller = CarouselSliderController();
   Student? student;
   Timer? timer;
 
@@ -177,26 +174,9 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   void initState() {
     super.initState();
 
-    now = timeNow();
-    if (!mounted) return;
-
     (() async {
       await fetchData();
     })();
-
-    timer = Timer.periodic(Duration(seconds: 1), (timer) async {
-      if (swipeBack != null) swipeBack = swipeBack! - 1;
-      if (!mounted) return;
-      setState(() {
-        now = timeNow();
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    timer?.cancel();
   }
 
   @override
