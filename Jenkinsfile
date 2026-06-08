@@ -18,10 +18,8 @@ stages {
             sh '''
                 echo "PATH=$PATH"
 
-                which flutter
                 flutter --version
 
-                which dart
                 dart --version
 
                 flutter doctor -v
