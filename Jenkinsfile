@@ -4,6 +4,8 @@ pipeline {
     FLUTTER_ROOT = "/opt/flutter"
     FLUTTER = "/opt/flutter/bin/flutter"
     DART = "/opt/flutter/bin/dart"
+    ANDROID_SDK_ROOT = "/opt/android-sdk"
+    ANDROID_HOME = "/opt/android-sdk"
 }
     stages {
         stage('Clone Submodules') {
