@@ -32,7 +32,7 @@ pipeline {
         }
         stage('Setup') {
             steps {
-                sh 'cp -r /home/jenkins/secrets firka/'
+                sh 'cp -r /opt/secrets firka/'
             }
         }
         stage('Codegen') {
