@@ -38,15 +38,18 @@ pipeline {
             }
         }
         stage('Build') {
-            steps {
-                sh '''
-                    cd firka
-                    $FLUTTER config --android-sdk /opt/android-sdk
-                    $FLUTTER build apk --debug
-                    $FLUTTER build apk --release
-                '''
-            }
-        }
+    steps {
+        sh '''
+            cd firka
+            echo "--- Checking secrets path ---"
+            ls android/app/
+            ls android/app/../../../ || echo "no parent"
+            ls android/app/../../../secrets/ || echo "secrets not found at expected path"
+            $FLUTTER config --android-sdk /opt/android-sdk
+            $FLUTTER build apk --release
+        '''
+    }
+}
         stage('Archive') {
             steps {
                 archiveArtifacts(
