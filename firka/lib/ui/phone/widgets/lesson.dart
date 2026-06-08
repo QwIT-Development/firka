@@ -244,7 +244,7 @@ class LessonWidget extends StatelessWidget {
     );
 
     if (test != null && showTests) {
-      var theme = test!.theme.firstUpper();
+      var theme = test!.theme?.firstUpper() ?? "";
       var method = test!.method.description.firstUpper();
 
       elements.add(

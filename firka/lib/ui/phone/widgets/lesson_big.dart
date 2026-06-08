@@ -112,7 +112,7 @@ class LessonBigWidget extends StatelessWidget {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    test!.theme,
+                    test!.theme ?? "",
                     style: appStyle.fonts.B_16R.apply(
                       color: appStyle.colors.textPrimary,
                     ),

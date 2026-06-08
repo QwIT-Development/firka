@@ -56,13 +56,20 @@ class InfoCard extends StatelessWidget {
           size: 24,
         ),
       ),
-      texts: [test.theme.firstUpper(), test.subject.name.firstUpper()],
+      texts: [
+        test.theme?.firstUpper() ?? test.method.description,
+        test.subject.name.firstUpper(),
+      ],
       right: [buildSubject(color, test.subject)],
       onTap: (context) => showTestBottomSheet(context, initData, test),
     );
   }
 
   factory InfoCard.testDesc(Test test) {
+    if (test.theme == null) {
+      return InfoCard.test(test);
+    }
+
     final color = appStyle.colors.accent;
 
     return InfoCard(
@@ -76,7 +83,7 @@ class InfoCard extends StatelessWidget {
           size: 24,
         ),
       ),
-      texts: [test.theme.firstUpper(), test.method.description.firstUpper()],
+      texts: [test.theme!.firstUpper(), test.method.description.firstUpper()],
       right: [buildSubject(color, test.subject)],
       onTap: (context) => showTestBottomSheet(context, initData, test),
     );
