@@ -9,11 +9,11 @@ class Test extends UidObj {
   final int lessonNumber;
   final Subject subject;
   final String subjectName;
-  final String theme;
+  final String? theme;
   final NameUidDesc method;
   final UidObj classGroup;
 
-  Test({
+  const Test({
     required super.uid,
     required this.date,
     required this.reportDate,

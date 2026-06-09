@@ -3,22 +3,17 @@ import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:firka_common/ui/shared/grade_small_card.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/data/models/homework_cache_model.dart';
-import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings.dart';
-import 'package:firka/ui/components/firka_shadow.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:intl/intl.dart';
 
 import 'package:firka/app/app_state.dart';
-import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/ui/theme/style.dart';
-import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/phone/widgets/lesson.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firka/ui/shared/class_icon.dart';
@@ -82,7 +77,6 @@ Future<void> showLessonBottomSheet(
   BuildContext context,
   AppInitialization data,
   Lesson lesson,
-  int? lessonNo,
   Color accent,
   Color secondary,
   Color bgColor,
@@ -110,26 +104,28 @@ Future<void> showLessonBottomSheet(
   showFirkaBottomSheet(context, [
     Row(
       children: [
-        SizedBox(
-          width: 24,
-          height: 24,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              SvgPicture.asset(
-                "assets/icons/subtract.svg",
-                color: bgColor,
+        lesson.lessonNumber == null
+            ? SizedBox()
+            : SizedBox(
                 width: 24,
                 height: 24,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      "assets/icons/subtract.svg",
+                      color: bgColor,
+                      width: 24,
+                      height: 24,
+                    ),
+                    Text(
+                      lesson.lessonNumber!.toString(),
+                      style: appStyle.fonts.B_16R.apply(color: secondary),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
-              Text(
-                lessonNo.toString(),
-                style: appStyle.fonts.B_16R.apply(color: secondary),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
         FilledCircle(
           diameter: 40,
           color: bgColor,
@@ -230,21 +226,11 @@ Future<void> showLessonBottomSheet(
 Future<void> showTestBottomSheet(
   BuildContext context,
   AppInitialization data,
-  Lesson lesson,
-  int? lessonNo,
-  Color accent,
-  Color secondary,
-  Color bgColor,
   Test test,
 ) async {
-  final date = lesson.start;
+  final date = test.date;
   final formattedDate =
       "${date.format(data.l10n, FormatMode.yearly).firstUpper()}, ${DateFormat.EEEE(data.l10n.localeName).format(date).firstUpper()}";
-
-  final statsForNerdsEnabled = data.settings
-      .group("settings")
-      .subGroup("developer")
-      .boolean("stats_for_nerds");
 
   showFirkaBottomSheet(context, [
     FilledCircle(
@@ -264,7 +250,7 @@ Future<void> showTestBottomSheet(
       spacing: 4,
       children: [
         Text(
-          "${test.theme} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
+          "${test.theme}",
           style: appStyle.fonts.H_18px.apply(
             color: appStyle.colors.textPrimary,
           ),
@@ -297,7 +283,59 @@ Future<void> showTestBottomSheet(
       ),
     ),
     SizedBox(height: 10),
-    LessonWidget(data, lessonNo, lesson, null),
+    FirkaCard.single(
+      height: 64,
+      margin: EdgeInsets.all(0),
+      padding: EdgeInsets.only(left: 14, right: 16),
+      color: appStyle.colors.card,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 18,
+            height: 18,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SvgPicture.asset(
+                  "assets/icons/subtract.svg",
+                  color: appStyle.colors.a15p,
+                  width: 18,
+                  height: 18,
+                ),
+                Text(
+                  test.lessonNumber.toString(),
+                  style: appStyle.fonts.B_14SB.apply(
+                    color: appStyle.colors.secondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          FilledCircle(
+            diameter: 36,
+            color: appStyle.colors.a15p,
+            child: ClassIconWidget(
+              uid: test.uid,
+              className: test.subjectName,
+              category: test.subject.name,
+              color: appStyle.colors.accent,
+              size: 24,
+            ),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              test.subject.name,
+              style: appStyle.fonts.B_16SB.apply(
+                color: appStyle.colors.textPrimary,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    ),
   ]);
 }
 

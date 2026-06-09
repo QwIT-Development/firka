@@ -9,17 +9,17 @@ class Grade extends UidObj {
   final String? topic;
   final NameUidDesc type;
   final NameUidDesc? mode;
-  NameUidDesc valueType;
+  final NameUidDesc valueType;
   final String teacher;
   final String? kind;
-  int? numericValue;
+  final int? numericValue;
   final String strValue;
   final int? weightPercentage;
   final String? shortStrValue;
   final UidObj? classGroup;
   final int sortIndex;
 
-  Grade({
+  const Grade({
     required super.uid,
     required this.recordDate,
     required this.creationDate,

@@ -5,7 +5,7 @@ class Institution extends UidObj {
   final String shortName;
   final List<SystemModule> systemModuleList;
 
-  Institution({
+  const Institution({
     required this.customizationSettings,
     required this.shortName,
     required this.systemModuleList,
@@ -36,7 +36,7 @@ class CustomizationSettings {
   final bool isLessonsThemeVisible;
   final String nextServerDeployAsString;
 
-  CustomizationSettings({
+  const CustomizationSettings({
     required this.delayForNotifications,
     required this.isClassAverageVisible,
     required this.isLessonsThemeVisible,
@@ -69,7 +69,11 @@ class SystemModule {
   final String type;
   final String? url;
 
-  SystemModule({required this.isActive, required this.type, required this.url});
+  const SystemModule({
+    required this.isActive,
+    required this.type,
+    required this.url,
+  });
 
   factory SystemModule.fromJson(Map<String, dynamic> json) {
     return SystemModule(

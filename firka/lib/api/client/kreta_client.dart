@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
+import 'package:firka/core/extensions.dart';
 import 'package:firka/data/models/generic_cache_model.dart';
 import 'package:firka/data/models/timetable_cache_model.dart';
-import 'package:intl/intl.dart';
 import 'package:isar_community/isar.dart';
-import 'package:kreta_api/kreta_api.dart' hide KretaEndpoints;
+import 'package:kreta_api/kreta_api.dart';
 
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/bloc/reauth_cubit.dart';
@@ -46,6 +46,13 @@ class KretaClient {
 
   Future<void> _setReauthFlag() async {
     if (needsReauth) return;
+    if (Platform.isIOS) {
+      try {
+        _watchChannel.invokeMethod('notifyReauthRequired');
+      } catch (e) {
+        debugPrint('[KretaClient] Watch reauth notification skipped: $e');
+      }
+    }
     _reauthCubit.setNeedsReauth(true);
     debugPrint('[KretaClient] Reauth flag set');
   }
@@ -405,94 +412,136 @@ class KretaClient {
     return (resp.data, resp.statusCode!);
   }
 
-  Future<(dynamic, int, Object?, bool)> _cachingGet(
+  Future<ApiResponse<List<Lesson>>> _timetableCachingGet(
+    DateTime weekday,
+    bool forceCache,
+  ) async {
+    var from = weekday.getMonday();
+    return await _cachingGet(
+      genCacheKey(from, model.studentIdNorm!),
+      KretaEndpoints.getTimeTable(
+        model.iss!,
+        from,
+        from.add(Duration(days: 6)),
+      ),
+      forceCache,
+      0,
+      isar.timetableCacheModels,
+      (key, resp) => TimetableCacheModel()
+        ..cacheKey = key
+        ..values = (resp as List<dynamic>)
+            .map((item) => jsonEncode(item))
+            .toList(),
+      (cache) => cache.values
+          .map((data) => Lesson.fromJson(jsonDecode(data)))
+          .toList(),
+    );
+  }
+
+  Future<ApiResponse<List<R>>> _genericListedCachingGet<R>(
     CacheId id,
     String url,
     bool forceCache,
-    int counter,
+    R Function(dynamic) mapResultEntries,
   ) async {
-    // it would be *ideal* to use xor and left shift here, however
-    // binary operations seem to round the number down to
-    // 32 bits for some reason???
-    var cacheKey = model.studentIdNorm! + ((id.index + 1) * pow(10, 11));
-    var cache = await isar.genericCacheModels.get(cacheKey as int);
+    return await _genericCachingGet(
+      id,
+      url,
+      forceCache,
+      (data) => (data as List<dynamic>).map(mapResultEntries).toList(),
+    );
+  }
 
-    dynamic resp;
-    int statusCode;
+  Future<ApiResponse<R>> _genericCachingGet<R>(
+    CacheId id,
+    String url,
+    bool forceCache,
+    R Function(dynamic) makeResult,
+  ) async {
+    return await _cachingGet(
+      // it would be *ideal* to use xor and left shift here, however
+      // binary operations seem to round the number down to
+      // 32 bits for some reason???
+      (model.studentIdNorm! + ((id.index + 1) * pow(10, 11))) as Id,
+      url,
+      forceCache,
+      0,
+      isar.genericCacheModels,
+      (key, resp) => GenericCacheModel()
+        ..cacheKey = key
+        ..cacheData = jsonEncode(resp),
+      (cache) {
+        return makeResult(jsonDecode(cache.cacheData!));
+      },
+    );
+  }
+
+  Future<ApiResponse<R>> _cachingGet<T, R>(
+    Id cacheKey,
+    String url,
+    bool forceCache,
+    int counter,
+    IsarCollection<T> collection,
+    T Function(Id, dynamic) makeCache,
+    R Function(T) makeResult,
+  ) async {
+    var cache = await collection.get(cacheKey);
+
+    if (forceCache && cache != null) {
+      logger.finest(
+        "_cachingGet(forceCache: $forceCache}): decoding cached response for: $url",
+      );
+      return ApiResponse.cached(makeResult(cache));
+    }
+
     try {
-      if (forceCache && cache != null) {
-        logger.finest(
-          "_cachingGet(forceCache: $forceCache}): decoding cached response for: $url",
-        );
-        return (jsonDecode(cache.cacheData!), 200, null, true);
+      var (resp, statusCode) = await _authJson("GET", url);
+
+      if (statusCode >= 400 && cache != null) {
+        logger.finest("request failed: $statusCode, using cache for: $url");
+        return ApiResponse(makeResult(cache), statusCode, null, true);
       }
 
-      try {
-        (resp, statusCode) = await _authJson("GET", url);
+      var newCache = makeCache(cacheKey, resp);
 
-        if (statusCode >= 400) {
-          if (cache != null) {
-            logger.finest(
-              "_cachingGet(forceCache: $forceCache}): decoding uncached response for: $url",
-            );
-            return (jsonDecode(cache.cacheData!), statusCode, null, true);
-          }
-        }
-      } catch (ex) {
-        if (ex is Error) {
-          logger.finest(
-            "Request failed for $url",
-            ex.toString(),
-            ex.stackTrace,
-          );
-        } else {
-          logger.finest("Request failed for $url", ex.toString());
-        }
+      await isar.writeTxn(() async {
+        collection.put(newCache);
+      });
+
+      return ApiResponse(makeResult(newCache), statusCode, null, false);
+    } catch (ex) {
+      if (_isTokenExpired(ex)) {
+        logger.warning("Token expired, setting needsReauth flag");
+        await _setReauthFlag();
+
+        return ApiResponse(null, 0, ex, false);
+      }
+
+      if (ex is DioException && counter < backoffCount) {
         logger.finest("Retrying: $counter / $backoffCount");
-        if (_isTokenExpired(ex) ||
-            ex is! DioException ||
-            counter >= backoffCount) {
-          rethrow;
-        }
-
         final backoffDelay = backoffMin + (counter * backoffStep);
         logger.finest("Waiting: $backoffDelay");
         await Future.delayed(Duration(milliseconds: backoffDelay));
 
-        return _cachingGet(id, url, forceCache, counter + 1);
-      }
-    } catch (ex) {
-      if (_isTokenExpired(ex)) {
-        await _setReauthFlag();
-        logger.warning("Token expired, setting needsReauth flag");
-
-        if (Platform.isIOS && needsReauth) {
-          try {
-            _watchChannel.invokeMethod('notifyReauthRequired');
-          } catch (e) {
-            debugPrint('[KretaClient] Watch reauth notification skipped: $e');
-          }
-        }
+        return _cachingGet(
+          cacheKey,
+          url,
+          forceCache,
+          counter + 1,
+          collection,
+          makeCache,
+          makeResult,
+        );
       }
 
       if (cache != null) {
         logger.finest("request failed, using cache for: $url");
-        return (jsonDecode(cache.cacheData!), 0, ex, true);
-      } else {
-        logger.finest("request failed, no cache for: $url");
-        return (null, 0, ex, false);
+        return ApiResponse(makeResult(cache), 0, ex, true);
       }
+
+      logger.finest("request failed, no cache for: $url");
+      return ApiResponse(null, 0, ex, false);
     }
-
-    await isar.writeTxn(() async {
-      var cache = GenericCacheModel();
-      cache.cacheKey = cacheKey;
-      cache.cacheData = jsonEncode(resp);
-
-      isar.genericCacheModels.put(cache);
-    });
-
-    return (resp, statusCode, null, false);
   }
 
   ApiResponse<List<ClassGroupSubjectAverage>>? classGroupAveragesCache;
@@ -501,9 +550,8 @@ class KretaClient {
     ClassGroup classGroup, {
     bool forceCache = true,
   }) async {
-    String? err;
     if (classGroup.studyTask == null) {
-      err = "classGroup.studyTask is null";
+      String? err = "classGroup.studyTask is null";
       logger.warning(err);
       return ApiResponse([], 0, err, false);
     }
@@ -513,31 +561,17 @@ class KretaClient {
       return classGroupAveragesCache!;
     }
     var studyTaskUid = classGroup.studyTask!.uid.toString().split(",").first;
-    var (resp, status, ex, cached) = await _cachingGet(
+    var resp = await _genericListedCachingGet(
       CacheId.getClassGroupAvg,
       KretaEndpoints.getClassGroupAvg(model.iss!, studyTaskUid),
       forceCache,
-      0,
+      (item) => ClassGroupSubjectAverage.fromJson(item),
     );
 
-    var items = List<ClassGroupSubjectAverage>.empty(growable: true);
-    try {
-      List<dynamic> rawItems = resp;
-      for (var item in rawItems) {
-        items.add(ClassGroupSubjectAverage.fromJson(item));
-      }
-    } catch (ex) {
-      err = ex.toString();
+    if (resp.err == null) {
+      classGroupAveragesCache = ApiResponse.cached(resp.response);
     }
-
-    if (ex != null) {
-      err = ex.toString();
-    }
-
-    if (ex == null) {
-      classGroupAveragesCache = ApiResponse(items, 200, null, true);
-    }
-    return ApiResponse(items, status, err, cached);
+    return resp;
   }
 
   ApiResponse<Student>? studentCache;
@@ -548,28 +582,18 @@ class KretaClient {
     } else if (studentCache != null) {
       return studentCache!;
     }
-    var (resp, status, ex, cached) = await _cachingGet(
+
+    return await _genericCachingGet(
       CacheId.getStudent,
       KretaEndpoints.getStudentUrl(model.iss!),
       forceCache,
-      0,
-    );
-
-    Student? student;
-    String? err;
-    try {
-      student = Student.fromJson(resp);
-    } catch (ex) {
-      err = ex.toString();
-    }
-
-    if (ex != null) {
-      err = ex.toString();
-    }
-
-    if (ex == null) studentCache = ApiResponse(student, 200, null, true);
-
-    return ApiResponse(student, status, err, cached);
+      (cache) => Student.fromJson(cache),
+    ).then((resp) {
+      if (resp.err == null) {
+        studentCache = ApiResponse.cached(resp.response);
+      }
+      return resp;
+    });
   }
 
   ApiResponse<List<ClassGroup>>? classGroupCache;
@@ -582,31 +606,18 @@ class KretaClient {
     } else {
       if (classGroupCache != null) return classGroupCache!;
     }
-    var (resp, status, ex, cached) = await _cachingGet(
+
+    return await _genericListedCachingGet(
       CacheId.getClassGroup,
       KretaEndpoints.getClassGroups(model.iss!),
       forceCache,
-      0,
-    );
-
-    final classGroups = List<ClassGroup>.empty(growable: true);
-    String? err;
-    try {
-      List<dynamic> rawItems = resp;
-      for (var item in rawItems) {
-        classGroups.add(ClassGroup.fromJson(item));
+      (item) => ClassGroup.fromJson(item),
+    ).then((resp) {
+      if (resp.err == null) {
+        classGroupCache = ApiResponse.cached(resp.response);
       }
-    } catch (ex) {
-      err = ex.toString();
-    }
-
-    if (ex != null) {
-      err = ex.toString();
-    }
-
-    if (ex == null) classGroupCache = ApiResponse(classGroups, 200, null, true);
-
-    return ApiResponse(classGroups, status, err, cached);
+      return resp;
+    });
   }
 
   ApiResponse<List<NoticeBoardItem>>? noticeBoardCache;
@@ -619,64 +630,40 @@ class KretaClient {
     } else if (noticeBoardCache != null) {
       return noticeBoardCache!;
     }
-    var (resp, status, ex, cached) = await _cachingGet(
+
+    return await _genericListedCachingGet(
       CacheId.getNoticeBoard,
       KretaEndpoints.getNoticeBoard(model.iss!),
       forceCache,
-      0,
-    );
-
-    var items = List<NoticeBoardItem>.empty(growable: true);
-    String? err;
-    try {
-      List<dynamic> rawItems = resp;
-      for (var item in rawItems) {
-        items.add(NoticeBoardItem.fromJson(item));
+      (item) => NoticeBoardItem.fromJson(item),
+    ).then((resp) {
+      if (resp.err == null) {
+        noticeBoardCache = ApiResponse.cached(resp.response);
       }
-    } catch (ex) {
-      err = ex.toString();
-    }
-
-    if (ex != null) {
-      err = ex.toString();
-    }
-
-    if (err == null) noticeBoardCache = ApiResponse(items, 200, null, true);
-
-    return ApiResponse(items, status, err, cached);
+      return resp;
+    });
   }
 
   ApiResponse<List<InfoBoardItem>>? infoBoardCache;
 
   Future<ApiResponse<List<InfoBoardItem>>> getInfoBoard({
+    DateTime? from,
+    DateTime? to,
     bool forceCache = true,
   }) async {
     if (forceCache && infoBoardCache != null) return infoBoardCache!;
-    var (resp, status, ex, cached) = await _cachingGet(
+
+    return await _genericListedCachingGet(
       CacheId.getInfoBoard,
-      KretaEndpoints.getInfoBoard(model.iss!),
+      KretaEndpoints.getInfoBoard(model.iss!, from, to),
       forceCache,
-      0,
-    );
-
-    var items = List<InfoBoardItem>.empty(growable: true);
-    String? err;
-    try {
-      List<dynamic> rawItems = resp;
-      for (var item in rawItems) {
-        items.add(InfoBoardItem.fromJson(item));
+      (item) => InfoBoardItem.fromJson(item),
+    ).then((resp) {
+      if (resp.err == null) {
+        infoBoardCache = ApiResponse.cached(resp.response);
       }
-    } catch (ex) {
-      err = ex.toString();
-    }
-
-    if (ex != null) {
-      err = ex.toString();
-    }
-
-    if (err == null) infoBoardCache = ApiResponse(items, 200, null, true);
-
-    return ApiResponse(items, status, err, cached);
+      return resp;
+    });
   }
 
   ApiResponse<List<Grade>>? gradeCache;
@@ -687,33 +674,19 @@ class KretaClient {
     } else if (gradeCache != null) {
       return gradeCache!;
     }
-    var (resp, status, ex, cached) = await _cachingGet(
+
+    return await _genericListedCachingGet(
       CacheId.getGrades,
       KretaEndpoints.getGrades(model.iss!),
       forceCache,
-      0,
-    );
-
-    var items = List<Grade>.empty(growable: true);
-    String? err;
-    try {
-      List<dynamic> rawItems = resp;
-      for (var item in rawItems) {
-        items.add(Grade.fromJson(item));
+      (item) => Grade.fromJson(item),
+    ).then((resp) {
+      if (resp.err == null) {
+        resp.response!.sort((a, b) => b.recordDate.compareTo(a.recordDate));
+        gradeCache = ApiResponse.cached(resp.response);
       }
-    } catch (ex) {
-      err = ex.toString();
-    }
-
-    if (ex != null) {
-      err = ex.toString();
-    }
-
-    items.sort((a, b) => b.recordDate.compareTo(a.recordDate));
-
-    if (ex == null) gradeCache = ApiResponse(items, 200, null, true);
-
-    return ApiResponse(items, status, err, cached);
+      return resp;
+    });
   }
 
   ApiResponse<List<SubjectAverage>>? subjectAverageCache;
@@ -739,224 +712,36 @@ class KretaClient {
       return subjectAverageCache!;
     }
     var studyTaskUid = classGroup.studyTask!.uid.toString().split(",").first;
-    var (resp, status, ex, cached) = await _cachingGet(
+
+    return await _genericListedCachingGet(
       CacheId.getSubjectAvg,
       KretaEndpoints.getSubjectAvg(model.iss!, studyTaskUid),
       forceCache,
-      0,
-    );
-
-    var items = List<SubjectAverage>.empty(growable: true);
-    try {
-      List<dynamic> rawItems = resp;
-      for (var item in rawItems) {
-        items.add(SubjectAverage.fromJson(item));
+      (item) => SubjectAverage.fromJson(item),
+    ).then((resp) {
+      if (resp.err == null) {
+        subjectAverageCache = ApiResponse.cached(resp.response);
       }
-    } catch (ex) {
-      err = ex.toString();
-    }
-
-    if (ex != null) {
-      err = ex.toString();
-    }
-
-    if (ex == null) subjectAverageCache = ApiResponse(items, 200, null, true);
-    return ApiResponse(items, status, err, cached);
-  }
-
-  Future<(List<dynamic>, int, Object?, bool)>
-  _timedCachingGet<T extends DatedCacheEntry>(
-    IsarCollection<T> cacheModel,
-    String endpoint,
-    DateTime from,
-    DateTime? to,
-    bool forceCache,
-    int counter,
-    Future<void> Function(dynamic, int) storeCache,
-  ) async {
-    var cacheKey = genCacheKey(from, model.studentIdNorm!);
-    var cache = await cacheModel.get(cacheKey);
-    var formatter = DateFormat('yyyy-MM-dd');
-    var fromStr = formatter.format(from);
-    var toStr = to != null ? formatter.format(to) : null;
-    var now = timeNow();
-
-    if (cache != null && (cache as dynamic).values == null) {
-      (cache as dynamic).values = List<String>.empty(growable: true);
-    }
-
-    List<dynamic> resp;
-    int statusCode;
-    try {
-      if (forceCache && cache != null) {
-        var items = List<dynamic>.empty(growable: true);
-        for (var item in (cache as dynamic).values) {
-          items.add(jsonDecode(item));
-        }
-
-        return (items, 200, null, true);
-      }
-      try {
-        if (toStr == null) {
-          (resp, statusCode) = await _authJson(
-            "GET",
-            "$endpoint?"
-                "datumTol=$fromStr",
-          );
-        } else {
-          (resp, statusCode) = await _authJson(
-            "GET",
-            "$endpoint?"
-                "datumTol=$fromStr&datumIg=$toStr",
-          );
-        }
-
-        if (statusCode >= 400) {
-          if (cache != null) {
-            var items = List<dynamic>.empty(growable: true);
-            for (var item in (cache as dynamic).values) {
-              items.add(jsonDecode(item));
-            }
-            return (items, statusCode, null, true);
-          }
-        }
-      } catch (ex) {
-        if (_isTokenExpired(ex) ||
-            ex is! DioException ||
-            counter >= backoffCount) {
-          rethrow;
-        }
-
-        await Future.delayed(
-          Duration(milliseconds: backoffMin + (counter * backoffStep)),
-        );
-
-        return _timedCachingGet(
-          cacheModel,
-          endpoint,
-          from,
-          to,
-          forceCache,
-          counter + 1,
-          storeCache,
-        );
-      }
-    } catch (ex) {
-      if (_isTokenExpired(ex)) {
-        await _setReauthFlag();
-        logger.warning(
-          "Token expired in timed request, setting needsReauth flag",
-        );
-      }
-
-      if (cache != null) {
-        var items = List<dynamic>.empty(growable: true);
-        for (var item in (cache as dynamic).values) {
-          items.add(jsonDecode(item));
-        }
-        return (items, 0, ex, true);
-      } else {
-        return (List<dynamic>.empty(growable: true), 0, ex, false);
-      }
-    }
-
-    // only cache stuff 4 months ago and a month in advance
-    if (from.millisecondsSinceEpoch >=
-        now.subtract(Duration(days: 120)).millisecondsSinceEpoch) {
-      if (to == null ||
-          to.millisecondsSinceEpoch <=
-              now.add(Duration(days: 31)).millisecondsSinceEpoch) {
-        await isar.writeTxn(() async {
-          await storeCache(resp, cacheKey);
-        });
-      }
-    }
-
-    return (resp, statusCode, null, false);
-  }
-
-  /// Expects from and to to be 7 days apart
-  Future<ApiResponse<List<Lesson>>> _getTimeTable(
-    DateTime from,
-    DateTime to,
-    bool forceCache,
-  ) async {
-    var (
-      resp,
-      status,
-      ex,
-      cached,
-    ) = await _timedCachingGet<TimetableCacheModel>(
-      isar.timetableCacheModels,
-      KretaEndpoints.getTimeTable(model.iss!),
-      from,
-      to,
-      forceCache,
-      0,
-      (dynamic resp, int cacheKey) async {
-        TimetableCacheModel cache = TimetableCacheModel();
-        var rawClasses = List<String>.empty(growable: true);
-
-        for (var obj in resp) {
-          rawClasses.add(jsonEncode(obj));
-        }
-
-        cache.cacheKey = cacheKey;
-        cache.values = rawClasses;
-
-        await isar.timetableCacheModels.put(cache as dynamic);
-      },
-    );
-
-    var items = List<Lesson>.empty(growable: true);
-    String? err;
-    try {
-      List<dynamic> rawItems = resp;
-      for (var item in rawItems) {
-        items.add(Lesson.fromJson(item));
-      }
-    } catch (ex) {
-      err = ex.toString();
-    }
-
-    if (ex != null) {
-      err = ex.toString();
-    }
-
-    return ApiResponse(items, status, err, cached);
+      return resp;
+    });
   }
 
   Future<ApiResponse<List<Homework>>> getHomework({
+    DateTime? from,
+    DateTime? to,
     bool forceCache = true,
   }) async {
-    final now = timeNow().subtract(Duration(days: 365));
-    var formatter = DateFormat('yyyy-MM-dd');
-    var start = formatter.format(now);
-    var (resp, status, ex, cached) = await _cachingGet(
+    if (from == null && to == null) {
+      DateTime now = timeNow();
+      DateTime start = now.copyWith(month: 9, day: 1);
+      from = now.isBefore(start) ? start.subtract(Duration(days: 365)) : start;
+    }
+    return await _genericListedCachingGet(
       CacheId.getHomework,
-      "${KretaEndpoints.getHomework(model.iss!)}?datumTol=$start",
+      KretaEndpoints.getHomework(model.iss!, from, to),
       forceCache,
-      0,
+      (item) => Homework.fromJson(item),
     );
-
-    var items = List<Homework>.empty(growable: true);
-    String? err;
-    try {
-      List<dynamic> rawItems = resp;
-      for (var item in rawItems) {
-        items.add(Homework.fromJson(item));
-      }
-    } catch (ex) {
-      err = ex.toString();
-    }
-
-    if (ex != null) {
-      err = ex.toString();
-    }
-
-    // items.sort((a, b) => a.date.compareTo(b.date));
-
-    return ApiResponse(items, status, err, cached);
   }
 
   /// Automatically aligns requests to start at Monday and end at Sunday
@@ -974,30 +759,25 @@ class KretaClient {
       i < to.millisecondsSinceEpoch;
       i += 604800000
     ) {
-      var from = DateTime.fromMillisecondsSinceEpoch(i);
-      var start = from.subtract(Duration(days: from.weekday - 1));
-      var end = start.add(Duration(days: 6));
+      var weekday = DateTime.fromMillisecondsSinceEpoch(i);
 
-      var resp = await _getTimeTable(start, end, forceCache);
+      var resp = await _timetableCachingGet(weekday, forceCache);
       if (resp.err != null) {
-        err = resp.err;
-        if (!resp.cached) {
-          return resp;
-        } else {
-          lessons.addAll(resp.response!);
-        }
-      } else {
-        lessons.addAll(resp.response!);
+        return resp;
       }
+
+      lessons.addAll(resp.response!);
+
       if (!resp.cached) cached = false;
     }
 
-    lessons.sort((a, b) => a.start.compareTo(b.start));
-    lessons = lessons
-        .where(
-          (lesson) => lesson.start.isAfter(from) && lesson.end.isBefore(to),
-        )
-        .toList();
+    lessons =
+        lessons
+            .where(
+              (lesson) => lesson.start.isAfter(from) && lesson.end.isBefore(to),
+            )
+            .toList()
+          ..sort((a, b) => a.start.compareTo(b.start));
 
     return ApiResponse(lessons, 200, err, cached);
   }
@@ -1005,66 +785,25 @@ class KretaClient {
   Future<ApiResponse<List<AllLessons>>> getLessons({
     bool forceCache = true,
   }) async {
-    var (resp, status, ex, cached) = await _cachingGet(
+    return await _genericListedCachingGet(
       CacheId.getLessons,
       KretaEndpoints.getLessons(model.iss!),
       forceCache,
-      0,
+      (item) => AllLessons.fromJson(item),
     );
-
-    var items = <AllLessons>[];
-    String? err;
-
-    try {
-      if (resp is List) {
-        for (var item in resp) {
-          if (item != null && item is Map<String, dynamic>) {
-            items.add(AllLessons.fromJson(item));
-          } else {
-            logger.warning("$item");
-          }
-        }
-      } else {
-        err = "${resp.runtimeType}";
-      }
-    } catch (e, stack) {
-      err = e.toString();
-      logger.warning(e, stack);
-    }
-
-    if (ex != null) {
-      err = ex.toString();
-    }
-
-    return ApiResponse(items, status, err, cached);
   }
 
-  Future<ApiResponse<List<Test>>> getTests({bool forceCache = true}) async {
-    var (resp, status, ex, cached) = await _cachingGet(
+  Future<ApiResponse<List<Test>>> getTests({
+    DateTime? from,
+    DateTime? to,
+    bool forceCache = true,
+  }) async {
+    return await _genericListedCachingGet(
       CacheId.getTests,
-      KretaEndpoints.getTests(model.iss!),
+      KretaEndpoints.getTests(model.iss!, from, to),
       forceCache,
-      0,
+      (item) => Test.fromJson(item),
     );
-
-    var items = List<Test>.empty(growable: true);
-    String? err;
-    try {
-      List<dynamic> rawItems = resp;
-      for (var item in rawItems) {
-        items.add(Test.fromJson(item));
-      }
-    } catch (ex) {
-      err = ex.toString();
-    }
-
-    if (ex != null) {
-      err = ex.toString();
-    }
-
-    // items.sort((a, b) => a.date.compareTo(b.date));
-
-    return ApiResponse(items, status, err, cached);
   }
 
   ApiResponse<List<Omission>>? omissionsCache;
@@ -1077,33 +816,18 @@ class KretaClient {
     } else {
       if (omissionsCache != null) return omissionsCache!;
     }
-    var (resp, status, ex, cached) = await _cachingGet(
+    return await _genericListedCachingGet(
       CacheId.getOmissions,
       KretaEndpoints.getOmissions(model.iss!),
       forceCache,
-      0,
-    );
-
-    var items = List<Omission>.empty(growable: true);
-    String? err;
-    try {
-      List<dynamic> rawItems = resp;
-      for (var item in rawItems) {
-        items.add(Omission.fromJson(item));
+      (item) => Omission.fromJson(item),
+    ).then((resp) {
+      if (resp.err == null) {
+        resp.response!.sort((a, b) => a.date.compareTo(b.date));
+        omissionsCache = ApiResponse.cached(resp.response);
       }
-    } catch (ex) {
-      err = ex.toString();
-    }
-
-    if (ex != null) {
-      err = ex.toString();
-    }
-
-    items.sort((a, b) => a.date.compareTo(b.date));
-
-    if (ex == null) omissionsCache = ApiResponse(items, 200, null, true);
-
-    return ApiResponse(items, status, err, cached);
+      return resp;
+    });
   }
 
   void evictMemCache() {
@@ -1116,5 +840,4 @@ class KretaClient {
 }
 
 bool _isTokenExpired(Object ex) =>
-    ex.toString() == TokenExpiredException().toString() ||
-    ex.toString() == InvalidGrantException().toString();
+    ex is TokenExpiredException || ex is InvalidGrantException;

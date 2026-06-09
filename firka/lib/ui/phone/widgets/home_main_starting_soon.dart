@@ -1,3 +1,4 @@
+import 'package:firka/core/extensions.dart';
 import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/theme/style.dart';
@@ -17,7 +18,7 @@ class StartingSoonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var diff = lessons.first.start.difference(now);
+    var diff = lessons.first.start.difference(now.min(lessons.first.start));
     var hour = diff.inHours % 60;
     var min = diff.inMinutes % 60;
     var sec = diff.inSeconds % 60;

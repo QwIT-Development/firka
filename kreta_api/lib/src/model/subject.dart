@@ -5,7 +5,7 @@ class Subject extends NameUid {
   final int sortIndex;
   final String? teacherName;
 
-  Subject({
+  const Subject({
     required super.uid,
     required super.name,
     required this.category,

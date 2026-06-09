@@ -114,6 +114,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
       final allLessons = lessons!.response!;
 
       final subjectAverage = allGrades.getSubjectAverage();
+      final roundedSubjectAverage = allGrades.getRoundedSubjectAverage();
       final classAverages = classAvgs!.response!
           .map((c) => c.classGroupAverage)
           .nonNulls;
@@ -164,8 +165,9 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                 ),
               ],
             ),
+            SizedBox(height: 20),
             GradeChartWithInteraction(grades: allGrades),
-            SizedBox(height: 2),
+            SizedBox(height: 10),
             GradeSummaryBar(grades: allGrades, l10n: widget.data.l10n),
             SizedBox(height: 20),
             Expanded(
@@ -225,14 +227,47 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                   FirkaCard(
                     left: [
                       Text(
-                        widget.data.l10n.class_avg,
+                        widget.data.l10n.subject_avg_rounded,
                         style: appStyle.fonts.B_16SB.apply(
                           color: appStyle.colors.textPrimary,
                         ),
                       ),
                     ],
                     right: [
-                      if (classAverage != null)
+                      if (roundedSubjectAverage != null)
+                        Container(
+                          width: 48,
+                          height: 26,
+                          decoration: ShapeDecoration(
+                            color: getGradeColor(
+                              roundedSubjectAverage,
+                            ).withAlpha(38),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              roundedSubjectAverage.toStringAsFixed(2),
+                              style: appStyle.fonts.B_16R.apply(
+                                color: getGradeColor(roundedSubjectAverage),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (classAverage != null)
+                    FirkaCard(
+                      left: [
+                        Text(
+                          widget.data.l10n.class_avg,
+                          style: appStyle.fonts.B_16SB.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
+                      ],
+                      right: [
                         Container(
                           width: 48,
                           height: 26,
@@ -254,8 +289,8 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                             ),
                           ),
                         ),
-                    ],
-                  ),
+                      ],
+                    ),
                   FirkaCard(
                     left: [
                       Text(
