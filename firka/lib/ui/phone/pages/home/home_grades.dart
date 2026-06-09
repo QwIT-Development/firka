@@ -257,17 +257,17 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                         ),
                     ],
                   ),
-                  FirkaCard(
-                    left: [
-                      Text(
-                        widget.data.l10n.class_avg,
-                        style: appStyle.fonts.B_16SB.apply(
-                          color: appStyle.colors.textPrimary,
+                  if (classAverage != null)
+                    FirkaCard(
+                      left: [
+                        Text(
+                          widget.data.l10n.class_avg,
+                          style: appStyle.fonts.B_16SB.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
                         ),
-                      ),
-                    ],
-                    right: [
-                      if (classAverage != null)
+                      ],
+                      right: [
                         Container(
                           width: 48,
                           height: 26,
@@ -289,8 +289,8 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                             ),
                           ),
                         ),
-                    ],
-                  ),
+                      ],
+                    ),
                   FirkaCard(
                     left: [
                       Text(
