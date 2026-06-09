@@ -64,6 +64,27 @@ extension GradeListExtension on Iterable<Grade> {
     ).getAverage();
   }
 
+  double? getRoundedSubjectAverage({
+    double t1 = 1,
+    double t2 = 0.5,
+    double t3 = 0.5,
+    double t4 = 0.5,
+  }) {
+    final averages = map((g) => g.subject).toSet().map((subject) {
+      final average = getAverageBySubject(subject);
+      if (average == null) {
+        return null;
+      }
+      return roundGrade(average, t1: t1, t2: t2, t3: t3, t4: t4);
+    }).nonNulls;
+
+    if (averages.isEmpty) {
+      return null;
+    }
+
+    return averages.reduce((sum, avg) => sum + avg) / averages.length;
+  }
+
   double? getSubjectAverage() {
     final averages = map(
       (g) => g.subject,

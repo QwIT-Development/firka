@@ -114,6 +114,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
       final allLessons = lessons!.response!;
 
       final subjectAverage = allGrades.getSubjectAverage();
+      final roundedSubjectAverage = allGrades.getRoundedSubjectAverage();
       final classAverages = classAvgs!.response!
           .map((c) => c.classGroupAverage)
           .nonNulls;
@@ -217,6 +218,39 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                               subjectAverage.toStringAsFixed(2),
                               style: appStyle.fonts.B_16R.apply(
                                 color: getGradeColor(subjectAverage),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  FirkaCard(
+                    left: [
+                      Text(
+                        widget.data.l10n.subject_avg_rounded,
+                        style: appStyle.fonts.B_16SB.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
+                      ),
+                    ],
+                    right: [
+                      if (roundedSubjectAverage != null)
+                        Container(
+                          width: 48,
+                          height: 26,
+                          decoration: ShapeDecoration(
+                            color: getGradeColor(
+                              roundedSubjectAverage,
+                            ).withAlpha(38),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              roundedSubjectAverage.toStringAsFixed(2),
+                              style: appStyle.fonts.B_16R.apply(
+                                color: getGradeColor(roundedSubjectAverage),
                               ),
                             ),
                           ),
