@@ -58,20 +58,31 @@ extension GradeListExtension on Iterable<Grade> {
     return (filtered.length, counts);
   }
 
-  double? getAverageBySubject(Subject subject) {
+  double? _getAverageBySubject(String uid, {bool halfYearFallback = true}) {
     return where(
-      (g) => g.subject.uid == subject.uid && g.shouldIncludeInAverage(),
-    ).getAverage();
+      (g) => g.subject.uid == uid,
+    ).getAverage(halfYearFallback: halfYearFallback);
+  }
+
+  double? getAverageBySubject(Subject subject, {bool halfYearFallback = true}) {
+    return _getAverageBySubject(
+      subject.uid,
+      halfYearFallback: halfYearFallback,
+    );
   }
 
   double? getRoundedSubjectAverage({
+    bool halfYearFallback = true,
     double t1 = 1,
     double t2 = 0.5,
     double t3 = 0.5,
     double t4 = 0.5,
   }) {
     final averages = map((g) => g.subject).toSet().map((subject) {
-      final average = getAverageBySubject(subject);
+      final average = getAverageBySubject(
+        subject,
+        halfYearFallback: halfYearFallback,
+      );
       if (average == null) {
         return null;
       }
@@ -85,10 +96,15 @@ extension GradeListExtension on Iterable<Grade> {
     return averages.reduce((sum, avg) => sum + avg) / averages.length;
   }
 
-  double? getSubjectAverage() {
-    final averages = map(
-      (g) => g.subject,
-    ).toSet().map((subject) => getAverageBySubject(subject)).nonNulls;
+  double? getSubjectAverage({bool halfYearFallback = true}) {
+    final averages = where((g) => g.hasClassicValue())
+        .map((g) => g.subject.uid)
+        .toSet()
+        .map(
+          (uid) =>
+              _getAverageBySubject(uid, halfYearFallback: halfYearFallback),
+        )
+        .nonNulls;
 
     if (averages.isEmpty) {
       return null;
@@ -97,25 +113,31 @@ extension GradeListExtension on Iterable<Grade> {
     return averages.reduce((sum, avg) => sum + avg) / averages.length;
   }
 
-  double? getAverage() {
+  double? getAverage({bool halfYearFallback = true}) {
     if (isEmpty) {
       return null;
     }
 
     double weightTotal = 0;
     double sum = 0;
+    int? fallback;
     for (Grade grade in this) {
+      if (grade.hasClassicValue() && halfYearFallback) {
+        fallback = grade.numericValue!;
+      }
+
       if (!grade.shouldIncludeInAverage()) {
         continue;
       }
 
-      double weight = (grade.weightPercentage ?? 100) / 100.0;
+      double weight = grade.weightPercentage! / 100.0;
       weightTotal += weight;
       sum += grade.numericValue! * weight;
     }
 
     if (sum == 0) {
-      return null;
+      // use classification exam results or half-year evaluations
+      return fallback?.toDouble();
     }
 
     return sum / weightTotal;
@@ -124,25 +146,15 @@ extension GradeListExtension on Iterable<Grade> {
 
 extension GradeExtension on Grade {
   bool isInPercentage() {
-    final name = valueType.name.toLowerCase();
-    return name.contains('szazalek') || name.contains('percent');
+    return valueType.name == 'Szazalekos';
   }
 
+  bool hasClassicValue() {
+    return valueType.name == "Osztalyzat";
+  }
+
+  // https://tudasbazis.ekreta.hu/pages/viewpage.action?pageId=2426172
   bool shouldIncludeInAverage() {
-    if (isInPercentage()) {
-      return false;
-    }
-
-    final typeName = type.name.toLowerCase();
-    if (typeName == 'felevi_jegy_ertekeles' ||
-        typeName == 'evvegi_jegy_ertekeles') {
-      return false;
-    }
-
-    if (numericValue == null) {
-      return false;
-    }
-
-    return true;
+    return weightPercentage != null && hasClassicValue();
   }
 }

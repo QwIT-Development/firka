@@ -1,7 +1,9 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:firka/api/client/kreta_client.dart';
+import 'package:firka_common/ui/components/grade_helpers.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/data/ios_widget_helper.dart';
@@ -249,30 +251,19 @@ class WidgetCacheHelper {
       );
 
       final Map<String, double> subjectAverages = {};
-      final Set<String> subjectUids = {};
+      final HashSet<Subject> subjects = HashSet(
+        hashCode: (s) => s.uid.hashCode,
+        equals: (s, s2) => s.uid == s2.uid,
+      );
 
-      for (var grade in grades) {
-        subjectUids.add(grade.subject.uid);
-      }
+      subjects.addAll(grades.map((g) => g.subject));
 
-      double overallSum = 0;
-      int validSubjectCount = 0;
-
-      for (var uid in subjectUids) {
-        final subjectGrades = grades
-            .where((g) => g.subject.uid == uid)
-            .toList();
-        final avg = _calculateWeightedAverage(subjectGrades);
-        if (!avg.isNaN && avg > 0) {
-          subjectAverages[uid] = avg;
-          overallSum += avg;
-          validSubjectCount++;
+      for (var subject in subjects) {
+        final average = grades.getAverageBySubject(subject);
+        if (average != null) {
+          subjectAverages[subject.uid] = average;
         }
       }
-
-      final double? overallAverage = validSubjectCount > 0
-          ? overallSum / validSubjectCount
-          : null;
 
       WidgetBreakInfo? currentBreak;
 
@@ -285,7 +276,7 @@ class WidgetCacheHelper {
         nextSchoolDayDate: nextSchoolDayDate,
         grades: grades,
         subjectAverages: subjectAverages,
-        overallAverage: overallAverage,
+        overallAverage: grades.getSubjectAverage(),
         currentBreak: currentBreak,
       );
 
@@ -314,27 +305,5 @@ class WidgetCacheHelper {
     } catch (e) {
       debugPrint('Error clearing iOS widgets: $e');
     }
-  }
-
-  /// Calculate weighted average for a list of grades
-  static double _calculateWeightedAverage(List<Grade> grades) {
-    var weightTotal = 0.0;
-    var sum = 0.0;
-
-    for (var grade in grades) {
-      final name = grade.valueType.name?.toLowerCase() ?? '';
-      final isPercentage =
-          name.contains('szazalek') || name.contains('percent');
-      if (isPercentage) continue;
-
-      if (grade.numericValue != null) {
-        var weight = (grade.weightPercentage ?? 100) / 100.0;
-        weightTotal += weight;
-        sum += grade.numericValue! * weight;
-      }
-    }
-
-    if (weightTotal == 0) return double.nan;
-    return sum / weightTotal;
   }
 }

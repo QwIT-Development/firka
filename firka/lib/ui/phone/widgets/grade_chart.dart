@@ -10,7 +10,13 @@ import 'package:flutter/material.dart';
 
 class GradeChart extends StatefulWidget {
   final List<Grade> grades;
-  const GradeChart({super.key, required this.grades});
+  final bool halfYearFallback;
+  GradeChart({
+    super.key,
+    required List<Grade> grades,
+    this.halfYearFallback = true,
+  }) : grades = grades.where((g) => g.hasClassicValue()).toList()
+         ..sort((a, b) => a.recordDate.compareTo(b.recordDate));
 
   @override
   State<GradeChart> createState() => _GradeChartState();
@@ -20,6 +26,10 @@ class DateSpot extends FlSpot {
   final DateTime date;
 
   const DateSpot(super.x, super.y, this.date);
+
+  DateSpot copyWithX(double x) {
+    return DateSpot(x, y, date);
+  }
 }
 
 class _GradeChartState extends State<GradeChart> {
@@ -36,25 +46,42 @@ class _GradeChartState extends State<GradeChart> {
   }
 
   void _computeSpots() {
-    final sortedGrades =
-        widget.grades.where((grade) => grade.shouldIncludeInAverage()).toList()
-          ..sort((a, b) => a.recordDate.compareTo(b.recordDate));
-
-    if (sortedGrades.isEmpty) {
-      spots = [DateSpot(0, 0, DateTime.now()), DateSpot(1, 0, DateTime.now())];
-      return;
-    }
-
-    if (sortedGrades.length == 1) {
-      sortedGrades.insert(0, sortedGrades[0]);
-    }
-
     spots = [];
-    for (var i = 0; i < sortedGrades.length; i++) {
-      final partialAvg = sortedGrades.take(i + 1).getSubjectAverage();
+    for (var i = 0; i < widget.grades.length; i++) {
+      final grade = widget.grades[i];
+      if (!grade.shouldIncludeInAverage()) {
+        continue;
+      }
+
+      final partialAvg = widget.grades
+          .take(i + 1)
+          .getSubjectAverage(halfYearFallback: widget.halfYearFallback);
+
       spots.add(
-        DateSpot(i.toDouble(), partialAvg!, sortedGrades[i].recordDate),
+        DateSpot(spots.length.toDouble(), partialAvg!, grade.recordDate),
       );
+    }
+
+    if (spots.isEmpty) {
+      for (final grade in widget.grades) {
+        if (grade.hasClassicValue()) {
+          spots.add(
+            DateSpot(
+              spots.length.toDouble(),
+              grade.numericValue!.toDouble(),
+              grade.recordDate,
+            ),
+          );
+        }
+      }
+    }
+
+    if (spots.isEmpty) {
+      spots.add(DateSpot(0, 0, DateTime.now()));
+    }
+
+    if (spots.length == 1) {
+      spots = [spots[0], spots[0].copyWithX(1)];
     }
   }
 
@@ -356,8 +383,13 @@ class _GradeChartState extends State<GradeChart> {
 /// so the navigator does not intercept touch/drag (e.g. for swipe back).
 class GradeChartWithInteraction extends StatelessWidget {
   final List<Grade> grades;
+  final bool halfYearFallback;
 
-  const GradeChartWithInteraction({super.key, required this.grades});
+  const GradeChartWithInteraction({
+    super.key,
+    required this.grades,
+    this.halfYearFallback = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -366,7 +398,7 @@ class GradeChartWithInteraction extends StatelessWidget {
       onPointerDown: (_) => ChartInteractionScope.of(context).value = true,
       onPointerUp: (_) => ChartInteractionScope.of(context).value = false,
       onPointerCancel: (_) => ChartInteractionScope.of(context).value = false,
-      child: GradeChart(grades: grades),
+      child: GradeChart(grades: grades, halfYearFallback: halfYearFallback),
     );
   }
 }

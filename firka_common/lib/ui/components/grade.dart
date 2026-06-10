@@ -43,7 +43,7 @@ class GradeWidget extends StatelessWidget {
       );
     }
 
-    if (g.valueType.name == 'Szazalekos') {
+    if (g.isInPercentage()) {
       final gradeColor = appStyle.colors.accent;
       return FilledCircle(
         diameter: size,
