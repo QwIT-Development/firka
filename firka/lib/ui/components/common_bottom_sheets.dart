@@ -1,6 +1,8 @@
+import 'package:firka/core/bloc/home_refresh_cubit.dart';
 import 'package:firka/ui/phone/widgets/info_card.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:firka_common/ui/shared/grade_small_card.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/data/models/homework_cache_model.dart';
 import 'package:firka/core/extensions.dart';
@@ -493,6 +495,7 @@ Future<void> showHomeworkBottomSheet(
                 color: appStyle.colors.accent,
               ),
               onTap: () {
+                context.read<HomeRefreshCubit>().requestRefresh();
                 Navigator.pop(context);
                 !done
                     ? markAsDone(data.isar, homework.uid)

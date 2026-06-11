@@ -50,7 +50,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
 
   void _onRefreshRequested(BuildContext context) async {
     final cubit = context.read<HomeRefreshCubit>();
-    await fetchData(cacheOnly: false);
+    setState(() {});
     if (mounted) {
       cubit.onRefreshComplete();
     }
