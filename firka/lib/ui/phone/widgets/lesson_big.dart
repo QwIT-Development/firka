@@ -204,7 +204,7 @@ class LessonBigWidget extends StatelessWidget {
                             ),
                             if (isSubstituted)
                               Text(
-                                lesson.substituteTeacher!,
+                                lesson.substituteTeacher!.shortenName(),
                                 style: appStyle.fonts.B_14R.apply(
                                   color: appStyle.colors.textSecondary,
                                 ),

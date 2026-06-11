@@ -166,7 +166,7 @@ class LessonWidget extends StatelessWidget {
                               ),
                               showSubstitutions
                                   ? Text(
-                                      lesson.substituteTeacher!,
+                                      lesson.substituteTeacher!.shortenName(),
                                       style: appStyle.fonts.B_14R.apply(
                                         color: appStyle.colors.textSecondary,
                                       ),

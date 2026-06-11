@@ -294,4 +294,26 @@ extension StringExtension on String {
     if (length == 1) this[0].toUpperCase();
     return this[0].toUpperCase() + substring(1, length);
   }
+
+  String shortenName([int start = 0]) {
+    if (length <= 16 || start >= length) {
+      return this;
+    }
+
+    int index = indexOf(" ", start);
+    if (index == -1) {
+      return this;
+    }
+
+    String string = substring(start, index);
+    if (string.endsWith(".")) {
+      return this;
+    }
+
+    return replaceRange(
+      start,
+      index,
+      "${string[0]}.",
+    ).shortenName(index - string.length + 2 + 1);
+  }
 }
