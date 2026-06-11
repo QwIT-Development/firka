@@ -7,7 +7,6 @@ import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import 'lesson.dart';
 
@@ -60,7 +59,29 @@ class TimeTableDayWidget extends StatelessWidget {
             ...events.map(
               (event) => Center(
                 child: Text(
-                  event.name.replaceAll(" (Nem órarendi nap)", ""),
+                  event.name
+                  .replaceAll(" (Nem órarendi nap)", "")
+                  .replaceAll(" (Hétfő)", "")
+                  .replaceAll(" (Kedd)", "")
+                  .replaceAll(" (Szerda)", "")
+                  .replaceAll(" (Csütörtök)", "")
+                  .replaceAll(" (Péntek)", "")
+                  .replaceAll(" (Szombat)", "")
+                  .replaceAll(" (Vasárnap)", "")
+                  .replaceAll("Tanítás nélküli munkanap", data.l10n.tt_non_instructional_day)
+                  .replaceAll("Munkaszüneti nap", data.l10n.tt_public_holiday)
+                  .replaceAll("Tavaszi szünet", data.l10n.tt_spring_break)
+                  .replaceAll("Téli szünet", data.l10n.tt_winter_break)
+                  .replaceAll("Őszi szünet", data.l10n.tt_autumn_break)
+                  .replaceAll("Tanítási nap", data.l10n.tt_instructional_day)
+                  .replaceAll("Első félév vége", data.l10n.tt_first_semester_end)
+                  .replaceAll("Ünnepnap", data.l10n.tt_holiday)
+                  .replaceAll("Pihenőnap", data.l10n.tt_rest_day)
+                  .replaceAll("Első tanítási nap", data.l10n.tt_first_instructional_day)
+                  .replaceAll("Utolsó tanítási nap", data.l10n.tt_last_instructional_day)
+                  .replaceAll("Utolsó tanítási nap a végzős évfolyamokon", data.l10n.tt_last_instructional_day_graduates)
+                  .replaceAll("Egész napos kirándulás", data.l10n.tt_full_day_trip)
+                  .replaceAll("negyedév vége", data.l10n.tt_quarter_end),
                   style: appStyle.fonts.B_16R.apply(
                     color: appStyle.colors.textSecondary,
                   ),

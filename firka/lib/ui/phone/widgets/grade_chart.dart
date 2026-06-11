@@ -1,4 +1,5 @@
 import 'package:firka/app/app_state.dart';
+import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka_common/firka_common.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
@@ -138,9 +139,9 @@ class _GradeChartState extends State<GradeChart> {
       final date = spots[_touchedIndex!].date;
       content = tooltipFormat.format(date);
     } else if (value == firstX) {
-      content = 'Szeptember';
+      content = DateFormat("MMMM", initData.l10n.localeName).format(DateTime(DateTime.now().year, DateTime.september)).firstUpper();
     } else if (value == lastX && !shouldHideNow) {
-      content = 'Most';
+      content = initData.l10n.now;
     }
 
     final text = Text(
