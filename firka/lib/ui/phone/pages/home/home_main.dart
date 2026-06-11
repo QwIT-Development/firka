@@ -253,6 +253,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
           triggerMode: RefreshIndicatorTriggerMode.onEdge,
           displacement: 0,
           child: ListView(
+            clipBehavior: Clip.none,
             children: [
               SizedBox(height: 24),
               WelcomeWidget(widget.data.l10n, now, student!, lessons!),
