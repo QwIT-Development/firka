@@ -259,6 +259,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
               WelcomeWidget(widget.data.l10n, now, student!, lessons!),
               SizedBox(height: 48),
               LessonSlider(lessonTestMap, testsTomorrow),
+              SizedBox(height: 24),
               ...noticeBoardWidgets
                   .groupList((e) => e.$2)
                   .entries
