@@ -244,46 +244,41 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
           .length;
 
       return Padding(
-        padding: const EdgeInsets.only(left: 20.0, top: 24.0, right: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            WelcomeWidget(widget.data.l10n, now, student!, lessons!),
-            SizedBox(height: 48),
-            LessonSlider(lessonTestMap, testsTomorrow),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () => fetchData(),
-                notificationPredicate: (ScrollNotification notification) {
-                  return notification.depth == 0;
-                },
-                triggerMode: RefreshIndicatorTriggerMode.onEdge,
-                displacement: 0,
-                child: ListView(
-                  children: noticeBoardWidgets
-                      .groupList((e) => e.$2)
-                      .entries
-                      .map(
-                        (e) => Column(
-                          spacing: 10,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              e.key.format(widget.data.l10n, FormatMode.main),
-                              style: appStyle.fonts.B_16R.apply(
-                                color: appStyle.colors.textSecondary,
-                              ),
-                            ),
-                            ...e.value.map((v) => v.$1),
-                            SizedBox(height: 10),
-                          ],
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: RefreshIndicator(
+          onRefresh: () => fetchData(),
+          notificationPredicate: (ScrollNotification notification) {
+            return notification.depth == 0;
+          },
+          triggerMode: RefreshIndicatorTriggerMode.onEdge,
+          displacement: 0,
+          child: ListView(
+            children: [
+              SizedBox(height: 24),
+              WelcomeWidget(widget.data.l10n, now, student!, lessons!),
+              SizedBox(height: 48),
+              LessonSlider(lessonTestMap, testsTomorrow),
+              ...noticeBoardWidgets
+                  .groupList((e) => e.$2)
+                  .entries
+                  .map(
+                    (e) => Column(
+                      spacing: 10,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          e.key.format(widget.data.l10n, FormatMode.main),
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textSecondary,
+                          ),
                         ),
-                      )
-                      .toList(),
-                ),
-              ),
-            ),
-          ],
+                        ...e.value.map((v) => v.$1),
+                        SizedBox(height: 10),
+                      ],
+                    ),
+                  ),
+            ],
+          ),
         ),
       );
     } else {
