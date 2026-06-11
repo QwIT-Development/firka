@@ -137,6 +137,27 @@ Future<void> showLessonBottomSheet(
             size: 26,
           ),
         ),
+        SizedBox(width: 6),
+        if (lesson.roomName != null)
+          Card(
+            shadowColor: Colors.transparent,
+            color: appStyle.colors.a15p,
+            margin: EdgeInsets.all(0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 6),
+              child: Text(
+                lesson.roomName!,
+                style: appStyle.fonts.B_14R.apply(
+                  color: appStyle.colors.secondary,
+                ),
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
       ],
     ),
     SizedBox(height: 20),
@@ -165,7 +186,6 @@ Future<void> showLessonBottomSheet(
         lesson.substituteTeacher!,
         style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
       ),
-    SizedBox(height: 8),
     Text(
       '${lesson.start.format(data.l10n, FormatMode.hmm)} - ${lesson.end.format(data.l10n, FormatMode.hmm)}',
       style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
