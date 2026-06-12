@@ -5,13 +5,15 @@
 
 <a href="https://translate.firka.app/engage/firka-naplo/"><img src="https://translate.firka.app/widget/firka-naplo/firka-app/en/svg-badge.svg" alt="Translation status"></a>
 
+<br />
+
+# The eKréta client that doesn't make you want to throw your phone.
+
+We built this because the official app left a lot to be desired. Firka is a fully open source, community maintained alternative — and we're just getting started. Faster, more customizable, and more user friendly with every release.
+
+<br />
 
 <img src="https://git.firka.app/firka/readme-files/raw/branch/main/firka_features.png" width="100%" />
-<br />
-
-We built this because the official eKréta app left a lot to be desired.
-<br />
-This app is fully open source, community maintained.
 
 <br />
 
@@ -24,7 +26,7 @@ The home screen shows your upcoming lessons so you're never caught off guard. Fi
 
 ### Grades, on your terms
 
-Emotionally unprepared for your own grades? This setting keeps them hidden until you tap each one open, so you can process your failures at a comfortable pace. 
+Emotionally unprepared for your own grades? This setting keeps them hidden until you tap each one open, so you can process your failures at a comfortable pace.
 
 ---
 
