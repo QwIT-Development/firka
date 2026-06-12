@@ -5,15 +5,12 @@
 
 <a href="https://translate.firka.app/engage/firka-naplo/"><img src="https://translate.firka.app/widget/firka-naplo/firka-app/en/svg-badge.svg" alt="Translation status"></a>
 
+
+<img src="https://git.firka.app/firka/readme-files/raw/branch/main/firka_features.png" width="100%" />
 <br />
 
 We built this because the official eKréta app left a lot to be desired.
-
-Firka is an open-source alternative client for the Hungarian eKréta school management system. Same data, better app.
-
-<br />
-
-<img src="https://git.firka.app/firka/readme-files/raw/branch/main/firka_features.png" width="100%" />
+Firka is an open-source alternative client for the eKréta system.
 
 <br />
 
