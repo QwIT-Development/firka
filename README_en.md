@@ -7,17 +7,15 @@
 
 <br />
 
-# The eKréta client that doesn't make you want to throw your phone.
+### We built this because the official app left a lot to be desired. Firka is a fully open source, community maintained alternative and we're just getting started. Faster, more customizable, and more user friendly with every release.
 
-We built this because the official app left a lot to be desired. Firka is a fully open source, community maintained alternative — and we're just getting started. Faster, more customizable, and more user friendly with every release.
 
-<br />
 
 <img src="https://git.firka.app/firka/readme-files/raw/branch/main/firka_features.png" width="100%" />
 
 <br />
 
----
+## What even are the app's features?
 ### See what's coming
 
 The home screen shows your upcoming lessons so you're never caught off guard. Filter by subject, group, or whatever you actually care about. The bottom bar is fully customizable, put what you use, hide what you don't.
@@ -42,16 +40,15 @@ The settings screen has options you didn't know you needed. Adjust the bell offs
 
 ---
 
-## Download
+## What do you support?
 
-| Platform | Link |
-|----------|------|
-| Android (Play Store) | [link] |
-| Android (APK) | [Releases](../../releases) |
+Currently, we support **Android** and **iOS**.
+<br />
+We're planning on supporting your browser also!
 
-## Contributing
-
-See the [contribution guide](CONTRIBUTING_en.md).
+## Contribution
+We would really appriciate your help.
+You can get started at the [contribution guide](CONTRIBUTING_en.md).
 
 ## Community
 
