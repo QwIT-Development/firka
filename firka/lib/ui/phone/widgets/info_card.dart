@@ -153,7 +153,14 @@ class InfoCard extends StatelessWidget {
             .firstUpper(),
         grade.subject.name.firstUpper(),
       ],
-      right: [buildSubject(appStyle.colors.accent, grade.subject)],
+      right: [
+        buildSubject(
+          grade.numericValue != null
+              ? getGradeColor(grade.numericValue!)
+              : appStyle.colors.accent,
+          grade.subject,
+        ),
+      ],
       onTap:
           onTap ?? (context) => showGradeBottomSheet(context, initData, grade),
     );
