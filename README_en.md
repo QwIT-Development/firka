@@ -5,8 +5,6 @@
 
 <a href="https://translate.firka.app/engage/firka-naplo/"><img src="https://translate.firka.app/widget/firka-naplo/firka-app/en/svg-badge.svg" alt="Translation status"></a>
 
-<br />
-
 ### We built this because the official app left a lot to be desired. Firka is a fully open source, community maintained alternative and we're just getting started. Faster, more customizable, and more user friendly with every release.
 
 
