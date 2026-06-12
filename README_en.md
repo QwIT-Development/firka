@@ -11,3 +11,4 @@ Firka is an alternative client for [an application to be named]. The app's goal 
 user friendly app for the [to be named] system.
 
 [Contribution guide](CONTRIBUTING_en.md) 
+[![preview](docs/preview.png)](https://example.org)
