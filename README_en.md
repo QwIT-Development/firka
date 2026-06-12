@@ -20,25 +20,21 @@
 
 The home screen shows your upcoming lessons so you're never caught off guard. Filter by subject, group, or whatever you actually care about. The bottom bar is fully customizable, put what you use, hide what you don't.
 
----
 
 ### Grades, on your terms
 
 Emotionally unprepared for your own grades? This setting keeps them hidden until you tap each one open, so you can process your failures at a comfortable pace.
 
----
 
 ### How bad are you at maths, exactly?
 
 The grades page has a graph of your overall average, so you can watch it slowly decline over the semester. Each subject also gets its own graph, in case you wanted to know exactly which one is responsible.
 
----
 
 ### Customize everything
 
 The settings screen has options you didn't know you needed. Adjust the bell offset so you know exactly when class ends down to the second. Left-handed mode exists too, because apparently some people use their phones wrong.
 
----
 
 ## What do you support?
 
