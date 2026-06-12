@@ -10,10 +10,12 @@
 <br />
 
 We built this because the official eKréta app left a lot to be desired.
-Firka is an open-source alternative client for the eKréta system.
+<br />
+This app is fully open source, community maintained.
 
 <br />
 
+---
 ### See what's coming
 
 The home screen shows your upcoming lessons so you're never caught off guard. Filter by subject, group, or whatever you actually care about. The bottom bar is fully customizable, put what you use, hide what you don't.
