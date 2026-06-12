@@ -11,4 +11,4 @@ Firka is an alternative client for [an application to be named]. The app's goal 
 user friendly app for the [to be named] system.
 
 [Contribution guide](CONTRIBUTING_en.md) 
-<video src="https://file-examples.com/storage/fe83ca51956a2c33196e951/2020/03/file_example_WEBM_1280_3_6MB.webm" autoplay loop muted playsinline></video>
+<img src="https://upload.wikimedia.org/wikipedia/commons/a/a3/2022-10-25_eclipse-partielle-soleil-Belfort.gif?_=20221026064544" />
