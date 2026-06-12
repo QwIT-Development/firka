@@ -4,7 +4,10 @@
 |-----------------------------------|---------------------------------------|---------------------------------------|
 
 <a href="https://translate.firka.app/engage/firka-naplo/"><img src="https://translate.firka.app/widget/firka-naplo/firka-app/en/svg-badge.svg" alt="Translation status"></a>
+<a href="https://status.firka.app/api/badge/1/uptime/24?label=Uptime&labelSuffix=%3ClabelSuffix%3E&suffix=%"><img src="https://translate.firka.app/widget/firka-naplo/firka-app/en/svg-badge.svg" alt="Uptime"></a>
+<a href="https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fbuilds.firka.app%2Fjob%2FFirka%2520Beta%2F&label=Build passing"><img src="https://translate.firka.app/widget/firka-naplo/firka-app/en/svg-badge.svg" alt="Build"></a>
 
+https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fbuilds.firka.app%2Fjob%2FFirka%2520Beta%2F&label=fasz
 ### We built this because the official app left a lot to be desired. Firka is a fully open source, community maintained alternative and we're just getting started. Faster, more customizable, and more user friendly with every release.
 
 
