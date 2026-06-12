@@ -1,14 +1,40 @@
-# Firka
+# <img src="https://git.firka.app/firka/readme-files/raw/branch/main/dave.png" height="40" style="vertical-align: middle;" /> Firka
 
 | <sub>HU</sub> [Magyar](README.md) | <sub>EN</sub> [English](README_en.md) | <sub>DE</sub> [Deutsch](README_de.md) |
 |-----------------------------------|---------------------------------------|---------------------------------------|
 
-[![Crowdin](https://badges.crowdin.net/firka/localized.svg)](https://crowdin.com/project/firka)
+<a href="https://translate.firka.app/engage/firka-naplo/"><img src="https://translate.firka.app/widget/firka-naplo/firka-app/en/svg-badge.svg" alt="Translation status"></a>
 
-## The project
+<br />
 
-Firka is an alternative client for [an application to be named]. The app's goal is to be a modern
-user friendly app for the [to be named] system.
+<img src="https://git.firka.app/firka/readme-files/raw/branch/main/firka_slide.gif" width="100%" />
 
-[Contribution guide](CONTRIBUTING_en.md) 
-<img src="https://upload.wikimedia.org/wikipedia/commons/a/a3/2022-10-25_eclipse-partielle-soleil-Belfort.gif?_=20221026064544" />
+<br />
+
+## What is Firka?
+
+We built this because the official eKréta app left a lot to be desired.
+
+Firka is an open-source alternative client for the Hungarian eKréta school management system. Same data, better app. Faster, smoother, and actually customizable.
+
+## Features
+
+- Grades, timetable, absences — without the clutter
+- Heavily customizable
+- Available in Hungarian, English, and German
+- Built with Flutter, open source from day one
+
+## Download
+
+| Platform | Link |
+|----------|------|
+| Android (Play Store) | [link] |
+| Android (APK) | [Releases](../../releases) |
+
+## Contributing
+
+We welcome contributions! See the [contribution guide](CONTRIBUTING_en.md).
+
+## Community
+
+[Discord](https://your-discord-link)
