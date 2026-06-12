@@ -18,7 +18,7 @@
 ## What even are the app's features?
 ### See what's coming
 
-The home screen shows your upcoming lessons so you're never caught off guard. Filter by subject, group, or whatever you actually care about. The bottom bar is fully customizable, put what you use, hide what you don't.
+The home screen shows your upcoming lessons so you're never caught off guard. Filter by subject, exams, or whatever you actually care about. The bottom bar is fully customizable, put what you use, hide what you don't.
 
 
 ### Grades, on your terms
