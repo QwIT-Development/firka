@@ -1,8 +1,8 @@
 [submodule "firka/lib/l10n"]
 	path = firka/lib/l10n
 	url = https://git.firka.app/firka/firka-localization
-	branch = main
+	branch = weblate
 [submodule "firka_wear/lib/l10n"]
 	path = firka_wear/lib/l10n
 	url = https://git.firka.app/firka/firka-localization
-	branch = main
+	branch = weblate
