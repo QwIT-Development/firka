@@ -139,7 +139,10 @@ class _GradeChartState extends State<GradeChart> {
       final date = spots[_touchedIndex!].date;
       content = tooltipFormat.format(date);
     } else if (value == firstX) {
-      content = DateFormat("MMMM", initData.l10n.localeName).format(DateTime(DateTime.now().year, DateTime.september)).firstUpper();
+      content = DateFormat(
+        "MMMM",
+        initData.l10n.localeName,
+      ).format(DateTime.now().copyWith(month: DateTime.september)).firstUpper();
     } else if (value == lastX && !shouldHideNow) {
       content = initData.l10n.now;
     }
@@ -188,39 +191,17 @@ class _GradeChartState extends State<GradeChart> {
   }
 
   Color colorForY(double y) {
-    final rounding = initData.settings
-        .group("settings")
-        .subGroup("application")
-        .subGroup("rounding");
-    return y == 0
-        ? appStyle.colors.card
-        : getGradeColor(
-            y,
-            t1: rounding.dbl("1"),
-            t2: rounding.dbl("2"),
-            t3: rounding.dbl("3"),
-            t4: rounding.dbl("4"),
-          );
+    return y == 0 ? appStyle.colors.card : initData.settings.getGradeColor(y);
   }
 
   Widget leftTitleWidgets(double value, TitleMeta meta) {
-    if (value == 0) {
+    if (value == 0 || value > 5) {
       return SizedBox();
     }
 
-    final rounding = initData.settings
-        .group("settings")
-        .subGroup("application")
-        .subGroup("rounding");
-    final currentValue = spots.first.y == 0
+    final currentValue = spots.last.y == 0
         ? 0
-        : roundGrade(
-            _tooltipY ?? spots.first.y,
-            t1: rounding.dbl("1"),
-            t2: rounding.dbl("2"),
-            t3: rounding.dbl("3"),
-            t4: rounding.dbl("4"),
-          );
+        : initData.settings.roundGrade(_tooltipY ?? spots.last.y);
     final isActive = value == currentValue;
 
     if (isActive) {
@@ -294,23 +275,16 @@ class _GradeChartState extends State<GradeChart> {
         },
       ),
       backgroundColor: Colors.transparent,
-      extraLinesData: ExtraLinesData(
-        horizontalLines: [
-          HorizontalLine(
-            y: 5,
-            color: const Color(0xFFC8C8C8),
-            strokeWidth: 1.0,
-            dashArray: [8, 12],
-          ),
-        ],
-        extraLinesOnTop: false,
-      ),
       gridData: FlGridData(
         show: true,
         drawHorizontalLine: true,
         drawVerticalLine: false,
         horizontalInterval: 1,
         getDrawingHorizontalLine: (value) {
+          if (_tooltipY != null &&
+              initData.settings.roundGrade(_tooltipY!) == value) {
+            return FlLine(color: const Color(0xFFC8C8C8), strokeWidth: 1.0);
+          }
           return FlLine(
             color: const Color(0xFFC8C8C8),
             strokeWidth: 1.0,
@@ -351,7 +325,7 @@ class _GradeChartState extends State<GradeChart> {
       borderData: FlBorderData(show: false),
 
       minY: 0,
-      maxY: 5,
+      maxY: 5.0000000000001,
 
       lineBarsData: [
         LineChartBarData(

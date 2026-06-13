@@ -6,6 +6,8 @@ import 'package:firka/data/models/app_settings_model.dart';
 import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
+import 'package:firka_common/firka_common.dart' as common;
+import 'package:firka_common/ui/theme/style.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
@@ -713,6 +715,34 @@ class SettingsStore {
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
     for (var item in items.values) {
       await item.load(model);
+    }
+  }
+
+  int roundGrade(num grade) {
+    final rounding = group(
+      "settings",
+    ).subGroup("application").subGroup("rounding");
+    return common.roundGrade(
+      grade,
+      t1: rounding.dbl("1"),
+      t2: rounding.dbl("2"),
+      t3: rounding.dbl("3"),
+      t4: rounding.dbl("4"),
+    );
+  }
+
+  Color getGradeColor(num grade) {
+    switch (roundGrade(grade)) {
+      case 2:
+        return appStyle.colors.grade2;
+      case 3:
+        return appStyle.colors.grade3;
+      case 4:
+        return appStyle.colors.grade4;
+      case 5:
+        return appStyle.colors.grade5;
+      default:
+        return appStyle.colors.grade1;
     }
   }
 }
