@@ -4,6 +4,7 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
-    <application android:label="Firka Debug"
+    <application android:name="app.firka.naplo.AppMain"
+        android:label="Firka Debug"
         android:usesCleartextTraffic="true" />
 </manifest>
