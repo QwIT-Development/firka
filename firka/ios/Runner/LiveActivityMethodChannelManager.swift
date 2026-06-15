@@ -179,15 +179,24 @@ class LiveActivityMethodChannelManager: NSObject {
                     }
                 }
 
-                // Monitor activity state for user dismissal (swipe away)
+                // Monitor activity state ONLY for explicit user dismissal.
+                // `.ended` can be triggered by the system (stale, memory
+                // pressure, 12h limit) and must NOT be treated as a user
+                // action — otherwise minimizing the app would tear down
+                // device registration and stop monitoring.
                 Task {
                     for await state in newActivity.activityStateUpdates {
-                        if state == .dismissed || state == .ended {
+                        if state == .dismissed {
                             DispatchQueue.main.async { [weak self] in
                                 self?.channel.invokeMethod("onActivityDismissed", arguments: [
                                     "activityId": activityId
                                 ])
                             }
+                            break
+                        }
+                        if state == .ended {
+                            // System ended — just stop observing, do not
+                            // notify Flutter (would cause unwanted teardown).
                             break
                         }
                     }
