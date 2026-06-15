@@ -31,6 +31,11 @@ class LiveActivityService {
   static String? _cachedDeviceToken;
   static bool _isInitialized = false;
 
+  // Dev fake morning lesson scheduling
+  static Timer? _devFakeTimer;
+  static DateTime? _devFakeBaseTime;
+  static String? _devFakeStudentName;
+
   static Timer? _bellDelayDebounceTimer;
   static double? _pendingBellDelay;
   static double? _lastSentBellDelay;
@@ -1532,8 +1537,9 @@ class LiveActivityService {
   }
 
   /// Dev-only: start a Live Activity immediately using the fake morning
-  /// lesson injection in [_startLiveActivityWithCurrentState]. The dev
-  /// setting must already be enabled.
+  /// lesson injection in [_startLiveActivityWithCurrentState] and schedule
+  /// periodic re-evaluation so beforeSchool → lesson → break transitions
+  /// actually happen.
   static Future<void> startFakeMorningActivity() async {
     if (!Platform.isIOS) return;
     try {
@@ -1543,8 +1549,23 @@ class LiveActivityService {
         final resp = await client.getStudent();
         studentName = resp.response?.name ?? client.model.studentId ?? 'Dev';
       } catch (_) {}
+      _devFakeStudentName = studentName;
+      _devFakeBaseTime = DateTime.now().add(const Duration(minutes: 2));
+
       await _startLiveActivityWithCurrentState([], studentName);
-      _logger.info('Fake morning Live Activity started');
+
+      _devFakeTimer?.cancel();
+      _devFakeTimer = Timer.periodic(const Duration(seconds: 20), (_) async {
+        if (!isDevFakeMorningLessonEnabled()) {
+          _devFakeTimer?.cancel();
+          _devFakeTimer = null;
+          return;
+        }
+        final name = _devFakeStudentName ?? 'Dev';
+        await _startLiveActivityWithCurrentState([], name);
+      });
+
+      _logger.info('Fake morning Live Activity started + re-eval timer');
     } catch (e, st) {
       _logger.severe('Failed to start fake morning Live Activity: $e', e, st);
     }
@@ -1553,6 +1574,10 @@ class LiveActivityService {
   /// Public wrapper to end all Live Activities (used by dev toggle off).
   static Future<void> endAllActivitiesPublic() async {
     if (!Platform.isIOS) return;
+    _devFakeTimer?.cancel();
+    _devFakeTimer = null;
+    _devFakeBaseTime = null;
+    _devFakeStudentName = null;
     await LiveActivityManager.endAllActivities();
   }
 
@@ -1571,37 +1596,53 @@ class LiveActivityService {
 
     final now = DateTime.now();
 
-    // Dev-only: inject a fake "first lesson" 2 minutes from now so we can
-    // exercise the beforeSchool live activity flow without waiting until
-    // morning. Replaces today's lesson list to guarantee beforeSchool path.
+    // Dev-only: inject a series of fake lessons starting shortly so we can
+    // exercise beforeSchool → lesson → break → lesson transitions without
+    // waiting for morning. Schedule is anchored to [_devFakeBaseTime] so
+    // repeated calls (re-eval) produce the same lesson grid and the state
+    // can advance naturally.
     if (isDevFakeMorningLessonEnabled()) {
-      final fakeStart = now.add(const Duration(minutes: 2));
-      final fakeEnd = fakeStart.add(const Duration(minutes: 45));
+      _devFakeBaseTime ??= now.add(const Duration(minutes: 2));
+      final base = _devFakeBaseTime!;
+      const lessonDur = Duration(minutes: 2);
+      const slot = Duration(minutes: 3); // 2 min lesson + 1 min break
+      final names = [
+        'Fake Magyar',
+        'Fake Matek',
+        'Fake Történelem',
+        'Fake Fizika',
+        'Fake Angol',
+      ];
       final dateStr =
-          '${fakeStart.year}-${fakeStart.month.toString().padLeft(2, '0')}-${fakeStart.day.toString().padLeft(2, '0')}';
-      final fake = Lesson(
-        uid: 'DEV_FAKE_MORNING_LESSON',
-        date: dateStr,
-        start: fakeStart,
-        end: fakeEnd,
-        name: 'Fake reggeli óra',
-        lessonNumber: 1,
-        teacher: 'Dev Tanár',
-        theme: 'LA teszt',
-        roomName: 'DEV-1',
-        type: NameUidDesc.EMPTY,
-        state: NameUidDesc.EMPTY,
-        canStudentEditHomework: false,
-        isHomeworkComplete: false,
-        attachments: const [],
-        isDigitalLesson: false,
-        digitalSupportDeviceTypeList: const [],
-        createdAt: now,
-        lastModifiedAt: now,
-      );
-      allLessons = [fake];
+          '${base.year}-${base.month.toString().padLeft(2, '0')}-${base.day.toString().padLeft(2, '0')}';
+      final fakes = <Lesson>[];
+      for (int i = 0; i < names.length; i++) {
+        final s = base.add(slot * i);
+        final e = s.add(lessonDur);
+        fakes.add(Lesson(
+          uid: 'DEV_FAKE_LESSON_$i',
+          date: dateStr,
+          start: s,
+          end: e,
+          name: names[i],
+          lessonNumber: i + 1,
+          teacher: 'Dev Tanár',
+          theme: 'LA teszt',
+          roomName: 'DEV-${i + 1}',
+          type: NameUidDesc.EMPTY,
+          state: NameUidDesc.EMPTY,
+          canStudentEditHomework: false,
+          isHomeworkComplete: false,
+          attachments: const [],
+          isDigitalLesson: false,
+          digitalSupportDeviceTypeList: const [],
+          createdAt: now,
+          lastModifiedAt: now,
+        ));
+      }
+      allLessons = fakes;
       _logger.info(
-        '_startLiveActivityWithCurrentState: DEV fake morning lesson injected at $fakeStart',
+        '_startLiveActivityWithCurrentState: DEV fake schedule base=$base, ${fakes.length} lessons',
       );
     }
 
