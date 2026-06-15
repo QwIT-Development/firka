@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/ui/components/firka_card.dart';
@@ -11,7 +9,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import 'package:kreta_api/kreta_api.dart';
-import 'package:firka/core/debug_helper.dart';
 import 'package:firka/ui/components/common_bottom_sheets.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
@@ -19,19 +16,15 @@ import 'bubble_test.dart';
 
 class LessonWidget extends StatelessWidget {
   final AppInitialization data;
-  final int? lessonNo;
   final Lesson lesson;
-  final bool expanded;
   final bool active;
   final Test? test;
 
   const LessonWidget(
     this.data,
-    this.lessonNo,
     this.lesson,
     this.test, {
     this.active = false,
-    this.expanded = false,
     super.key,
   });
 
@@ -50,7 +43,7 @@ class LessonWidget extends StatelessWidget {
             .subGroup("timetable_toast")
             .boolean("substitution");
     final showLessonNos =
-        lessonNo != null &&
+        lesson.lessonNumber != null &&
         data.settings
             .group("settings")
             .subGroup("timetable_toast")
@@ -78,17 +71,13 @@ class LessonWidget extends StatelessWidget {
 
     var roomName = lesson.roomName ?? 'N/A';
 
-    final spacing = expanded ? 8.0 : 12.0;
-
     elements.add(
       GestureDetector(
         onTap: () {
-          if (lessonNo == null) return;
           showLessonBottomSheet(
             context,
             data,
             lesson,
-            lessonNo,
             accent,
             secondary,
             bgColor,
@@ -96,16 +85,14 @@ class LessonWidget extends StatelessWidget {
           );
         },
         child: FirkaCard.single(
-          height: expanded ? 104 : 64,
+          height: 64,
           borderColor: active ? appStyle.colors.accent : null,
           margin: EdgeInsets.all(0),
-          padding: EdgeInsets.only(left: expanded ? 16 : 14, right: 16),
+          padding: EdgeInsets.only(left: 14, right: 16),
           color: isDismissed
               ? appStyle.colors.cardTranslucent
               : appStyle.colors.card,
-          attached: !expanded && showTests && test != null
-              ? Attach.bottom
-              : Attach.none,
+          attached: showTests && test != null ? Attach.bottom : Attach.none,
           shadow: !isDismissed,
           child: Column(
             spacing: 12,
@@ -128,8 +115,8 @@ class LessonWidget extends StatelessWidget {
                                 height: 18,
                               ),
                               Text(
-                                lessonNo.toString(),
-                                style: appStyle.fonts.B_12R.apply(
+                                lesson.lessonNumber!.toString(),
+                                style: appStyle.fonts.B_14SB.apply(
                                   color: secondary,
                                 ),
                                 textAlign: TextAlign.center,
@@ -138,19 +125,19 @@ class LessonWidget extends StatelessWidget {
                           ),
                         ),
                   FilledCircle(
-                    diameter: expanded ? 32 : 36,
+                    diameter: 36,
                     color: bgColor,
                     child: ClassIconWidget(
                       uid: lesson.uid,
                       className: lesson.name,
                       category: subjectName,
                       color: accent,
-                      size: expanded ? 20 : 24,
+                      size: 24,
                     ),
                   ),
                   SizedOverflowBox(
-                    size: Size(spacing, 0),
-                    child: !expanded && !showTests && test != null
+                    size: Size(12, 0),
+                    child: !showTests && test != null
                         ? Transform.translate(
                             offset: Offset(4, -20),
                             child: BubbleTest(),
@@ -160,7 +147,7 @@ class LessonWidget extends StatelessWidget {
                   Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      spacing: spacing,
+                      spacing: 12,
                       children: [
                         LimitedBox(
                           maxWidth: 155,
@@ -188,46 +175,55 @@ class LessonWidget extends StatelessWidget {
                             ],
                           ),
                         ),
-                        Flexible(
-                          fit: FlexFit.loose,
-                          child: Card(
-                            shadowColor: Colors.transparent,
-                            color: appStyle.colors.a15p,
-                            margin: EdgeInsets.all(0),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 6),
-                              child: Text(
-                                roomName,
-                                style: appStyle.fonts.B_12R.apply(
+                        isDismissed
+                            ? Text(
+                                data.l10n.class_dismissed,
+                                style: appStyle.fonts.B_14R.apply(
                                   color: appStyle.colors.textSecondary,
                                 ),
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
+                              )
+                            : Flexible(
+                                fit: FlexFit.loose,
+                                child: Card(
+                                  shadowColor: Colors.transparent,
+                                  color: appStyle.colors.a15p,
+                                  margin: EdgeInsets.all(0),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                    ),
+                                    child: Text(
+                                      roomName,
+                                      style: appStyle.fonts.B_14R.apply(
+                                        color: appStyle.colors.secondary,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
-                  SizedBox(width: 8),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        lesson.start.toLocal().format(
-                          data.l10n,
-                          FormatMode.hmm,
+                  if (!isDismissed) SizedBox(width: 8),
+                  if (!isDismissed)
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          lesson.start.toLocal().format(
+                            data.l10n,
+                            FormatMode.hmm,
+                          ),
+                          style: appStyle.fonts.B_14R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
                         ),
-                        style: appStyle.fonts.B_14R.apply(
-                          color: appStyle.colors.textPrimary,
-                        ),
-                      ),
-                      if (!expanded)
                         Text(
                           lesson.end.toLocal().format(
                             data.l10n,
@@ -237,98 +233,24 @@ class LessonWidget extends StatelessWidget {
                             color: appStyle.colors.textPrimary,
                           ),
                         ),
-                    ],
-                  ),
-                ],
-              ),
-              if (expanded && test == null)
-                Column(
-                  spacing: 4,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          lesson.end
-                                  .difference(timeNow().max(lesson.start))
-                                  .timeLeft(initData.l10n) ??
-                              "",
-                          style: appStyle.fonts.B_14R.apply(
-                            color: appStyle.colors.textSecondary,
-                          ),
-                        ),
-                        Text(
-                          lesson.end.format(initData.l10n, FormatMode.hmm),
-                          style: appStyle.fonts.B_14R.apply(
-                            color: appStyle.colors.textSecondary,
-                          ),
-                        ),
                       ],
                     ),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: LinearProgressIndicator(
-                        value:
-                            timeNow().difference(lesson.start).inMilliseconds /
-                            lesson.end.difference(lesson.start).inMilliseconds,
-                        backgroundColor: appStyle.colors.a15p,
-                        color: appStyle.colors.accent,
-                        minHeight: 8,
-                      ),
-                    ),
-                  ],
-                ),
-              if (expanded && test != null)
-                Container(
-                  height: 28,
-                  padding: EdgeInsets.symmetric(horizontal: 6),
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    color: appStyle.colors.background,
-                  ),
-                  child: Row(
-                    children: [
-                      FirkaIconWidget(
-                        FirkaIconType.majesticons,
-                        Majesticon.editPen4Solid,
-                        size: 12,
-                        color: appStyle.colors.accent,
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        test!.theme,
-                        style: appStyle.fonts.B_16R.apply(
-                          color: appStyle.colors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
+              ),
             ],
           ),
         ),
       ),
     );
 
-    if (!expanded && test != null && showTests) {
-      var theme = test!.theme.firstUpper();
+    if (test != null && showTests) {
+      var theme = test!.theme?.firstUpper() ?? "";
       var method = test!.method.description.firstUpper();
 
       elements.add(
         GestureDetector(
           onTap: () {
-            showTestBottomSheet(
-              context,
-              data,
-              lesson,
-              lessonNo,
-              accent,
-              secondary,
-              bgColor,
-              test!,
-            );
+            showTestBottomSheet(context, data, test!);
           },
           child: FirkaCard.single(
             height: 48,

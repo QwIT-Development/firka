@@ -15,7 +15,7 @@ class Omission extends UidObj {
   final NameUidDesc? proofType;
   final UidObj? classGroup;
 
-  Omission({
+  const Omission({
     required super.uid,
     required this.subject,
     required this.c,
@@ -71,7 +71,7 @@ class Class {
   final DateTime end;
   final int classNo;
 
-  Class({required this.start, required this.end, required this.classNo});
+  const Class({required this.start, required this.end, required this.classNo});
 
   factory Class.fromJson(Map<String, dynamic> json) {
     return Class(

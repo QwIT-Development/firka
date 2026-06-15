@@ -9,17 +9,13 @@ class BottomNavIconWidget extends StatelessWidget {
   final bool active;
   final dynamic icon;
   final String text;
-  final Color iconColor;
-  final Color textColor;
   final bool isProfilePicture;
 
   const BottomNavIconWidget(
     this.onTap,
     this.active,
     this.icon,
-    this.text,
-    this.iconColor,
-    this.textColor, {
+    this.text, {
     this.isProfilePicture = false,
     super.key,
   });
@@ -33,43 +29,40 @@ class BottomNavIconWidget extends StatelessWidget {
           HapticFeedback.lightImpact();
           onTap();
         },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isProfilePicture && icon != null)
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: DecorationImage(
-                      image: MemoryImage(icon as Uint8List),
-                      fit: BoxFit.cover,
-                    ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isProfilePicture && icon != null)
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: MemoryImage(icon as Uint8List),
+                    fit: BoxFit.cover,
                   ),
-                )
-              else
-                FirkaIconWidget(
-                  FirkaIconType.majesticons,
-                  icon as Uint8List,
-                  color: iconColor,
-                  size: 24,
-                ).build(context),
-              const SizedBox(height: 4),
-              Text(
-                text,
-                style: active
-                    ? appStyle.fonts.B_12SB.apply(
-                        color: appStyle.colors.textPrimary,
-                      )
-                    : appStyle.fonts.B_12R.apply(
-                        color: appStyle.colors.textSecondary,
-                      ),
+                ),
+              )
+            else
+              FirkaIconWidget(
+                FirkaIconType.majesticons,
+                icon as Uint8List,
+                color: active
+                    ? appStyle.colors.accent
+                    : appStyle.colors.secondary.withAlpha(128),
+                size: 24,
               ),
-            ],
-          ),
+            const SizedBox(height: 2),
+            Text(
+              text,
+              style: appStyle.fonts.B_14R.apply(
+                color: active
+                    ? appStyle.colors.textPrimary
+                    : appStyle.colors.textSecondary,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -5,7 +5,7 @@ class Guardian extends NameUid {
   final bool isLegalRepresentative;
   final String? phoneNumber;
 
-  Guardian({
+  const Guardian({
     required this.email,
     required this.isLegalRepresentative,
     required super.name,

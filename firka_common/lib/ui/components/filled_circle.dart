@@ -18,14 +18,14 @@ class FilledCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: diameter,
       height: diameter,
-      decoration: ShapeDecoration(
+      child: Material(
+        shape: const CircleBorder(),
         color: color,
-        shape: CircleBorder(eccentricity: 1),
+        child: Center(child: child),
       ),
-      child: Center(child: child),
     );
   }
 }

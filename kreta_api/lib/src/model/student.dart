@@ -1,20 +1,19 @@
 import 'package:intl/intl.dart';
 
+import 'generic.dart';
 import 'guardian.dart';
 import 'institution.dart';
 
-class Student {
+class Student extends NameUid {
   final List<String> addressDataList;
   final BankAccount bankAccount;
 
   final DateTime birthdate;
 
   final String? emailAddress;
-  final String name;
   final String? phoneNumber;
 
   final String schoolYearUID;
-  final String uid;
 
   final List<Guardian> guardianList;
   final String instituteCode;
@@ -22,15 +21,15 @@ class Student {
 
   final Institution institution;
 
-  Student({
+  const Student({
     required this.addressDataList,
     required this.bankAccount,
     required this.birthdate,
     required this.emailAddress,
-    required this.name,
+    required super.name,
     required this.phoneNumber,
     required this.schoolYearUID,
-    required this.uid,
+    required super.uid,
     required this.guardianList,
     required this.instituteCode,
     required this.instituteName,
@@ -86,7 +85,7 @@ class BankAccount {
   final String? ownerName;
   final int? ownerType;
 
-  BankAccount({
+  const BankAccount({
     required this.accountNumber,
     required this.isReadOnly,
     required this.ownerName,

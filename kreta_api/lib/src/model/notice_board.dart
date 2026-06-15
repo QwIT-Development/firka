@@ -7,7 +7,7 @@ abstract class MessageItem extends UidObj {
   final String contentHTML;
   final String contentText;
 
-  MessageItem({
+  const MessageItem({
     required super.uid,
     required this.title,
     required this.author,
@@ -25,7 +25,7 @@ class NoticeBoardItem extends MessageItem {
   @override
   DateTime get date => validFrom;
 
-  NoticeBoardItem({
+  const NoticeBoardItem({
     required super.uid,
     required super.title,
     required super.author,
@@ -66,7 +66,7 @@ class InfoBoardItem extends MessageItem {
   final DateTime createdAt;
   final NameUidDesc type;
 
-  InfoBoardItem({
+  const InfoBoardItem({
     required super.uid,
     required super.title,
     required super.author,

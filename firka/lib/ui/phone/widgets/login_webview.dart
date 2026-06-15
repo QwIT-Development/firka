@@ -60,10 +60,10 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
       end: 0.0,
     ).animate(_fadeAnimationController!);
 
-    var loginUrl = KretaEndpoints.kretaLoginUrl;
+    var loginUrl = KretaLoginEndpoints.kretaLoginUrl;
 
     if (widget.username != null && widget.schoolId != null) {
-      loginUrl = KretaEndpoints.kretaLoginUrlRefresh(
+      loginUrl = KretaLoginEndpoints.kretaLoginUrlRefresh(
         widget.username!,
         widget.schoolId!,
       );

@@ -30,7 +30,7 @@ class AllLessons {
   final String teacherAvatarTypePath;
   final dynamic taskGroupId;
 
-  AllLessons({
+  const AllLessons({
     required this.schoolId,
     required this.yearId,
     this.classId,

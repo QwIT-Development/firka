@@ -2,9 +2,7 @@ import '../extensions.dart';
 import 'generic.dart';
 import 'subject.dart';
 
-class ClassGroup {
-  final String uid;
-  final String name;
+class ClassGroup extends NameUid {
   final UidObj? headTeacher;
   final UidObj? substituteHeadTeacher;
   final NameUidDesc studyGroup;
@@ -13,9 +11,9 @@ class ClassGroup {
   final bool isActive;
   final String type;
 
-  ClassGroup({
-    required this.uid,
-    required this.name,
+  const ClassGroup({
+    required super.uid,
+    required super.name,
     required this.headTeacher,
     required this.substituteHeadTeacher,
     required this.studyGroup,
@@ -61,7 +59,7 @@ class SubjectAverage extends UidObj {
   final double? weightedSum;
   final double? weightedCount;
 
-  SubjectAverage({
+  const SubjectAverage({
     required super.uid,
     required this.subject,
     this.average,
@@ -90,7 +88,7 @@ class ClassGroupSubjectAverage extends UidObj {
   final double? studentAverage;
   final double? classGroupAverage;
 
-  ClassGroupSubjectAverage({
+  const ClassGroupSubjectAverage({
     required super.uid,
     required this.subject,
     this.classGroupAverage,

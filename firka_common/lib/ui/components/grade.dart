@@ -70,19 +70,7 @@ class GradeWidget extends StatelessWidget {
       color: gradeColor,
       fontSize: size * 0.75,
     );
-    final text = Text(
-      value.toString(),
-      style: weight < 100
-          ? textStyle.copyWith(
-              foreground: Paint()
-                ..color = gradeColor
-                ..style = PaintingStyle.stroke
-                ..strokeJoin = StrokeJoin.round
-                ..strokeCap = StrokeCap.round
-                ..strokeWidth = 1.13,
-            )
-          : textStyle,
-    );
+    final text = Text(value.toString(), style: textStyle);
 
     if (weight > 100) {
       final circle_size = size * 0.8;

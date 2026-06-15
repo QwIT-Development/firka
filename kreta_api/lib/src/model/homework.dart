@@ -16,7 +16,7 @@ class Homework extends UidObj {
   final UidObj classGroup;
   final bool canAttach;
 
-  Homework({
+  const Homework({
     required super.uid,
     required this.subject,
     required this.subjectName,
