@@ -45,13 +45,17 @@ struct TimetableLiveActivityLegacy: Widget {
                             Text("\(context.state.labels?.startTimeLabel ?? "Kezdés:") \(timeString)")
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(.gray)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
                         } else {
                             Text(context.state.formattedStartTime + " - " + context.state.formattedEndTime)
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(.gray)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
                         }
                     }
-                    
+
                     DynamicIslandExpandedRegion(.center) {
                         let season = context.state.season ?? ""
                         VStack(spacing: 4) {
@@ -273,6 +277,13 @@ struct TimetableLiveActivityLegacy: Widget {
                             .font(.system(size: 12, weight: .semibold, design: .rounded))
                             .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
                             .frame(width: 50)
+                    } else if context.state.endTime > context.state.currentTime {
+                        Text(timerInterval: context.state.currentTime...context.state.endTime, countsDown: true)
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundColor(SeasonalIconHelper.iconColor(for: mode, season: season))
+                            .monospacedDigit()
+                            .multilineTextAlignment(.center)
+                            .frame(width: 50)
                     } else {
                         Text("")
                             .frame(width: 50)
@@ -402,10 +413,14 @@ struct TimetableLiveActivityView: View {
                             Text("\(context.state.labels?.startTimeLabel ?? "Kezdés:") \(timeString)")
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(.white)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
                         } else {
                             Text(context.state.formattedStartTime + " - " + context.state.formattedEndTime)
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(.white)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
                         }
 
                         if SeasonalIconHelper.isSeasonalMode(mode) {
