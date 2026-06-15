@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/app/initialization.dart';
 import 'package:firka/app/initialization_screen.dart';
@@ -18,13 +17,6 @@ void main() async {
       logger.finest("Initializing app");
       WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
       FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-
-      try {
-        await dotenv.load(fileName: ".env");
-        logger.info("Environment variables loaded");
-      } catch (e, st) {
-        logger.severe("Failed to load .env: $e", e, st);
-      }
 
       await setupLogging();
 

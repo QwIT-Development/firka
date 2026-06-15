@@ -229,6 +229,14 @@ import BackgroundTasks
     // No automatic scheduling here to give Flutter full control
   }
 
+  override func applicationWillTerminate(_ application: UIApplication) {
+    // Intentionally do NOT end Live Activities here. Live Activities are
+    // designed to outlive the host app — the backend keeps pushing updates
+    // via APNs. They should only end when:
+    //   - the user dismisses the activity manually (handled by iOS), or
+    //   - the user logs out / disables Live Activity in settings.
+  }
+
   override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
     if url.scheme == "firka" && url.host == "widget" {
       let path = url.path.replacingOccurrences(of: "/", with: "")
