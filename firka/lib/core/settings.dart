@@ -718,6 +718,17 @@ class SettingsStore {
           morningNotificationTimeSetting.value,
         );
       };
+
+      final fakeMorningSetting =
+          group("settings").subGroup("developer")["dev_fake_morning_lesson"]
+              as SettingsBoolean;
+      fakeMorningSetting.postUpdate = () async {
+        if (fakeMorningSetting.value) {
+          await LiveActivityService.startFakeMorningActivity();
+        } else {
+          await LiveActivityService.endAllActivitiesPublic();
+        }
+      };
     }
   }
 

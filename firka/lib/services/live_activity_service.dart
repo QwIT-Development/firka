@@ -1531,6 +1531,31 @@ class LiveActivityService {
     await checkAndUpdateTimetable(client: client, studentName: studentName);
   }
 
+  /// Dev-only: start a Live Activity immediately using the fake morning
+  /// lesson injection in [_startLiveActivityWithCurrentState]. The dev
+  /// setting must already be enabled.
+  static Future<void> startFakeMorningActivity() async {
+    if (!Platform.isIOS) return;
+    try {
+      String studentName = 'Dev';
+      try {
+        final client = initData.client;
+        final resp = await client.getStudent();
+        studentName = resp.response?.name ?? client.model.studentId ?? 'Dev';
+      } catch (_) {}
+      await _startLiveActivityWithCurrentState([], studentName);
+      _logger.info('Fake morning Live Activity started');
+    } catch (e, st) {
+      _logger.severe('Failed to start fake morning Live Activity: $e', e, st);
+    }
+  }
+
+  /// Public wrapper to end all Live Activities (used by dev toggle off).
+  static Future<void> endAllActivitiesPublic() async {
+    if (!Platform.isIOS) return;
+    await LiveActivityManager.endAllActivities();
+  }
+
   /// Start Live Activity with current timetable state (no placeholder)
   static Future<void> _startLiveActivityWithCurrentState(
     List<Lesson> allLessons,
