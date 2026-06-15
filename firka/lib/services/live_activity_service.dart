@@ -1612,7 +1612,19 @@ class LiveActivityService {
         // Create a synthetic break "lesson" for display
         currentLesson = nextLesson;
       } else {
-        // Before first lesson
+        // Before first lesson — only start beforeSchool within the user's
+        // morning notification window. Otherwise we'd show a 20+ hour
+        // countdown (e.g. previous evening for next morning's first lesson).
+        final morningMinutes = await _getUserMorningNotificationTime();
+        final minutesUntilStart = nextLesson.start.difference(now).inMinutes;
+        if (minutesUntilStart > morningMinutes) {
+          _logger.info(
+            '_startLiveActivityWithCurrentState: First lesson in '
+            '${minutesUntilStart}m, outside morning window '
+            '(${morningMinutes}m), skipping',
+          );
+          return;
+        }
         mode = 'beforeSchool';
         currentLesson = nextLesson;
         nextLesson = todayLessons.length > 1 ? todayLessons[1] : null;
@@ -1629,7 +1641,7 @@ class LiveActivityService {
     await LiveActivityManager.startActivity(
       studentName: studentName,
       schoolName: 'Iskola',
-      currentLesson: currentLesson!,
+      currentLesson: currentLesson,
       nextLesson: nextLesson,
       isBreak: isBreak,
       mode: mode,
