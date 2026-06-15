@@ -1731,9 +1731,25 @@ class LiveActivityService {
       }
     }
 
-    // End existing activities
+    // If an activity is already running, update it in place instead of
+    // ending + recreating — recreating causes a visible flicker / dismiss
+    // and is the source of "constantly turning off and on" during dev
+    // re-eval.
     final activeActivities = await LiveActivityManager.getActiveActivities();
     if (activeActivities.isNotEmpty) {
+      final updated = await LiveActivityManager.updateActivity(
+        currentLesson: currentLesson,
+        nextLesson: nextLesson,
+        isBreak: isBreak,
+        mode: mode,
+      );
+      if (updated) {
+        _logger.info(
+          '_startLiveActivityWithCurrentState: updated existing activity (mode=$mode, lesson=${currentLesson.name})',
+        );
+        return;
+      }
+      // Fallback: end + recreate
       await LiveActivityManager.endAllActivities();
       await Future.delayed(const Duration(milliseconds: 500));
     }
