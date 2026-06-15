@@ -49,15 +49,20 @@ class _LessonSliderState extends State<LessonSlider> {
 
     var lessons = widget.lessons.keys.toList();
 
-    var currentLesson = widget.lessons.keys.firstWhereOrNull(
-      (lesson) => now.isBefore(lesson.end),
-    );
+    Lesson? currentLesson;
+    int tmpIndex;
+    if (now.isBefore(lessons.first.start)) {
+      tmpIndex = 0;
+    } else {
+      (int, Lesson)? currentIndex = lessons.indexed.firstWhereOrNull(
+        (e) => now.isBefore(e.$2.end),
+      );
 
-    int tmpIndex = lessons.isEmpty || now.isBefore(lessons.first.start)
-        ? 0
-        : currentLesson == null
-        ? lessons.length + 1
-        : lessons.indexOf(currentLesson) + 1;
+      tmpIndex = (currentIndex?.$1 ?? lessons.length) + 1;
+      if (currentIndex != null) {
+        currentLesson = currentIndex.$2;
+      }
+    }
 
     if (activeLessonIndex == null || tmpIndex != activeLessonIndex) {
       activeLessonIndex = tmpIndex;

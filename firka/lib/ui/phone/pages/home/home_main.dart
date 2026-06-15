@@ -45,12 +45,13 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   List<Test>? tests;
   List<Grade>? grades;
   List<Homework>? homework;
+  List<Omission>? omissions;
   Student? student;
   Timer? timer;
 
   void _onRefreshRequested(BuildContext context) async {
     final cubit = context.read<HomeRefreshCubit>();
-    await fetchData(cacheOnly: false);
+    setState(() {});
     if (mounted) {
       cubit.onRefreshComplete();
     }
@@ -66,6 +67,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     var testsFetched = 0;
     var gradesFetched = 0;
     var homeworkFetched = 0;
+    var omissionFetched = 0;
 
     widget.data.client
         .getTimeTableStream(
@@ -139,6 +141,18 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
       }
     });
 
+    widget.data.client.getOmissionsStream(cacheOnly: cacheOnly).forEach((
+      omission,
+    ) {
+      omissionFetched++;
+
+      if (mounted) {
+        setState(() {
+          this.omissions = omission.response;
+        });
+      }
+    });
+
     widget.data.client.getHomeworkStream(cacheOnly: cacheOnly).forEach((
       homework,
     ) {
@@ -161,7 +175,8 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         studentFetched < r ||
         testsFetched < r ||
         gradesFetched < r ||
-        homeworkFetched < r) {
+        homeworkFetched < r ||
+        omissionFetched < r) {
       if (DateTime.now().difference(startTime) > maxWaitTime) {
         debugPrint('[HomeMain] Data fetch timed out after 30s');
         break;
@@ -198,6 +213,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
       final gradeItems = grades ?? [];
       final testItems = tests ?? [];
       final homeworkItems = homework ?? [];
+      final omissionItems = omissions?.groupList((o) => o.date).values ?? [];
       final noticeBoardWidgets = <(Widget, DateTime)>[];
 
       for (final item in infoItems) {
@@ -214,6 +230,13 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
 
       for (final entry in homeworkItems) {
         noticeBoardWidgets.add((InfoCard.homework(entry), entry.creationDate));
+      }
+
+      for (final omission in omissionItems) {
+        noticeBoardWidgets.add((
+          InfoCard.omission(omission),
+          omission.first.date,
+        ));
       }
 
       noticeBoardWidgets.sort(
@@ -244,46 +267,43 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
           .length;
 
       return Padding(
-        padding: const EdgeInsets.only(left: 20.0, top: 24.0, right: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            WelcomeWidget(widget.data.l10n, now, student!, lessons!),
-            SizedBox(height: 48),
-            LessonSlider(lessonTestMap, testsTomorrow),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () => fetchData(),
-                notificationPredicate: (ScrollNotification notification) {
-                  return notification.depth == 0;
-                },
-                triggerMode: RefreshIndicatorTriggerMode.onEdge,
-                displacement: 0,
-                child: ListView(
-                  children: noticeBoardWidgets
-                      .groupList((e) => e.$2)
-                      .entries
-                      .map(
-                        (e) => Column(
-                          spacing: 10,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              e.key.format(widget.data.l10n, FormatMode.main),
-                              style: appStyle.fonts.B_16R.apply(
-                                color: appStyle.colors.textSecondary,
-                              ),
-                            ),
-                            ...e.value.map((v) => v.$1),
-                            SizedBox(height: 10),
-                          ],
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: RefreshIndicator(
+          onRefresh: () => fetchData(),
+          notificationPredicate: (ScrollNotification notification) {
+            return notification.depth == 0;
+          },
+          triggerMode: RefreshIndicatorTriggerMode.onEdge,
+          displacement: 0,
+          child: ListView(
+            clipBehavior: Clip.none,
+            children: [
+              SizedBox(height: 24),
+              WelcomeWidget(widget.data.l10n, now, student!, lessons!),
+              SizedBox(height: 48),
+              LessonSlider(lessonTestMap, testsTomorrow),
+              SizedBox(height: 24),
+              ...noticeBoardWidgets
+                  .groupList((e) => e.$2)
+                  .entries
+                  .map(
+                    (e) => Column(
+                      spacing: 10,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          e.key.format(widget.data.l10n, FormatMode.main),
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textSecondary,
+                          ),
                         ),
-                      )
-                      .toList(),
-                ),
-              ),
-            ),
-          ],
+                        ...e.value.map((v) => v.$1),
+                        SizedBox(height: 10),
+                      ],
+                    ),
+                  ),
+            ],
+          ),
         ),
       );
     } else {

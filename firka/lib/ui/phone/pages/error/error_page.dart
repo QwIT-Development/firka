@@ -1,12 +1,13 @@
+import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firka/core/image_preloader.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/core/swear_generator.dart';
 
 class ErrorPage extends StatelessWidget {
   final String exception;
-
   const ErrorPage({super.key, required this.exception});
 
   @override
@@ -51,7 +52,6 @@ class ErrorPage extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                       Text(
-                        //'a,',
                         generateSwearSentence(),
                         style: appStyle.fonts.H_H2.copyWith(
                           color: appStyle.colors.textPrimary,
@@ -86,13 +86,20 @@ class ErrorPage extends StatelessWidget {
                         color: appStyle.colors.card,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(
-                        exception,
-                        style: appStyle.fonts.B_14R.copyWith(
-                          color: appStyle.colors.textPrimary,
-                          fontFamily: 'RobotoMono',
+                      child: SingleChildScrollView(
+                        child: Text(
+                          exception,
+                          style: appStyle.fonts.B_14R.copyWith(
+                            color: appStyle.colors.textPrimary,
+                            fontFamily: 'RobotoMono',
+                          ),
                         ),
                       ),
+                    ),
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: _CopyButton(exception: exception),
                     ),
                     Positioned(
                       bottom: 0,
@@ -156,6 +163,37 @@ class ErrorPage extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _CopyButton extends StatefulWidget {
+  final String exception;
+  const _CopyButton({required this.exception});
+
+  @override
+  State<_CopyButton> createState() => _CopyButtonState();
+}
+
+class _CopyButtonState extends State<_CopyButton> {
+  final _tooltipKey = GlobalKey<TooltipState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      key: _tooltipKey,
+      message: initData.l10n.copied,
+      triggerMode: TooltipTriggerMode.manual,
+      child: IconButton(
+        icon: Icon(Icons.copy, size: 18),
+        color: appStyle.colors.textSecondary,
+        onPressed: () async {
+          await Clipboard.setData(ClipboardData(text: widget.exception));
+          _tooltipKey.currentState?.ensureTooltipVisible();
+          await Future.delayed(const Duration(seconds: 2));
+          _tooltipKey.currentState?.deactivate();
+        },
       ),
     );
   }

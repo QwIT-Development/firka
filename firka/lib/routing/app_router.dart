@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:firka/ui/phone/pages/home/home_omissions.dart';
 import 'package:flutter/material.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/app/app_state.dart';
@@ -174,6 +175,20 @@ GoRouter createAppRouter() {
                   ),
                   subjectRoute,
                 ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/omissions',
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: DefaultAssetBundle(
+                    bundle: FirkaBundle(),
+                    child: HomeOmissionsScreen(initData),
+                  ),
+                ),
               ),
             ],
           ),

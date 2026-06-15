@@ -7,15 +7,15 @@ icons:
   "assets/images/logos/colored_logo_only_mustache.png": "bad6220c11bdfb1dfe04e5173bd2ebedd3999689d4b3a68fc63dc520c96dd33b"
 l10n:
   "l10n.yml": "a57bc304cac4a2b0235593586f17f400a5165d67fc9aadeaa11893cfa36ee082"
-  "lib/l10n/app_de.arb": "1c4a214cedab9af82da1c11677bca288bd7ca53cc68a89463d7fb9a79f209cc4"
-  "lib/l10n/app_hu.arb": "71a82c03df085662e7eb7d08ec472024d559912c5be6b4b542fdd2b77470526f"
-  "lib/l10n/app_en.arb": "51a51ce9d19a19ab54959e4938c166e8880e210d932280a2d2d76a79b6386113"
+  "lib/l10n/app_de.arb": "c6a12eaadf03b012a6a377b3efa4e606bd985355e76e6351956a017f4cfdadc1"
+  "lib/l10n/app_hu.arb": "a63aace8d129dbc054c4996dd9ef7d54aad96888241ce1310518b10a9a7b561d"
+  "lib/l10n/app_en.arb": "b2d72778fedb46155f41eb210906ed8ffba8b12744a2800b039951e0a2a88133"
 isar:
+  "lib/data/models/app_settings_model.dart": "5eb5af345f1347f104257f0999763650fe2673f9da1754bd12d3f756fe5c9723"
   "lib/data/models/token_model.dart": "8c957cd07e473827d78fd8fd4fb6c1336b636a69c25c93618e1e7f94b7cf0683"
   "lib/data/models/homework_cache_model.dart": "45789970b27d5790cdc54c292ef2f5feaa5f4e293b8a8862fd676d5eb3e25d29"
-  "lib/data/models/timetable_cache_model.dart": "b972bf51e399f8d20d4f9ad660082d4cc4a9798df9ac9d6ec9ef6ac640205572"
-  "lib/data/models/app_settings_model.dart": "5eb5af345f1347f104257f0999763650fe2673f9da1754bd12d3f756fe5c9723"
   "lib/data/models/generic_cache_model.dart": "62003ec1fd73a0fa6786d337acdef42b9a6eb9efaa78d17eaf4fe091504b8490"
+  "lib/data/models/timetable_cache_model.dart": "b972bf51e399f8d20d4f9ad660082d4cc4a9798df9ac9d6ec9ef6ac640205572"
 splash:
   "flutter_native_splash.yaml": "0fd4a85d6f950d97298e99916927649940ffcfdadfc136ceee126fed0dbaa9f2"
   "assets/images/logos/splash.png": "88fbebc3d686cb9095bcce362029b69978b1b14270e465e91d962b1425db1152"

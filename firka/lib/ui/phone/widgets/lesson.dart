@@ -42,12 +42,10 @@ class LessonWidget extends StatelessWidget {
             .group("settings")
             .subGroup("timetable_toast")
             .boolean("substitution");
-    final showLessonNos =
-        lesson.lessonNumber != null &&
-        data.settings
-            .group("settings")
-            .subGroup("timetable_toast")
-            .boolean("lesson_no");
+    final showLessonNos = data.settings
+        .group("settings")
+        .subGroup("timetable_toast")
+        .boolean("lesson_no");
     final isDismissed = lesson.type.name == "UresOra";
 
     var accent = appStyle.colors.accent;
@@ -115,7 +113,7 @@ class LessonWidget extends StatelessWidget {
                                 height: 18,
                               ),
                               Text(
-                                lesson.lessonNumber!.toString(),
+                                lesson.lessonNumber?.toString() ?? "-",
                                 style: appStyle.fonts.B_14SB.apply(
                                   color: secondary,
                                 ),
@@ -166,7 +164,7 @@ class LessonWidget extends StatelessWidget {
                               ),
                               showSubstitutions
                                   ? Text(
-                                      lesson.substituteTeacher!,
+                                      lesson.substituteTeacher!.shortenName(),
                                       style: appStyle.fonts.B_14R.apply(
                                         color: appStyle.colors.textSecondary,
                                       ),

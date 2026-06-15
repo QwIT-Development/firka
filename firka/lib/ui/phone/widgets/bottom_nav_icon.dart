@@ -54,12 +54,15 @@ class BottomNavIconWidget extends StatelessWidget {
                 size: 24,
               ),
             const SizedBox(height: 2),
-            Text(
-              text,
-              style: appStyle.fonts.B_14R.apply(
-                color: active
-                    ? appStyle.colors.textPrimary
-                    : appStyle.colors.textSecondary,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                text,
+                style: appStyle.fonts.B_14R.apply(
+                  color: active
+                      ? appStyle.colors.textPrimary
+                      : appStyle.colors.textSecondary,
+                ),
               ),
             ),
           ],

@@ -1,6 +1,8 @@
+import 'package:firka/core/bloc/home_refresh_cubit.dart';
 import 'package:firka/ui/phone/widgets/info_card.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:firka_common/ui/shared/grade_small_card.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/data/models/homework_cache_model.dart';
 import 'package:firka/core/extensions.dart';
@@ -135,6 +137,27 @@ Future<void> showLessonBottomSheet(
             size: 26,
           ),
         ),
+        SizedBox(width: 6),
+        if (lesson.roomName != null)
+          Card(
+            shadowColor: Colors.transparent,
+            color: appStyle.colors.a15p,
+            margin: EdgeInsets.all(0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 6),
+              child: Text(
+                lesson.roomName!,
+                style: appStyle.fonts.B_14R.apply(
+                  color: appStyle.colors.secondary,
+                ),
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
       ],
     ),
     SizedBox(height: 20),
@@ -163,7 +186,6 @@ Future<void> showLessonBottomSheet(
         lesson.substituteTeacher!,
         style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
       ),
-    SizedBox(height: 8),
     Text(
       '${lesson.start.format(data.l10n, FormatMode.hmm)} - ${lesson.end.format(data.l10n, FormatMode.hmm)}',
       style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
@@ -219,6 +241,119 @@ Future<void> showLessonBottomSheet(
       onTap: () {
         context.go('/timetable/subject', extra: lesson.subject);
       },
+    ),
+  ]);
+}
+
+Future<void> showOmissionBottomSheet(
+  BuildContext context,
+  AppInitialization data,
+  String description,
+  List<Omission> omissions,
+) async {
+  showFirkaBottomSheet(context, [
+    Text(
+      omissions.first.date.format(data.l10n, FormatMode.yyyymmdd),
+      style: appStyle.fonts.H_18px.apply(color: appStyle.colors.textPrimary),
+    ),
+    SizedBox(height: 2),
+    Text(
+      description,
+      style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textSecondary),
+    ),
+    SizedBox(height: 2),
+    LimitedBox(
+      maxHeight: 336,
+      child: ListView.builder(
+        itemCount: omissions.length,
+        itemBuilder: (b, i) {
+          final o = omissions[i];
+          return FirkaCard.single(
+            height: 64,
+            margin: EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.only(left: 14, right: 16),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        "assets/icons/subtract.svg",
+                        color: appStyle.colors.a15p,
+                        width: 18,
+                        height: 18,
+                      ),
+                      Text(
+                        o.lesson!.classNo?.toString() ?? "-",
+                        style: appStyle.fonts.B_14SB.apply(
+                          color: appStyle.colors.secondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+                FilledCircle(
+                  diameter: 36,
+                  color: appStyle.colors.a15p,
+                  child: ClassIconWidget(
+                    uid: o.subject.uid,
+                    className: o.subject.name,
+                    category: o.subject.name,
+                    color: appStyle.colors.accent,
+                    size: 24,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        o.subject.name,
+                        style: appStyle.fonts.B_16SB.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        o.teacher,
+                        style: appStyle.fonts.B_14R.apply(
+                          color: appStyle.colors.textSecondary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 8),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      o.lesson!.start.format(data.l10n, FormatMode.hmm),
+                      style: appStyle.fonts.B_14R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      o.lesson!.end.format(data.l10n, FormatMode.hmm),
+                      style: appStyle.fonts.B_14R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     ),
   ]);
 }
@@ -493,6 +628,7 @@ Future<void> showHomeworkBottomSheet(
                 color: appStyle.colors.accent,
               ),
               onTap: () {
+                context.read<HomeRefreshCubit>().requestRefresh();
                 Navigator.pop(context);
                 !done
                     ? markAsDone(data.isar, homework.uid)
