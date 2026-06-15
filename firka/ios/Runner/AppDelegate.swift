@@ -230,17 +230,11 @@ import BackgroundTasks
   }
 
   override func applicationWillTerminate(_ application: UIApplication) {
-    // End all Live Activities and unregister from backend when app is terminated
-    if #available(iOS 16.2, *) {
-      let semaphore = DispatchSemaphore(value: 0)
-      Task {
-        for activity in Activity<TimetableActivityAttributes>.activities {
-          await activity.end(nil, dismissalPolicy: .immediate)
-        }
-        semaphore.signal()
-      }
-      _ = semaphore.wait(timeout: .now() + 2.0)
-    }
+    // Intentionally do NOT end Live Activities here. Live Activities are
+    // designed to outlive the host app — the backend keeps pushing updates
+    // via APNs. They should only end when:
+    //   - the user dismisses the activity manually (handled by iOS), or
+    //   - the user logs out / disables Live Activity in settings.
   }
 
   override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
