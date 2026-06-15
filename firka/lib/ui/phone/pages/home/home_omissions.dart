@@ -112,7 +112,7 @@ class _HomeOmissionsScreen extends FirkaState<HomeOmissionsScreen> {
                         children: [
                           FirkaIconWidget(
                             FirkaIconType.majesticonsLocal,
-                            "check",
+                            "checkSolid",
                             size: 12.0,
                             color: appStyle.colors.accent,
                           ),
@@ -269,7 +269,7 @@ class _HomeOmissionsScreen extends FirkaState<HomeOmissionsScreen> {
                                     children: [
                                       FirkaIconWidget(
                                         FirkaIconType.majesticonsLocal,
-                                        "check",
+                                        "checkSolid",
                                         size: 12.0,
                                         color: appStyle.colors.accent,
                                       ),

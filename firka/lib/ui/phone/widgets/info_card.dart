@@ -107,29 +107,52 @@ class InfoCard extends StatelessWidget {
 
   factory InfoCard.omission(List<Omission> omissions) {
     String title = "-";
+    Color color = appStyle.colors.accent;
+    FirkaIconType iconType = FirkaIconType.majesticons;
+    Object iconData = "check";
     for (final state in [
-      OmissionState.pending,
-      OmissionState.unexcused,
-      OmissionState.excused,
+      (
+        OmissionState.pending,
+        appStyle.colors.warningAccent,
+        FirkaIconType.majesticons,
+        Majesticon.timerSolid,
+      ),
+      (
+        OmissionState.unexcused,
+        appStyle.colors.errorAccent,
+        FirkaIconType.majesticons,
+        Majesticon.restrictedLine,
+      ),
+      (
+        OmissionState.excused,
+        appStyle.colors.accent,
+        FirkaIconType.majesticonsLocal,
+        "check",
+      ),
     ]) {
-      final count = omissions.where((o) => o.state == state).length;
+      final count = omissions.where((o) => o.state == state.$1).length;
 
       if (count == 0) {
         continue;
       }
 
-      title = initData.l10n.omissions_count(state.name, count);
+      title = initData.l10n.omissions_count(state.$1.name, count);
+      color = state.$2;
+      iconType = state.$3;
+      iconData = state.$4;
       break;
     }
     return InfoCard(
       icon: FilledCircle(
         diameter: 36,
-        color: appStyle.colors.a15p,
-        child: SizedBox(),
+        color: color.withAlpha(38),
+        child: FirkaIconWidget(iconType, iconData, color: color, size: 24),
       ),
       texts: [
         title,
-        DateFormat.MMMMd(initData.l10n.localeName).format(omissions.first.date),
+        DateFormat.MMMMd(
+          initData.l10n.localeName,
+        ).format(omissions.first.date).firstUpper(),
       ],
       onTap: (context) =>
           showOmissionBottomSheet(context, initData, title, omissions),
