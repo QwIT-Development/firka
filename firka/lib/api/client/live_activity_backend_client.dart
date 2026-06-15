@@ -3,26 +3,25 @@ import 'package:kreta_api/kreta_api.dart';
 import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Client for communicating with the refilc-live-server backend.
 /// Handles device registration, schedule uploads, and unregistration
 /// for Live Activity push notifications via APNs.
 class LiveActivityBackendClient {
+  static const String _baseUrl = 'https://legacy-la.devbeni.lol';
   static final Logger _logger = Logger('LiveActivityBackendClient');
   static const String _deviceIdKey = 'live_activity_server_device_id';
 
   final Dio _dio;
 
   LiveActivityBackendClient({Dio? dio}) : _dio = dio ?? Dio() {
-    final baseUrl = dotenv.env['LIVE_ACTIVITY_SERVER_URL'] ?? 'https://firka-la.devbeni.lol';
-    _dio.options.baseUrl = baseUrl;
+    _dio.options.baseUrl = _baseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 10);
     _dio.options.receiveTimeout = const Duration(seconds: 10);
     _dio.options.headers = {
       'Content-Type': 'application/json',
     };
-    _logger.info('LiveActivity backend configured: $baseUrl');
+    _logger.info('LiveActivity backend configured: $_baseUrl');
   }
 
   /// Get or create a persistent device ID (UUID).
@@ -51,7 +50,6 @@ class LiveActivityBackendClient {
         'device_id': deviceId,
         'apns_token': apnsToken,
         'bundle_id': bundleId,
-        'app_type': 'firka',
         'settings': {
           'live_activity_color': liveActivityColor,
         },
@@ -120,12 +118,11 @@ class LiveActivityBackendClient {
   }
 
   /// Convert Firka Lesson list to the server's LessonItem format.
-  /// Also generates break items between consecutive lessons.
+  /// Server computes breaks/dismiss internally from this list.
   static List<Map<String, dynamic>> lessonsToServerFormat(
     List<Lesson> lessons, {
     double bellDelayMinutes = 0.0,
   }) {
-    // Filter out cancelled lessons (keep substituted ones) and empty lessons
     final filtered = lessons.where((l) {
       final isCancelled =
           l.state.name?.toLowerCase().contains('elmarad') ?? false;
@@ -137,66 +134,19 @@ class LiveActivityBackendClient {
     if (filtered.isEmpty) return [];
 
     final bellDelayMs = (bellDelayMinutes * 60 * 1000).round();
-    final result = <Map<String, dynamic>>[];
 
-    for (var i = 0; i < filtered.length; i++) {
-      final lesson = filtered[i];
-      final nextLesson = i + 1 < filtered.length ? filtered[i + 1] : null;
-
-      // Add lesson item
-      result.add({
-        'type': 'lesson',
-        'index': '${lesson.lessonNumber ?? (i + 1)}',
-        'subject': lesson.name,
-        'icon': _subjectToIcon(lesson.name),
-        'room': lesson.roomName ?? '',
-        'description': lesson.theme ?? '',
-        'start': lesson.start.millisecondsSinceEpoch + bellDelayMs,
-        'end': lesson.end.millisecondsSinceEpoch + bellDelayMs,
-        'nextSubject': nextLesson?.name ?? '',
-        'nextRoom': nextLesson?.roomName ?? '',
-        'nextIndex': nextLesson != null
-            ? '${nextLesson.lessonNumber ?? (i + 2)}'
-            : '',
-        // Firka extra fields for server-side content state building
-        'teacher': lesson.teacher ?? '',
-        'theme': lesson.theme ?? '',
-        'isSubstitution': lesson.substituteTeacher != null,
-        'isCancelled': false,
-        'substituteTeacher': lesson.substituteTeacher ?? '',
-        'lessonNumber': lesson.lessonNumber,
-      });
-
-      // Add break between consecutive lessons
-      if (nextLesson != null) {
-        final breakStart = lesson.end.millisecondsSinceEpoch + bellDelayMs;
-        final breakEnd =
-            nextLesson.start.millisecondsSinceEpoch + bellDelayMs;
-        if (breakEnd > breakStart) {
-          result.add({
-            'type': 'break',
-            'index': '',
-            'subject': 'Szünet',
-            'icon': 'cup.and.saucer',
-            'room': '',
-            'description': '',
-            'start': breakStart,
-            'end': breakEnd,
-            'nextSubject': nextLesson.name,
-            'nextRoom': nextLesson.roomName ?? '',
-            'nextIndex': '${nextLesson.lessonNumber ?? (i + 2)}',
-            'teacher': '',
-            'theme': '',
-            'isSubstitution': false,
-            'isCancelled': false,
-            'substituteTeacher': '',
-            'lessonNumber': null,
-          });
-        }
-      }
-    }
-
-    return result;
+    return [
+      for (var i = 0; i < filtered.length; i++)
+        {
+          'index': '${filtered[i].lessonNumber ?? (i + 1)}',
+          'subject': filtered[i].name,
+          'icon': _subjectToIcon(filtered[i].name),
+          'room': filtered[i].roomName ?? '',
+          'description': filtered[i].theme ?? '',
+          'start': filtered[i].start.millisecondsSinceEpoch + bellDelayMs,
+          'end': filtered[i].end.millisecondsSinceEpoch + bellDelayMs,
+        },
+    ];
   }
 
   /// Map Hungarian subject names to SF Symbol icon names.

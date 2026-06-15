@@ -51,7 +51,6 @@ dependencies:
   url_launcher: ^6.3.2
   shared_preferences: ^2.3.4
   uuid: ^4.0.0
-  flutter_dotenv: ^5.2.1
   xml: ^6.6.1
   confetti: ^0.8.0
   flutter_html: ^3.0.0
@@ -79,7 +78,6 @@ flutter:
   generate: true
   uses-material-design: true
   assets:
-    - .env
     - assets/images/logos/colored_logo.webp
     - assets/images/logos/dave.svg
     - assets/images/logos/loading.gif

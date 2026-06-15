@@ -7,15 +7,15 @@ icons:
   "assets/images/logos/colored_logo_only_mustache.png": "bad6220c11bdfb1dfe04e5173bd2ebedd3999689d4b3a68fc63dc520c96dd33b"
 l10n:
   "l10n.yml": "a57bc304cac4a2b0235593586f17f400a5165d67fc9aadeaa11893cfa36ee082"
-  "lib/l10n/app_de.arb": "ecfbf13bd33be9d27a2b54bfd8fb61e46c1a1dce905869d3f30cd05b4aecf258"
-  "lib/l10n/app_en.arb": "7c43928f67b5b735283da04e3741f1afa2e9d41cdeb2e91c740e77fc84e7f046"
-  "lib/l10n/app_hu.arb": "696a1ea2e86be364e9c815e5f739d3a2f5f3da9c05066084d9d26defe5018e2c"
+  "lib/l10n/app_de.arb": "1c4a214cedab9af82da1c11677bca288bd7ca53cc68a89463d7fb9a79f209cc4"
+  "lib/l10n/app_hu.arb": "71a82c03df085662e7eb7d08ec472024d559912c5be6b4b542fdd2b77470526f"
+  "lib/l10n/app_en.arb": "51a51ce9d19a19ab54959e4938c166e8880e210d932280a2d2d76a79b6386113"
 isar:
-  "lib/data/models/app_settings_model.dart": "5eb5af345f1347f104257f0999763650fe2673f9da1754bd12d3f756fe5c9723"
-  "lib/data/models/generic_cache_model.dart": "79151d0467fb5d40c532eaaa08ad7c7e24a34304199280fbf49cf6e5adcce6bc"
+  "lib/data/models/token_model.dart": "8c957cd07e473827d78fd8fd4fb6c1336b636a69c25c93618e1e7f94b7cf0683"
   "lib/data/models/homework_cache_model.dart": "45789970b27d5790cdc54c292ef2f5feaa5f4e293b8a8862fd676d5eb3e25d29"
   "lib/data/models/timetable_cache_model.dart": "b972bf51e399f8d20d4f9ad660082d4cc4a9798df9ac9d6ec9ef6ac640205572"
-  "lib/data/models/token_model.dart": "8c957cd07e473827d78fd8fd4fb6c1336b636a69c25c93618e1e7f94b7cf0683"
+  "lib/data/models/app_settings_model.dart": "5eb5af345f1347f104257f0999763650fe2673f9da1754bd12d3f756fe5c9723"
+  "lib/data/models/generic_cache_model.dart": "62003ec1fd73a0fa6786d337acdef42b9a6eb9efaa78d17eaf4fe091504b8490"
 splash:
   "flutter_native_splash.yaml": "0fd4a85d6f950d97298e99916927649940ffcfdadfc136ceee126fed0dbaa9f2"
   "assets/images/logos/splash.png": "88fbebc3d686cb9095bcce362029b69978b1b14270e465e91d962b1425db1152"
