@@ -113,7 +113,13 @@ class InfoCard extends StatelessWidget {
       OmissionState.excused,
     ]) {
       final count = omissions.where((o) => o.state == state).length;
+
+      if (count == 0) {
+        continue;
+      }
+
       title = initData.l10n.omissions_count(state.name, count);
+      break;
     }
     return InfoCard(
       icon: FilledCircle(
