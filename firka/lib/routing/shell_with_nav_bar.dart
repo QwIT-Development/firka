@@ -57,6 +57,11 @@ class ShellWithNavBar extends StatelessWidget {
                     Majesticon.calendarSolid,
                     Majesticon.calendarLine,
                   ),
+                  (
+                    initData.l10n.omissions,
+                    Majesticon.timerSolid,
+                    Majesticon.timerLine,
+                  ),
                 ].indexed.map(
                   (nav) => BottomNavIconWidget(
                     () {

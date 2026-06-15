@@ -11,6 +11,7 @@ import 'package:firka/ui/theme/style.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import 'package:kreta_api/kreta_api.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
@@ -101,6 +102,31 @@ class InfoCard extends StatelessWidget {
       ),
       texts: [item.title, item.author],
       onTap: (context) => context.push('/message', extra: item),
+    );
+  }
+
+  factory InfoCard.omission(List<Omission> omissions) {
+    String title = "-";
+    for (final state in [
+      OmissionState.pending,
+      OmissionState.unexcused,
+      OmissionState.excused,
+    ]) {
+      final count = omissions.where((o) => o.state == state).length;
+      title = initData.l10n.omissions_count(state.name, count);
+    }
+    return InfoCard(
+      icon: FilledCircle(
+        diameter: 36,
+        color: appStyle.colors.a15p,
+        child: SizedBox(),
+      ),
+      texts: [
+        title,
+        DateFormat.MMMMd(initData.l10n.localeName).format(omissions.first.date),
+      ],
+      onTap: (context) =>
+          showOmissionBottomSheet(context, initData, title, omissions),
     );
   }
 

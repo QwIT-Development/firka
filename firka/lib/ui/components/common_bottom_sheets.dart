@@ -245,6 +245,119 @@ Future<void> showLessonBottomSheet(
   ]);
 }
 
+Future<void> showOmissionBottomSheet(
+  BuildContext context,
+  AppInitialization data,
+  String description,
+  List<Omission> omissions,
+) async {
+  showFirkaBottomSheet(context, [
+    Text(
+      omissions.first.date.format(data.l10n, FormatMode.yyyymmdd),
+      style: appStyle.fonts.H_18px.apply(color: appStyle.colors.textPrimary),
+    ),
+    SizedBox(height: 2),
+    Text(
+      description,
+      style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textSecondary),
+    ),
+    SizedBox(height: 2),
+    LimitedBox(
+      maxHeight: 336,
+      child: ListView.builder(
+        itemCount: omissions.length,
+        itemBuilder: (b, i) {
+          final o = omissions[i];
+          return FirkaCard.single(
+            height: 64,
+            margin: EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.only(left: 14, right: 16),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        "assets/icons/subtract.svg",
+                        color: appStyle.colors.a15p,
+                        width: 18,
+                        height: 18,
+                      ),
+                      Text(
+                        o.lesson!.classNo?.toString() ?? "-",
+                        style: appStyle.fonts.B_14SB.apply(
+                          color: appStyle.colors.secondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+                FilledCircle(
+                  diameter: 36,
+                  color: appStyle.colors.a15p,
+                  child: ClassIconWidget(
+                    uid: o.subject.uid,
+                    className: o.subject.name,
+                    category: o.subject.name,
+                    color: appStyle.colors.accent,
+                    size: 24,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        o.subject.name,
+                        style: appStyle.fonts.B_16SB.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        o.teacher,
+                        style: appStyle.fonts.B_14R.apply(
+                          color: appStyle.colors.textSecondary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 8),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      o.lesson!.start.format(data.l10n, FormatMode.hmm),
+                      style: appStyle.fonts.B_14R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      o.lesson!.end.format(data.l10n, FormatMode.hmm),
+                      style: appStyle.fonts.B_14R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    ),
+  ]);
+}
+
 Future<void> showTestBottomSheet(
   BuildContext context,
   AppInitialization data,

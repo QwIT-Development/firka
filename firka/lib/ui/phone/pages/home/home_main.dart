@@ -45,6 +45,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   List<Test>? tests;
   List<Grade>? grades;
   List<Homework>? homework;
+  List<Omission>? omissions;
   Student? student;
   Timer? timer;
 
@@ -66,6 +67,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     var testsFetched = 0;
     var gradesFetched = 0;
     var homeworkFetched = 0;
+    var omissionFetched = 0;
 
     widget.data.client
         .getTimeTableStream(
@@ -139,6 +141,18 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
       }
     });
 
+    widget.data.client.getOmissionsStream(cacheOnly: cacheOnly).forEach((
+      omission,
+    ) {
+      omissionFetched++;
+
+      if (mounted) {
+        setState(() {
+          this.omissions = omission.response;
+        });
+      }
+    });
+
     widget.data.client.getHomeworkStream(cacheOnly: cacheOnly).forEach((
       homework,
     ) {
@@ -161,7 +175,8 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         studentFetched < r ||
         testsFetched < r ||
         gradesFetched < r ||
-        homeworkFetched < r) {
+        homeworkFetched < r ||
+        omissionFetched < r) {
       if (DateTime.now().difference(startTime) > maxWaitTime) {
         debugPrint('[HomeMain] Data fetch timed out after 30s');
         break;
@@ -198,6 +213,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
       final gradeItems = grades ?? [];
       final testItems = tests ?? [];
       final homeworkItems = homework ?? [];
+      final omissionItems = omissions?.groupList((o) => o.date).values ?? [];
       final noticeBoardWidgets = <(Widget, DateTime)>[];
 
       for (final item in infoItems) {
@@ -214,6 +230,13 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
 
       for (final entry in homeworkItems) {
         noticeBoardWidgets.add((InfoCard.homework(entry), entry.creationDate));
+      }
+
+      for (final omission in omissionItems) {
+        noticeBoardWidgets.add((
+          InfoCard.omission(omission),
+          omission.first.date,
+        ));
       }
 
       noticeBoardWidgets.sort(
