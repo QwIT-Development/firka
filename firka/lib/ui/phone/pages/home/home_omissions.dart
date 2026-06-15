@@ -92,7 +92,7 @@ class _HomeOmissionsScreen extends FirkaState<HomeOmissionsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.data.l10n.subjects,
+            widget.data.l10n.omissions,
             style: appStyle.fonts.H_H2.apply(
               color: appStyle.colors.textPrimary,
             ),
@@ -111,8 +111,8 @@ class _HomeOmissionsScreen extends FirkaState<HomeOmissionsScreen> {
                         spacing: 4,
                         children: [
                           FirkaIconWidget(
-                            FirkaIconType.majesticons,
-                            Majesticon.clipboardCheckSolid,
+                            FirkaIconType.majesticonsLocal,
+                            "check",
                             size: 12.0,
                             color: appStyle.colors.accent,
                           ),
@@ -268,8 +268,8 @@ class _HomeOmissionsScreen extends FirkaState<HomeOmissionsScreen> {
                                     spacing: 4,
                                     children: [
                                       FirkaIconWidget(
-                                        FirkaIconType.majesticons,
-                                        Majesticon.clipboardCheckSolid,
+                                        FirkaIconType.majesticonsLocal,
+                                        "check",
                                         size: 12.0,
                                         color: appStyle.colors.accent,
                                       ),
