@@ -1555,13 +1555,14 @@ class LiveActivityService {
       await _startLiveActivityWithCurrentState([], studentName);
 
       _devFakeTimer?.cancel();
-      _devFakeTimer = Timer.periodic(const Duration(seconds: 20), (_) async {
+      _devFakeTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
         if (!isDevFakeMorningLessonEnabled()) {
           _devFakeTimer?.cancel();
           _devFakeTimer = null;
           return;
         }
         final name = _devFakeStudentName ?? 'Dev';
+        _logger.info('Dev fake re-eval tick');
         await _startLiveActivityWithCurrentState([], name);
       });
 
