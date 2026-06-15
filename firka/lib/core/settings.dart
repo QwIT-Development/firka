@@ -44,6 +44,7 @@ const morningNotificationEnabled = 1021;
 const morningNotificationTime = 1022;
 const ttToastABTimetable = 1023;
 const wearOsSupport = 1024;
+const devFakeMorningLesson = 1025;
 
 bool always() {
   return true;
@@ -56,6 +57,18 @@ bool never() {
 bool isDeveloper() {
   return isDebug() ||
       initData.settings.group("settings").boolean("developer_enabled");
+}
+
+bool isDevFakeMorningLessonEnabled() {
+  try {
+    return isDeveloper() &&
+        initData.settings
+            .group("settings")
+            .subGroup("developer")
+            .boolean("dev_fake_morning_lesson");
+  } catch (_) {
+    return false;
+  }
 }
 
 bool isAndroid() {
@@ -506,6 +519,14 @@ class SettingsStore {
               always,
             ),
             "logs": SettingsLogs(0, always),
+            "dev_fake_morning_lesson": SettingsBoolean(
+              devFakeMorningLesson,
+              FirkaIconType.majesticons,
+              Majesticon.clockSolid,
+              "Fake reggeli óra (LA teszt)",
+              false,
+              isIOS,
+            ),
           }),
           isDeveloper,
           null,

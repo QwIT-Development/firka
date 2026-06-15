@@ -1546,6 +1546,40 @@ class LiveActivityService {
 
     final now = DateTime.now();
 
+    // Dev-only: inject a fake "first lesson" 2 minutes from now so we can
+    // exercise the beforeSchool live activity flow without waiting until
+    // morning. Replaces today's lesson list to guarantee beforeSchool path.
+    if (isDevFakeMorningLessonEnabled()) {
+      final fakeStart = now.add(const Duration(minutes: 2));
+      final fakeEnd = fakeStart.add(const Duration(minutes: 45));
+      final dateStr =
+          '${fakeStart.year}-${fakeStart.month.toString().padLeft(2, '0')}-${fakeStart.day.toString().padLeft(2, '0')}';
+      final fake = Lesson(
+        uid: 'DEV_FAKE_MORNING_LESSON',
+        date: dateStr,
+        start: fakeStart,
+        end: fakeEnd,
+        name: 'Fake reggeli óra',
+        lessonNumber: 1,
+        teacher: 'Dev Tanár',
+        theme: 'LA teszt',
+        roomName: 'DEV-1',
+        type: NameUidDesc.EMPTY,
+        state: NameUidDesc.EMPTY,
+        canStudentEditHomework: false,
+        isHomeworkComplete: false,
+        attachments: const [],
+        isDigitalLesson: false,
+        digitalSupportDeviceTypeList: const [],
+        createdAt: now,
+        lastModifiedAt: now,
+      );
+      allLessons = [fake];
+      _logger.info(
+        '_startLiveActivityWithCurrentState: DEV fake morning lesson injected at $fakeStart',
+      );
+    }
+
     // Filter today's lessons
     final todayLessons = allLessons.where((l) {
       final lessonDate = DateTime.tryParse(l.date);
