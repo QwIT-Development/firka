@@ -230,7 +230,7 @@ class _HomeTimetableMonthlyScreen
                     omission.subject.uid == omittedLesson.subject?.uid;
               });
 
-              if (omission?.state == "Igazolt") {
+              if (omission?.state == OmissionState.excused) {
                 body = Center(
                   child: FirkaIconWidget(
                     FirkaIconType.majesticons,
@@ -242,7 +242,7 @@ class _HomeTimetableMonthlyScreen
                 break;
               }
 
-              if (omission?.lateForMin != null) {
+              if (omission?.state == OmissionState.pending) {
                 body = Center(
                   child: FirkaIconWidget(
                     FirkaIconType.majesticons,

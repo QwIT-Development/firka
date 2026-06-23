@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:dio/dio.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firka/api/consts.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -25,7 +28,9 @@ import 'package:firka/l10n/app_localizations_en.dart';
 import 'package:firka/l10n/app_localizations_hu.dart';
 import 'package:firka/core/swear_generator.dart';
 import 'package:firka/ui/theme/style.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
+import 'package:kreta_api/kreta_api.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:isar_community/isar.dart';
@@ -298,6 +303,49 @@ Future<AppInitialization> initializeApp() async {
   }
 
   await _initData(init);
+
+  initData = init;
+  initDone = true;
+
+  flnp = FlutterLocalNotificationsPlugin();
+  const DarwinInitializationSettings initializationSettingsDarwin =
+      DarwinInitializationSettings(
+        requestSoundPermission: true,
+        requestBadgePermission: true,
+        requestAlertPermission: false,
+      );
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('ic_notification');
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsDarwin,
+    macOS: initializationSettingsDarwin,
+  );
+  await flnp.initialize(settings: initializationSettings);
+
+  Future<void> updateToken([String? fcm]) async {
+    TokenModel? token = pickActiveToken(
+      tokens: initData.tokens,
+      settings: initData.settings,
+    );
+
+    if (token == null) return;
+    try {
+      await initData.client.mutexCallback(() async {
+        if (!await initData.client.refreshTokenProactively()) {
+          throw TokenExpiredException();
+        }
+      });
+    } catch (e) {
+      return;
+    }
+  }
+
+  FirebaseMessaging.instance.onTokenRefresh.listen(
+    (token) => unawaited(updateToken(token)),
+  );
+
+  await updateToken();
 
   return init;
 }

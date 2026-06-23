@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firka/core/extensions.dart';
+import 'package:firka/core/settings.dart';
 import 'package:firka/data/models/generic_cache_model.dart';
 import 'package:firka/data/models/timetable_cache_model.dart';
 import 'package:isar_community/isar.dart';
@@ -38,6 +40,65 @@ class KretaClient {
   KretaClient(this.model, this.isar, this._reauthCubit);
 
   bool get needsReauth => _reauthCubit.state.needsReauth;
+
+  Future<Response<dynamic>> sendNotifReq(
+    String method,
+    TokenModel model,
+    String? fcmToken, {
+    bool auth = true,
+  }) async {
+    var isGuardian = model.studentId!.contains("G0");
+
+    return await dio.request(
+      "https://kretaglobalmobileapi2.ekreta.hu/api/v3/Registration",
+      options: Options(
+        method: method,
+        headers: {
+          "accept": "*/*",
+          "user-agent": Constants.userAgent,
+          if (auth) "Authorization": "Bearer ${model.accessToken}",
+          "apiKey": "7856d350-1fda-45f5-822d-e1a2f3f1acf0",
+        },
+      ),
+      queryParameters: <String, String>{
+        "RegistrationId": ?model.registrationId,
+        "Handle": ?fcmToken,
+        "NotificationRole": isGuardian ? "2" : "1",
+        "NotificationEnvironment": isGuardian
+            ? "Gondviselo_Native"
+            : "Tanulo_Native",
+        "NotificationType": "1",
+        if (method == "POST") "Platform": "fcmv1",
+        "NotificationSource": "Kreta",
+      },
+    );
+  }
+
+  Future<void> updateFCMToken({String? fcmToken}) async {
+    fcmToken = fcmToken ?? (await FirebaseMessaging.instance.getToken())!;
+
+    Response<dynamic> resp;
+
+    if (model.registrationId == null) {
+      resp = await sendNotifReq("POST", model, fcmToken, auth: true);
+
+      if (resp.statusCode == 200) {
+        model.registrationId = resp.data["registrationId"];
+        model.fcmToken = fcmToken;
+        logger.info("New registr: ${model.registrationId}");
+      } else {
+        logger.info("POST RESP");
+        logger.info(resp.statusCode);
+        logger.info(resp);
+      }
+    } else if (fcmToken != model.fcmToken) {
+      logger.info("FCM mismatch!");
+      model.registrationId = null;
+      await updateFCMToken(fcmToken: fcmToken);
+    } else {
+      logger.info("FCM already registered!");
+    }
+  }
 
   void clearReauthFlag() {
     _reauthCubit.clear();
@@ -83,7 +144,9 @@ class KretaClient {
       }
 
       final extended = await extendToken(sourceToken);
-      return TokenModel.fromResp(extended);
+      return TokenModel.fromResp(extended)
+        ..registrationId ??= sourceToken.registrationId
+        ..fcmToken ??= sourceToken.fcmToken;
     } finally {
       if (Platform.isIOS && studentIdNorm != null && leaseOperationId != null) {
         await WatchSyncHelper.releaseIPhoneRefreshLease(
@@ -169,11 +232,13 @@ class KretaClient {
     try {
       var tokenModel = await _refreshModelWithCrossDeviceLease(model);
 
+      model = tokenModel;
+      await updateFCMToken();
+
       await isar.writeTxn(() async {
         await isar.tokenModels.put(tokenModel);
       });
 
-      model = tokenModel;
       await _syncTokenToAppleTargets(model);
       clearReauthFlag();
       logger.info("[Recovery] Step 1 SUCCESS: Local refresh succeeded");
@@ -304,7 +369,7 @@ class KretaClient {
     return true;
   }
 
-  Future<T> _mutexCallback<T>(Future<T> Function() callback) async {
+  Future<T> mutexCallback<T>(Future<T> Function() callback) async {
     const maxWaitTime = Duration(seconds: 30);
 
     if (_tokenMutexCompleter != null) {
@@ -337,7 +402,7 @@ class KretaClient {
   }
 
   Future<Response> _authReq(String method, String url, [Object? data]) async {
-    var localToken = await _mutexCallback<String>(() async {
+    var localToken = await mutexCallback<String>(() async {
       var now = timeNow();
 
       if (now.millisecondsSinceEpoch >=
@@ -366,7 +431,11 @@ class KretaClient {
 
     return await dio.get(
       url,
-      options: Options(method: method, headers: headers),
+      options: Options(
+        method: method,
+        headers: headers,
+        receiveTimeout: Duration(seconds: 20),
+      ),
       data: data,
     );
   }
@@ -381,7 +450,7 @@ class KretaClient {
     try {
       logger.finest("Sending authenticated request to: $url");
       resp = await _authReq(method, url, data);
-      if (!url.endsWith("TanuloAdatlap")) {
+      if (!isDebug() && !url.endsWith("TanuloAdatlap")) {
         logger.finest("Response: ${resp.statusCode} ${resp.data}");
       }
 
@@ -404,6 +473,9 @@ class KretaClient {
         );
       } else {
         logger.shout("Request to url: $url failed", ex.toString());
+        if (ex is Exception) {
+          logger.shout(ex);
+        }
       }
 
       rethrow;
@@ -733,8 +805,10 @@ class KretaClient {
   }) async {
     if (from == null && to == null) {
       DateTime now = timeNow();
+      /* you are taking too long °w°
       DateTime start = now.copyWith(month: 9, day: 1);
-      from = now.isBefore(start) ? start.subtract(Duration(days: 365)) : start;
+      from = now.isBefore(start) ? start.subtract(Duration(days: 365)) : start;*/
+      from = now.subtract(Duration(days: 14));
     }
     return await _genericListedCachingGet(
       CacheId.getHomework,

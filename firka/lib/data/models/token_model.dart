@@ -17,6 +17,8 @@ class TokenModel {
   String? idToken; // Unique identifier for the token if needed
   String? accessToken; // The main auth token
   String? refreshToken; // Token used to refresh the access token
+  String? registrationId;
+  String? fcmToken;
   DateTime? expiryDate;
   int? tokenVersion;
   int? updatedAtMs;

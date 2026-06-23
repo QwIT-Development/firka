@@ -165,6 +165,8 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
 
                 await initializeApp();
 
+                await initData.client.updateFCMToken();
+
                 if (!mounted) return NavigationDecision.prevent;
 
                 if (mounted) {
@@ -286,8 +288,8 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                             opacity: _isLoading
                                 ? 1.0
                                 : _fadeAnimationController!.isAnimating
-                                    ? _fadeAnimation!.value
-                                    : 0.0,
+                                ? _fadeAnimation!.value
+                                : 0.0,
                             duration: const Duration(milliseconds: 300),
                             child: Container(
                               color: appStyle.colors.background,
@@ -332,7 +334,8 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                                 text: _displayPath,
                                 style: appStyle.fonts.B_14R.copyWith(
                                   fontSize: 16,
-                                  color: appStyle.colors.textTeritary ??
+                                  color:
+                                      appStyle.colors.textTeritary ??
                                       appStyle.colors.textSecondary,
                                 ),
                               ),

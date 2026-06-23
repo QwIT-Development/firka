@@ -12,6 +12,7 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -71,6 +72,7 @@ configurations.all {
     }
 }
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     implementation("androidx.glance:glance-appwidget:1.1.1")
     implementation("com.google.android.gms:play-services-wearable:18.1.0")
 }

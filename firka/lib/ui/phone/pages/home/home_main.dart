@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firka/api/client/kreta_stream.dart';
 import 'package:firka/ui/phone/widgets/info_card.dart';
 import 'package:firka/ui/phone/widgets/lesson.dart';
@@ -41,10 +43,12 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
 
   List<Lesson>? lessons;
   List<NoticeBoardItem>? noticeBoard;
+  List<RemoteMessage> notifications = [];
   List<InfoBoardItem>? infoBoard;
   List<Test>? tests;
   List<Grade>? grades;
   List<Homework>? homework;
+  List<Omission>? omissions;
   Student? student;
   Timer? timer;
 
@@ -66,6 +70,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     var testsFetched = 0;
     var gradesFetched = 0;
     var homeworkFetched = 0;
+    var omissionFetched = 0;
 
     widget.data.client
         .getTimeTableStream(
@@ -139,6 +144,18 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
       }
     });
 
+    widget.data.client.getOmissionsStream(cacheOnly: cacheOnly).forEach((
+      omission,
+    ) {
+      omissionFetched++;
+
+      if (mounted) {
+        setState(() {
+          this.omissions = omission.response;
+        });
+      }
+    });
+
     widget.data.client.getHomeworkStream(cacheOnly: cacheOnly).forEach((
       homework,
     ) {
@@ -161,7 +178,8 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
         studentFetched < r ||
         testsFetched < r ||
         gradesFetched < r ||
-        homeworkFetched < r) {
+        homeworkFetched < r ||
+        omissionFetched < r) {
       if (DateTime.now().difference(startTime) > maxWaitTime) {
         debugPrint('[HomeMain] Data fetch timed out after 30s');
         break;
@@ -173,6 +191,10 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   @override
   void initState() {
     super.initState();
+
+    FirebaseMessaging.onMessage.listen((event) {
+      notifications.add(event);
+    }, onError: (e) => logger.info(e));
 
     (() async {
       await fetchData();
@@ -198,7 +220,31 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
       final gradeItems = grades ?? [];
       final testItems = tests ?? [];
       final homeworkItems = homework ?? [];
+      final omissionItems = omissions?.groupList((o) => o.date).values ?? [];
       final noticeBoardWidgets = <(Widget, DateTime)>[];
+
+      for (final n in notifications) {
+        noticeBoardWidgets.add((
+          InfoCard.messageItem(
+            InfoBoardItem(
+              uid: "",
+              title: "Értesítés",
+              author: "Kréta",
+              type: NameUidDesc(
+                uid: "notificaiton",
+                name: "notification",
+                description: "notification",
+              ),
+              contentHTML:
+                  "<code>${n.data}</code><code>${n.notification}<br/>${n.notification?.title}<br/>${n.notification?.body}<br/>${n.notification?.android}",
+              contentText: "",
+              date: now,
+              createdAt: now,
+            ),
+          ),
+          now,
+        ));
+      }
 
       for (final item in infoItems) {
         noticeBoardWidgets.add((InfoCard.messageItem(item), item.date));
@@ -214,6 +260,13 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
 
       for (final entry in homeworkItems) {
         noticeBoardWidgets.add((InfoCard.homework(entry), entry.creationDate));
+      }
+
+      for (final omission in omissionItems) {
+        noticeBoardWidgets.add((
+          InfoCard.omission(omission),
+          omission.first.date,
+        ));
       }
 
       noticeBoardWidgets.sort(

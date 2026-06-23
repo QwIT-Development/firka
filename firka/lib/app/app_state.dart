@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
@@ -17,6 +18,7 @@ import 'package:isar_community/isar.dart';
 import 'dart:io';
 
 late final Logger logger;
+late final FlutterLocalNotificationsPlugin flnp;
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 late AppInitialization initData;
