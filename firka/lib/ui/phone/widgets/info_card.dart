@@ -1,13 +1,20 @@
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/extensions.dart';
-import 'package:firka/data/models/homework_cache_model.dart';
+import 'package:firka_common/core/grade_helper.dart';
+import 'package:firka_common/data/database.dart';
+import 'package:firka_common/data/models/grade_cache_model.dart';
+import 'package:firka_common/data/models/homework_cache_model.dart';
+import 'package:firka_common/data/models/message_cache_model.dart';
+import 'package:firka_common/data/models/omission_cache_model.dart';
+import 'package:firka_common/data/models/subject_cache_model.dart';
+import 'package:firka_common/data/models/test_cache_model.dart';
 import 'package:firka/ui/components/common_bottom_sheets.dart';
-import 'package:firka/ui/components/firka_card.dart';
-import 'package:firka/ui/components/grade.dart';
-import 'package:firka/ui/components/grade_helpers.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
+import 'package:firka_common/ui/components/grade.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:firka/ui/theme/style.dart';
+import 'package:firka_common/data/util.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -35,16 +42,18 @@ class InfoCard extends StatelessWidget {
     super.key,
   });
 
-  static Widget buildSubject(Color color, Subject subject) {
+  static Widget buildSubject(Color color, SubjectCacheModel subject) {
     return FilledCircle(
       diameter: 32,
       color: color.withAlpha(38),
-      child: ClassIconWidget.subject(subject: subject, color: color, size: 20),
+      child: ClassIconWidget(subject: subject, color: color, size: 20),
     );
   }
 
-  factory InfoCard.test(Test test) {
+  factory InfoCard.test(TestCacheModel test) {
     final color = appStyle.colors.accent;
+
+    final subject = test.lesson.loadAndGet()!.subject.loadAndGet()!;
 
     return InfoCard(
       icon: FilledCircle(
@@ -58,18 +67,20 @@ class InfoCard extends StatelessWidget {
         ),
       ),
       texts: [
-        test.theme?.firstUpper() ?? test.method.description,
-        test.subject.name.firstUpper(),
+        test.topic?.firstUpper() ?? test.method,
+        subject.name.firstUpper(),
       ],
-      right: [buildSubject(color, test.subject)],
+      right: [buildSubject(color, subject)],
       onTap: (context) => showTestBottomSheet(context, initData, test),
     );
   }
 
-  factory InfoCard.testDesc(Test test) {
-    if (test.theme == null) {
+  factory InfoCard.testDesc(TestCacheModel test) {
+    if (test.topic == null) {
       return InfoCard.test(test);
     }
+
+    final subject = test.lesson.loadAndGet()!.subject.loadAndGet()!;
 
     final color = appStyle.colors.accent;
 
@@ -84,13 +95,13 @@ class InfoCard extends StatelessWidget {
           size: 24,
         ),
       ),
-      texts: [test.theme!.firstUpper(), test.method.description.firstUpper()],
-      right: [buildSubject(color, test.subject)],
+      texts: [test.topic!.firstUpper(), test.method.firstUpper()],
+      right: [buildSubject(color, subject)],
       onTap: (context) => showTestBottomSheet(context, initData, test),
     );
   }
 
-  factory InfoCard.messageItem(MessageItem item) {
+  factory InfoCard.messageItem(MessageCacheModel item) {
     return InfoCard(
       icon: FilledCircle(
         diameter: 36,
@@ -105,7 +116,7 @@ class InfoCard extends StatelessWidget {
     );
   }
 
-  factory InfoCard.omission(List<Omission> omissions) {
+  factory InfoCard.omission(List<OmissionCacheModel> omissions) {
     String title = "-";
     Color color = appStyle.colors.accent;
     FirkaIconType iconType = FirkaIconType.majesticons;
@@ -152,68 +163,56 @@ class InfoCard extends StatelessWidget {
         title,
         DateFormat.MMMMd(
           initData.l10n.localeName,
-        ).format(omissions.first.date).firstUpper(),
+        ).format(omissions.first.createdAt).firstUpper(),
       ],
       onTap: (context) =>
           showOmissionBottomSheet(context, initData, title, omissions),
     );
   }
 
-  factory InfoCard.homework(Homework homework) {
+  factory InfoCard.homework(HomeworkCacheModel homework) {
+    final subject = homework.subject.loadAndGet()!;
     return InfoCard(
       icon: FilledCircle(
         diameter: 36,
         color: appStyle.colors.accent.withAlpha(38),
-        child: FutureBuilder<bool>(
-          future: isHomeworkDone(initData.isar, homework.uid),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return SizedBox();
-            }
-            final done = snapshot.data!;
-            return done
-                ? FirkaIconWidget(
-                    FirkaIconType.majesticonsLocal,
-                    "homeWithMark",
-                    color: appStyle.colors.accent,
-                    size: 24,
-                  )
-                : FirkaIconWidget(
-                    FirkaIconType.majesticons,
-                    Majesticon.homeSolid,
-                    color: appStyle.colors.accent,
-                    size: 24,
-                  );
-          },
-        ),
+        child: homework.isDone
+            ? FirkaIconWidget(
+                FirkaIconType.majesticonsLocal,
+                "homeWithMark",
+                color: appStyle.colors.accent,
+                size: 24,
+              )
+            : FirkaIconWidget(
+                FirkaIconType.majesticons,
+                Majesticon.homeSolid,
+                color: appStyle.colors.accent,
+                size: 24,
+              ),
       ),
-      texts: [initData.l10n.homework, homework.subjectName],
-      right: [buildSubject(appStyle.colors.accent, homework.subject)],
+      texts: [initData.l10n.homework, subject.name],
+      right: [buildSubject(appStyle.colors.accent, subject)],
       onTap: (context) => showHomeworkBottomSheet(context, initData, homework),
     );
   }
 
   factory InfoCard.gradeSubj(
-    Grade grade, {
+    GradeCacheModel grade, {
     void Function(BuildContext)? onTap,
   }) {
-    String? value = grade.numericValue == null ? grade.strValue : null;
+    String? value = grade.numericValue == null ? grade.textValue : null;
     return InfoCard(
       icon: GradeWidget(grade),
       texts: [
-        (value ??
-                grade.topic ??
-                grade.mode?.description ??
-                grade.type.description!)
-            .firstUpper(),
-        grade.subject.name.firstUpper(),
+        (value ?? grade.topic ?? grade.mode ?? grade.type).firstUpper(),
+        grade.subject.loadAndGet()!.name.firstUpper(),
       ],
       right: [
         buildSubject(
           grade.numericValue != null
               ? getGradeColor(grade.numericValue!)
               : appStyle.colors.accent,
-          grade.subject,
+          grade.subject.loadAndGet()!,
         ),
       ],
       onTap:
@@ -235,12 +234,10 @@ class InfoCard extends StatelessWidget {
   }
 
   factory InfoCard.gradeDesc(
-    Grade grade, {
+    GradeCacheModel grade, {
     void Function(BuildContext)? onTap,
   }) {
-    List<String> texts = [
-      (grade.mode?.description ?? grade.type.description!).firstUpper(),
-    ];
+    List<String> texts = [(grade.mode ?? grade.type).firstUpper()];
 
     if (grade.topic != null) {
       texts = [grade.topic!.firstUpper(), ...texts];
@@ -249,7 +246,9 @@ class InfoCard extends StatelessWidget {
     return InfoCard(
       icon: GradeWidget(grade),
       texts: texts,
-      right: [buildSubject(appStyle.colors.accent, grade.subject)],
+      right: [
+        buildSubject(appStyle.colors.accent, grade.subject.loadAndGet()!),
+      ],
       onTap:
           onTap ?? (context) => showGradeBottomSheet(context, initData, grade),
     );

@@ -2,11 +2,12 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:firka/data/models/app_settings_model.dart';
-import 'package:firka/data/models/token_model.dart';
+import 'package:firka_common/data/database.dart';
+import 'package:firka_common/data/models/app_settings_model.dart';
+import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/core/image_preloader.dart';
 import 'package:firka/ui/components/firka_button.dart';
-import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
@@ -19,8 +20,6 @@ import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-
-import 'package:firka/data/widget.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/app/initialization.dart';
 import 'package:firka/core/state/firka_state.dart';
@@ -44,6 +43,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
   bool settingAppIcon = false;
   late String activeIcon;
+  late List<TokenModel> tokens;
 
   @override
   void initState() {
@@ -54,6 +54,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         .subGroup("customization")
         .subGroup("icon_picker")
         .iconString("icon_picker");
+    tokens = isarInit.tokenModels.where().sortByUpdatedAtMsDesc().findAllSync();
   }
 
   List<Widget> createWidgetTree(
@@ -356,15 +357,14 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                         return appStyle.colors.secondary;
                       }),
                       onChanged: (_) async {
-                        setState(() {
-                          item.activeIndex = i;
-                        });
+                        item.activeIndex = i;
 
                         await widget.data.isar.writeTxn(() async {
                           await item.save(widget.data.isar.appSettingsModels);
                         });
 
                         await item.postUpdate();
+                        setState(() {});
                         logger.finest('Settings saved');
                       },
                     ),
@@ -389,15 +389,15 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                   right: [SizedBox(height: 16 + 8)],
                 ),
                 onTap: () async {
-                  setState(() {
-                    item.activeIndex = i;
-                  });
+                  item.activeIndex = i;
 
                   await widget.data.isar.writeTxn(() async {
                     await item.save(widget.data.isar.appSettingsModels);
                   });
 
                   await item.postUpdate();
+
+                  setState(() {});
                 },
               ),
             );
@@ -756,13 +756,23 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
                   await Future.delayed(Duration(seconds: 1));
 
-                  const channel = MethodChannel('firka.app/main');
-                  await channel.invokeMethod('set_icon', {
-                    "icon": activeIcon == "original" ? null : activeIcon,
-                    "icons": settings.appIcons.keys
+                  logger.info(
+                    settings.appIcons.keys
                         .where((e) => e != "original")
                         .join(","),
-                  });
+                  );
+
+                  logger.info(activeIcon);
+
+                  const channel = MethodChannel('firka.app/main');
+                  logger.info(
+                    await channel.invokeMethod('set_icon', {
+                      "icon": activeIcon == "original" ? null : activeIcon,
+                      "icons": settings.appIcons.keys
+                          .where((e) => e != "original")
+                          .join(","),
+                    }),
+                  );
                 },
               ),
             ],
@@ -772,15 +782,14 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         continue;
       }
       if (item is SettingsKretenAccountPicker) {
-        for (var i = 0; i < widget.data.tokens.length; i++) {
-          final token = widget.data.tokens[i];
+        for (TokenModel token in tokens) {
           final jwt = JWT.decode(token.idToken!);
-          String studentRole;
           final payload = jwt.payload as Map<String, dynamic>;
-          if (payload["role"] == "Tanulo") {
+          String studentRole = payload["role"];
+          if (studentRole == "Tanulo") {
             studentRole = "Tanuló";
-          } else {
-            studentRole = payload["role"];
+          } else if (studentRole == "Gondviselo") {
+            studentRole = "Gondviselő";
           }
           widgets.add(
             GestureDetector(
@@ -803,7 +812,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                     ),
                   ],
                   right: [
-                    i != item.accountIndex
+                    token.key != item.accountKey
                         ? SizedBox()
                         : Checkbox(
                             value: true,
@@ -831,82 +840,82 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                 ),
               ),
               onTap: () async {
-                if (i != item.accountIndex) {
-                  final previousAccountId =
-                      widget.data.client.model.studentIdNorm;
-                  if (Platform.isIOS) {
-                    await LiveActivityService.onUserLogout();
-                    try {
-                      await WatchSyncHelper.clearSharedLanguageState();
-                    } catch (e) {
-                      logger.warning(
-                        '[Settings] Failed to clear shared language state on account switch: $e',
-                      );
-                    }
-                    if (previousAccountId != null) {
-                      try {
-                        await WatchSyncHelper.clearRefreshLeaseForAccount(
-                          previousAccountId,
-                        );
-                      } catch (e) {
-                        logger.warning(
-                          '[Settings] Failed to clear refresh lease on account switch: $e',
-                        );
-                      }
-                    }
-                  }
-
-                  await widget.data.isar.writeTxn(() async {
-                    item.accountIndex = i;
-
-                    await item.save(widget.data.isar.appSettingsModels);
-                  });
-
-                  await item.postUpdate();
-
-                  if (Platform.isIOS) {
-                    var watchReachable = false;
-                    try {
-                      watchReachable = await WatchSyncHelper.isWatchReachable(
-                        forceRefreshInstall: true,
-                      );
-                    } catch (e) {
-                      logger.warning(
-                        '[Settings] Failed to query Watch reachability on account switch: $e',
-                      );
-                    }
-
-                    if (watchReachable) {
-                      try {
-                        await WatchSyncHelper.sendTokenModelToWatch(
-                          token,
-                          allowExpiredAccessToken: true,
-                        );
-                      } catch (e) {
-                        logger.warning(
-                          '[Settings] Failed to send switched account token to reachable Watch: $e',
-                        );
-                      }
-                    } else {
-                      try {
-                        await WatchSyncHelper.saveTokenToiCloud(
-                          token,
-                          forceAccountSwitch: true,
-                        );
-                      } catch (e) {
-                        logger.warning(
-                          '[Settings] Failed to sync switched account token to iCloud: $e',
-                        );
-                      }
-                    }
-                  }
-
-                  await initializeApp();
-                  if (!mounted) return;
-                  final nav = Navigator.of(context);
-                  if (nav.canPop()) nav.pop();
-                  appRouter?.go('/home');
+                if (token.key == item.accountKey) {
+                  return;
                 }
+
+                final previousAccountId = widget.data.client!.cache.token.key;
+                if (Platform.isIOS) {
+                  await LiveActivityService.onUserLogout();
+                  try {
+                    await WatchSyncHelper.clearSharedLanguageState();
+                  } catch (e) {
+                    logger.warning(
+                      '[Settings] Failed to clear shared language state on account switch: $e',
+                    );
+                  }
+                  if (previousAccountId != null) {
+                    try {
+                      await WatchSyncHelper.clearRefreshLeaseForAccount(
+                        previousAccountId,
+                      );
+                    } catch (e) {
+                      logger.warning(
+                        '[Settings] Failed to clear refresh lease on account switch: $e',
+                      );
+                    }
+                  }
+                }
+
+                await widget.data.isar.writeTxn(() async {
+                  item.accountKey = token.key;
+
+                  await item.save(widget.data.isar.appSettingsModels);
+                });
+
+                await item.postUpdate();
+
+                if (Platform.isIOS) {
+                  var watchReachable = false;
+                  try {
+                    watchReachable = await WatchSyncHelper.isWatchReachable(
+                      forceRefreshInstall: true,
+                    );
+                  } catch (e) {
+                    logger.warning(
+                      '[Settings] Failed to query Watch reachability on account switch: $e',
+                    );
+                  }
+
+                  if (watchReachable) {
+                    try {
+                      await WatchSyncHelper.sendTokenModelToWatch(
+                        token,
+                        allowExpiredAccessToken: true,
+                      );
+                    } catch (e) {
+                      logger.warning(
+                        '[Settings] Failed to send switched account token to reachable Watch: $e',
+                      );
+                    }
+                  } else {
+                    try {
+                      await WatchSyncHelper.saveTokenToiCloud(
+                        token,
+                        forceAccountSwitch: true,
+                      );
+                    } catch (e) {
+                      logger.warning(
+                        '[Settings] Failed to sync switched account token to iCloud: $e',
+                      );
+                    }
+                  }
+                }
+
+                if (!mounted) return;
+                final nav = Navigator.of(context);
+                if (nav.canPop()) nav.pop();
+                appRouter?.go('/home');
               },
             ),
           );
@@ -964,10 +973,9 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
               try {
                 if (Platform.isIOS) {
                   await LiveActivityService.onUserLogout();
-                  await WidgetCacheHelper.clearIOSWidgets();
                 }
 
-                final active = widget.data.client.model.studentIdNorm!;
+                final active = widget.data.client!.cache.token.key;
                 if (Platform.isIOS) {
                   try {
                     await WatchSyncHelper.clearRefreshLeaseForAccount(active);
@@ -988,7 +996,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                 await widget.data.isar.writeTxn(() async {
                   await widget.data.isar.tokenModels.delete(active);
 
-                  item.accountIndex = 0;
+                  item.accountKey = 0;
                   await item.save(widget.data.isar.appSettingsModels);
                 });
 
@@ -1006,7 +1014,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                         '[Settings] Failed to clear iCloud token: $e',
                       );
                     }
-                    initData.client.clearReauthFlag();
+                    initData.client!.clearReauthFlag();
                   }
                 } else {
                   if (Platform.isIOS) {
@@ -1046,8 +1054,6 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                       }
                     }
                   }
-
-                  widget.data.tokens = accounts;
                 }
 
                 await initializeApp();

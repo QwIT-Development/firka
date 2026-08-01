@@ -4,7 +4,7 @@ import 'package:firka/services/wear_sync_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka/ui/theme/style.dart';
 
 void showWearBottomSheet(
@@ -12,7 +12,7 @@ void showWearBottomSheet(
   AppInitialization data,
   String model,
 ) async {
-  final payload = await buildWearSyncPayload(data.client);
+  final payload = await buildWearSyncPayload(data.client!);
   if (payload == null) return;
   if (!context.mounted) return;
 
@@ -66,12 +66,12 @@ class _WearPairSheetContentState extends State<_WearPairSheetContent> {
 
   void _onPairTap() {
     setState(() => _syncing = true);
-    final m = widget.data.client.model;
+    final m = widget.data.client!.cache.token;
     WatchSyncHelper.sendMessageToWatch({
       'id': 'init_data',
       'auth': {
-        'studentId': m.studentId,
-        'studentIdNorm': m.studentIdNorm,
+        'studentId': m.username,
+        'studentIdNorm': m.key,
         'iss': m.iss,
         'idToken': m.idToken,
         'accessToken': m.accessToken,

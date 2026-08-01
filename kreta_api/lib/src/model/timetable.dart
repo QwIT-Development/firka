@@ -14,7 +14,7 @@ class Lesson extends NameUid {
   final String? theme;
   final String? roomName;
   final NameUidDesc type;
-  final NameUidDesc? studentPresence;
+  final NameUidDesc? studentPresence; // required?
   final NameUidDesc state;
   final String? substituteTeacher;
   final String? homeworkUid;
@@ -31,7 +31,7 @@ class Lesson extends NameUid {
   final DateTime createdAt;
   final DateTime lastModifiedAt;
 
-  const Lesson({
+  Lesson({
     required super.uid,
     required this.date,
     required this.start,

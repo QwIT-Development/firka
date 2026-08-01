@@ -1,3 +1,6 @@
+import 'package:firka_common/data/models/grade_cache_model.dart';
+import 'package:firka_common/data/models/subject_cache_model.dart';
+import 'package:firka_common/data/util.dart';
 import 'package:kreta_api/kreta_api.dart';
 
 import 'dart:ui';
@@ -48,7 +51,7 @@ Color getGradeColor(
   }
 }
 
-extension GradeListExtension on Iterable<Grade> {
+extension GradeCacheModelListExtension on Iterable<GradeCacheModel> {
   (int total, List<int> countsByGrade) getGradeDistribution() {
     final filtered = where((g) => g.shouldIncludeInAverage());
     final counts = [0, 0, 0, 0, 0];
@@ -58,15 +61,18 @@ extension GradeListExtension on Iterable<Grade> {
     return (filtered.length, counts);
   }
 
-  double? _getAverageBySubject(String uid, {bool halfYearFallback = true}) {
+  double? _getAverageBySubject(int key, {bool halfYearFallback = true}) {
     return where(
-      (g) => g.subject.uid == uid,
+      (g) => g.subject.loadAndGet()!.cacheKey == key,
     ).getAverage(halfYearFallback: halfYearFallback);
   }
 
-  double? getAverageBySubject(Subject subject, {bool halfYearFallback = true}) {
+  double? getAverageBySubject(
+    SubjectCacheModel subject, {
+    bool halfYearFallback = true,
+  }) {
     return _getAverageBySubject(
-      subject.uid,
+      subject.cacheKey,
       halfYearFallback: halfYearFallback,
     );
   }
@@ -78,7 +84,7 @@ extension GradeListExtension on Iterable<Grade> {
     double t3 = 0.5,
     double t4 = 0.5,
   }) {
-    final averages = map((g) => g.subject).toSet().map((subject) {
+    final averages = map((g) => g.subject.loadAndGet()!).toSet().map((subject) {
       final average = getAverageBySubject(
         subject,
         halfYearFallback: halfYearFallback,
@@ -98,7 +104,7 @@ extension GradeListExtension on Iterable<Grade> {
 
   double? getSubjectAverage({bool halfYearFallback = true}) {
     final averages = where((g) => g.hasClassicValue())
-        .map((g) => g.subject.uid)
+        .map((g) => g.subject.loadAndGet()!.cacheKey)
         .toSet()
         .map(
           (uid) =>
@@ -121,7 +127,7 @@ extension GradeListExtension on Iterable<Grade> {
     double weightTotal = 0;
     double sum = 0;
     int? fallback;
-    for (Grade grade in this) {
+    for (final grade in this) {
       if (grade.hasClassicValue() && halfYearFallback) {
         fallback = grade.numericValue!;
       }
@@ -151,6 +157,21 @@ extension GradeExtension on Grade {
 
   bool hasClassicValue() {
     return valueType.name == "Osztalyzat";
+  }
+
+  // https://tudasbazis.ekreta.hu/pages/viewpage.action?pageId=2426172
+  bool shouldIncludeInAverage() {
+    return weightPercentage != null && hasClassicValue();
+  }
+}
+
+extension GradeCacheModelExtension on GradeCacheModel {
+  bool isInPercentage() {
+    return valueType == 'Szazalekos';
+  }
+
+  bool hasClassicValue() {
+    return valueType == "Osztalyzat";
   }
 
   // https://tudasbazis.ekreta.hu/pages/viewpage.action?pageId=2426172

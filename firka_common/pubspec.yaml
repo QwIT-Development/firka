@@ -14,8 +14,14 @@ dependencies:
   majesticons_flutter: ^0.0.1
   flutter_svg: ^1.1.6
   intl: any
+  path_provider: ^2.1.0
+  dart_jsonwebtoken: ^3.2.0
+  isar_community: 3.3.0
+  isar_community_flutter_libs: 3.3.0
+  build_runner: any
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  isar_community_generator: 3.3.0

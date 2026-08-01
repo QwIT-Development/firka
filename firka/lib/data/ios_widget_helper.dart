@@ -141,7 +141,7 @@ class IOSWidgetHelper {
                 'description': subject.category.description,
               },
               'sortIndex': subject.sortIndex,
-              'teacherName': subject.teacherName,
+              'teacherName': null,
             }
           : {
               'uid': '',

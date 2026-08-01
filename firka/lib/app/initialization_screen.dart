@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:firka/api/client/kreta_client.dart';
+import 'package:firka/core/extensions.dart';
+import 'package:firka_common/core/debug_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,9 +34,7 @@ class InitializationScreen extends StatefulWidget {
 
 class _InitializationScreenState extends State<InitializationScreen> {
   GoRouter? _router;
-  final Future<AppInitialization> _init = initializeApp().timeout(
-    const Duration(seconds: 20),
-  );
+  final Future<void> _init = initializeApp();
 
   ThemeData _buildTheme(FirkaStyle style) {
     return ThemeData(
@@ -54,11 +55,13 @@ class _InitializationScreenState extends State<InitializationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<AppInitialization>(
+    return FutureBuilder<void>(
       future: _init,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasError) {
+            initDone = false;
+
             logger.shout(
               "Error in InitializationScreen",
               snapshot.error.toString(),
@@ -82,10 +85,6 @@ class _InitializationScreenState extends State<InitializationScreen> {
               ),
             );
           }
-
-          assert(snapshot.data != null);
-          initData = snapshot.data!;
-          initDone = true;
 
           FlutterNativeSplash.remove();
 
@@ -113,24 +112,20 @@ class _InitializationScreenState extends State<InitializationScreen> {
 
               switch (msg["id"]) {
                 case "ping":
-                  if (initData.tokens.isNotEmpty) {
-                    logger.finest("WatchOS IPC [Phone -> Watch]: pong");
-                    unawaited(
-                      WatchSyncHelper.sendMessageToWatch({'id': 'pong'}),
-                    );
-                    _router?.go('/home');
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      final ctx = navigatorKey.currentContext;
-                      if (ctx != null && ctx.mounted) {
-                        logger.info('Watch init_data: ${jsonEncode(msg)}');
-                        showWearBottomSheet(
-                          ctx,
-                          initData,
-                          Platform.isAndroid ? msg['model'] : 'Apple Watch',
-                        );
-                      }
-                    });
-                  }
+                  logger.finest("WatchOS IPC [Phone -> Watch]: pong");
+                  unawaited(WatchSyncHelper.sendMessageToWatch({'id': 'pong'}));
+                  _router?.go('/home');
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    final ctx = navigatorKey.currentContext;
+                    if (ctx != null && ctx.mounted) {
+                      logger.info('Watch init_data: ${jsonEncode(msg)}');
+                      showWearBottomSheet(
+                        ctx,
+                        initData,
+                        Platform.isAndroid ? msg['model'] : 'Apple Watch',
+                      );
+                    }
+                  });
                   break;
                 case "init_done":
                 case "sync_done":
@@ -157,7 +152,7 @@ class _InitializationScreenState extends State<InitializationScreen> {
                     );
                   }
                   await WatchSyncHelper.runWearSyncInForeground(
-                    initData.client,
+                    initData.client!,
                   );
                 }
               });
@@ -165,7 +160,7 @@ class _InitializationScreenState extends State<InitializationScreen> {
                 unawaited(() async {
                   try {
                     await WatchSyncHelper.startWearSyncServiceWithFreshCache(
-                      initData.client,
+                      initData.client!,
                       initData.appDir.path,
                     );
                   } catch (e) {
@@ -203,15 +198,18 @@ class _InitializationScreenState extends State<InitializationScreen> {
                 final isLight = themeState.isLightMode;
                 final overlay = SystemUiOverlayStyle(
                   statusBarColor: Colors.transparent,
-                  statusBarIconBrightness:
-                      isLight ? Brightness.dark : Brightness.light,
-                  statusBarBrightness:
-                      isLight ? Brightness.light : Brightness.dark,
+                  statusBarIconBrightness: isLight
+                      ? Brightness.dark
+                      : Brightness.light,
+                  statusBarBrightness: isLight
+                      ? Brightness.light
+                      : Brightness.dark,
                   systemStatusBarContrastEnforced: false,
                 );
 
-                final themeMode =
-                    isLight ? ThemeMode.light : ThemeMode.dark;
+                logger.info("asked");
+
+                final themeMode = isLight ? ThemeMode.light : ThemeMode.dark;
 
                 final fallbackBg = isLight
                     ? lightStyle.colors.background

@@ -13,6 +13,10 @@ void main() async {
   dio.options.receiveTimeout = Duration(seconds: 3);
   dio.options.validateStatus = (status) => status != null && status < 500;
 
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+  };
+
   runZonedGuarded(
     () async {
       logger.finest("Initializing app");

@@ -1,4 +1,6 @@
 import 'package:confetti/confetti.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:firka_common/data/models/student_cache_model.dart';
 import 'package:intl/intl.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/l10n/app_localizations.dart';
@@ -11,8 +13,8 @@ import 'package:firka/ui/theme/style.dart';
 
 class WelcomeWidget extends StatefulWidget {
   final AppLocalizations l10n;
-  final Student student;
-  final List<Lesson> lessons;
+  final StudentCacheModel student;
+  final List<LessonCacheModel> lessons;
   final DateTime now;
 
   const WelcomeWidget(
@@ -37,7 +39,7 @@ class _WelcomeWidgetState extends State<WelcomeWidget> {
       duration: const Duration(seconds: 2),
     );
 
-    final birthDate = DateFormat("MM-dd").format(widget.student.birthdate);
+    final birthDate = DateFormat("MM-dd").format(widget.student.birthday);
     if (birthDate == DateFormat("MM-dd").format(widget.now)) {
       _controllerCenter.play();
     }
@@ -100,7 +102,7 @@ class _WelcomeWidgetState extends State<WelcomeWidget> {
       name = widget.student.name;
     }
 
-    final birthDate = DateFormat("MM-dd").format(widget.student.birthdate);
+    final birthDate = DateFormat("MM-dd").format(widget.student.birthday);
     if (birthDate == DateFormat("MM-dd").format(widget.now)) {
       return widget.l10n.happy_birthday(name);
     } else if (widget.lessons.length > 1 &&

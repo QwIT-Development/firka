@@ -28,25 +28,11 @@ const String wearSyncCacheFileName = 'wear_sync_cache.json';
 /// Builds the sync payload (same shape as init_data / sync_data): timetable (2 weeks), grades, lastSyncAt.
 Future<Map<String, dynamic>?> buildWearSyncPayload(KretaClient client) async {
   final (start, end) = getWearSyncTimetableRange();
-  final timetableResp = await client.getTimeTable(
-    start,
-    end,
-    forceCache: false,
-  );
-  if (timetableResp.err != null && timetableResp.response == null) {
-    return null;
-  }
-  final gradesResp = await client.getGrades(forceCache: false);
-  if (gradesResp.err != null && gradesResp.response == null) {
-    return null;
-  }
+  final timetableResp = await client.getLessons(start, end);
+  final gradesResp = await client.getGrades();
   final now = timeNow();
-  final timetable = (timetableResp.response ?? <Lesson>[])
-      .map((l) => l.toJson())
-      .toList();
-  final grades = (gradesResp.response ?? <Grade>[])
-      .map((g) => g.toJson())
-      .toList();
+  final timetable = (<Lesson>[]).map((l) => l.toJson()).toList();
+  final grades = (<Grade>[]).map((g) => g.toJson()).toList();
   return {
     'lastSyncAt': now.toUtc().toIso8601String(),
     'timetable': timetable,

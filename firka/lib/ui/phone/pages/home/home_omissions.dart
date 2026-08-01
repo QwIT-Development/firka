@@ -1,27 +1,21 @@
 import 'dart:collection';
 
-import 'package:firka/core/extensions.dart';
 import 'package:firka/ui/phone/widgets/info_card.dart';
 import 'package:firka/ui/phone/widgets/omission_bar.dart';
-import 'package:firka_common/firka_common.dart';
+import 'package:firka_common/data/models/omission_cache_model.dart';
+import 'package:firka_common/data/models/subject_cache_model.dart';
+import 'package:firka_common/data/util.dart';
+import 'package:firka_common/ui/shared/firka_icon.dart';
+import 'package:isar_community/isar.dart';
 import 'package:kreta_api/kreta_api.dart';
-import 'package:firka/ui/components/firka_card.dart';
-import 'package:firka/ui/components/grade_helpers.dart';
-import 'package:firka/ui/phone/widgets/grade_chart.dart';
-import 'package:firka/ui/phone/widgets/grade_summary_bar.dart';
-import 'package:firka/ui/shared/grade_small_card.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import 'package:firka/api/consts.dart';
-import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
-import 'package:firka/core/settings.dart';
 import 'package:firka/ui/theme/style.dart';
-import 'package:firka/ui/shared/delayed_spinner.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 class HomeOmissionsScreen extends StatefulWidget {
@@ -34,45 +28,22 @@ class HomeOmissionsScreen extends StatefulWidget {
 }
 
 class _HomeOmissionsScreen extends FirkaState<HomeOmissionsScreen> {
-  ApiResponse<List<Omission>>? omissions;
-
-  void _onRefreshRequested(BuildContext context) async {
-    final cubit = context.read<HomeRefreshCubit>();
-    omissions = await widget.data.client.getOmissions(forceCache: false);
-    if (mounted) {
-      setState(() {});
-      cubit.onRefreshComplete();
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    (() async {
-      omissions = await widget.data.client.getOmissions(forceCache: false);
-      if (mounted) setState(() {});
-    })();
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<HomeRefreshCubit, HomeRefreshState>(
       listenWhen: (previous, current) =>
           current.refreshTrigger != previous.refreshTrigger,
       listener: (context, state) {
-        _onRefreshRequested(context);
+        setState(() {});
       },
       child: _buildContent(context),
     );
   }
 
   Widget _buildContent(BuildContext context) {
-    if (omissions == null) {
-      return Center(child: DelayedSpinnerWidget());
-    }
-
-    final omissionItems = omissions!.response ?? [];
+    final omissionItems = widget.data.client!.cache
+        .getOmissions()
+        .findAllSync();
 
     final overallExcused = omissionItems
         .where((o) => o.state == OmissionState.excused)
@@ -203,7 +174,7 @@ class _HomeOmissionsScreen extends FirkaState<HomeOmissionsScreen> {
             ],
           ),
           SizedBox(height: 10),
-          OmissionBar(omissions: omissions!.response!),
+          OmissionBar(),
           SizedBox(height: 20),
           Expanded(
             child: ListView(
@@ -217,13 +188,18 @@ class _HomeOmissionsScreen extends FirkaState<HomeOmissionsScreen> {
                 SizedBox(height: 10),
                 ...omissionItems
                     .fold(
-                      LinkedHashMap<Subject, List<Omission>>(
-                        equals: (a, b) => a.uid == b.uid,
-                        hashCode: (a) => a.uid.hashCode,
+                      LinkedHashMap<
+                        SubjectCacheModel,
+                        List<OmissionCacheModel>
+                      >(
+                        equals: (a, b) => a.cacheKey == b.cacheKey,
+                        hashCode: (a) => a.cacheKey,
                       ),
-                      (map, o) =>
-                          map
-                            ..putIfAbsent(o.subject, () => <Omission>[]).add(o),
+                      (map, o) => map
+                        ..putIfAbsent(
+                          o.lesson.loadAndGet()!.subject.loadAndGet()!,
+                          () => [],
+                        ).add(o),
                     )
                     .entries
                     .map((entry) {

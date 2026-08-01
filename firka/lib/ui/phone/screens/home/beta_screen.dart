@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:firka/data/models/app_settings_model.dart';
+import 'package:firka_common/data/models/app_settings_model.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/ui/components/firka_button.dart';
 import 'package:firka/ui/theme/style.dart';

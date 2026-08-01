@@ -5,7 +5,7 @@ class Institution extends UidObj {
   final String shortName;
   final List<SystemModule> systemModuleList;
 
-  const Institution({
+  Institution({
     required this.customizationSettings,
     required this.shortName,
     required this.systemModuleList,

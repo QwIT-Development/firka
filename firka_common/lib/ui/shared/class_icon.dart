@@ -1,3 +1,4 @@
+import 'package:firka_common/data/models/subject_cache_model.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firka_common/core/icon_helper.dart';
@@ -6,35 +7,20 @@ import 'package:firka_common/ui/shared/firka_icon.dart';
 import 'package:kreta_api/kreta_api.dart';
 
 class ClassIconWidget extends StatelessWidget {
-  final String _uid;
-  final String _className;
-  final String _category;
+  final SubjectCacheModel subject;
   final Color color;
   final double? size;
 
-  ClassIconWidget.subject({
-    super.key,
-    required Subject subject,
-    this.color = Colors.white,
-    this.size,
-  }) : _className = subject.name,
-       _uid = subject.uid,
-       _category = subject.category.name;
-
   const ClassIconWidget({
     super.key,
-    required String uid,
-    required String className,
-    required String category,
+    required SubjectCacheModel this.subject,
     this.color = Colors.white,
     this.size,
-  }) : _className = className,
-       _uid = uid,
-       _category = category;
+  });
 
   @override
   Widget build(BuildContext context) {
-    var iconCategory = getIconType(_uid, _className, _category);
+    var iconCategory = getIconType(subject);
 
     return FirkaIconWidget(
       FirkaIconType.majesticons,

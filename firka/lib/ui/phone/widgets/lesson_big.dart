@@ -1,7 +1,10 @@
 import 'package:firka/core/extensions.dart';
-import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka_common/core/consts.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:firka_common/data/util.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -15,24 +18,23 @@ import 'package:firka/ui/shared/firka_icon.dart';
 
 class LessonBigWidget extends StatelessWidget {
   final AppInitialization data;
-  final int lessonNo;
-  final Lesson lesson;
-  final Test? test;
+  final LessonCacheModel lesson;
   final bool active;
 
   const LessonBigWidget(
     this.data,
-    this.lessonNo,
-    this.lesson,
-    this.test, {
+    this.lesson, {
     this.active = false,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    // we dont like events
+    assert(lesson.type != TimetableConsts.event);
     final isSubstituted = lesson.substituteTeacher != null;
-    final isDismissed = lesson.type.name == "UresOra";
+    final isDismissed = lesson.type == "UresOra";
+    final test = lesson.test.loadAndGet();
 
     var accent = appStyle.colors.accent;
     var secondary = appStyle.colors.secondary;
@@ -49,9 +51,9 @@ class LessonBigWidget extends StatelessWidget {
       bgColor = appStyle.colors.error15p;
     }
 
-    var subjectName = lesson.subject?.name.firstUpper() ?? 'N/A';
+    var subjectName = lesson.subject.loadAndGet()!.name.firstUpper();
 
-    var roomName = lesson.roomName ?? 'N/A';
+    var roomName = lesson.roomName;
 
     Widget extra = test == null
         ? Column(
@@ -112,7 +114,7 @@ class LessonBigWidget extends StatelessWidget {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    test!.theme ?? "",
+                    test.topic ?? "",
                     style: appStyle.fonts.B_16R.apply(
                       color: appStyle.colors.textPrimary,
                     ),
@@ -132,7 +134,6 @@ class LessonBigWidget extends StatelessWidget {
           accent,
           secondary,
           bgColor,
-          test,
         );
       },
       child: FirkaCard.single(
@@ -163,7 +164,7 @@ class LessonBigWidget extends StatelessWidget {
                         height: 18,
                       ),
                       Text(
-                        lessonNo.toString(),
+                        lesson.dailyNth.toString(),
                         style: appStyle.fonts.B_14SB.apply(color: secondary),
                         textAlign: TextAlign.center,
                       ),
@@ -174,9 +175,7 @@ class LessonBigWidget extends StatelessWidget {
                   diameter: 32,
                   color: bgColor,
                   child: ClassIconWidget(
-                    uid: lesson.uid,
-                    className: lesson.name,
-                    category: subjectName,
+                    subject: lesson.subject.loadAndGet()!,
                     color: accent,
                     size: 20,
                   ),
@@ -225,7 +224,7 @@ class LessonBigWidget extends StatelessWidget {
                           child: Padding(
                             padding: EdgeInsets.symmetric(horizontal: 6),
                             child: Text(
-                              roomName,
+                              roomName ?? "",
                               style: appStyle.fonts.B_14R.apply(
                                 color: appStyle.colors.secondary,
                               ),

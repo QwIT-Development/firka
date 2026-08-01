@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:firka_common/data/database.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:isar_community/isar.dart';
@@ -8,11 +9,10 @@ import 'package:watch_connectivity/watch_connectivity.dart';
 
 import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/core/bloc/reauth_cubit.dart';
-import 'package:firka/data/models/app_settings_model.dart';
-import 'package:firka/data/models/generic_cache_model.dart';
-import 'package:firka/data/models/homework_cache_model.dart';
-import 'package:firka/data/models/timetable_cache_model.dart';
-import 'package:firka/data/models/token_model.dart';
+import 'package:firka_common/data/models/app_settings_model.dart';
+import 'package:firka_common/data/models/generic_cache_model.dart';
+import 'package:firka_common/data/models/homework_cache_model.dart';
+import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/services/wear_sync_cache.dart';
 
 /// Background isolate entrypoint for Wear sync (Android).
@@ -29,30 +29,13 @@ void wearSyncBackgroundEntrypoint() {
     final appDirPath = args?['appDirPath'] as String?;
     if (cachePath == null || appDirPath == null) return null;
     try {
-      final isar = await Isar.open([
-        TokenModelSchema,
-        GenericCacheModelSchema,
-        TimetableCacheModelSchema,
-        HomeworkCacheModelSchema,
-        AppSettingsModelSchema,
-        HomeworkDoneModelSchema,
-      ], directory: appDirPath);
-      final tokens = await isar.tokenModels.where().findAll();
-      await isar.close();
+      await initDB();
+      final tokens = await isarInit.tokenModels.where().findAll();
       if (tokens.isEmpty) return null;
       final token = tokens.first;
-      final isar2 = await Isar.open([
-        TokenModelSchema,
-        GenericCacheModelSchema,
-        TimetableCacheModelSchema,
-        HomeworkCacheModelSchema,
-        AppSettingsModelSchema,
-        HomeworkDoneModelSchema,
-      ], directory: appDirPath);
       final reauthCubit = ReauthCubit();
-      final client = KretaClient(token, isar2, reauthCubit);
+      final client = KretaClient(token, reauthCubit);
       final payload = await buildWearSyncPayload(client);
-      await isar2.close();
       if (payload == null) return null;
       await writeWearSyncCache(cachePath, payload);
       final wc = WatchConnectivity();

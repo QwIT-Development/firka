@@ -2,6 +2,7 @@ import 'package:firka/core/settings.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/widgets/login_webview.dart';
+import 'package:firka_common/data/database.dart';
 import 'package:flutter/material.dart';
 
 void showReauthBottomSheet(
@@ -9,18 +10,6 @@ void showReauthBottomSheet(
   AppInitialization data,
   String message,
 ) {
-  final accountPicker =
-      (data.settings.group("profile_settings")["e_kreta_account_picker"]
-          as SettingsKretenAccountPicker);
-
-  final currentToken =
-      data.tokens.isNotEmpty && accountPicker.accountIndex < data.tokens.length
-      ? data.tokens[accountPicker.accountIndex]
-      : null;
-
-  final username = currentToken?.studentId;
-  final schoolId = currentToken?.iss;
-
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -54,8 +43,8 @@ void showReauthBottomSheet(
             Expanded(
               child: LoginWebviewWidget(
                 data,
-                username: username,
-                schoolId: schoolId,
+                username: data.client!.cache.token.username,
+                schoolId: data.client!.cache.token.iss,
               ),
             ),
           ],

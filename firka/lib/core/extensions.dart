@@ -209,16 +209,12 @@ extension DateExtension on DateTime {
     return subtract(Duration(days: weekday - 1));
   }
 
-  DateTime getMidnight() {
-    return subtract(
-      Duration(
-        hours: hour,
-        minutes: minute,
-        seconds: second,
-        milliseconds: millisecond,
-        microseconds: microsecond,
-      ),
-    );
+  DateTime getMonthFirstDay() {
+    return DateTime(year, month, 1);
+  }
+
+  DateTime getMonthLastDay() {
+    return DateTime(year, month + 1, 1).subtract(Duration(days: 1));
   }
 
   Cycle getDayCycle() {
@@ -237,6 +233,11 @@ extension DateExtension on DateTime {
     }
 
     return Cycle.night;
+  }
+
+  DateTime getFirstSchoolDay() {
+    DateTime start = copyWith(month: 9, day: 1);
+    return isBefore(start) ? start.copyWith(year: start.year - 1) : start;
   }
 }
 

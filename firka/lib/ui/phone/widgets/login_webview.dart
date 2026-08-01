@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:firka/data/models/app_settings_model.dart';
+import 'package:firka_common/core/consts.dart';
+import 'package:firka_common/data/models/app_settings_model.dart';
 import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/app/initialization.dart';
@@ -14,9 +15,8 @@ import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'package:firka/services/watch_sync_helper.dart';
-import 'package:firka/api/consts.dart';
 import 'package:firka/api/token_grant.dart';
-import 'package:firka/data/models/token_model.dart';
+import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/ui/theme/style.dart';
@@ -119,22 +119,12 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                         )["e_kreta_account_picker"]
                         as SettingsKretenAccountPicker);
 
-                var tokenId = 0;
-                var om = 0;
                 await isar.writeTxn(() async {
-                  om = await isar.tokenModels.put(tokenModel);
+                  await isar.tokenModels.put(tokenModel);
                 });
 
-                widget.data.tokens = await isar.tokenModels.where().findAll();
-                for (var i = 0; i < widget.data.tokens.length; i++) {
-                  if (widget.data.tokens[i].studentIdNorm == om) {
-                    tokenId = i;
-                    break;
-                  }
-                }
-
                 await isar.writeTxn(() async {
-                  accountPicker.accountIndex = tokenId;
+                  accountPicker.accountKey = tokenModel.key;
                   await accountPicker.save(widget.data.isar.appSettingsModels);
                 });
 
@@ -155,15 +145,6 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                     }
                   }
                 }
-
-                if (!mounted) return NavigationDecision.prevent;
-
-                widget.data.reauthCubit?.clear();
-                if (Platform.isIOS) {
-                  LiveActivityService.clearTokenExpiration();
-                }
-
-                await initializeApp();
 
                 if (!mounted) return NavigationDecision.prevent;
 
@@ -286,8 +267,8 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                             opacity: _isLoading
                                 ? 1.0
                                 : _fadeAnimationController!.isAnimating
-                                    ? _fadeAnimation!.value
-                                    : 0.0,
+                                ? _fadeAnimation!.value
+                                : 0.0,
                             duration: const Duration(milliseconds: 300),
                             child: Container(
                               color: appStyle.colors.background,
@@ -332,7 +313,8 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
                                 text: _displayPath,
                                 style: appStyle.fonts.B_14R.copyWith(
                                   fontSize: 16,
-                                  color: appStyle.colors.textTeritary ??
+                                  color:
+                                      appStyle.colors.textTeritary ??
                                       appStyle.colors.textSecondary,
                                 ),
                               ),

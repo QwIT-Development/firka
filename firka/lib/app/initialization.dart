@@ -1,22 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:firka_common/data/database.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:firka/app/app_state.dart';
-import 'package:firka/core/bloc/home_refresh_cubit.dart';
-import 'package:firka/core/bloc/profile_picture_cubit.dart';
-import 'package:firka/core/bloc/reauth_cubit.dart';
-import 'package:firka/core/bloc/settings_cubit.dart';
-import 'package:firka/core/bloc/theme_cubit.dart';
-import 'package:firka/services/active_account_helper.dart';
 import 'package:firka/api/client/kreta_client.dart';
-import 'package:firka/data/models/app_settings_model.dart';
-import 'package:firka/data/models/generic_cache_model.dart';
-import 'package:firka/data/models/homework_cache_model.dart';
-import 'package:firka/data/models/timetable_cache_model.dart';
-import 'package:firka/data/models/token_model.dart';
+import 'package:firka_common/data/models/app_settings_model.dart';
+import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/services/watch_sync_helper.dart';
@@ -31,28 +24,6 @@ import 'package:path/path.dart' as p;
 import 'package:isar_community/isar.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
-
-Isar? isarInit;
-
-Future<Isar> initDB() async {
-  if (isarInit != null) return isarInit!;
-  final dir = await getApplicationDocumentsDirectory();
-
-  isarInit = await Isar.open(
-    [
-      TokenModelSchema,
-      GenericCacheModelSchema,
-      TimetableCacheModelSchema,
-      HomeworkCacheModelSchema,
-      AppSettingsModelSchema,
-      HomeworkDoneModelSchema,
-    ],
-    inspector: true,
-    directory: dir.path,
-  );
-
-  return isarInit!;
-}
 
 Future<void> initLang(AppInitialization data) async {
   String? languageCode;
@@ -107,7 +78,6 @@ Future<void> initLang(AppInitialization data) async {
 
 void initTheme(AppInitialization data) {
   final themeCubit = data.themeCubit;
-  if (themeCubit == null) return;
 
   final brightness =
       SchedulerBinding.instance.platformDispatcher.platformBrightness;
@@ -135,11 +105,6 @@ void initTheme(AppInitialization data) {
 }
 
 Future<void> _initData(AppInitialization init) async {
-  init.themeCubit ??= ThemeCubit();
-  init.settingsCubit ??= SettingsCubit();
-  init.profilePictureCubit ??= ProfilePictureCubit();
-  init.reauthCubit ??= ReauthCubit();
-  init.homeRefreshCubit ??= HomeRefreshCubit();
   await init.settings.load(init.isar.appSettingsModels);
   await initLang(init);
   initTheme(init);
@@ -174,9 +139,6 @@ Future<void> _initData(AppInitialization init) async {
     }());
   };
 
-  resetOldTimeTableCache(init.isar);
-  resetOldHomeworkCache(init.isar);
-
   var didRunFreshInstallCleanup = false;
   if (Platform.isIOS) {
     try {
@@ -187,50 +149,41 @@ Future<void> _initData(AppInitialization init) async {
           '[Init] Fresh-install cleanup completed; skipping startup iCloud recovery on this launch',
         );
       } else {
-        await WatchSyncHelper.checkAndRecoverFromiCloud(
-          isar: init.isar,
-          tokens: init.tokens,
-        );
+        await WatchSyncHelper.checkAndRecoverFromiCloud(isar: init.isar);
       }
     } catch (e) {
       logger.warning('[Init] iCloud bootstrap/recovery failed: $e');
     }
   }
 
-  final allTokens = await init.isar.tokenModels.where().findAll();
-  init.tokens = allTokens;
+  final token = init.settings.getSelectedToken();
+  if (token == null) {
+    logger.warning("[Init] No token available!");
+    return;
+  }
+  logger.fine("Initializing kréta client as: ${token.username}");
+  init.client = KretaClient(token, init.reauthCubit!);
+  await init.client!.init();
 
-  if (allTokens.isNotEmpty) {
-    final token = pickActiveToken(tokens: allTokens, settings: init.settings);
-    if (token == null) {
-      logger.warning(
-        "[Init] Tokens disappeared during initialization; skipping client setup",
-      );
-      return;
+  if (Platform.isIOS) {
+    final expiryDate = token.expiryDate;
+    if (expiryDate != null && expiryDate.isAfter(DateTime.now())) {
+      init.reauthCubit?.clear();
     }
-    logger.fine("Initializing kréta client as: ${token.studentId}");
-    init.client = KretaClient(token, init.isar, init.reauthCubit!);
 
-    if (Platform.isIOS) {
-      final expiryDate = token.expiryDate;
-      if (expiryDate != null && expiryDate.isAfter(DateTime.now())) {
-        init.reauthCubit?.clear();
+    unawaited(() async {
+      try {
+        await WatchSyncHelper.saveTokenToiCloud(token);
+      } catch (e) {
+        logger.warning('[Init] Failed to sync active token to iCloud: $e');
       }
 
-      unawaited(() async {
-        try {
-          await WatchSyncHelper.saveTokenToiCloud(token);
-        } catch (e) {
-          logger.warning('[Init] Failed to sync active token to iCloud: $e');
-        }
-
-        try {
-          await WatchSyncHelper.sendTokenModelToWatch(token);
-        } catch (e) {
-          logger.warning('[Init] Failed to sync active token to Watch: $e');
-        }
-      }());
-    }
+      try {
+        await WatchSyncHelper.sendTokenModelToWatch(token);
+      } catch (e) {
+        logger.warning('[Init] Failed to sync active token to Watch: $e');
+      }
+    }());
   }
 
   final dataDir = await getApplicationDocumentsDirectory();
@@ -239,12 +192,14 @@ Future<void> _initData(AppInitialization init) async {
   if (await pfpFile.exists()) {
     init.profilePicture = await pfpFile.readAsBytes();
   }
+
+  init.homeRefreshCubit.requestRefresh();
 }
 
-Future<AppInitialization> initializeApp() async {
+Future<void> initializeApp() async {
   if (initDone) {
     await _initData(initData);
-    return initData;
+    return;
   }
   final isar = await initDB();
   final tokens = await isar.tokenModels.where().findAll();
@@ -274,12 +229,11 @@ Future<AppInitialization> initializeApp() async {
   logger.fine("Fetched device info: ${devInfoFetched ? "yes" : "no"}");
   logger.fine("Using device info: ${devInfo.toString()}");
 
-  var init = AppInitialization(
+  initData = AppInitialization(
     isar: isar,
     appDir: await getApplicationDocumentsDirectory(),
     devInfo: devInfo,
     packageInfo: await PackageInfo.fromPlatform(),
-    tokens: tokens,
     settings: SettingsStore(AppLocalizationsHu()),
     l10n: AppLocalizationsHu(),
     navigatorKey: navigatorKey,
@@ -297,9 +251,9 @@ Future<AppInitialization> initializeApp() async {
     }
   }
 
-  await _initData(init);
+  await _initData(initData);
 
-  return init;
+  initDone = true;
 }
 
 Future<void> setupLogging() async {

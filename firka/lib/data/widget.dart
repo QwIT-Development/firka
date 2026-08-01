@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:firka/api/client/kreta_client.dart';
-import 'package:firka_common/ui/components/grade_helpers.dart';
+import 'package:firka/data/ios_widget_helper.dart';
+import 'package:firka_common/data/database.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:isar_community/isar.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/debug_helper.dart';
-import 'package:firka/data/ios_widget_helper.dart';
 import 'package:firka/core/settings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
@@ -16,12 +18,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:firka/ui/theme/style.dart';
 
 class WidgetCacheHelper {
-  static Map<String, dynamic> toJson(FirkaStyle style, List<Lesson> timetable) {
+  static Map<String, dynamic> toJson(
+    FirkaStyle style,
+    List<LessonCacheModel> timetable,
+  ) {
     List<Map<String, dynamic>> timetableJson = [];
-
-    for (var lesson in timetable) {
-      timetableJson.add(lesson.toJson());
-    }
 
     return {'colors': _colorsMap(style), 'timetable': timetableJson};
   }
@@ -86,20 +87,13 @@ class WidgetCacheHelper {
 
     final start = now.subtract(Duration(days: 7));
     final end = now.add(Duration(days: 14));
-    final lessons = await client.getTimeTable(start, end, forceCache: false);
+    final lessons = await client.getLessons(start, end);
 
     final widgetFile = File(p.join(dataDir.path, "widget_state.json"));
 
-    if (lessons.response != null) {
-      debugPrint(
-        'Android widget cache: ${lessons.response!.length} lessons (cached: ${lessons.cached})',
-      );
-      widgetFile.writeAsString(
-        jsonEncode(WidgetCacheHelper.toJson(style, lessons.response!)),
-      );
-    } else {
-      debugPrint('Android widget cache: No lessons to cache');
-    }
+    widgetFile.writeAsString(
+      jsonEncode(WidgetCacheHelper.toJson(style, lessons)),
+    );
   }
 
   static Future<void> generateWidgetStateForDate(
@@ -110,45 +104,13 @@ class WidgetCacheHelper {
     final dataDir = await getApplicationDocumentsDirectory();
     final dayStart = DateTime(date.year, date.month, date.day);
     final dayEnd = dayStart.add(Duration(hours: 23, minutes: 59));
-    final lessons = await client.getTimeTable(
-      dayStart,
-      dayEnd,
-      forceCache: false,
-    );
-    final dayLessons = lessons.response ?? [];
 
-    final json = toJson(style, dayLessons);
+    final json = toJson(style, []);
     json['displayDate'] =
         '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
     final widgetFile = File(p.join(dataDir.path, "widget_state.json"));
     await widgetFile.writeAsString(jsonEncode(json));
-  }
-
-  static Future<void> updateIOSWidgets({
-    required String locale,
-    required String theme,
-    required List<Lesson> todayLessons,
-    required List<Lesson> tomorrowLessons,
-    List<Lesson> nextSchoolDayLessons = const [],
-    DateTime? nextSchoolDayDate,
-    required List<Grade> grades,
-    required Map<String, double> subjectAverages,
-    required double? overallAverage,
-    WidgetBreakInfo? currentBreak,
-  }) async {
-    await IOSWidgetHelper.updateWidgetData(
-      locale: locale,
-      theme: theme,
-      todayLessons: todayLessons,
-      tomorrowLessons: tomorrowLessons,
-      nextSchoolDayLessons: nextSchoolDayLessons,
-      nextSchoolDayDate: nextSchoolDayDate,
-      grades: grades,
-      subjectAverages: subjectAverages,
-      overallAverage: overallAverage,
-      currentBreak: currentBreak,
-    );
   }
 
   /// Comprehensive iOS widget refresh that collects all necessary data
@@ -203,19 +165,17 @@ class WidgetCacheHelper {
       final todayMidnight = DateTime(now.year, now.month, now.day);
       final tomorrowMidnight = todayMidnight.add(Duration(days: 1));
 
-      final todayResponse = await client.getTimeTable(
+      final todayResponse = await client.getLessons(
         todayMidnight,
         todayMidnight.add(Duration(hours: 23, minutes: 59)),
-        forceCache: false,
       );
-      final tomorrowResponse = await client.getTimeTable(
+      final tomorrowResponse = await client.getLessons(
         tomorrowMidnight,
         tomorrowMidnight.add(Duration(hours: 23, minutes: 59)),
-        forceCache: false,
       );
 
-      final todayLessons = todayResponse.response ?? [];
-      final tomorrowLessons = tomorrowResponse.response ?? [];
+      final todayLessons = [];
+      final tomorrowLessons = [];
 
       debugPrint(
         'iOS widget refresh: ${todayLessons.length} today lessons, ${tomorrowLessons.length} tomorrow lessons',
@@ -226,12 +186,11 @@ class WidgetCacheHelper {
       if (tomorrowLessons.isEmpty) {
         for (int i = 2; i <= 7; i++) {
           final dayMidnight = todayMidnight.add(Duration(days: i));
-          final dayResponse = await client.getTimeTable(
+          final dayResponse = await client.getLessons(
             dayMidnight,
             dayMidnight.add(Duration(hours: 23, minutes: 59)),
-            forceCache: false,
           );
-          final dayLessons = dayResponse.response ?? [];
+          final dayLessons = <Lesson>[];
           if (dayLessons.isNotEmpty) {
             nextSchoolDayLessons = dayLessons;
             nextSchoolDayDate = dayMidnight;
@@ -243,11 +202,11 @@ class WidgetCacheHelper {
         }
       }
 
-      final gradesResponse = await client.getGrades(forceCache: false);
-      final grades = gradesResponse.response ?? [];
+      final gradesResponse = await client.getGrades();
+      final grades = [];
 
       debugPrint(
-        'iOS widget refresh: ${grades.length} grades fetched (cached: ${gradesResponse.cached})',
+        'iOS widget refresh: ${grades.length} grades fetched (cached: ${gradesResponse})',
       );
 
       final Map<String, double> subjectAverages = {};
@@ -258,25 +217,18 @@ class WidgetCacheHelper {
 
       subjects.addAll(grades.map((g) => g.subject));
 
-      for (var subject in subjects) {
-        final average = grades.getAverageBySubject(subject);
-        if (average != null) {
-          subjectAverages[subject.uid] = average;
-        }
-      }
-
       WidgetBreakInfo? currentBreak;
 
-      await updateIOSWidgets(
+      await IOSWidgetHelper.updateWidgetData(
         locale: locale,
         theme: theme,
-        todayLessons: todayLessons,
-        tomorrowLessons: tomorrowLessons,
+        todayLessons: [],
+        tomorrowLessons: [],
         nextSchoolDayLessons: nextSchoolDayLessons,
         nextSchoolDayDate: nextSchoolDayDate,
-        grades: grades,
+        grades: [],
         subjectAverages: subjectAverages,
-        overallAverage: grades.getSubjectAverage(),
+        overallAverage: 0.0,
         currentBreak: currentBreak,
       );
 
@@ -291,7 +243,7 @@ class WidgetCacheHelper {
     if (!Platform.isIOS) return;
 
     try {
-      await updateIOSWidgets(
+      await IOSWidgetHelper.updateWidgetData(
         locale: 'hu',
         theme: 'light',
         todayLessons: [],

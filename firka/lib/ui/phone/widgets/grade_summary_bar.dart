@@ -1,7 +1,8 @@
-import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
+import 'package:firka_common/core/grade_helper.dart';
+import 'package:firka_common/data/models/grade_cache_model.dart';
 import 'package:kreta_api/kreta_api.dart';
-import 'package:firka/ui/components/grade.dart';
-import 'package:firka/ui/components/grade_helpers.dart';
+import 'package:firka_common/ui/components/grade.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
@@ -10,7 +11,7 @@ import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/theme/style.dart';
 
 class GradeSummaryBar extends StatefulWidget {
-  final List<Grade> grades;
+  final List<GradeCacheModel> grades;
   final AppLocalizations l10n;
   final bool showAverage;
 

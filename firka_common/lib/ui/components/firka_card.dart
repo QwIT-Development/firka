@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:firka_common/ui/components/firka_shadow.dart';
 import 'package:firka_common/ui/theme/style.dart';
 
 enum Attach { none, bottom, top }
@@ -84,11 +83,12 @@ class FirkaCard extends StatelessWidget {
       padding: padding,
       margin: margin,
       decoration: ShapeDecoration(
-        shadows: shadow && !isLight
+        shadows: shadow
             ? [
                 BoxShadow(
                   color: appStyle.colors.shadowColor,
                   offset: const Offset(0, 1),
+                  blurRadius: isLight ? 2.0 : 0,
                 ),
               ]
             : [],

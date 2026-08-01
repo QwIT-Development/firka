@@ -1,7 +1,8 @@
+import 'package:firka_common/core/grade_helper.dart';
+import 'package:firka_common/data/models/grade_cache_model.dart';
 import 'package:flutter/material.dart';
 import 'package:kreta_api/kreta_api.dart';
 
-import 'package:firka_common/ui/components/grade_helpers.dart';
 import 'package:firka_common/ui/theme/style.dart';
 
 import 'filled_circle.dart';
@@ -18,7 +19,7 @@ class GradeWidget extends StatelessWidget {
     super.key,
   }) : grade = null;
 
-  final Grade? grade;
+  final GradeCacheModel? grade;
   final double size;
   final int? gradeValue;
   final int? gradeWeight;

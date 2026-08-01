@@ -2,11 +2,13 @@ import 'dart:collection';
 import 'dart:core';
 import 'dart:io';
 
-import 'package:firka/data/models/app_settings_model.dart';
+import 'package:firka_common/data/database.dart';
+import 'package:firka_common/data/models/app_settings_model.dart';
 import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
-import 'package:firka_common/firka_common.dart' as common;
+import 'package:firka_common/core/grade_helper.dart' as helper;
+import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka_common/ui/theme/style.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -240,8 +242,7 @@ class SettingsStore {
                 initData.settings = SettingsStore(initData.l10n);
                 await initData.settings.load(initData.isar.appSettingsModels);
 
-                initData.themeCubit?.refresh();
-                runApp(InitializationScreen());
+                initData.homeRefreshCubit.requestRefresh();
               },
             ),
           }),
@@ -353,6 +354,7 @@ class SettingsStore {
               always,
               () async {
                 initTheme(initData);
+                initData.homeRefreshCubit.requestRefresh();
               },
             ),
           }),
@@ -384,7 +386,7 @@ class SettingsStore {
                     await Permission.notification.request();
                   }
                   await WatchSyncHelper.startWearSyncServiceWithFreshCache(
-                    initData.client,
+                    initData.client!,
                     initData.appDir.path,
                   );
                 } else {
@@ -722,7 +724,7 @@ class SettingsStore {
     final rounding = group(
       "settings",
     ).subGroup("application").subGroup("rounding");
-    return common.roundGrade(
+    return helper.roundGrade(
       grade,
       t1: rounding.dbl("1"),
       t2: rounding.dbl("2"),
@@ -744,6 +746,14 @@ class SettingsStore {
       default:
         return appStyle.colors.grade1;
     }
+  }
+
+  TokenModel? getSelectedToken() {
+    final accountPicker =
+        (group("profile_settings")["e_kreta_account_picker"]
+            as SettingsKretenAccountPicker);
+    return isarInit.tokenModels.getSync(accountPicker.accountKey) ??
+        isarInit.tokenModels.where().findFirstSync();
   }
 }
 
@@ -1062,10 +1072,12 @@ class SettingsKretenAccountPicker implements SettingsItem {
   @override
   bool Function() visibilityProvider;
   @override
-  Future<void> Function() postUpdate = () async {};
+  Future<void> Function() postUpdate = () async {
+    await initializeApp();
+  };
   String title = "";
   String icon = "";
-  int accountIndex = 0;
+  int accountKey = 0;
 
   SettingsKretenAccountPicker(this.key, this.visibilityProvider);
 
@@ -1073,9 +1085,9 @@ class SettingsKretenAccountPicker implements SettingsItem {
   Future<void> load(IsarCollection<AppSettingsModel> model) async {
     var v = await model.get(key);
     if (v == null || v.valueIndex == null) {
-      accountIndex = 0;
+      accountKey = 0;
     } else {
-      accountIndex = v.valueIndex!;
+      accountKey = v.valueIndex!;
     }
   }
 
@@ -1083,7 +1095,7 @@ class SettingsKretenAccountPicker implements SettingsItem {
   Future<void> save(IsarCollection<AppSettingsModel> model) async {
     var v = AppSettingsModel();
     v.id = key;
-    v.valueIndex = accountIndex;
+    v.valueIndex = accountKey;
 
     await model.put(v);
 

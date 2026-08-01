@@ -55,7 +55,9 @@ class BottomNavIconWidget extends StatelessWidget {
               ),
             const SizedBox(height: 2),
             FittedBox(
+              alignment: Alignment.bottomCenter,
               fit: BoxFit.scaleDown,
+              clipBehavior: Clip.none,
               child: Text(
                 text,
                 style: appStyle.fonts.B_14R.apply(

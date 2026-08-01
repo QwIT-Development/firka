@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:firka/ui/components/firka_button.dart';
-import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/screens/live_activity/full_privacy_policy_screen.dart';

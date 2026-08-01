@@ -1,15 +1,16 @@
 import 'package:dio/dio.dart';
-import 'package:firka/data/models/token_model.dart';
+import 'package:firka_common/core/consts.dart';
+import 'package:firka_common/data/models/token_model.dart';
 
 import 'package:firka/app/app_state.dart';
+import 'package:firka_common/data/models/token_model.dart';
 import 'package:kreta_api/kreta_api.dart';
-import 'consts.dart';
 
 Future<TokenGrantResponse> getAccessToken(String code) async {
   final headers = <String, String>{
     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
     "accept": "*/*",
-    "user-agent": Constants.userAgent,
+    "user-agent": initData.userAgent,
   };
 
   final formData = <String, String>{
@@ -47,13 +48,13 @@ const _tokenRefreshRetryDelays = [1000, 3000, 5000];
 
 Future<TokenGrantResponse> extendToken(TokenModel model) async {
   logger.info(
-    "Extending token for user: ${model.studentId}, institute: ${model.iss}",
+    "Extending token for user: ${model.username}, institute: ${model.iss}",
   );
 
   final headers = <String, String>{
     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
     "accept": "*/*",
-    "user-agent": Constants.userAgent,
+    "user-agent": initData.userAgent,
   };
 
   final formData = <String, String>{
@@ -84,20 +85,20 @@ Future<TokenGrantResponse> extendToken(TokenModel model) async {
       switch (response.statusCode) {
         case 200:
           logger.info(
-            "Token extended successfully for user: ${model.studentId}",
+            "Token extended successfully for user: ${model.username}",
           );
           return TokenGrantResponse.fromJson(response.data);
         case 400:
         case 401:
           logger.warning(
-            "Token refresh failed (${response.statusCode}) - refresh token invalid for user: ${model.studentId}",
+            "Token refresh failed (${response.statusCode}) - refresh token invalid for user: ${model.username}",
           );
           throw response.statusCode == 400
               ? TokenExpiredException()
               : InvalidGrantException();
         default:
           logger.warning(
-            "Token refresh failed (${response.statusCode}) for user: ${model.studentId}, attempt ${attempt + 1}",
+            "Token refresh failed (${response.statusCode}) for user: ${model.username}, attempt ${attempt + 1}",
           );
           lastError = Exception(
             "Failed to get access token, response code: ${response.statusCode}",
@@ -111,19 +112,19 @@ Future<TokenGrantResponse> extendToken(TokenModel model) async {
       rethrow;
     } on DioException catch (e) {
       logger.warning(
-        "Token refresh network error for user: ${model.studentId}, attempt ${attempt + 1}: $e",
+        "Token refresh network error for user: ${model.username}, attempt ${attempt + 1}: $e",
       );
       lastError = e;
       continue;
     } catch (e) {
-      logger.severe("Token refresh exception for user: ${model.studentId}: $e");
+      logger.severe("Token refresh exception for user: ${model.username}: $e");
       lastError = e is Exception ? e : Exception(e.toString());
       continue;
     }
   }
 
   logger.severe(
-    "All token refresh attempts failed for user: ${model.studentId}",
+    "All token refresh attempts failed for user: ${model.username}",
   );
   throw lastError ?? Exception("Token refresh failed after all retries");
 }

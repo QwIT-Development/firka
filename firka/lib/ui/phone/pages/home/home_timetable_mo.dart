@@ -1,4 +1,9 @@
-import 'package:firka/api/consts.dart';
+import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:firka_common/data/models/omission_cache_model.dart';
+import 'package:firka_common/data/models/test_cache_model.dart';
+import 'package:firka_common/data/util.dart';
+import 'package:isar_community/isar.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/extensions.dart';
@@ -16,7 +21,6 @@ import 'package:firka/app/app_state.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
-import '../../screens/settings/settings_screen.dart';
 
 class HomeTimetableMonthlyScreen extends StatefulWidget {
   final AppInitialization data;
@@ -32,68 +36,19 @@ enum ActiveFilter { lessonNo, tests, omissions }
 
 class _HomeTimetableMonthlyScreen
     extends FirkaState<HomeTimetableMonthlyScreen> {
-  List<Lesson>? lessons;
-  List<Test>? tests;
-  List<DateTime>? dates;
-  List<Omission>? omissions;
-  DateTime? now;
+  List<DateTime> dates = [];
+  late DateTime now;
   int active = 0;
   ActiveFilter activeFilter = ActiveFilter.lessonNo;
 
   _HomeTimetableMonthlyScreen();
 
-  Future<void> initForMonth(DateTime now, {bool forceCache = true}) async {
-    final monthStart = DateTime.utc(now.year, now.month, 1);
-    final monthEnd = DateTime.utc(
-      now.year,
-      now.month + 1,
-    ).subtract(Duration(days: 1));
-
-    final start = monthStart.subtract(Duration(days: 7)).getMonday();
-    var end = monthEnd
-        .add(Duration(days: 7))
-        .getMonday()
-        .add(Duration(days: 7));
-
-    var days = end.difference(start).inDays;
-
-    var lessonsResp = await widget.data.client.getTimeTable(
-      monthStart,
-      monthEnd,
-      forceCache: forceCache,
+  void updateDates() {
+    DateTime from = now.getMidnight().getMonthFirstDay().getMonday().subtract(
+      Duration(days: 7),
     );
-    var testsResp = await widget.data.client.getTests(forceCache: forceCache);
-    var omissionsResp = await widget.data.client.getOmissions(forceCache: true);
-    List<DateTime> dates = List.empty(growable: true);
 
-    for (var i = 0; i < days; i++) {
-      dates.add(start.add(Duration(days: i)));
-    }
-
-    if (lessonsResp.response != null) {
-      lessons = lessonsResp.response
-          ?.where((lesson) => lesson.type.name != TimetableConsts.event)
-          .toList();
-    }
-    tests = testsResp.response;
-    omissions = omissionsResp.response;
-
-    if (mounted) {
-      setState(() {
-        this.dates = dates;
-      });
-    }
-  }
-
-  void _onRefreshRequested(BuildContext context) async {
-    final cubit = context.read<HomeRefreshCubit>();
-    if (now != null) {
-      await initForMonth(now!, forceCache: false);
-      if (mounted) {
-        setState(() {});
-        cubit.onRefreshComplete();
-      }
-    }
+    dates = List.generate(49, (i) => from.add(Duration(days: i)));
   }
 
   @override
@@ -101,7 +56,8 @@ class _HomeTimetableMonthlyScreen
     super.initState();
 
     now = timeNow();
-    initForMonth(now!);
+
+    updateDates();
   }
 
   @override
@@ -110,38 +66,23 @@ class _HomeTimetableMonthlyScreen
       listenWhen: (previous, current) =>
           current.refreshTrigger != previous.refreshTrigger,
       listener: (context, state) {
-        _onRefreshRequested(context);
+        setState(() {});
       },
       child: _buildContent(context),
     );
   }
 
   Widget _buildContent(BuildContext context) {
-    if (lessons == null ||
-        omissions == null ||
-        tests == null ||
-        dates == null) {
-      return Scaffold(
-        backgroundColor: appStyle.colors.background,
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [DelayedSpinnerWidget()],
-            ),
-          ],
-        ),
-      );
-    }
     List<Widget> ttDays = [];
 
-    final meow = dates![20];
-    final currentMonthStart = DateTime.utc(meow.year, meow.month, 1);
-    final currentMonthEnd = DateTime.utc(
-      meow.year,
-      meow.month + 1,
-    ).subtract(Duration(days: 1));
+    updateDates();
+
+    final currentMonthStart = now.getMidnight().getMonthFirstDay();
+    final currentMonthEnd = now
+        .getMonthLastDay()
+        .add(Duration(days: 1))
+        .getMidnight()
+        .subtract(Duration(microseconds: 1));
 
     // column-major -> row-major
     for (var week = 0; week < 7; week++) {
@@ -151,39 +92,39 @@ class _HomeTimetableMonthlyScreen
         bool outOfRange =
             d.isBefore(currentMonthStart) || d.isAfter(currentMonthEnd);
         bool isToday =
-            !outOfRange && timeNow().day == d.day && timeNow().month == d.month;
+            !outOfRange &&
+            timeNow().year == d.year &&
+            timeNow().day == d.day &&
+            timeNow().month == d.month;
 
         Widget body = SizedBox();
         Color? todayAccent = isToday ? appStyle.colors.textPrimaryLight : null;
         Color bodyBgColor = appStyle.colors.a15p;
 
-        var lessonsToday = lessons!.where(
-          (lesson) =>
-              lesson.start.isAfter(d.getMidnight()) &&
-              lesson.end.isBefore(
-                d.getMidnight().add(Duration(hours: 23, minutes: 59)),
-              ),
-        );
+        var lessonsToday = widget.data.client!.cache.getClassLessons().on(d);
 
-        var omittedLesson = lessonsToday.firstWhereOrNull(
-          (lesson) =>
-              lesson.studentPresence != null &&
-              lesson.studentPresence?.name != OmissionConsts.na &&
-              lesson.studentPresence?.name != OmissionConsts.present,
-        );
+        int lessonCountToday = lessonsToday.countSync();
 
-        if (lessonsToday.isNotEmpty) {
+        // TODO: Nézze meg a többi órát is
+        var omittedLesson = lessonsToday
+            .and()
+            .not()
+            .omissionIsNull()
+            .findFirstSync();
+
+        if (lessonCountToday > 0) {
           switch (activeFilter) {
             case ActiveFilter.lessonNo:
               body = Center(
                 child: Text(
-                  lessonsToday.length.toString(),
+                  lessonCountToday.toString(),
                   style: appStyle.fonts.H_16px.apply(
                     color:
-                        todayAccent ??
-                        (omittedLesson != null
-                            ? appStyle.colors.errorText
-                            : appStyle.colors.secondary),
+                        (todayAccent ??
+                                (omittedLesson != null
+                                    ? appStyle.colors.errorText
+                                    : appStyle.colors.secondary))
+                            .withAlpha(outOfRange ? 77 : 255),
                   ),
                 ),
               );
@@ -193,19 +134,7 @@ class _HomeTimetableMonthlyScreen
               }
               break;
             case ActiveFilter.tests:
-              if (lessonsToday.firstWhereOrNull(
-                    (lesson) => tests!.any(
-                      (test) =>
-                          test.lessonNumber == lesson.lessonNumber &&
-                          lesson.start.isAfter(test.date.getMidnight()) &&
-                          lesson.end.isBefore(
-                            test.date.getMidnight().add(
-                              Duration(hours: 23, minutes: 59),
-                            ),
-                          ),
-                    ),
-                  ) !=
-                  null) {
+              if (lessonsToday.not().testIsNull().isNotEmptySync()) {
                 body = Center(
                   child: FirkaIconWidget(
                     FirkaIconType.majesticons,
@@ -221,50 +150,41 @@ class _HomeTimetableMonthlyScreen
                 break;
               }
 
-              // TODO: Nézze meg a többi órát is
-              final omission = omissions!.firstWhereOrNull((omission) {
-                return omission.date.getMidnight().millisecondsSinceEpoch ==
-                        omittedLesson.start
-                            .getMidnight()
-                            .millisecondsSinceEpoch &&
-                    omission.subject.uid == omittedLesson.subject?.uid;
-              });
-
-              if (omission?.state == OmissionState.excused) {
-                body = Center(
-                  child: FirkaIconWidget(
-                    FirkaIconType.majesticons,
-                    Majesticon.multiplySolid,
-                    size: 20.0,
-                    color: todayAccent ?? appStyle.colors.accent,
-                  ),
-                );
-                break;
+              var omissionState = omittedLesson.omission.loadAndGet()!.state;
+              switch (omissionState) {
+                case OmissionState.excused:
+                  body = Center(
+                    child: FirkaIconWidget(
+                      FirkaIconType.majesticons,
+                      Majesticon.multiplySolid,
+                      size: 20.0,
+                      color: todayAccent ?? appStyle.colors.accent,
+                    ),
+                  );
+                  break;
+                case OmissionState.pending:
+                  body = Center(
+                    child: FirkaIconWidget(
+                      FirkaIconType.majesticons,
+                      Majesticon.timerLine,
+                      size: 20.0,
+                      color: todayAccent ?? appStyle.colors.warningAccent,
+                    ),
+                  );
+                  bodyBgColor = appStyle.colors.warning15p;
+                  break;
+                default:
+                  body = Center(
+                    child: FirkaIconWidget(
+                      FirkaIconType.majesticons,
+                      Majesticon.restrictedSolid,
+                      size: 20.0,
+                      color: todayAccent ?? appStyle.colors.errorAccent,
+                    ),
+                  );
+                  bodyBgColor = appStyle.colors.error15p;
+                  break;
               }
-
-              if (omission?.state == OmissionState.pending) {
-                body = Center(
-                  child: FirkaIconWidget(
-                    FirkaIconType.majesticons,
-                    Majesticon.timerLine,
-                    size: 20.0,
-                    color: todayAccent ?? appStyle.colors.warningAccent,
-                  ),
-                );
-                bodyBgColor = appStyle.colors.warning15p;
-                break;
-              }
-
-              body = Center(
-                child: FirkaIconWidget(
-                  FirkaIconType.majesticons,
-                  Majesticon.restrictedSolid,
-                  size: 20.0,
-                  color: todayAccent ?? appStyle.colors.errorAccent,
-                ),
-              );
-              bodyBgColor = appStyle.colors.error15p;
-
               break;
           }
         }
@@ -277,7 +197,7 @@ class _HomeTimetableMonthlyScreen
           bodyBgColor = appStyle.colors.cardTranslucent;
         }
 
-        bool isWeekend = d.weekday > 5 && lessonsToday.isEmpty;
+        bool isWeekend = d.weekday > 5 && lessonCountToday == 0;
         Color textColor = (isWeekend
             ? appStyle.colors.errorText
             : isToday
@@ -317,6 +237,11 @@ class _HomeTimetableMonthlyScreen
         );
       }
     }
+
+    final lessonsInMonth = widget.data.client!.cache.getClassLessons().between(
+      currentMonthStart,
+      currentMonthEnd,
+    );
 
     return Scaffold(
       backgroundColor: appStyle.colors.background,
@@ -415,15 +340,8 @@ class _HomeTimetableMonthlyScreen
                           ),
                         ),
                         onTap: () async {
-                          var newNow = DateTime(now!.year, now!.month - 1);
                           setState(() {
-                            now = newNow;
-                            lessons = null;
-                            dates = null;
-                          });
-                          await initForMonth(newNow);
-                          setState(() {
-                            now = newNow;
+                            now = DateTime(now!.year, now!.month - 1);
                           });
                         },
                       ),
@@ -443,15 +361,8 @@ class _HomeTimetableMonthlyScreen
                           color: appStyle.colors.accent,
                         ),
                         onTap: () async {
-                          var newNow = DateTime(now!.year, now!.month + 1);
                           setState(() {
-                            now = newNow;
-                            lessons = null;
-                            dates = null;
-                          });
-                          await initForMonth(newNow);
-                          setState(() {
-                            now = newNow;
+                            now = DateTime(now!.year, now!.month + 1);
                           });
                         },
                       ),
@@ -490,13 +401,7 @@ class _HomeTimetableMonthlyScreen
                       color: appStyle.colors.accent,
                       size: 16,
                     ),
-                    lessons!
-                        .where(
-                          (lesson) =>
-                              lesson.start.isAfter(currentMonthStart) &&
-                              lesson.end.isBefore(currentMonthEnd),
-                        )
-                        .length,
+                    lessonsInMonth.countSync(),
                     activeFilter == ActiveFilter.lessonNo,
                     () {
                       setState(() {
@@ -511,20 +416,7 @@ class _HomeTimetableMonthlyScreen
                       color: appStyle.colors.accent,
                       size: 16,
                     ),
-                    lessons!
-                        .where(
-                          (lesson) => tests!.any(
-                            (test) =>
-                                test.lessonNumber == lesson.lessonNumber &&
-                                lesson.start.isAfter(test.date.getMidnight()) &&
-                                lesson.end.isBefore(
-                                  test.date.getMidnight().add(
-                                    Duration(hours: 23, minutes: 59),
-                                  ),
-                                ),
-                          ),
-                        )
-                        .length,
+                    lessonsInMonth.and().not().testIsNull().countSync(),
                     activeFilter == ActiveFilter.tests,
                     () {
                       setState(() {
@@ -539,18 +431,7 @@ class _HomeTimetableMonthlyScreen
                       color: appStyle.colors.accent,
                       size: 16,
                     ),
-                    lessons!
-                        .where(
-                          (lesson) =>
-                              lesson.start.isAfter(currentMonthStart) &&
-                              lesson.end.isBefore(currentMonthEnd) &&
-                              lesson.studentPresence != null &&
-                              lesson.studentPresence?.name !=
-                                  OmissionConsts.na &&
-                              lesson.studentPresence?.name !=
-                                  OmissionConsts.present,
-                        )
-                        .length,
+                    lessonsInMonth.and().not().omissionIsNull().countSync(),
                     activeFilter == ActiveFilter.omissions,
                     () {
                       setState(() {

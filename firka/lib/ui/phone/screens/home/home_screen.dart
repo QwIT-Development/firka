@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:firka/api/client/kreta_stream.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/firka_bundle.dart';
-import 'package:firka/services/active_account_helper.dart';
 import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/services/watch_sync_helper.dart';
@@ -18,7 +16,6 @@ import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import 'package:firka/data/widget.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/bloc/profile_picture_cubit.dart';
 import 'package:firka/core/bloc/reauth_cubit.dart';
@@ -31,7 +28,7 @@ import '../../pages/extras/main_error.dart';
 
 enum ActiveToastType { fetching, error, reauth, none }
 
-bool _fetching = true;
+bool _fetching = false;
 bool _prefetched = false;
 
 class HomeScreen extends StatefulWidget {
@@ -49,7 +46,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
   bool _disposed = false;
   bool _preloadDone = false;
   bool _didRunSecondaryICloudRecovery = false;
-  bool _prefetchInProgress = false;
   bool _didRunLiveActivityLogin = false;
   bool _hasCompletedFirstPrefetch = false;
 
@@ -113,15 +109,11 @@ class _HomeScreenState extends FirkaState<HomeScreen>
     if (!Platform.isIOS || _didRunSecondaryICloudRecovery) return;
     _didRunSecondaryICloudRecovery = true;
 
-    final activeToken = pickActiveToken(
-      tokens: initData.tokens,
-      settings: initData.settings,
-      preferredStudentIdNorm: initData.client.model.studentIdNorm,
-    );
+    final activeToken = initData.client!.cache.token;
 
     final now = DateTime.now();
     final shouldRunRecovery =
-        initData.client.needsReauth ||
+        initData.client!.needsReauth ||
         activeToken == null ||
         activeToken.expiryDate == null ||
         activeToken.expiryDate!.isBefore(now.add(const Duration(seconds: 60)));
@@ -137,7 +129,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
     try {
       final recovered = await WatchSyncHelper.checkAndRecoverFromiCloud(
         isar: initData.isar,
-        tokens: initData.tokens,
         client: initData.client,
       );
       if (!recovered) {
@@ -145,17 +136,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
         return;
       }
 
-      final refreshedTokens = initDone ? initData.tokens : initData.tokens;
-      initData.tokens = refreshedTokens;
-
-      final selectedToken = pickActiveToken(
-        tokens: refreshedTokens,
-        settings: initData.settings,
-        preferredStudentIdNorm: initData.client.model.studentIdNorm,
-      );
-      if (selectedToken != null) {
-        initData.client.model = selectedToken;
-      }
       initData.reauthCubit?.clear();
       logger.info('[Home] Secondary iCloud recovery applied a fresher token');
     } catch (e) {
@@ -164,8 +144,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
   }
 
   void prefetch() async {
-    if (_prefetched) return;
-    if (_prefetchInProgress) return;
+    if (_prefetched || _fetching) return;
 
     final lifecycle = WidgetsBinding.instance.lifecycleState;
     if (lifecycle != null && lifecycle != AppLifecycleState.resumed) {
@@ -175,14 +154,16 @@ class _HomeScreenState extends FirkaState<HomeScreen>
       return;
     }
 
-    _prefetchInProgress = true;
+    setState(() {
+      _fetching = true;
+    });
     try {
       _prefetched = true;
 
       await _runSecondaryICloudRecoveryIfNeeded();
 
       try {
-        await initData.client.refreshTokenProactively().timeout(
+        await initData.client!.refreshTokenProactively().timeout(
           const Duration(seconds: 60),
           onTimeout: () {
             logger.warning('[Home] Token refresh/recovery timed out after 60s');
@@ -193,10 +174,10 @@ class _HomeScreenState extends FirkaState<HomeScreen>
         logger.warning('[Home] Token refresh/recovery failed: $e');
       }
 
-      await fetchData();
+      await initData.client!.renewCache(reInit: true);
+      initData.homeRefreshCubit.requestRefresh();
 
       if (Platform.isAndroid) {
-        await WidgetCacheHelper.updateWidgetCache(appStyle, initData.client);
         await HomeWidget.updateWidget(
           qualifiedAndroidName:
               "app.firka.naplo.glance.TimetableWidgetReceiver",
@@ -204,20 +185,12 @@ class _HomeScreenState extends FirkaState<HomeScreen>
       }
 
       if (Platform.isIOS) {
-        await WidgetCacheHelper.refreshIOSWidgets(
-          initData.client,
-          initData.settings,
-        );
-
         if (!_didRunLiveActivityLogin) {
           _didRunLiveActivityLogin = true;
-          final token = pickActiveToken(
-            tokens: initData.tokens,
-            settings: initData.settings,
-          );
-          final studentName = token?.studentId ?? "Student";
+          final token = initData.client!.cache.token;
+          final studentName = token?.username ?? "Student";
           LiveActivityService.onUserLogin(
-            client: initData.client,
+            client: initData.client!,
             studentName: studentName,
             settingsStore: initData.settings,
           ).catchError((e, st) {
@@ -227,7 +200,8 @@ class _HomeScreenState extends FirkaState<HomeScreen>
       }
 
       if (!_disposed &&
-          (LiveActivityService.isTokenExpired || initData.client.needsReauth)) {
+          (LiveActivityService.isTokenExpired ||
+              initData.client!.needsReauth)) {
         activeToast = ActiveToastType.reauth;
         setState(() {
           toast = buildReauthToast(context, initData, () {
@@ -318,7 +292,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
         );
       });
     } finally {
-      _prefetchInProgress = false;
       _hasCompletedFirstPrefetch = true;
       if (!_disposed) {
         setState(() {
@@ -326,69 +299,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
           if (activeToast == ActiveToastType.fetching) toast = null;
         });
       }
-    }
-  }
-
-  Future<void> fetchData() async {
-    var lessonsFetched = 0;
-    var noticeBoardFetched = 0;
-    var infoBoardFetched = 0;
-    var studentFetched = 0;
-    var testsFetched = 0;
-    var gradesFetched = 0;
-    var homeworkFetched = 0;
-
-    final midnight = timeNow().getMidnight();
-
-    initData.client
-        .getTimeTableStream(
-          midnight,
-          midnight.add(Duration(hours: 23, minutes: 59)),
-          cacheOnly: false,
-        )
-        .forEach((lessons) {
-          lessonsFetched++;
-        });
-
-    initData.client.getNoticeBoardStream(cacheOnly: false).forEach((items) {
-      noticeBoardFetched++;
-    });
-
-    initData.client.getInfoBoardStream(cacheOnly: false).forEach((items) {
-      infoBoardFetched++;
-    });
-
-    initData.client.getStudentStream(cacheOnly: false).forEach((student) {
-      studentFetched++;
-    });
-
-    initData.client.getTestsStream(cacheOnly: false).forEach((tests) {
-      testsFetched++;
-    });
-
-    initData.client.getGradesStream(cacheOnly: false).forEach((grades) {
-      gradesFetched++;
-    });
-
-    initData.client.getHomeworkStream(cacheOnly: false).forEach((homework) {
-      homeworkFetched++;
-    });
-
-    final startTime = DateTime.now();
-    const maxWaitTime = Duration(seconds: 30);
-
-    while (lessonsFetched < 2 ||
-        noticeBoardFetched < 2 ||
-        infoBoardFetched < 2 ||
-        studentFetched < 2 ||
-        testsFetched < 2 ||
-        gradesFetched < 2 ||
-        homeworkFetched < 2) {
-      if (DateTime.now().difference(startTime) > maxWaitTime) {
-        logger.warning('[Home] fetchData timed out after 30s');
-        break;
-      }
-      await Future.delayed(Duration(milliseconds: 50));
     }
   }
 
@@ -417,7 +327,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
     }
   }
 
-  Future<void> _preloadImages() async {
+  void _preloadImages() async {
     final imagePaths = initData.settings.appIcons.keys
         .map((icon) => "assets/images/icons/$icon.webp")
         .toList();
@@ -425,12 +335,12 @@ class _HomeScreenState extends FirkaState<HomeScreen>
 
     try {
       await ImagePreloader.preloadMultipleAssets(FirkaBundle(), imagePaths);
-      if (!mounted) return;
-      setState(() => _preloadDone = true);
     } catch (e) {
       logger.severe('Home: error preloading images: $e');
-      if (!mounted) return;
-      setState(() => _preloadDone = true);
+    } finally {
+      if (mounted) {
+        setState(() => _preloadDone = true);
+      }
     }
   }
 
@@ -455,43 +365,41 @@ class _HomeScreenState extends FirkaState<HomeScreen>
 
     if (_fetching) {
       if (_disposed) return const SizedBox.shrink();
-      setState(() {
-        activeToast = ActiveToastType.fetching;
-        toast = Positioned(
-          top: MediaQuery.of(context).size.height / 1.6,
-          left: 0.0,
-          right: 0.0,
-          bottom: 0,
-          child: Center(
-            child: Card(
-              color: appStyle.colors.card,
-              shadowColor: Colors.transparent,
-              child: Padding(
-                padding: EdgeInsets.all(8),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        color: appStyle.colors.accent,
-                      ),
+      activeToast = ActiveToastType.fetching;
+      toast = Positioned(
+        top: MediaQuery.of(context).size.height / 1.6,
+        left: 0.0,
+        right: 0.0,
+        bottom: 0,
+        child: Center(
+          child: Card(
+            color: appStyle.colors.card,
+            shadowColor: Colors.transparent,
+            child: Padding(
+              padding: EdgeInsets.all(8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: appStyle.colors.accent,
                     ),
-                    SizedBox(width: 16),
-                    Text(
-                      initData.l10n.refreshing,
-                      style: appStyle.fonts.B_16SB.copyWith(
-                        color: appStyle.colors.textPrimary,
-                      ),
+                  ),
+                  SizedBox(width: 16),
+                  Text(
+                    initData.l10n.refreshing,
+                    style: appStyle.fonts.B_16SB.copyWith(
+                      color: appStyle.colors.textPrimary,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
-        );
-      });
+        ),
+      );
     }
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -537,6 +445,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
       _prefetched = false;
       _didRunSecondaryICloudRecovery = false;
       prefetch();
+      setState(() {});
 
       if (Platform.isIOS) {
         _refreshLiveActivityOnResume();
@@ -552,14 +461,9 @@ class _HomeScreenState extends FirkaState<HomeScreen>
     Future.delayed(const Duration(milliseconds: 500), () async {
       if (_disposed || _didRunLiveActivityLogin) return;
       _didRunLiveActivityLogin = true;
-      final token = pickActiveToken(
-        tokens: initData.tokens,
-        settings: initData.settings,
-        preferredStudentIdNorm: initData.client.model.studentIdNorm,
-      );
-      final studentName = token?.studentId ?? 'Student';
+      final studentName = initData.client!.cache.token.username ?? 'Student';
       LiveActivityService.onUserLogin(
-        client: initData.client,
+        client: initData.client!,
         studentName: studentName,
         settingsStore: initData.settings,
       ).catchError((e, st) {
@@ -572,13 +476,9 @@ class _HomeScreenState extends FirkaState<HomeScreen>
   void _refreshLiveActivityOnResume() async {
     if (!_hasCompletedFirstPrefetch) return;
     try {
-      final token = pickActiveToken(
-        tokens: initData.tokens,
-        settings: initData.settings,
-      );
-      final studentName = token?.studentId ?? "Student";
+      final studentName = initData.client!.cache.token.username ?? "Student";
       await LiveActivityService.checkAndUpdateTimetable(
-        client: initData.client,
+        client: initData.client!,
         studentName: studentName,
         settingsStore: initData.settings,
       );

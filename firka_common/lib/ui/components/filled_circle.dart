@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kreta_api/kreta_api.dart';
-
-import 'package:firka_common/ui/components/grade_helpers.dart';
-import 'package:firka_common/ui/theme/style.dart';
 
 class FilledCircle extends StatelessWidget {
   final double diameter;

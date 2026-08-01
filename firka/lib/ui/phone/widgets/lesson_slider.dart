@@ -2,13 +2,17 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firka_common/core/consts.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/ui/phone/widgets/home_main_starting_soon.dart';
 import 'package:firka/ui/phone/widgets/lesson_big.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
-import 'package:firka_common/firka_common.dart';
+import 'package:firka_common/core/debug_helper.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
+import 'package:firka_common/ui/theme/style.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import 'package:kreta_api/kreta_api.dart';
@@ -47,18 +51,15 @@ class _LessonSliderState extends State<LessonSlider> {
       return SizedBox();
     }
 
-    var lessons = widget.lessons.keys.toList();
-
-    Lesson? currentLesson;
+    LessonCacheModel? currentLesson;
     int tmpIndex;
-    if (now.isBefore(lessons.first.start)) {
+    if (now.isBefore(widget.lessons.first.start)) {
       tmpIndex = 0;
     } else {
-      (int, Lesson)? currentIndex = lessons.indexed.firstWhereOrNull(
-        (e) => now.isBefore(e.$2.end),
-      );
+      (int, LessonCacheModel)? currentIndex = widget.lessons.indexed
+          .firstWhereOrNull((e) => now.isBefore(e.$2.end));
 
-      tmpIndex = (currentIndex?.$1 ?? lessons.length) + 1;
+      tmpIndex = (currentIndex?.$1 ?? widget.lessons.length) + 1;
       if (currentIndex != null) {
         currentLesson = currentIndex.$2;
       }
@@ -86,17 +87,15 @@ class _LessonSliderState extends State<LessonSlider> {
             items: [
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 5),
-                child: StartingSoonWidget(initData.l10n, now, lessons),
+                child: StartingSoonWidget(initData.l10n, now, widget.lessons),
               ),
-              ...widget.lessons.entries.map(
+              ...widget.lessons.map(
                 (entry) => Padding(
                   padding: EdgeInsets.symmetric(horizontal: 5),
                   child: LessonBigWidget(
                     initData,
-                    lessons.getLessonNo(entry.key),
-                    entry.key,
-                    entry.value,
-                    active: currentLesson == entry.key,
+                    entry,
+                    active: currentLesson == entry,
                   ),
                 ),
               ),
@@ -202,7 +201,7 @@ class _LessonSliderState extends State<LessonSlider> {
                     : appStyle.colors.accent.withAlpha(128),
                 size: centeredPageIndex == 0 ? 16 : 12,
               ),
-              ...widget.lessons.keys.indexed.map(
+              ...widget.lessons.indexed.map(
                 (i) => FilledCircle(
                   diameter: centeredPageIndex == i.$1 + 1 ? 10 : 8,
                   color: centeredPageIndex == i.$1 + 1
@@ -214,12 +213,10 @@ class _LessonSliderState extends State<LessonSlider> {
               FirkaIconWidget(
                 FirkaIconType.majesticons,
                 Majesticon.moonSolid,
-                color: centeredPageIndex == widget.lessons.keys.length + 1
+                color: centeredPageIndex == widget.lessons.length + 1
                     ? appStyle.colors.accent
                     : appStyle.colors.accent.withAlpha(128),
-                size: centeredPageIndex == widget.lessons.keys.length + 1
-                    ? 16
-                    : 12,
+                size: centeredPageIndex == widget.lessons.length + 1 ? 16 : 12,
               ),
             ],
           ),
@@ -230,10 +227,16 @@ class _LessonSliderState extends State<LessonSlider> {
 }
 
 class LessonSlider extends StatefulWidget {
-  final LinkedHashMap<Lesson, Test?> lessons;
+  final List<LessonCacheModel> lessons;
   final int tomorrowTestAmount;
 
-  const LessonSlider(this.lessons, this.tomorrowTestAmount, {super.key});
+  LessonSlider(
+    Iterable<LessonCacheModel> lessons,
+    this.tomorrowTestAmount, {
+    super.key,
+  }) : lessons = lessons
+           .where(((l) => l.type != TimetableConsts.event))
+           .toList();
 
   @override
   State<StatefulWidget> createState() => _LessonSliderState();

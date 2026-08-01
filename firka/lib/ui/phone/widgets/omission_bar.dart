@@ -1,10 +1,16 @@
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/extensions.dart';
-import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka_common/core/debug_helper.dart';
+import 'package:firka_common/data/database.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
+import 'package:firka_common/data/models/omission_cache_model.dart';
+import 'package:firka_common/data/util.dart';
 import 'package:intl/intl.dart';
+import 'package:isar_community/isar.dart';
 import 'package:kreta_api/kreta_api.dart';
-import 'package:firka/ui/components/grade.dart';
-import 'package:firka/ui/components/grade_helpers.dart';
+import 'package:firka_common/ui/components/grade.dart';
+import 'package:firka_common/core/grade_helper.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
@@ -13,42 +19,52 @@ import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/theme/style.dart';
 
 class OmissionBar extends StatelessWidget {
-  final List<Omission> omissions;
+  const OmissionBar({super.key});
 
-  const OmissionBar({super.key, required this.omissions});
+  static Color stateToColor(OmissionCacheModel? o) {
+    if (o == null) {
+      return appStyle.colors.a15p;
+    }
+    switch (o.state) {
+      case OmissionState.excused:
+        return appStyle.colors.accent;
+      case OmissionState.unexcused:
+        return appStyle.colors.errorAccent;
+      default:
+        return appStyle.colors.warningAccent;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    DateTime now = DateTime.now();
-    DateTime start = now.copyWith(month: 9, day: 1);
-    DateTime startOfTheYear = now.isBefore(start)
-        ? start.subtract(Duration(days: 365))
-        : start;
+    DateTime now = timeNow();
+    DateTime startOfTheYear = now.getFirstSchoolDay();
 
-    Map<int, Color> dayToColor = omissions.fold(
-      Map.identity(),
-      (map, o) => map
-        ..putIfAbsent(
-          o.date.difference(startOfTheYear).inDays,
-          () => o.state == OmissionState.excused
-              ? appStyle.colors.accent
-              : o.state == OmissionState.unexcused
-              ? appStyle.colors.errorAccent
-              : appStyle.colors.warningAccent,
-        ),
-    );
+    final dates = initData.client!.cache
+        .getTimeTable()
+        .between(startOfTheYear, now)
+        .findAllSync()
+        .map((l) => l.start.getMidnight())
+        .toSet();
+
+    final omittedDates = initData.client!.cache
+        .getOmissions()
+        .findAllSync()
+        .groupList((o) => o.lesson.loadAndGet()!.start);
 
     final bar = ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Row(
-        children: List.generate(now.difference(startOfTheYear).inDays, (i) {
-          return Expanded(
-            child: Container(
-              height: 12,
-              color: dayToColor[i] ?? appStyle.colors.a15p,
-            ),
-          );
-        }),
+        children: dates
+            .map(
+              (i) => Expanded(
+                child: Container(
+                  height: 12,
+                  color: stateToColor(omittedDates[i]?.firstOrNull),
+                ),
+              ),
+            )
+            .toList(),
       ),
     );
 

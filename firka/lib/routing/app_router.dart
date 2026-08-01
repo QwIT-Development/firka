@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:firka/ui/phone/pages/home/home_omissions.dart';
+import 'package:firka_common/data/models/subject_cache_model.dart';
 import 'package:flutter/material.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/app/app_state.dart';
@@ -30,7 +31,9 @@ GoRouter createAppRouter() {
     builder: (context, state) {
       return DefaultAssetBundle(
         bundle: FirkaBundle(),
-        child: HomeGradesSubjectScreen(state.extra as Subject, initData),
+        child: HomeGradesSubjectScreen.subject(
+          state.extra as SubjectCacheModel,
+        ),
       );
     },
   );
@@ -200,7 +203,7 @@ GoRouter createAppRouter() {
 
 String get _initialLocation {
   if (!initDone) return '/';
-  if (initData.tokens.isEmpty) return '/login';
+  if (initData.client == null) return '/login';
   final betaWarning = initData.settings
       .group('settings')
       .boolean('beta_warning');
@@ -211,7 +214,7 @@ String get _initialLocation {
 String? _redirect(BuildContext context, GoRouterState state) {
   if (!initDone) return null;
   final location = state.matchedLocation;
-  final hasTokens = initData.tokens.isNotEmpty;
+  final hasTokens = initData.client != null;
   final betaWarning = initData.settings
       .group('settings')
       .boolean('beta_warning');

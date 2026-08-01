@@ -15,7 +15,7 @@ class Omission extends UidObj {
   final NameUidDesc? proofType;
   final UidObj? classGroup;
 
-  const Omission({
+  Omission({
     required super.uid,
     required this.subject,
     required this.lesson,

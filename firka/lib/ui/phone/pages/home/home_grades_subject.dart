@@ -1,12 +1,13 @@
 import 'package:firka/ui/phone/widgets/grade_summary_bar.dart';
 import 'package:firka/ui/phone/widgets/info_card.dart';
+import 'package:firka_common/data/database.dart';
+import 'package:firka_common/data/models/grade_cache_model.dart';
+import 'package:firka_common/data/models/subject_cache_model.dart';
+import 'package:firka_common/data/models/teacher_model.dart';
+import 'package:firka_common/data/util.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
-import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/ui/components/common_bottom_sheets.dart';
-import 'package:firka/ui/components/firka_card.dart';
-import 'package:firka/ui/components/grade.dart';
-import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/phone/widgets/grade_chart.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
@@ -14,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:isar_community/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import 'package:firka/app/app_state.dart';
@@ -22,77 +24,56 @@ import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/ui/theme/style.dart';
 
 class HomeGradesSubjectScreen extends StatefulWidget {
-  final AppInitialization data;
-  final Subject subject;
+  final SubjectCacheModel subject;
+  final String teacherName;
+  final Iterable<GradeCacheModel> grades;
 
-  const HomeGradesSubjectScreen(this.subject, this.data, {super.key});
+  factory HomeGradesSubjectScreen.subject(SubjectCacheModel subject) {
+    return HomeGradesSubjectScreen(
+      subject,
+      initData.client!.cache
+          .getGrades()
+          .subject((s) => s.cacheKeyEqualTo(subject.cacheKey))
+          .sortByCreatedAtDesc()
+          .findAllSync(),
+    );
+  }
+
+  HomeGradesSubjectScreen(this.subject, this.grades, {super.key})
+    : teacherName = subject.teachers
+          .loadAndGet()
+          .map((t) => "${t.name} (${t.classGroup.loadAndGet()!.type})")
+          .join("\n");
 
   @override
   State<StatefulWidget> createState() => _HomeGradesSubjectScreen();
 }
 
 class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
-  Iterable<Grade>? grades;
   final List<(int grade, int weight)> _ghostEntries = [];
 
-  void _onRefreshRequested(BuildContext context) async {
-    final cubit = context.read<HomeRefreshCubit>();
-    grades = (await widget.data.client.getGrades(
-      forceCache: false,
-    )).response!.where((grade) => grade.subject.uid == widget.subject.uid);
-
-    if (mounted) {
-      setState(() {});
-      cubit.onRefreshComplete();
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    (() async {
-      grades = (await widget.data.client.getGrades()).response!.where(
-        (grade) => grade.subject.uid == widget.subject.uid,
-      );
-
-      if (mounted) setState(() {});
-    })();
-  }
-
-  List<Grade> _gradesWithGhosts(Subject subject) {
-    final real = grades?.toList() ?? [];
+  List<GradeCacheModel> _gradesWithGhosts() {
+    final real = widget.grades.toList();
     if (_ghostEntries.isEmpty) return real;
     final baseDate = real.isEmpty
         ? DateTime.now()
-        : real
-              .map((g) => g.creationDate)
-              .reduce((a, b) => a.isAfter(b) ? a : b);
-    final osztalyzat = NameUidDesc(
-      uid: '1,Osztalyzat',
-      name: 'Osztalyzat',
-      description: '',
-    );
-    final ghostGrades = <Grade>[];
+        : real.map((g) => g.createdAt).reduce((a, b) => a.isAfter(b) ? a : b);
     for (var i = 0; i < _ghostEntries.length; i++) {
       final e = _ghostEntries[i];
-      ghostGrades.add(
-        Grade(
-          uid: 'ghost-$i-${e.$1}-${e.$2}',
-          recordDate: baseDate.add(Duration(seconds: i)),
-          creationDate: baseDate.add(Duration(seconds: i)),
-          subject: subject,
-          type: osztalyzat,
-          valueType: osztalyzat,
-          teacher: '',
-          strValue: '${e.$1}',
-          sortIndex: 0,
-          numericValue: e.$1,
-          weightPercentage: e.$2,
-        ),
+      real.add(
+        GradeCacheModel()
+          ..type = "Ertekeles"
+          ..valueType = "Osztalyzat"
+          ..writtenAt = baseDate.add(Duration(seconds: i))
+          ..numericValue = e.$1
+          ..weightPercentage = e.$2
+          ..textValue = e.$1.toString()
+          ..teacherName = widget
+              .teacherName // TODO: teacher name
+          ..subject.value = widget.subject,
       );
     }
-    return [...real, ...ghostGrades];
+    return real;
   }
 
   @override
@@ -101,14 +82,14 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
       listenWhen: (previous, current) =>
           current.refreshTrigger != previous.refreshTrigger,
       listener: (context, state) {
-        _onRefreshRequested(context);
+        setState(() => {});
       },
       child: _buildContent(context),
     );
   }
 
   Widget _buildContent(BuildContext context) {
-    if (grades == null || grades!.isEmpty) {
+    if (widget.grades.isEmpty) {
       return Container(
         color: appStyle.colors.background,
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -133,7 +114,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                 Transform.translate(
                   offset: const Offset(-4, 1),
                   child: Text(
-                    widget.data.l10n.subjects,
+                    initData.l10n.subjects,
                     style: appStyle.fonts.B_16R.apply(
                       color: appStyle.colors.textPrimary,
                     ),
@@ -154,7 +135,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                     ),
                     child: Padding(
                       padding: EdgeInsetsGeometry.all(6),
-                      child: ClassIconWidget.subject(
+                      child: ClassIconWidget(
                         subject: widget.subject,
                         color: appStyle.colors.accent,
                       ),
@@ -169,7 +150,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                   ),
                   SizedBox(height: 2),
                   Text(
-                    widget.data.l10n.unknown_teacher,
+                    initData.l10n.unknown_teacher,
                     style: appStyle.fonts.B_16R.apply(
                       color: appStyle.colors.textSecondary,
                     ),
@@ -186,7 +167,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                           ),
                           SizedBox(height: 12),
                           Text(
-                            widget.data.l10n.no_grades,
+                            initData.l10n.no_grades,
                             style: appStyle.fonts.B_16R.apply(
                               color: appStyle.colors.textSecondary,
                             ),
@@ -202,7 +183,6 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
         ),
       );
     }
-    var aGrade = grades!.first;
 
     final ghostGradeWidgets = _ghostEntries.indexed
         .map((e) {
@@ -246,7 +226,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                   Transform.translate(
                     offset: const Offset(-4, 0),
                     child: Text(
-                      widget.data.l10n.subjects,
+                      initData.l10n.subjects,
                       style: appStyle.fonts.B_16R.apply(
                         color: appStyle.colors.textPrimary,
                       ),
@@ -270,8 +250,8 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                 onTap: () {
                   showSubjectBottomSheetSettings(
                     context,
-                    widget.data,
-                    aGrade.subject,
+                    initData,
+                    widget.subject,
                     onAddFromCalculator: (g, w) {
                       setState(() => _ghostEntries.add((g, w)));
                     },
@@ -290,22 +270,23 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                     FilledCircle(
                       diameter: 36,
                       color: appStyle.colors.a15p,
-                      child: ClassIconWidget.subject(
-                        subject: aGrade.subject,
+                      child: ClassIconWidget(
+                        subject: widget.subject,
                         color: appStyle.colors.accent,
                         size: 24,
                       ),
                     ),
                     SizedBox(height: 16),
                     Text(
-                      aGrade.subject.name,
+                      widget.subject.name,
                       style: appStyle.fonts.H_H2.apply(
                         color: appStyle.colors.textPrimary,
                       ),
                     ),
                     SizedBox(height: 4),
                     Text(
-                      aGrade.teacher,
+                      widget.teacherName,
+                      textAlign: TextAlign.center,
                       style: appStyle.fonts.B_16R.apply(
                         color: appStyle.colors.textSecondary,
                       ),
@@ -313,13 +294,11 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                   ],
                 ),
                 SizedBox(height: 24),
-                GradeChartWithInteraction(
-                  grades: _gradesWithGhosts(aGrade.subject),
-                ),
+                GradeChartWithInteraction(grades: _gradesWithGhosts()),
                 SizedBox(height: 10),
                 GradeSummaryBar(
-                  grades: _gradesWithGhosts(aGrade.subject),
-                  l10n: widget.data.l10n,
+                  grades: _gradesWithGhosts(),
+                  l10n: initData.l10n,
                   showAverage: ghostGradeWidgets.isNotEmpty,
                 ),
                 SizedBox(height: 20),
@@ -341,8 +320,8 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                         ...ghostGradeWidgets,
                       ],
                     ),
-                    ...grades!
-                        .groupList((e) => e.recordDate)
+                    ...widget.grades
+                        .groupList((e) => e.writtenAt)
                         .entries
                         .map(
                           (e) => Column(
@@ -350,7 +329,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                e.key.format(widget.data.l10n, FormatMode.main),
+                                e.key.format(initData.l10n, FormatMode.main),
                                 style: appStyle.fonts.B_16R.apply(
                                   color: appStyle.colors.textSecondary,
                                 ),

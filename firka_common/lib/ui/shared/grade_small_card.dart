@@ -1,22 +1,24 @@
+import 'package:firka_common/data/models/grade_cache_model.dart';
+import 'package:firka_common/data/models/subject_cache_model.dart';
 import 'package:flutter/material.dart';
 import 'package:kreta_api/kreta_api.dart';
 
 import 'package:firka_common/ui/components/firka_card.dart';
-import 'package:firka_common/ui/components/grade_helpers.dart';
+import 'package:firka_common/core/grade_helper.dart';
 import 'package:firka_common/ui/shared/class_icon.dart';
 import 'package:firka_common/ui/theme/style.dart';
 
 class GradeSmallCard extends StatelessWidget {
   final double? studentAverage;
   final double? classAverage;
-  final Subject subject;
+  final SubjectCacheModel subject;
 
   GradeSmallCard(
-    List<Grade> grades,
+    this.studentAverage,
     this.classAverage,
     this.subject, {
     super.key,
-  }) : studentAverage = grades.getAverageBySubject(subject);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +30,7 @@ class GradeSmallCard extends StatelessWidget {
         spacing: 8,
         children: [
           ClassIconWidget(
-            uid: subject.uid,
-            className: subject.name,
-            category: subject.category.name!,
+            subject: subject,
             color: appStyle.colors.accent,
             size: 20,
           ),

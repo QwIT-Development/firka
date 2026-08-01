@@ -1,17 +1,16 @@
 import 'package:firka/core/extensions.dart';
-import 'package:firka/ui/components/firka_card.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/shared/counter_digit.dart';
-import 'package:firka_common/firka_common.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
+import 'package:firka_common/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
-
-import 'package:kreta_api/kreta_api.dart';
 
 class StartingSoonWidget extends StatelessWidget {
   final AppLocalizations l10n;
-  final List<Lesson> lessons;
+  final List<LessonCacheModel> lessons;
   final DateTime now;
 
   const StartingSoonWidget(this.l10n, this.now, this.lessons, {super.key});

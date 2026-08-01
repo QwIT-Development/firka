@@ -17,3 +17,17 @@ extension IterableExtension<T> on Iterable<T> {
     return null;
   }
 }
+
+extension MidnightExtension on DateTime {
+  DateTime getMidnight() {
+    return subtract(
+      Duration(
+        hours: hour,
+        minutes: minute,
+        seconds: second,
+        milliseconds: millisecond,
+        microseconds: microsecond,
+      ),
+    );
+  }
+}

@@ -4,7 +4,6 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
-import 'package:firka/app/app_state.dart';
 
 class Constants {
   static String get clientId {
@@ -17,17 +16,6 @@ class Constants {
 
   static const applicationId = "hu.ekreta.student";
   static const applicationVersion = "5.15.0";
-
-  static String get userAgent {
-    if (Platform.isAndroid) {
-      return "$applicationId/$applicationVersion"
-          "/${initData.devInfo.model}"
-          "/${initData.devInfo.versionRelease}"
-          "/${initData.devInfo.versionSdkInt}";
-    } else {
-      return "eKretaStudent/264745 CFNetwork/1494.0.7 Darwin/23.4.0";
-    }
-  }
 }
 
 class OmissionConsts {
@@ -38,6 +26,7 @@ class OmissionConsts {
 
 class TimetableConsts {
   static const event = "TanevRendjeEsemeny";
+  static const lastDay = "Utolsó tanítási nap";
 }
 
 class KretaLoginEndpoints {

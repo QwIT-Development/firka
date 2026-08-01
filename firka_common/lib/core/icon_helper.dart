@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:firka_common/data/models/subject_cache_model.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 enum ClassIcon {
@@ -94,31 +95,26 @@ Map<ClassIcon, Uint8List> _iconMap = {
   ClassIcon.database: Majesticon.dataSolid,
 };
 
-ClassIcon? getIconType(String uid, String className, String category) {
+ClassIcon? getIconType(SubjectCacheModel subject) {
   ClassIcon? icon;
-  if (category.toLowerCase() == "matematika") {
-    icon = ClassIcon.mathematics;
-  }
 
-  if (icon == null) {
-    for (var desc in _descriptors.entries) {
-      if (desc.value.hasMatch(
-        className
-            .replaceAll("ö", "o")
-            .replaceAll("ü", "u")
-            .replaceAll("ó", "o")
-            .replaceAll("ő", "o")
-            .replaceAll("ú", "u")
-            .replaceAll("é", "e")
-            .replaceAll("á", "a")
-            .replaceAll("ű", "u")
-            .replaceAll("í", "i")
-            .toLowerCase(),
-      )) {
-        icon = desc.key;
+  for (var desc in _descriptors.entries) {
+    if (desc.value.hasMatch(
+      subject.name
+          .replaceAll("ö", "o")
+          .replaceAll("ü", "u")
+          .replaceAll("ó", "o")
+          .replaceAll("ő", "o")
+          .replaceAll("ú", "u")
+          .replaceAll("é", "e")
+          .replaceAll("á", "a")
+          .replaceAll("ű", "u")
+          .replaceAll("í", "i")
+          .toLowerCase(),
+    )) {
+      icon = desc.key;
 
-        break;
-      }
+      break;
     }
   }
 

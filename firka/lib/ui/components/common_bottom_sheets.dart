@@ -1,10 +1,18 @@
+import 'package:firka_common/core/consts.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
+import 'package:firka_common/core/grade_helper.dart';
+import 'package:firka_common/data/models/grade_cache_model.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:firka_common/data/models/omission_cache_model.dart';
+import 'package:firka_common/data/models/subject_cache_model.dart';
+import 'package:firka_common/data/models/test_cache_model.dart';
 import 'package:firka/ui/phone/widgets/info_card.dart';
+import 'package:firka_common/data/util.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:firka_common/ui/shared/grade_small_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreta_api/kreta_api.dart';
-import 'package:firka/data/models/homework_cache_model.dart';
+import 'package:firka_common/data/models/homework_cache_model.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
@@ -19,9 +27,9 @@ import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/widgets/lesson.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firka/ui/shared/class_icon.dart';
-import 'package:firka/ui/components/firka_card.dart';
-import 'package:firka/ui/components/grade.dart';
-import 'package:firka/ui/components/grade_helpers.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
+import 'package:firka_common/ui/components/grade.dart';
+import 'package:firka_common/core/grade_helper.dart';
 
 Future<void> showFirkaBottomSheet(
   BuildContext context,
@@ -78,12 +86,13 @@ Future<void> showFirkaBottomSheet(
 Future<void> showLessonBottomSheet(
   BuildContext context,
   AppInitialization data,
-  Lesson lesson,
+  LessonCacheModel lesson,
   Color accent,
   Color secondary,
   Color bgColor,
-  Test? test,
 ) async {
+  // we dont like events
+  assert(lesson.type != TimetableConsts.event);
   final statsForNerdsEnabled = data.settings
       .group("settings")
       .subGroup("developer")
@@ -96,8 +105,8 @@ Future<void> showLessonBottomSheet(
   if (statsForNerdsEnabled) {
     final stats =
         "${data.l10n.stats_date}: ${lesson.start.isAfter(y2k) ? lesson.start.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
-        "${data.l10n.stats_created_at}: ${lesson.createdAt.isAfter(y2k) ? lesson.createdAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
-        "${data.l10n.stats_last_mod}: ${lesson.lastModifiedAt.isAfter(y2k) ? lesson.lastModifiedAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}";
+        "${data.l10n.stats_created_at}: ${lesson.createdAt.isAfter(y2k) ? lesson.createdAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n";
+    //"${data.l10n.stats_last_mod}: ${lesson.lastModifiedAt.isAfter(y2k) ? lesson.lastModifiedAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}";
     statsForNerds = Text(
       stats,
       style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
@@ -106,65 +115,62 @@ Future<void> showLessonBottomSheet(
   showFirkaBottomSheet(context, [
     Row(
       children: [
-        lesson.lessonNumber == null
-            ? SizedBox()
-            : SizedBox(
+        SizedBox(
+          width: 24,
+          height: 24,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              SvgPicture.asset(
+                "assets/icons/subtract.svg",
+                color: bgColor,
                 width: 24,
                 height: 24,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      "assets/icons/subtract.svg",
-                      color: bgColor,
-                      width: 24,
-                      height: 24,
-                    ),
-                    Text(
-                      lesson.lessonNumber!.toString(),
-                      style: appStyle.fonts.B_16R.apply(color: secondary),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
               ),
+              Text(
+                lesson.dailyNth.toString(),
+                style: appStyle.fonts.B_16R.apply(color: secondary),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
         FilledCircle(
           diameter: 40,
           color: bgColor,
-          child: ClassIconWidget.subject(
-            subject: lesson.subject!,
+          child: ClassIconWidget(
+            subject: lesson.subject.loadAndGet()!,
             color: accent,
             size: 26,
           ),
         ),
         SizedBox(width: 6),
-        if (lesson.roomName != null)
-          Card(
-            shadowColor: Colors.transparent,
-            color: appStyle.colors.a15p,
-            margin: EdgeInsets.all(0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 6),
-              child: Text(
-                lesson.roomName!,
-                style: appStyle.fonts.B_14R.apply(
-                  color: appStyle.colors.secondary,
-                ),
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
+        Card(
+          shadowColor: Colors.transparent,
+          color: appStyle.colors.a15p,
+          margin: EdgeInsets.all(0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 6),
+            child: Text(
+              lesson.roomName!,
+              style: appStyle.fonts.B_14R.apply(
+                color: appStyle.colors.secondary,
               ),
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
           ),
+        ),
       ],
     ),
     SizedBox(height: 20),
     Row(
       children: [
         Text(
-          "${lesson.name} ${statsForNerdsEnabled ? "(${lesson.classGroup?.name ?? ''})" : ""}",
+          "${lesson.name} ${statsForNerdsEnabled ? "(${lesson.subject.loadAndGet()!.name})" : ""}",
           style: appStyle.fonts.H_18px.apply(
             color: appStyle.colors.textPrimary,
           ),
@@ -173,7 +179,7 @@ Future<void> showLessonBottomSheet(
     ),
     SizedBox(height: 2),
     Text(
-      lesson.teacher ?? 'N/A',
+      lesson.teacher!,
       style: appStyle.fonts.B_14R.apply(
         color: appStyle.colors.textSecondary,
         decoration: lesson.substituteTeacher != null
@@ -208,7 +214,7 @@ Future<void> showLessonBottomSheet(
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.7,
               child: Text(
-                lesson.theme ?? 'N/A',
+                lesson.topic ?? 'N/A',
                 style: appStyle.fonts.B_16R.apply(
                   color: appStyle.colors.textPrimary,
                 ),
@@ -222,7 +228,8 @@ Future<void> showLessonBottomSheet(
       ],
     ),
     SizedBox(height: 6),
-    if (test != null) InfoCard.testDesc(test),
+    if (lesson.test.loadAndGet() != null)
+      InfoCard.testDesc(lesson.test.loadAndGet()!),
     SizedBox(height: 16),
     GestureDetector(
       child: FirkaCard(
@@ -249,11 +256,11 @@ Future<void> showOmissionBottomSheet(
   BuildContext context,
   AppInitialization data,
   String description,
-  List<Omission> omissions,
+  List<OmissionCacheModel> omissions,
 ) async {
   showFirkaBottomSheet(context, [
     Text(
-      omissions.first.date.format(data.l10n, FormatMode.yyyymmdd),
+      omissions.first.createdAt.format(data.l10n, FormatMode.yyyymmdd),
       style: appStyle.fonts.H_18px.apply(color: appStyle.colors.textPrimary),
     ),
     SizedBox(height: 2),
@@ -264,94 +271,14 @@ Future<void> showOmissionBottomSheet(
     SizedBox(height: 2),
     LimitedBox(
       maxHeight: 336,
-      child: ListView.builder(
+      child: ListView.separated(
         itemCount: omissions.length,
+        separatorBuilder: (ctx, i) {
+          return const SizedBox(height: 10);
+        },
         itemBuilder: (b, i) {
           final o = omissions[i];
-          return FirkaCard.single(
-            height: 64,
-            margin: EdgeInsets.only(bottom: 10),
-            padding: EdgeInsets.only(left: 14, right: 16),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        "assets/icons/subtract.svg",
-                        color: appStyle.colors.a15p,
-                        width: 18,
-                        height: 18,
-                      ),
-                      Text(
-                        o.lesson!.classNo?.toString() ?? "-",
-                        style: appStyle.fonts.B_14SB.apply(
-                          color: appStyle.colors.secondary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-                FilledCircle(
-                  diameter: 36,
-                  color: appStyle.colors.a15p,
-                  child: ClassIconWidget(
-                    uid: o.subject.uid,
-                    className: o.subject.name,
-                    category: o.subject.name,
-                    color: appStyle.colors.accent,
-                    size: 24,
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        o.subject.name,
-                        style: appStyle.fonts.B_16SB.apply(
-                          color: appStyle.colors.textPrimary,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        o.teacher,
-                        style: appStyle.fonts.B_14R.apply(
-                          color: appStyle.colors.textSecondary,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 8),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      o.lesson!.start.format(data.l10n, FormatMode.hmm),
-                      style: appStyle.fonts.B_14R.apply(
-                        color: appStyle.colors.textPrimary,
-                      ),
-                    ),
-                    Text(
-                      o.lesson!.end.format(data.l10n, FormatMode.hmm),
-                      style: appStyle.fonts.B_14R.apply(
-                        color: appStyle.colors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
+          return LessonWidget(data, o.lesson.loadAndGet()!);
         },
       ),
     ),
@@ -361,9 +288,11 @@ Future<void> showOmissionBottomSheet(
 Future<void> showTestBottomSheet(
   BuildContext context,
   AppInitialization data,
-  Test test,
+  TestCacheModel test,
 ) async {
-  final date = test.date;
+  final lesson = test.lesson.loadAndGet()!;
+  final subject = lesson.subject.loadAndGet()!;
+  final date = lesson.start;
   final formattedDate =
       "${date.format(data.l10n, FormatMode.yearly).firstUpper()}, ${DateFormat.EEEE(data.l10n.localeName).format(date).firstUpper()}";
 
@@ -385,13 +314,13 @@ Future<void> showTestBottomSheet(
       spacing: 4,
       children: [
         Text(
-          "${test.theme}",
+          test.topic ?? test.method,
           style: appStyle.fonts.H_18px.apply(
             color: appStyle.colors.textPrimary,
           ),
         ),
         Text(
-          test.method.description,
+          test.method,
           style: appStyle.fonts.B_16R.apply(
             color: appStyle.colors.textSecondary,
           ),
@@ -438,7 +367,7 @@ Future<void> showTestBottomSheet(
                   height: 18,
                 ),
                 Text(
-                  test.lessonNumber.toString(),
+                  lesson.dailyNth.toString(),
                   style: appStyle.fonts.B_14SB.apply(
                     color: appStyle.colors.secondary,
                   ),
@@ -451,9 +380,7 @@ Future<void> showTestBottomSheet(
             diameter: 36,
             color: appStyle.colors.a15p,
             child: ClassIconWidget(
-              uid: test.uid,
-              className: test.subjectName,
-              category: test.subject.name,
+              subject: subject,
               color: appStyle.colors.accent,
               size: 24,
             ),
@@ -461,7 +388,7 @@ Future<void> showTestBottomSheet(
           SizedBox(width: 12),
           Expanded(
             child: Text(
-              test.subject.name,
+              subject.name,
               style: appStyle.fonts.B_16SB.apply(
                 color: appStyle.colors.textPrimary,
               ),
@@ -477,7 +404,7 @@ Future<void> showTestBottomSheet(
 Future<void> showGradeBottomSheet(
   BuildContext context,
   AppInitialization data,
-  Grade grade,
+  GradeCacheModel grade,
 ) async {
   showFirkaBottomSheet(context, [
     grade.numericValue == null
@@ -494,7 +421,7 @@ Future<void> showGradeBottomSheet(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  grade.strValue,
+                  grade.textValue,
                   style: appStyle.fonts.H_18px.apply(
                     color: appStyle.colors.accent,
                   ),
@@ -505,12 +432,12 @@ Future<void> showGradeBottomSheet(
         : GradeWidget(grade, size: 40),
     SizedBox(height: 20),
     Text(
-      (grade.topic ?? grade.type.description).firstUpper(),
+      (grade.topic ?? grade.type).firstUpper(),
       style: appStyle.fonts.H_18px.apply(color: appStyle.colors.textPrimary),
     ),
     grade.mode != null
         ? Text(
-            grade.mode!.description,
+            grade.mode!,
             style: appStyle.fonts.B_16R.apply(
               color: appStyle.colors.textSecondary,
             ),
@@ -518,11 +445,11 @@ Future<void> showGradeBottomSheet(
         : SizedBox(),
     SizedBox(height: 8),
     Text(
-      grade.recordDate.format(data.l10n, FormatMode.yyyymmdd),
+      grade.writtenAt.format(data.l10n, FormatMode.yyyymmdd),
       style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
     ),
     SizedBox(height: 20),
-    GradeSmallCard([], null, grade.subject),
+    GradeSmallCard(null, null, grade.subject.loadAndGet()!),
     SizedBox(height: 10),
     FirkaCard(
       margin: EdgeInsets.all(0),
@@ -531,13 +458,13 @@ Future<void> showGradeBottomSheet(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "${data.l10n.grade_teacherName}${grade.teacher}",
+              "${data.l10n.grade_teacherName}${grade.teacherName}",
               style: appStyle.fonts.B_16R.apply(
                 color: appStyle.colors.textPrimary,
               ),
             ),
             Text(
-              "${data.l10n.tt_added}${grade.creationDate.format(data.l10n, FormatMode.yyyymmdd)}",
+              "${data.l10n.tt_added}${grade.createdAt.format(data.l10n, FormatMode.yyyymmdd)}",
               style: appStyle.fonts.B_16R.apply(
                 color: appStyle.colors.textPrimary,
               ),
@@ -562,7 +489,7 @@ Future<void> showGradeBottomSheet(
         color: appStyle.colors.buttonSecondaryFill,
       ),
       onTap: () {
-        context.go('/grades/subject', extra: grade.subject);
+        context.go('/grades/subject', extra: grade.subject.loadAndGet());
       },
     ),
   ]);
@@ -571,8 +498,9 @@ Future<void> showGradeBottomSheet(
 Future<void> showHomeworkBottomSheet(
   BuildContext context,
   AppInitialization data,
-  Homework homework,
+  HomeworkCacheModel homework,
 ) async {
+  final subject = homework.subject.loadAndGet()!;
   showFirkaBottomSheet(context, [
     Text(
       data.l10n.homework,
@@ -584,7 +512,7 @@ Future<void> showHomeworkBottomSheet(
       style: appStyle.fonts.B_14R.apply(color: appStyle.colors.textSecondary),
     ),
     SizedBox(height: 20),
-    GradeSmallCard([], null, homework.subject),
+    GradeSmallCard(null, null, subject),
     SizedBox(height: 20),
     Flexible(
       fit: FlexFit.loose,
@@ -602,42 +530,34 @@ Future<void> showHomeworkBottomSheet(
       ),
     ),
     SizedBox(height: 20),
-    FutureBuilder<bool>(
-      future: isHomeworkDone(data.isar, homework.uid),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return SizedBox(); // or a loading indicator
-        }
-
-        final done = snapshot.data!;
-
-        return Column(
-          children: [
-            GestureDetector(
-              child: FirkaCard(
-                margin: EdgeInsets.all(0),
-                left: [],
-                center: [
-                  Text(
-                    !done ? data.l10n.mark_as_done : data.l10n.mark_as_not_done,
-                    style: appStyle.fonts.B_16SB.apply(
-                      color: appStyle.colors.textPrimaryLight,
-                    ),
-                  ),
-                ],
-                color: appStyle.colors.accent,
+    Column(
+      children: [
+        GestureDetector(
+          child: FirkaCard(
+            margin: EdgeInsets.all(0),
+            left: [],
+            center: [
+              Text(
+                !homework.isDone
+                    ? data.l10n.mark_as_done
+                    : data.l10n.mark_as_not_done,
+                style: appStyle.fonts.B_16SB.apply(
+                  color: appStyle.colors.textPrimaryLight,
+                ),
               ),
-              onTap: () {
-                context.read<HomeRefreshCubit>().requestRefresh();
-                Navigator.pop(context);
-                !done
-                    ? markAsDone(data.isar, homework.uid)
-                    : markAsNotDone(data.isar, homework.uid);
-              },
-            ),
-          ],
-        );
-      },
+            ],
+            color: appStyle.colors.accent,
+          ),
+          onTap: () {
+            data.isar.writeTxnSync(() {
+              homework.isDone = true;
+              data.isar.homeworkCacheModels.putSync(homework);
+            });
+            context.read<HomeRefreshCubit>().requestRefresh();
+            Navigator.pop(context);
+          },
+        ),
+      ],
     ),
     SizedBox(height: 8),
     GestureDetector(
@@ -655,7 +575,7 @@ Future<void> showHomeworkBottomSheet(
         color: appStyle.colors.buttonSecondaryFill,
       ),
       onTap: () {
-        context.go('/home/subject', extra: homework.subject);
+        context.go('/home/subject', extra: subject);
       },
     ),
   ]);
@@ -664,7 +584,7 @@ Future<void> showHomeworkBottomSheet(
 Future<void> showGradeCalculatorBottomSheet(
   BuildContext context,
   AppInitialization data,
-  Subject subject, {
+  SubjectCacheModel subject, {
   void Function(int grade, int weight)? onAdd,
 }) async {
   showFirkaBottomSheet(context, [
@@ -674,7 +594,7 @@ Future<void> showGradeCalculatorBottomSheet(
 
 class _GradeCalculatorSheetContent extends StatefulWidget {
   final AppInitialization data;
-  final Subject subject;
+  final SubjectCacheModel subject;
   final void Function(int grade, int weight)? onAdd;
 
   const _GradeCalculatorSheetContent({
@@ -862,7 +782,7 @@ class _GradeCalculatorSheetContentState
 Future<void> showSubjectBottomSheetSettings(
   BuildContext context,
   AppInitialization data,
-  Subject subject, {
+  SubjectCacheModel subject, {
   void Function(int grade, int weight)? onAddFromCalculator,
 }) async {
   showFirkaBottomSheet(context, [

@@ -1,22 +1,34 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:firka/core/extensions.dart';
-import 'package:firka/data/models/generic_cache_model.dart';
-import 'package:firka/data/models/timetable_cache_model.dart';
+import 'package:firka/core/settings.dart';
+import 'package:firka_common/core/consts.dart';
+import 'package:firka_common/data/cache_manager.dart';
+import 'package:firka_common/data/database.dart';
+import 'package:firka_common/data/models/class_average_cache_model.dart';
+import 'package:firka_common/data/models/class_group_cache_model.dart';
+import 'package:firka_common/data/models/generic_cache_model.dart';
+import 'package:firka_common/data/models/grade_cache_model.dart';
+import 'package:firka_common/data/models/homework_cache_model.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:firka_common/data/models/message_cache_model.dart';
+import 'package:firka_common/data/models/omission_cache_model.dart';
+import 'package:firka_common/data/models/student_cache_model.dart';
+import 'package:firka_common/data/models/subject_cache_model.dart';
+import 'package:firka_common/data/models/test_cache_model.dart';
 import 'package:isar_community/isar.dart';
 import 'package:kreta_api/kreta_api.dart';
 
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/bloc/reauth_cubit.dart';
-import 'package:firka/data/models/token_model.dart';
+import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/core/debug_helper.dart';
-import 'package:firka/data/util.dart';
-import 'package:firka/services/active_account_helper.dart';
+import 'package:firka_common/data/util.dart';
 import 'package:firka/services/watch_sync_helper.dart';
-import '../consts.dart';
 import '../token_grant.dart';
 
 import 'dart:io';
@@ -30,14 +42,115 @@ const backoffMin = 100;
 const backoffStep = 500;
 
 class KretaClient {
-  Completer<void>? _tokenMutexCompleter;
-  TokenModel model;
-  Isar isar;
+  Future<TokenModel>? _tokenMutexCompleter;
+  final CacheManager cache;
   final ReauthCubit _reauthCubit;
 
-  KretaClient(this.model, this.isar, this._reauthCubit);
+  KretaClient(TokenModel model, this._reauthCubit)
+    : cache = CacheManager(model);
 
   bool get needsReauth => _reauthCubit.state.needsReauth;
+
+  static int lessonStartToMins(LessonCacheModel lesson) {
+    return Duration(
+      hours: lesson.start.hour,
+      minutes: lesson.start.minute,
+    ).inMinutes;
+  }
+
+  Future<List<LessonCacheModel>> resolveDailyNth(
+    List<LessonCacheModel> lessons,
+  ) async {
+    HashSet<int> lessonsStarts = HashSet();
+    lessonsStarts.addAll(
+      lessons.where((l) => !l.isEvent()).map(lessonStartToMins),
+    );
+
+    List<int> ordered = lessonsStarts.toList()..sort();
+    int offset = ordered.indexOf(8 * 60);
+    offset = offset == -1 ? 0 : -offset;
+    HashMap<int, int> indexed = HashMap.fromEntries(
+      ordered.indexed.map((k) => MapEntry(k.$2, k.$1 + 1 + offset)),
+    );
+
+    for (LessonCacheModel l in lessons) {
+      if (l.isEvent()) {
+        continue;
+      }
+
+      l.dailyNth ??= indexed[lessonStartToMins(l)];
+    }
+
+    return lessons;
+  }
+
+  Future<void> renewTimetable() async {
+    DateTime from =
+        /*(await isarInit.lessonCacheModels
+                .filter()
+                .endLessThan(
+                  timeNow().getMidnight().getMonday().subtract(
+                    Duration(days: 7),
+                  ),
+                  include: true,
+                )
+                .sortByEndDesc()
+                .findFirst())
+            ?.end ??*/
+        timeNow().getFirstSchoolDay();
+    DateTime to = timeNow().getMonday().add(Duration(days: 14));
+    DateTime date = from;
+    List<Future> requests = [];
+    int i = 0;
+    int waitAfter = 5;
+    while (date.isBefore(to)) {
+      DateTime tmpTo = date.add(Duration(days: 14));
+      requests.add(getLessons(date, tmpTo));
+      date = tmpTo;
+
+      i++;
+      if (waitAfter == i) {
+        await Future.wait(requests);
+        i = 0;
+      }
+    }
+    await Future.wait(requests);
+  }
+
+  Future<void> renewMessages() async {
+    DateTime from =
+        (await isarInit.messageCacheModels
+                .where()
+                .sortByCreatedAtDesc()
+                .findFirst())
+            ?.createdAt ??
+        timeNow().getFirstSchoolDay();
+    await getInfoBoard(from: from);
+    await getNoticeBoard(from: from);
+  }
+
+  Future<void> init() async {
+    await getStudent();
+    await getClassGroups();
+  }
+
+  Future<void> renewCache({bool reInit = false}) async {
+    if (reInit) {
+      await init();
+    }
+    await Future.wait([
+      getTests(),
+      getHomework(),
+      renewMessages(),
+      getGrades(),
+    ]);
+    await renewTimetable();
+
+    // manual link
+    await getOmissions();
+
+    cache.resolveTeachers();
+  }
 
   void clearReauthFlag() {
     _reauthCubit.clear();
@@ -60,7 +173,7 @@ class KretaClient {
   Future<TokenModel> _refreshModelWithCrossDeviceLease(
     TokenModel sourceToken,
   ) async {
-    final studentIdNorm = sourceToken.studentIdNorm;
+    final studentIdNorm = sourceToken.key;
     String? leaseOperationId;
 
     try {
@@ -123,39 +236,10 @@ class KretaClient {
     }
   }
 
-  Future<void> _reloadActiveTokenModel({int? preferredStudentIdNorm}) async {
-    final allTokens = await isar.tokenModels.where().findAll();
-    if (allTokens.isEmpty) return;
-
-    if (initDone) {
-      initData.tokens = allTokens;
-      final selected = pickActiveToken(
-        tokens: allTokens,
-        settings: initData.settings,
-        preferredStudentIdNorm: preferredStudentIdNorm ?? model.studentIdNorm,
-      );
-      if (selected != null) {
-        model = selected;
-      }
-      return;
-    }
-
-    if (preferredStudentIdNorm != null) {
-      for (final token in allTokens) {
-        if (token.studentIdNorm == preferredStudentIdNorm) {
-          model = token;
-          return;
-        }
-      }
-    }
-
-    model = allTokens.first;
-  }
-
   Future<bool> recoverToken() async {
     logger.info("[Recovery] Starting central token recovery...");
-    final now = timeNow();
-    final localExpiry = model.expiryDate;
+    final now = DateTime.now();
+    final localExpiry = cache.token.expiryDate;
     if (localExpiry != null &&
         localExpiry.isAfter(now.add(const Duration(seconds: 60)))) {
       logger.info(
@@ -167,14 +251,14 @@ class KretaClient {
 
     logger.info("[Recovery] Step 1: Trying local token refresh...");
     try {
-      var tokenModel = await _refreshModelWithCrossDeviceLease(model);
+      var tokenModel = await _refreshModelWithCrossDeviceLease(cache.token);
 
-      await isar.writeTxn(() async {
-        await isar.tokenModels.put(tokenModel);
+      await isarInit.writeTxn(() async {
+        await isarInit.tokenModels.put(tokenModel);
       });
 
-      model = tokenModel;
-      await _syncTokenToAppleTargets(model);
+      cache.token = tokenModel;
+      await _syncTokenToAppleTargets(cache.token);
       clearReauthFlag();
       logger.info("[Recovery] Step 1 SUCCESS: Local refresh succeeded");
       return true;
@@ -186,6 +270,7 @@ class KretaClient {
       logger.warning(
         "[Recovery] Not iOS or not initialized, cannot try iCloud",
       );
+      await _setReauthFlag();
       return false;
     }
 
@@ -212,19 +297,15 @@ class KretaClient {
       );
 
       final recovered = await WatchSyncHelper.checkAndRecoverFromiCloud(
-        isar: isar,
-        tokens: initData.tokens,
+        isar: isarInit,
         client: this,
         allowExpiredAccessToken: true,
       );
 
       if (recovered) {
         iCloudHasToken = true;
-        await _reloadActiveTokenModel(
-          preferredStudentIdNorm: model.studentIdNorm,
-        );
 
-        final recoveredExpiry = model.expiryDate;
+        final recoveredExpiry = cache.token.expiryDate;
         if (recoveredExpiry != null &&
             recoveredExpiry.isAfter(
               timeNow().add(const Duration(seconds: 60)),
@@ -240,14 +321,14 @@ class KretaClient {
           "[Recovery] Found iCloud token close to expiry, trying refresh...",
         );
         try {
-          var tokenModel = await _refreshModelWithCrossDeviceLease(model);
+          var tokenModel = await _refreshModelWithCrossDeviceLease(cache.token);
 
-          await isar.writeTxn(() async {
-            await isar.tokenModels.put(tokenModel);
+          await isarInit.writeTxn(() async {
+            await isarInit.tokenModels.put(tokenModel);
           });
 
-          model = tokenModel;
-          await _syncTokenToAppleTargets(model);
+          cache.token = tokenModel;
+          await _syncTokenToAppleTargets(cache.token);
           clearReauthFlag();
           logger.info("[Recovery] Step 2 SUCCESS on attempt ${attempt + 1}");
           return true;
@@ -268,6 +349,7 @@ class KretaClient {
     }
 
     logger.warning("[Recovery] All recovery attempts failed");
+    await _setReauthFlag();
     return false;
   }
 
@@ -275,8 +357,8 @@ class KretaClient {
     final now = timeNow();
     final fiveMinutesFromNow = now.add(const Duration(minutes: 5));
 
-    if (model.expiryDate == null ||
-        model.expiryDate!.isBefore(fiveMinutesFromNow)) {
+    if (cache.token.expiryDate == null ||
+        cache.token.expiryDate!.isBefore(fiveMinutesFromNow)) {
       logger.info(
         "[Proactive] Token expired or expiring soon, starting recovery...",
       );
@@ -299,74 +381,42 @@ class KretaClient {
     }
 
     logger.fine(
-      "[Proactive] Token still valid until ${model.expiryDate}, no refresh needed",
+      "[Proactive] Token still valid until ${cache.token.expiryDate}, no refresh needed",
     );
     return true;
   }
 
-  Future<T> _mutexCallback<T>(Future<T> Function() callback) async {
-    const maxWaitTime = Duration(seconds: 30);
-
-    if (_tokenMutexCompleter != null) {
-      try {
-        await _tokenMutexCompleter!.future.timeout(
-          maxWaitTime,
-          onTimeout: () {
-            logger.warning(
-              "[Mutex] Timeout waiting for token mutex, forcing release",
-            );
-            if (_tokenMutexCompleter != null &&
-                !_tokenMutexCompleter!.isCompleted) {
-              _tokenMutexCompleter!.complete();
-            }
-          },
+  Future<TokenModel> _lockAndRecoverToken() {
+    return _tokenMutexCompleter ??= Future(() async {
+      final recovered = await recoverToken();
+      if (!recovered) {
+        logger.warning(
+          "Token recovery failed for user: ${cache.token.username}",
         );
-      } catch (_) {}
-    }
-
-    _tokenMutexCompleter = Completer<void>();
-    try {
-      return await callback();
-    } finally {
-      final completer = _tokenMutexCompleter;
-      _tokenMutexCompleter = null;
-      if (completer != null && !completer.isCompleted) {
-        completer.complete();
+        throw TokenExpiredException();
       }
-    }
+      return cache.token;
+    }).whenComplete(() => _tokenMutexCompleter = null);
   }
 
   Future<Response> _authReq(String method, String url, [Object? data]) async {
-    var localToken = await _mutexCallback<String>(() async {
-      var now = timeNow();
-
-      if (now.millisecondsSinceEpoch >=
-          model.expiryDate!.millisecondsSinceEpoch) {
-        logger.info(
-          "Token expired at ${model.expiryDate}, starting recovery for user: ${model.studentId}",
-        );
-
-        final recovered = await recoverToken();
-        if (!recovered) {
-          logger.warning("Token recovery failed for user: ${model.studentId}");
-          throw TokenExpiredException();
-        }
-      }
-
-      return model.accessToken!;
-    });
+    var localToken = (await _lockAndRecoverToken()).accessToken;
 
     final headers = <String, String>{
       // "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
       "accept": "*/*",
-      "user-agent": Constants.userAgent,
+      "user-agent": initData.userAgent,
       "authorization": "Bearer $localToken",
       "apiKey": "21ff6c25-d1da-4a68-a811-c881a6057463",
     };
 
     return await dio.get(
       url,
-      options: Options(method: method, headers: headers),
+      options: Options(
+        method: method,
+        headers: headers,
+        receiveTimeout: Duration(seconds: 20),
+      ),
       data: data,
     );
   }
@@ -381,19 +431,23 @@ class KretaClient {
     try {
       logger.finest("Sending authenticated request to: $url");
       resp = await _authReq(method, url, data);
-      if (!url.endsWith("TanuloAdatlap")) {
-        logger.finest("Response: ${resp.statusCode} ${resp.data}");
+
+      bool isEmpty(dynamic responseData) {
+        return responseData == null ||
+            (responseData is String && responseData.isEmpty) ||
+            (responseData is List && responseData.isEmpty) ||
+            (responseData is Map && responseData.isEmpty);
       }
 
       if (resp.statusCode == 200 || resp.statusCode == 201) {
-        final responseData = resp.data;
-        if (responseData == null ||
-            (responseData is List && responseData.isEmpty) ||
-            (responseData is Map && responseData.isEmpty)) {
+        if (isEmpty(resp.data)) {
           logger.warning(
             "API returned ${resp.statusCode} with empty data for: $url - possible stale session",
           );
         }
+      } else {
+        logger.warning("Invalid response: ${resp.statusCode} ${resp.data}");
+        logger.warning("Headers: ${resp.headers}");
       }
     } catch (ex) {
       if (ex is Error) {
@@ -412,432 +466,194 @@ class KretaClient {
     return (resp.data, resp.statusCode!);
   }
 
-  Future<ApiResponse<List<Lesson>>> _timetableCachingGet(
-    DateTime weekday,
-    bool forceCache,
-  ) async {
-    var from = weekday.getMonday();
-    return await _cachingGet(
-      genCacheKey(from, model.studentIdNorm!),
-      KretaEndpoints.getTimeTable(
-        model.iss!,
-        from,
-        from.add(Duration(days: 6)),
-      ),
-      forceCache,
-      0,
-      isar.timetableCacheModels,
-      (key, resp) => TimetableCacheModel()
-        ..cacheKey = key
-        ..values = (resp as List<dynamic>)
-            .map((item) => jsonEncode(item))
-            .toList(),
-      (cache) => cache.values
-          .map((data) => Lesson.fromJson(jsonDecode(data)))
-          .toList(),
-    );
-  }
-
-  Future<ApiResponse<List<R>>> _genericListedCachingGet<R>(
-    CacheId id,
+  Future<List<C>>
+  _renewCache<C extends GenericCacheModel<I>, I extends Identifiable>(
     String url,
-    bool forceCache,
-    R Function(dynamic) mapResultEntries,
-  ) async {
-    return await _genericCachingGet(
-      id,
-      url,
-      forceCache,
-      (data) => (data as List<dynamic>).map(mapResultEntries).toList(),
-    );
-  }
-
-  Future<ApiResponse<R>> _genericCachingGet<R>(
-    CacheId id,
-    String url,
-    bool forceCache,
-    R Function(dynamic) makeResult,
-  ) async {
-    return await _cachingGet(
-      // it would be *ideal* to use xor and left shift here, however
-      // binary operations seem to round the number down to
-      // 32 bits for some reason???
-      (model.studentIdNorm! + ((id.index + 1) * pow(10, 11))) as Id,
-      url,
-      forceCache,
-      0,
-      isar.genericCacheModels,
-      (key, resp) => GenericCacheModel()
-        ..cacheKey = key
-        ..cacheData = jsonEncode(resp),
-      (cache) {
-        return makeResult(jsonDecode(cache.cacheData!));
-      },
-    );
-  }
-
-  Future<ApiResponse<R>> _cachingGet<T, R>(
-    Id cacheKey,
-    String url,
-    bool forceCache,
-    int counter,
-    IsarCollection<T> collection,
-    T Function(Id, dynamic) makeCache,
-    R Function(T) makeResult,
-  ) async {
-    var cache = await collection.get(cacheKey);
-
-    if (forceCache && cache != null) {
-      logger.finest(
-        "_cachingGet(forceCache: $forceCache}): decoding cached response for: $url",
-      );
-      return ApiResponse.cached(makeResult(cache));
-    }
-
+    C Function() makeCache,
+    I Function(Map<String, dynamic>) makeDto, [
+    int counter = 0,
+  ]) async {
     try {
       var (resp, statusCode) = await _authJson("GET", url);
 
-      if (statusCode >= 400 && cache != null) {
-        logger.finest("request failed: $statusCode, using cache for: $url");
-        return ApiResponse(makeResult(cache), statusCode, null, true);
+      var data = resp;
+      final caches = <C>[];
+      if (data is Map<String, dynamic>) {
+        data = [data];
+      }
+      if (data is List) {
+        for (final e in data) {
+          if (e is Map<String, dynamic>) {
+            late I dto;
+            try {
+              dto = makeDto(e);
+            } catch (ex) {
+              logger.shout(
+                "failed to make dto for $C",
+                ex,
+                ex is Error ? ex.stackTrace : null,
+              );
+              continue;
+            }
+
+            try {
+              caches.add(
+                makeCache()
+                  ..createdAt = DateTime.now()
+                  ..cacheKey = cache.genCacheKey(dto)
+                  ..apply(CacheContext(cache, dto)),
+              );
+            } catch (ex) {
+              logger.shout(
+                "failed to make cache $C: ${ex.toString()}",
+                ex,
+                ex is Error ? ex.stackTrace : null,
+              );
+              logger.shout("object: $e");
+              continue;
+            }
+          }
+        }
       }
 
-      var newCache = makeCache(cacheKey, resp);
-
-      await isar.writeTxn(() async {
-        collection.put(newCache);
-      });
-
-      return ApiResponse(makeResult(newCache), statusCode, null, false);
+      return caches;
     } catch (ex) {
-      if (_isTokenExpired(ex)) {
-        logger.warning("Token expired, setting needsReauth flag");
-        await _setReauthFlag();
-
-        return ApiResponse(null, 0, ex, false);
+      if (isTokenExpired(ex)) {
+        rethrow;
       }
 
-      if (ex is DioException && counter < backoffCount) {
+      if ((ex is DioException &&
+              ex.type != .connectionTimeout &&
+              ex.type != .connectionError) &&
+          counter < backoffCount) {
         logger.finest("Retrying: $counter / $backoffCount");
         final backoffDelay = backoffMin + (counter * backoffStep);
         logger.finest("Waiting: $backoffDelay");
         await Future.delayed(Duration(milliseconds: backoffDelay));
 
-        return _cachingGet(
-          cacheKey,
-          url,
-          forceCache,
-          counter + 1,
-          collection,
-          makeCache,
-          makeResult,
-        );
+        return await _renewCache(url, makeCache, makeDto, counter + 1);
       }
 
-      if (cache != null) {
-        logger.finest("request failed, using cache for: $url");
-        return ApiResponse(makeResult(cache), 0, ex, true);
-      }
-
-      logger.finest("request failed, no cache for: $url");
-      return ApiResponse(null, 0, ex, false);
+      logger.finest("request failed: $ex, no cache for: $url");
+      rethrow;
     }
   }
 
-  ApiResponse<List<ClassGroupSubjectAverage>>? classGroupAveragesCache;
+  Future<List<C>> _save<C extends GenericCacheModel<I>, I extends Identifiable>(
+    List<C> caches,
+  ) async {
+    isarInit.writeTxnSync(() {
+      isarInit.collection<C>().putAllSync(caches);
+    });
+    return caches;
+  }
 
-  Future<ApiResponse<List<ClassGroupSubjectAverage>>> getClassGroupAverages(
-    ClassGroup classGroup, {
-    bool forceCache = true,
-  }) async {
-    if (classGroup.studyTask == null) {
-      String? err = "classGroup.studyTask is null";
-      logger.warning(err);
-      return ApiResponse([], 0, err, false);
-    }
-    if (!forceCache) {
-      classGroupAveragesCache = null;
-    } else if (classGroupAveragesCache != null) {
-      return classGroupAveragesCache!;
-    }
+  Future<List<ClassAverageCacheModel>> getClassGroupAverages(
+    ClassGroup classGroup,
+  ) async {
     var studyTaskUid = classGroup.studyTask!.uid.toString().split(",").first;
-    var resp = await _genericListedCachingGet(
-      CacheId.getClassGroupAvg,
-      KretaEndpoints.getClassGroupAvg(model.iss!, studyTaskUid),
-      forceCache,
-      (item) => ClassGroupSubjectAverage.fromJson(item),
-    );
-
-    if (resp.err == null) {
-      classGroupAveragesCache = ApiResponse.cached(resp.response);
-    }
-    return resp;
+    return await _renewCache(
+      KretaEndpoints.getClassGroupAvg(cache.token.iss, studyTaskUid),
+      ClassAverageCacheModel.new,
+      (json) => ClassGroupSubjectAverage.fromJson(json),
+    ).then(_save);
   }
 
-  ApiResponse<Student>? studentCache;
-
-  Future<ApiResponse<Student>> getStudent({bool forceCache = true}) async {
-    if (!forceCache) {
-      studentCache = null;
-    } else if (studentCache != null) {
-      return studentCache!;
-    }
-
-    return await _genericCachingGet(
-      CacheId.getStudent,
-      KretaEndpoints.getStudentUrl(model.iss!),
-      forceCache,
+  Future<StudentCacheModel> getStudent() async {
+    return (await _renewCache<StudentCacheModel, Student>(
+      KretaEndpoints.getStudent(cache.token.iss),
+      StudentCacheModel.new,
       (cache) => Student.fromJson(cache),
-    ).then((resp) {
-      if (resp.err == null) {
-        studentCache = ApiResponse.cached(resp.response);
-      }
-      return resp;
-    });
+    ).then(_save)).first;
   }
 
-  ApiResponse<List<ClassGroup>>? classGroupCache;
-
-  Future<ApiResponse<List<ClassGroup>>> getClassGroups({
-    bool forceCache = true,
-  }) async {
-    if (!forceCache) {
-      classGroupCache = null;
-    } else {
-      if (classGroupCache != null) return classGroupCache!;
-    }
-
-    return await _genericListedCachingGet(
-      CacheId.getClassGroup,
-      KretaEndpoints.getClassGroups(model.iss!),
-      forceCache,
+  Future<List<ClassGroupCacheModel>> getClassGroups() async {
+    return await _renewCache(
+      KretaEndpoints.getClassGroups(cache.token.iss),
+      ClassGroupCacheModel.new,
       (item) => ClassGroup.fromJson(item),
-    ).then((resp) {
-      if (resp.err == null) {
-        classGroupCache = ApiResponse.cached(resp.response);
-      }
-      return resp;
-    });
+    ).then(_save);
   }
 
-  ApiResponse<List<NoticeBoardItem>>? noticeBoardCache;
-
-  Future<ApiResponse<List<NoticeBoardItem>>> getNoticeBoard({
-    bool forceCache = true,
-  }) async {
-    if (!forceCache) {
-      noticeBoardCache = null;
-    } else if (noticeBoardCache != null) {
-      return noticeBoardCache!;
-    }
-
-    return await _genericListedCachingGet(
-      CacheId.getNoticeBoard,
-      KretaEndpoints.getNoticeBoard(model.iss!),
-      forceCache,
-      (item) => NoticeBoardItem.fromJson(item),
-    ).then((resp) {
-      if (resp.err == null) {
-        noticeBoardCache = ApiResponse.cached(resp.response);
-      }
-      return resp;
-    });
-  }
-
-  ApiResponse<List<InfoBoardItem>>? infoBoardCache;
-
-  Future<ApiResponse<List<InfoBoardItem>>> getInfoBoard({
+  Future<List<MessageCacheModel>> getNoticeBoard({
     DateTime? from,
     DateTime? to,
-    bool forceCache = true,
   }) async {
-    if (forceCache && infoBoardCache != null) return infoBoardCache!;
-
-    return await _genericListedCachingGet(
-      CacheId.getInfoBoard,
-      KretaEndpoints.getInfoBoard(model.iss!, from, to),
-      forceCache,
-      (item) => InfoBoardItem.fromJson(item),
-    ).then((resp) {
-      if (resp.err == null) {
-        infoBoardCache = ApiResponse.cached(resp.response);
-      }
-      return resp;
-    });
+    return await _renewCache(
+      KretaEndpoints.getNoticeBoard(cache.token.iss, from, to),
+      MessageCacheModel.new,
+      (item) => NoticeBoardItem.fromJson(item) as MessageItem,
+    ).then(_save);
   }
 
-  ApiResponse<List<Grade>>? gradeCache;
-
-  Future<ApiResponse<List<Grade>>> getGrades({bool forceCache = true}) async {
-    if (!forceCache) {
-      gradeCache = null;
-    } else if (gradeCache != null) {
-      return gradeCache!;
-    }
-
-    return await _genericListedCachingGet(
-      CacheId.getGrades,
-      KretaEndpoints.getGrades(model.iss!),
-      forceCache,
-      (item) => Grade.fromJson(item),
-    ).then((resp) {
-      if (resp.err == null) {
-        resp.response!.sort((a, b) => b.recordDate.compareTo(a.recordDate));
-        gradeCache = ApiResponse.cached(resp.response);
-      }
-      return resp;
-    });
-  }
-
-  ApiResponse<List<SubjectAverage>>? subjectAverageCache;
-
-  Future<ApiResponse<List<SubjectAverage>>> getSubjectAverage(
-    ClassGroup classGroup, {
-    bool forceCache = true,
-  }) async {
-    String? err;
-    if (classGroup.studyTask == null) {
-      err = "classGroup.studyTask is null";
-      logger.warning(err);
-      return ApiResponse(
-        List<SubjectAverage>.empty(growable: true),
-        0,
-        err,
-        false,
-      );
-    }
-    if (!forceCache) {
-      subjectAverageCache = null;
-    } else if (subjectAverageCache != null) {
-      return subjectAverageCache!;
-    }
-    var studyTaskUid = classGroup.studyTask!.uid.toString().split(",").first;
-
-    return await _genericListedCachingGet(
-      CacheId.getSubjectAvg,
-      KretaEndpoints.getSubjectAvg(model.iss!, studyTaskUid),
-      forceCache,
-      (item) => SubjectAverage.fromJson(item),
-    ).then((resp) {
-      if (resp.err == null) {
-        subjectAverageCache = ApiResponse.cached(resp.response);
-      }
-      return resp;
-    });
-  }
-
-  Future<ApiResponse<List<Homework>>> getHomework({
+  Future<List<MessageCacheModel>> getInfoBoard({
     DateTime? from,
     DateTime? to,
-    bool forceCache = true,
+  }) async {
+    return await _renewCache(
+      KretaEndpoints.getInfoBoard(cache.token.iss, from, to),
+      MessageCacheModel.new,
+      (json) => InfoBoardItem.fromJson(json) as MessageItem,
+    ).then(_save);
+  }
+
+  Future<List<GradeCacheModel>> getGrades() async {
+    return await _renewCache(
+      KretaEndpoints.getGrades(cache.token.iss),
+      GradeCacheModel.new,
+      (json) => Grade.fromJson(json),
+    ).then(_save);
+  }
+
+  Future<List<HomeworkCacheModel>> getHomework({
+    DateTime? from,
+    DateTime? to,
   }) async {
     if (from == null && to == null) {
-      DateTime now = timeNow();
-      DateTime start = now.copyWith(month: 9, day: 1);
-      from = now.isBefore(start) ? start.subtract(Duration(days: 365)) : start;
+      from = timeNow().getFirstSchoolDay();
     }
-    return await _genericListedCachingGet(
-      CacheId.getHomework,
-      KretaEndpoints.getHomework(model.iss!, from, to),
-      forceCache,
+    return await _renewCache(
+      KretaEndpoints.getHomework(cache.token.iss, from, to),
+      HomeworkCacheModel.new,
       (item) => Homework.fromJson(item),
-    );
+    ).then(_save);
   }
 
   /// Automatically aligns requests to start at Monday and end at Sunday
-  Future<ApiResponse<List<Lesson>>> getTimeTable(
-    DateTime from,
-    DateTime to, {
-    bool forceCache = true,
-  }) async {
-    var lessons = List<Lesson>.empty(growable: true);
-    String? err;
-    bool cached = true;
-
-    for (
-      var i = from.millisecondsSinceEpoch;
-      i < to.millisecondsSinceEpoch;
-      i += 604800000
-    ) {
-      var weekday = DateTime.fromMillisecondsSinceEpoch(i);
-
-      var resp = await _timetableCachingGet(weekday, forceCache);
-      if (resp.err != null) {
-        return resp;
-      }
-
-      lessons.addAll(resp.response!);
-
-      if (!resp.cached) cached = false;
-    }
-
-    lessons =
-        lessons
-            .where(
-              (lesson) => lesson.start.isAfter(from) && lesson.end.isBefore(to),
-            )
-            .toList()
-          ..sort((a, b) => a.start.compareTo(b.start));
-
-    return ApiResponse(lessons, 200, err, cached);
+  Future<List<LessonCacheModel>> getLessons(DateTime from, DateTime to) async {
+    assert(from.difference(to).inDays < 30);
+    return (await _renewCache(
+        KretaEndpoints.getTimeTable(cache.token.iss, from, to),
+        LessonCacheModel.new,
+        (json) => Lesson.fromJson(json),
+      ).then(resolveDailyNth).then(_save))
+      ..sort((a, b) => a.start.compareTo(b.start));
   }
 
-  Future<ApiResponse<List<AllLessons>>> getLessons({
-    bool forceCache = true,
-  }) async {
-    return await _genericListedCachingGet(
-      CacheId.getLessons,
-      KretaEndpoints.getLessons(model.iss!),
-      forceCache,
-      (item) => AllLessons.fromJson(item),
-    );
-  }
-
-  Future<ApiResponse<List<Test>>> getTests({
-    DateTime? from,
-    DateTime? to,
-    bool forceCache = true,
-  }) async {
-    return await _genericListedCachingGet(
-      CacheId.getTests,
-      KretaEndpoints.getTests(model.iss!, from, to),
-      forceCache,
+  Future<List<TestCacheModel>> getTests({DateTime? from, DateTime? to}) async {
+    return await _renewCache(
+      KretaEndpoints.getTests(cache.token.iss, from, to),
+      TestCacheModel.new,
       (item) => Test.fromJson(item),
-    );
+    ).then(_save);
   }
 
-  ApiResponse<List<Omission>>? omissionsCache;
-
-  Future<ApiResponse<List<Omission>>> getOmissions({
-    bool forceCache = true,
-  }) async {
-    if (!forceCache) {
-      omissionsCache = null;
-    } else {
-      if (omissionsCache != null) return omissionsCache!;
-    }
-    return await _genericListedCachingGet(
-      CacheId.getOmissions,
-      KretaEndpoints.getOmissions(model.iss!),
-      forceCache,
+  Future<List<OmissionCacheModel>> getOmissions() async {
+    return (await _renewCache(
+      KretaEndpoints.getOmissions(cache.token.iss),
+      OmissionCacheModel.new,
       (item) => Omission.fromJson(item),
-    ).then((resp) {
-      if (resp.err == null) {
-        resp.response!.sort((a, b) => a.date.compareTo(b.date));
-        omissionsCache = ApiResponse.cached(resp.response);
-      }
-      return resp;
-    });
+    ).then(_save))..sort((a, b) => a.createdAt.compareTo(b.createdAt));
   }
 
-  void evictMemCache() {
-    studentCache = null;
-    noticeBoardCache = null;
-    gradeCache = null;
-    omissionsCache = null;
-    classGroupCache = null;
+  Future<List<SubjectCacheModel>> getSubjects() async {
+    return await _renewCache(
+      KretaEndpoints.getDktSubjects(cache.token.iss),
+      SubjectCacheModel.new,
+      (item) => DktSubject.fromJson(item),
+    ).then(_save);
   }
 }
 
-bool _isTokenExpired(Object ex) =>
+bool isTokenExpired(Object ex) =>
     ex is TokenExpiredException || ex is InvalidGrantException;

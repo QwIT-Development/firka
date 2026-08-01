@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
+import 'package:firka_common/core/consts.dart';
+import 'package:firka_common/data/models/token_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firka/api/client/kreta_client.dart';
@@ -8,7 +10,6 @@ import 'package:firka/core/bloc/profile_picture_cubit.dart';
 import 'package:firka/core/bloc/reauth_cubit.dart';
 import 'package:firka/core/bloc/settings_cubit.dart';
 import 'package:firka/core/bloc/theme_cubit.dart';
-import 'package:firka/data/models/token_model.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:logging/logging.dart';
@@ -48,20 +49,20 @@ class AppInitialization {
   final Directory appDir;
   final PackageInfo packageInfo;
   final DeviceInfo devInfo;
-  late KretaClient client;
-  List<TokenModel> tokens;
+  KretaClient? client;
   bool hasWatchListener = false;
 
   /// Set by the wear pairing modal; called when watch sends init_done or sync_done to dismiss the sheet.
   void Function()? dismissWearPairingSheet;
   Uint8List? profilePicture;
   SettingsStore settings;
-  ThemeCubit? themeCubit;
-  SettingsCubit? settingsCubit;
-  ProfilePictureCubit? profilePictureCubit;
-  ReauthCubit? reauthCubit;
-  HomeRefreshCubit? homeRefreshCubit;
+  final ThemeCubit themeCubit = ThemeCubit();
+  final SettingsCubit settingsCubit = SettingsCubit();
+  final ProfilePictureCubit profilePictureCubit = ProfilePictureCubit();
+  final ReauthCubit reauthCubit = ReauthCubit();
+  final HomeRefreshCubit homeRefreshCubit = HomeRefreshCubit();
   AppLocalizations l10n;
+  String userAgent;
   final GlobalKey<NavigatorState> navigatorKey;
 
   AppInitialization({
@@ -69,9 +70,13 @@ class AppInitialization {
     required this.appDir,
     required this.devInfo,
     required this.packageInfo,
-    required this.tokens,
     required this.settings,
     required this.l10n,
     required this.navigatorKey,
-  });
+  }) : userAgent = Platform.isAndroid
+           ? "${Constants.applicationId}/${Constants.applicationVersion}"
+                 "/${devInfo.model}"
+                 "/${devInfo.versionRelease}"
+                 "/${devInfo.versionSdkInt}"
+           : "eKretaStudent/264745 CFNetwork/1494.0.7 Darwin/23.4.0";
 }

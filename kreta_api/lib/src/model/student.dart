@@ -21,7 +21,7 @@ class Student extends NameUid {
 
   final Institution institution;
 
-  const Student({
+  Student({
     required this.addressDataList,
     required this.bankAccount,
     required this.birthdate,

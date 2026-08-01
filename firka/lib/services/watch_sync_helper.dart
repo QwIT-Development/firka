@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:firka_common/data/database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:isar_community/isar.dart';
@@ -9,10 +10,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 
 import 'package:firka/app/app_state.dart';
-import 'package:firka/services/active_account_helper.dart';
 import 'package:firka/services/wear_sync_cache.dart';
 import 'package:firka/api/client/kreta_client.dart';
-import 'package:firka/data/models/token_model.dart';
+import 'package:firka_common/data/models/token_model.dart';
 
 /// Helper class for Watch ↔ iPhone token sync (iOS) and Wear OS sync (Android).
 class WatchSyncHelper {
@@ -58,42 +58,6 @@ class WatchSyncHelper {
       debugPrint('[WatchSync] Error calling $method: $e');
       return null;
     }
-  }
-
-  static TokenModel? _resolveCurrentToken({
-    List<TokenModel>? tokens,
-    KretaClient? client,
-  }) {
-    final effectiveTokens = tokens ?? (initDone ? initData.tokens : null);
-    if (effectiveTokens == null || effectiveTokens.isEmpty) return null;
-
-    final preferredStudentIdNorm = client?.model.studentIdNorm;
-    if (preferredStudentIdNorm != null) {
-      for (final token in effectiveTokens) {
-        if (token.studentIdNorm == preferredStudentIdNorm) {
-          return token;
-        }
-      }
-    }
-
-    if (initDone) {
-      return pickActiveToken(
-        tokens: effectiveTokens,
-        settings: initData.settings,
-        preferredStudentIdNorm: preferredStudentIdNorm,
-      );
-    }
-
-    return effectiveTokens.first;
-  }
-
-  static int? _resolveExpectedStudentIdNorm({
-    List<TokenModel>? tokens,
-    KretaClient? client,
-  }) {
-    final fromClient = client?.model.studentIdNorm;
-    if (fromClient != null) return fromClient;
-    return _resolveCurrentToken(tokens: tokens, client: client)?.studentIdNorm;
   }
 
   static int? _asInt(dynamic value) {
@@ -225,8 +189,8 @@ class WatchSyncHelper {
         ? token.updatedAtMs!
         : nowMs;
     final payload = <String, dynamic>{
-      'studentId': token.studentId,
-      'studentIdNorm': token.studentIdNorm,
+      'studentId': token.username,
+      'studentIdNorm': token.key,
       'iss': token.iss,
       'idToken': token.idToken,
       'accessToken': token.accessToken,
@@ -448,9 +412,6 @@ class WatchSyncHelper {
       await isar.tokenModels.clear();
     });
 
-    if (initDone) {
-      initData.tokens = [];
-    }
     if (initDone) initData.reauthCubit?.clear();
 
     await prefs.setBool(_iosFreshInstallHandledKey, true);
@@ -523,7 +484,6 @@ class WatchSyncHelper {
     try {
       final recovered = await checkAndRecoverFromiCloud(
         isar: initData.isar,
-        tokens: initData.tokens,
         client: initData.client,
       );
 
@@ -532,10 +492,7 @@ class WatchSyncHelper {
           '[WatchSync] Token recovered from iCloud, reauth flag cleared',
         );
       } else {
-        final token = pickActiveToken(
-          tokens: initData.tokens,
-          settings: initData.settings,
-        );
+        final token = initData.client!.cache.token;
         final expiryDate = token?.expiryDate;
         if (expiryDate != null && expiryDate.isAfter(DateTime.now())) {
           if (initDone) initData.reauthCubit?.clear();
@@ -550,15 +507,12 @@ class WatchSyncHelper {
   }
 
   static Map<String, dynamic>? _getTokenForWatch() {
-    if (!initDone || initData.tokens.isEmpty) {
+    if (!initDone) {
       debugPrint('[WatchSync] No token available');
       return {'error': 'no_token'};
     }
 
-    final token = pickActiveToken(
-      tokens: initData.tokens,
-      settings: initData.settings,
-    );
+    final token = initData.client!.cache.token;
     if (token == null) {
       debugPrint('[WatchSync] No active token available');
       return {'error': 'no_token'};
@@ -571,7 +525,7 @@ class WatchSyncHelper {
       return {'error': 'token_incomplete'};
     }
 
-    if (initData.client.needsReauth) {
+    if (initData.client!.needsReauth) {
       debugPrint('[WatchSync] iPhone needs reauth');
       return {'error': 'needsReauth'};
     }
@@ -730,14 +684,8 @@ class WatchSyncHelper {
         return {'success': false, 'error': 'no_student_id_norm'};
       }
 
-      final expectedStudentIdNorm = _resolveExpectedStudentIdNorm(
-        tokens: initData.tokens,
-        client: initData.client,
-      );
-      final currentToken = _resolveCurrentToken(
-        tokens: initData.tokens,
-        client: initData.client,
-      );
+      final expectedStudentIdNorm = initData.client!.cache.token.key;
+      final currentToken = initData.client!.cache.token;
 
       final watchExpiryDate = DateTime.fromMillisecondsSinceEpoch(watchExpiry);
       if (!_isAccessTokenUsable(watchExpiryDate, skew: const Duration())) {
@@ -756,7 +704,7 @@ class WatchSyncHelper {
           watchStudentIdNorm == expectedStudentIdNorm;
       if (isForActiveAccount &&
           currentToken != null &&
-          currentToken.studentIdNorm == watchStudentIdNorm) {
+          currentToken.key == watchStudentIdNorm) {
         if (!_isIncomingTokenNewerThanCurrent(
           incomingExpiry: watchExpiryDate,
           incomingIdToken: watchIdToken,
@@ -792,9 +740,8 @@ class WatchSyncHelper {
         await initData.isar.tokenModels.put(newToken);
       });
 
-      initData.tokens = await initData.isar.tokenModels.where().findAll();
       if (isForActiveAccount) {
-        initData.client.model = newToken;
+        initData.client!.cache.token = newToken;
         if (initDone) initData.reauthCubit?.clear();
       } else {
         debugPrint(
@@ -894,7 +841,6 @@ class WatchSyncHelper {
     }
 
     final effectiveIsar = isar ?? (initDone ? initData.isar : null);
-    final effectiveTokens = tokens ?? (initDone ? initData.tokens : null);
     final effectiveClient = client ?? (initDone ? initData.client : null);
 
     if (effectiveIsar == null) {
@@ -921,10 +867,7 @@ class WatchSyncHelper {
         return false;
       }
 
-      final expectedStudentIdNorm = _resolveExpectedStudentIdNorm(
-        tokens: effectiveTokens,
-        client: effectiveClient,
-      );
+      final expectedStudentIdNorm = initData.client!.cache.token.key;
 
       final iCloudStudentIdNorm = tokenData['studentIdNorm'] as int?;
       if (expectedStudentIdNorm != null &&
@@ -959,10 +902,7 @@ class WatchSyncHelper {
       final iCloudIdToken = tokenData['idToken'] as String?;
       final iCloudRefreshToken = tokenData['refreshToken'] as String?;
 
-      final currentToken = _resolveCurrentToken(
-        tokens: effectiveTokens,
-        client: effectiveClient,
-      );
+      final currentToken = initData.client!.cache.token;
       final localExpiry = currentToken?.expiryDate;
       final shouldAccept = currentToken == null
           ? true
@@ -997,22 +937,16 @@ class WatchSyncHelper {
           await effectiveIsar.tokenModels.put(newToken);
         });
 
-        final updatedTokens = await effectiveIsar.tokenModels.where().findAll();
-
-        if (initDone) {
-          initData.tokens = updatedTokens;
-        }
-
         if (effectiveClient != null &&
             (expectedStudentIdNorm == null ||
-                newToken.studentIdNorm == expectedStudentIdNorm)) {
-          effectiveClient.model = newToken;
+                newToken.key == expectedStudentIdNorm)) {
+          effectiveClient.cache.token = newToken;
         }
 
         final shouldClearReauth =
             !iCloudAccessExpired &&
             (expectedStudentIdNorm == null ||
-                newToken.studentIdNorm == expectedStudentIdNorm);
+                newToken.key == expectedStudentIdNorm);
         if (shouldClearReauth) {
           if (initDone) initData.reauthCubit?.clear();
         }
@@ -1071,16 +1005,7 @@ class WatchSyncHelper {
     List<TokenModel>? tokens,
     KretaClient? client,
   }) async {
-    if (!Platform.isIOS) return;
-
-    final effectiveIsar = isar ?? (initDone ? initData.isar : null);
-    final effectiveTokens = tokens ?? (initDone ? initData.tokens : null);
-    final effectiveClient = client ?? (initDone ? initData.client : null);
-
-    if (effectiveIsar == null || effectiveTokens == null) {
-      debugPrint('[WatchSync] Cannot sync: no isar or tokens available');
-      return;
-    }
+    if (!Platform.isIOS || !initDone) return;
 
     try {
       debugPrint('[WatchSync] Requesting token from Watch...');
@@ -1089,14 +1014,8 @@ class WatchSyncHelper {
         null,
         const Duration(seconds: 10),
       );
-      final expectedStudentIdNorm = _resolveExpectedStudentIdNorm(
-        tokens: effectiveTokens,
-        client: effectiveClient,
-      );
-      final currentToken = _resolveCurrentToken(
-        tokens: effectiveTokens,
-        client: effectiveClient,
-      );
+      final expectedStudentIdNorm = initData.client!.cache.token.key;
+      final currentToken = initData.client!.cache.token;
 
       if (result == null) {
         debugPrint('[WatchSync] No response from Watch');
@@ -1213,24 +1132,14 @@ class WatchSyncHelper {
               watchUpdatedAtMs ?? DateTime.now().millisecondsSinceEpoch,
         );
 
-        await effectiveIsar.writeTxn(() async {
-          await effectiveIsar.tokenModels.put(newToken);
+        await isarInit.writeTxn(() async {
+          await isarInit.tokenModels.put(newToken);
         });
 
-        final updatedTokens = await effectiveIsar.tokenModels.where().findAll();
-
-        if (initDone) {
-          initData.tokens = updatedTokens;
-        }
-
-        if (effectiveClient != null &&
-            (expectedStudentIdNorm == null ||
-                newToken.studentIdNorm == expectedStudentIdNorm)) {
-          effectiveClient.model = newToken;
-        }
+        initData.client!.cache.token = newToken;
 
         if (expectedStudentIdNorm == null ||
-            newToken.studentIdNorm == expectedStudentIdNorm) {
+            newToken.key == expectedStudentIdNorm) {
           if (initDone) initData.reauthCubit?.clear();
         }
 

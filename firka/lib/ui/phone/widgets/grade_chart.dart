@@ -1,23 +1,24 @@
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/extensions.dart';
-import 'package:firka/core/settings.dart';
-import 'package:firka_common/firka_common.dart';
+import 'package:firka_common/core/grade_helper.dart';
+import 'package:firka_common/data/models/grade_cache_model.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
+import 'package:firka_common/ui/theme/style.dart';
 import 'package:intl/intl.dart';
-import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/routing/chart_interaction_scope.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class GradeChart extends StatefulWidget {
-  final List<Grade> grades;
+  final List<GradeCacheModel> grades;
   final bool halfYearFallback;
   GradeChart({
     super.key,
-    required List<Grade> grades,
+    required List<GradeCacheModel> grades,
     this.halfYearFallback = true,
   }) : grades = grades.where((g) => g.hasClassicValue()).toList()
-         ..sort((a, b) => a.recordDate.compareTo(b.recordDate));
+         ..sort((a, b) => a.writtenAt.compareTo(b.writtenAt));
 
   @override
   State<GradeChart> createState() => _GradeChartState();
@@ -59,7 +60,7 @@ class _GradeChartState extends State<GradeChart> {
           .getSubjectAverage(halfYearFallback: widget.halfYearFallback);
 
       spots.add(
-        DateSpot(spots.length.toDouble(), partialAvg!, grade.recordDate),
+        DateSpot(spots.length.toDouble(), partialAvg!, grade.writtenAt),
       );
     }
 
@@ -70,7 +71,7 @@ class _GradeChartState extends State<GradeChart> {
             DateSpot(
               spots.length.toDouble(),
               grade.numericValue!.toDouble(),
-              grade.recordDate,
+              grade.writtenAt,
             ),
           );
         }
@@ -357,7 +358,7 @@ class _GradeChartState extends State<GradeChart> {
 /// Wraps [GradeChart] with a [Listener] that updates [ChartInteractionScope]
 /// so the navigator does not intercept touch/drag (e.g. for swipe back).
 class GradeChartWithInteraction extends StatelessWidget {
-  final List<Grade> grades;
+  final List<GradeCacheModel> grades;
   final bool halfYearFallback;
 
   const GradeChartWithInteraction({

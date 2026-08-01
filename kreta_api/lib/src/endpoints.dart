@@ -34,7 +34,7 @@ class KretaEndpoints {
     return buffer.toString();
   }
 
-  static String getStudentUrl(String iss) =>
+  static String getStudent(String iss) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/TanuloAdatlap";
 
   static String getClassGroups(String iss) =>
@@ -48,9 +48,6 @@ class KretaEndpoints {
 
   static String getGrades(String iss, [DateTime? from, DateTime? to]) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/Ertekelesek${dateQuery(from, to)}";
-
-  static String getSubjectAvg(String iss, String studyGroupId) =>
-      "${kreta(iss)}/ellenorzo/v3/sajat/Ertekelesek/Atlagok/TantargyiAtlagok?oktatasiNevelesiFeladatUid=$studyGroupId&oktatasiNevelesiFeladatUid=$studyGroupId";
 
   static String getClassGroupAvg(String iss, String studyGroupId) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/Ertekelesek/Atlagok/OsztalyAtlagok?oktatasiNevelesiFeladatUid=$studyGroupId&oktatasiNevelesiFeladatUid=$studyGroupId";
@@ -67,6 +64,6 @@ class KretaEndpoints {
   static String getTests(String iss, [DateTime? from, DateTime? to]) =>
       "${kreta(iss)}/ellenorzo/v3/sajat/BejelentettSzamonkeresek${dateQuery(from, to)}";
 
-  static String getLessons(String iss) =>
+  static String getDktSubjects(String iss) =>
       "${kreta(iss)}/dktapi/intezmenyek/munkaterek/tanulok";
 }

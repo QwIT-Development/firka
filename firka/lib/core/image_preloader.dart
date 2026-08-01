@@ -1,6 +1,5 @@
 import 'dart:ui' as ui;
 
-import 'package:firka/app/app_state.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -99,7 +98,6 @@ class ImagePreloader {
     AssetBundle bundle,
     String assetPath,
   ) async {
-    logger.finest("Caching: $assetPath");
     final ByteData data = await bundle.load(assetPath);
     final Uint8List bytes = data.buffer.asUint8List();
     return await _decodeImageFromBytes(bytes);

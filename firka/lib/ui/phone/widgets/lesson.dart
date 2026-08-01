@@ -1,8 +1,11 @@
+import 'package:firka_common/core/consts.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings.dart';
-import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:firka_common/data/util.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -16,24 +19,21 @@ import 'bubble_test.dart';
 
 class LessonWidget extends StatelessWidget {
   final AppInitialization data;
-  final Lesson lesson;
+  final LessonCacheModel lesson;
   final bool active;
-  final Test? test;
 
-  const LessonWidget(
-    this.data,
-    this.lesson,
-    this.test, {
-    this.active = false,
-    super.key,
-  });
+  const LessonWidget(this.data, this.lesson, {this.active = false, super.key});
 
   @override
   Widget build(BuildContext context) {
+    // we dont like events
+    assert(lesson.type != TimetableConsts.event);
     final showTests = data.settings
         .group("settings")
         .subGroup("timetable_toast")
         .boolean("tests_and_homework");
+
+    final test = lesson.test.loadAndGet();
 
     final isSubstituted = lesson.substituteTeacher != null;
     final showSubstitutions =
@@ -46,7 +46,7 @@ class LessonWidget extends StatelessWidget {
         .group("settings")
         .subGroup("timetable_toast")
         .boolean("lesson_no");
-    final isDismissed = lesson.type.name == "UresOra";
+    final isDismissed = lesson.type == "UresOra";
 
     var accent = appStyle.colors.accent;
     var secondary = appStyle.colors.secondary;
@@ -65,9 +65,9 @@ class LessonWidget extends StatelessWidget {
 
     List<Widget> elements = [];
 
-    var subjectName = lesson.subject?.name.firstUpper() ?? 'N/A';
+    var subjectName = lesson.subject.loadAndGet()!.name.firstUpper();
 
-    var roomName = lesson.roomName ?? 'N/A';
+    var roomName = lesson.roomName;
 
     elements.add(
       GestureDetector(
@@ -79,7 +79,6 @@ class LessonWidget extends StatelessWidget {
             accent,
             secondary,
             bgColor,
-            test,
           );
         },
         child: FirkaCard.single(
@@ -113,7 +112,7 @@ class LessonWidget extends StatelessWidget {
                                 height: 18,
                               ),
                               Text(
-                                lesson.lessonNumber?.toString() ?? "-",
+                                lesson.dailyNth.toString(),
                                 style: appStyle.fonts.B_14SB.apply(
                                   color: secondary,
                                 ),
@@ -126,9 +125,7 @@ class LessonWidget extends StatelessWidget {
                     diameter: 36,
                     color: bgColor,
                     child: ClassIconWidget(
-                      uid: lesson.uid,
-                      className: lesson.name,
-                      category: subjectName,
+                      subject: lesson.subject.loadAndGet()!,
                       color: accent,
                       size: 24,
                     ),
@@ -194,7 +191,7 @@ class LessonWidget extends StatelessWidget {
                                       horizontal: 6,
                                     ),
                                     child: Text(
-                                      roomName,
+                                      roomName!,
                                       style: appStyle.fonts.B_14R.apply(
                                         color: appStyle.colors.secondary,
                                       ),
@@ -242,13 +239,13 @@ class LessonWidget extends StatelessWidget {
     );
 
     if (test != null && showTests) {
-      var theme = test!.theme?.firstUpper() ?? "";
-      var method = test!.method.description.firstUpper();
+      var topic = test.topic?.firstUpper() ?? "";
+      var method = test.method.firstUpper();
 
       elements.add(
         GestureDetector(
           onTap: () {
-            showTestBottomSheet(context, data, test!);
+            showTestBottomSheet(context, data, test);
           },
           child: FirkaCard.single(
             height: 48,
@@ -267,7 +264,7 @@ class LessonWidget extends StatelessWidget {
                 LimitedBox(
                   maxWidth: 160,
                   child: Text(
-                    theme,
+                    topic,
                     style: appStyle.fonts.B_16SB.apply(
                       color: appStyle.colors.textPrimary,
                     ),

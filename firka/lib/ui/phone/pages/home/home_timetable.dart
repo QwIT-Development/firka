@@ -1,16 +1,17 @@
-import 'dart:async';
+import 'dart:collection';
 
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:firka/api/client/kreta_stream.dart';
-import 'package:intl/intl.dart';
-import 'package:kreta_api/kreta_api.dart';
+import 'package:firka/ui/phone/widgets/bottom_tt_icon.dart';
+import 'package:firka/ui/phone/widgets/tt_day.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:firka_common/data/util.dart';
+import 'package:isar_community/isar.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:firka/ui/phone/widgets/bubble_test.dart';
-import 'package:firka/ui/shared/delayed_spinner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -18,14 +19,12 @@ import 'package:flutter/services.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
 
-import 'package:firka/api/consts.dart';
+import 'package:firka_common/core/consts.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
 import 'package:firka/core/bloc/settings_cubit.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
-import '../../widgets/bottom_tt_icon.dart';
-import '../../widgets/tt_day.dart';
 
 class HomeTimetableScreen extends StatefulWidget {
   final AppInitialization data;
@@ -38,16 +37,13 @@ class HomeTimetableScreen extends StatefulWidget {
 
 class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     with TickerProviderStateMixin {
-  List<Lesson>? lessons;
-  List<Lesson>? events;
-  List<Test>? tests;
-
   // Original dates list for display
-  List<DateTime>? dates;
+  LinkedHashMap<DateTime, List<LessonCacheModel>> dates =
+      LinkedHashMap.identity();
 
   // Dates list for carousel animation
-  List<DateTime>? _animationDates;
-  DateTime? now;
+  List<DateTime> _animationDates = [];
+  late DateTime currentMonday;
   int active = 0;
   final CarouselSliderController _controller = CarouselSliderController();
 
@@ -64,194 +60,12 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
   void initState() {
     super.initState();
 
-    now = timeNow();
-    initForWeek(now!);
-
     _cardAnimationController = AnimationController(
       duration: Duration(milliseconds: 300),
       vsync: this,
     );
-  }
 
-  void setActiveToToday() {
-    final todayMid = now!.getMidnight();
-    int idx = dates!.indexWhere(
-      (d) =>
-          d.year == todayMid.year &&
-          d.month == todayMid.month &&
-          d.day == todayMid.day,
-    );
-
-    if (idx >= 0) {
-      final todaysLessons = lessons?.where(
-        (lesson) =>
-            lesson.start.isAfter(todayMid) &&
-            lesson.end.isBefore(todayMid.add(Duration(hours: 23, minutes: 59))),
-      );
-
-      if (todaysLessons != null && todaysLessons.isNotEmpty) {
-        final lastLessonToday = todaysLessons.reduce(
-          (a, b) => a.end.isAfter(b.end) ? a : b,
-        );
-
-        if (now!.isAfter(lastLessonToday.end)) {
-          int nextIdx = idx + 1;
-          if (nextIdx < dates!.length) {
-            active = nextIdx;
-          } else {
-            active = idx;
-          }
-        } else {
-          active = idx;
-        }
-      } else {
-        active = idx;
-      }
-    } else if (now!.isAfter(dates!.last)) {
-      active = dates!.length - 1;
-    } else {
-      idx = dates!.indexWhere((d) => d.isAfter(todayMid));
-      active = idx >= 0 ? idx : 0;
-    }
-  }
-
-  Future<void> maybeCacheNextWeek(int active) async {
-    DateTime monday = now!.getMonday().getMidnight();
-    if (active >= 3) {
-      // thursday
-      monday = monday.add(Duration(days: 14));
-    } else {
-      return;
-    }
-    if (timeNow().add(Duration(days: 31)).isBefore(monday)) return;
-    logger.finest("caching next week for $monday");
-    var sunday = monday.add(Duration(days: 6));
-    await widget.data.client.getTimeTable(monday, sunday);
-    await widget.data.client.getTests();
-  }
-
-  Future<void> maybeCachePreviousWeek(int active) async {
-    DateTime monday = now!.getMonday().getMidnight();
-    if (active <= 2) {
-      // wednesday
-      monday = monday.subtract(Duration(days: 7));
-    } else {
-      return;
-    }
-    if (timeNow().subtract(Duration(days: 120)).isAfter(monday)) return;
-    logger.finest("caching previous week for $monday");
-    var sunday = monday.add(Duration(days: 6));
-    await widget.data.client.getTimeTable(monday, sunday);
-    await widget.data.client.getTests();
-  }
-
-  Future<void> _updateState(
-    DateTime now,
-    ApiResponse<List<Lesson>> lessonsResp,
-    ApiResponse<List<Test>> testsResp,
-  ) async {
-    var monday = now.getMonday().getMidnight();
-
-    List<DateTime> dates = List.empty(growable: true);
-
-    if (lessonsResp.response != null) {
-      lessons = lessonsResp.response
-          ?.where((lesson) => lesson.type.name != TimetableConsts.event)
-          .toList();
-      events = lessonsResp.response
-          ?.where((lesson) => lesson.type.name == TimetableConsts.event)
-          .toList();
-      tests = testsResp.response;
-
-      for (var i = 0; i < 7; i++) {
-        var t = monday.add(Duration(days: i));
-
-        var hasLessons =
-            i < 5 ||
-            lessons!.firstWhereOrNull((lesson) {
-                  return lesson.start.getMidnight().millisecondsSinceEpoch ==
-                      t.getMidnight().millisecondsSinceEpoch;
-                }) !=
-                null;
-
-        if (hasLessons) {
-          dates.add(t);
-        }
-      }
-    }
-
-    if (!mounted) return;
-    setState(() {
-      this.dates = dates;
-      _animationDates = List.from(dates);
-      _isTemporaryOrder = false;
-
-      if (now.getMonday().getMidnight().millisecondsSinceEpoch ==
-          timeNow().getMonday().getMidnight().millisecondsSinceEpoch) {
-        setActiveToToday();
-      } else {
-        active = 0;
-      }
-    });
-  }
-
-  Future<void> initForWeek(DateTime now, {bool forceCache = true}) async {
-    var monday = now.getMonday().getMidnight();
-    var sunday = monday.add(Duration(days: 6));
-
-    ApiResponse<List<Lesson>>? lessonsResp;
-    var lessonsFetched = 0;
-    ApiResponse<List<Test>>? testsResp;
-    var testsFetched = 0;
-
-    widget.data.client
-        .getTimeTableStream(monday, sunday, cacheOnly: forceCache)
-        .forEach((lessons) {
-          lessonsResp = lessons;
-          lessonsFetched++;
-        });
-
-    widget.data.client.getTestsStream(cacheOnly: forceCache).forEach((tests) {
-      testsResp = tests;
-      testsFetched++;
-    });
-
-    final startTime = DateTime.now();
-    const maxWaitTime = Duration(seconds: 15);
-
-    while (lessonsFetched < 1 || testsFetched < 1) {
-      if (DateTime.now().difference(startTime) > maxWaitTime) {
-        debugPrint('[Timetable] Cache load timed out after 15s');
-        return;
-      }
-      await Future.delayed(Duration(milliseconds: 50));
-    }
-    await _updateState(now, lessonsResp!, testsResp!);
-
-    if (!forceCache) {
-      final networkStartTime = DateTime.now();
-      while (lessonsFetched < 2 || testsFetched < 2) {
-        if (DateTime.now().difference(networkStartTime) > maxWaitTime) {
-          debugPrint('[Timetable] Network load timed out after 15s');
-          break;
-        }
-        await Future.delayed(Duration(milliseconds: 50));
-      }
-      if (lessonsFetched >= 2 && testsFetched >= 2) {
-        await _updateState(now, lessonsResp!, testsResp!);
-      }
-    }
-  }
-
-  void _onRefreshRequested(BuildContext context) async {
-    final cubit = context.read<HomeRefreshCubit>();
-    if (now != null) {
-      await initForWeek(now!, forceCache: false);
-      if (mounted) {
-        setState(() {});
-        cubit.onRefreshComplete();
-      }
-    }
+    updateWeek(timeNow());
   }
 
   bool animating = false;
@@ -260,18 +74,13 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     if (animating) return;
     HapticFeedback.mediumImpact();
 
-    // Save the real target index
-    final realTargetIndex = targetIndex;
-
-    maybeCacheNextWeek(realTargetIndex);
-    maybeCachePreviousWeek(realTargetIndex);
+    final original = _animationDates;
 
     // If the target is not adjacent, create temporary order
+    int tempTargetIndex = targetIndex;
     if ((targetIndex - oldIndex).abs() > 1) {
       // Determine the temporary target position next to the current position
-      int tempTargetIndex = oldIndex < targetIndex
-          ? oldIndex + 1
-          : oldIndex - 1;
+      tempTargetIndex = oldIndex < targetIndex ? oldIndex + 1 : oldIndex - 1;
 
       // Create a new order where target day is next to current day
       List<DateTime> reorderedDates = List.from(_animationDates!);
@@ -281,7 +90,6 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
       setState(() {
         _animationDates = reorderedDates;
         _isTemporaryOrder = true;
-        targetIndex = tempTargetIndex; // Update target for animation
       });
     }
 
@@ -291,12 +99,8 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     const double spacing = 16.0;
     final double totalCardWidth = cardWidth + spacing;
 
-    // Calculate animation positions based on real display indices
-    final oldDisplayIndex = dates!.indexOf(_animationDates![oldIndex]);
-    final targetDisplayIndex = dates!.indexOf(_animationDates![targetIndex]);
-
-    final double start = oldDisplayIndex * totalCardWidth;
-    final double end = targetDisplayIndex * totalCardWidth;
+    final double start = oldIndex * totalCardWidth;
+    final double end = targetIndex * totalCardWidth;
 
     _cardAnimationController!.reset();
     _cardOffsetAnimation =
@@ -315,37 +119,50 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
 
     animating = true;
     await _controller.animateToPage(
-      targetIndex,
+      tempTargetIndex,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
 
     // After animation, restore the original order if necessary
     if (_isTemporaryOrder) {
-      // Calculate the real display index for the target
-      final displayIndex = dates!.indexOf(_animationDates![targetIndex]);
-
       setState(() {
-        _animationDates = List.from(dates!); // Restore from original dates
+        _animationDates = original; // Restore from original dates
         _isTemporaryOrder = false;
-        active = displayIndex; // Use the display index
       });
 
       // Jump to the correct position without animation
-      _controller.jumpToPage(displayIndex);
-    } else {
-      final displayIndex = dates!.indexOf(_animationDates![targetIndex]);
-      setState(() {
-        active = displayIndex; // Use the display index
-      });
+      _controller.jumpToPage(targetIndex);
     }
 
     animating = false;
     setState(() {
+      active = targetIndex;
       _showAnimatedCard = false;
     });
 
     _cardAnimationController!.reset();
+  }
+
+  void updateWeek(DateTime monday) {
+    currentMonday = monday.getMonday().getMidnight();
+
+    dates.clear();
+    for (int i = 0; i < 7; i++) {
+      final day = currentMonday.add(Duration(days: i));
+
+      dates[day] = widget.data.client!.cache
+          .getTimeTable()
+          .on(day)
+          .sortByStart()
+          .findAllSync();
+
+      if (day.weekday > 5 &&
+          dates[day]!.every((l) => l.type == TimetableConsts.event)) {
+        dates.remove(day);
+      }
+    }
+    _animationDates = List.from(dates.keys);
   }
 
   @override
@@ -358,7 +175,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
         listenWhen: (previous, current) =>
             current.refreshTrigger != previous.refreshTrigger,
         listener: (context, state) {
-          _onRefreshRequested(context);
+          setState(() {});
         },
         child: _buildContent(context),
       ),
@@ -366,18 +183,6 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
   }
 
   Widget _buildContent(BuildContext context) {
-    if (lessons == null || tests == null || events == null || dates == null) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [DelayedSpinnerWidget()],
-          ),
-        ],
-      );
-    }
-
     List<Widget> ttWidgets = [];
     List<Widget> ttDays = [];
     final showABTimetable = widget.data.settings
@@ -385,27 +190,19 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
         .subGroup("timetable_toast")
         .boolean("ab_timetable");
     // Build navigation icons using original dates
-    for (var i = 0; i < dates!.length; i++) {
-      final date = dates![i];
-      final realIndex = i; // Always use real index for nav icons
-
-      final testsOnDate = tests!
-          .where(
-            (test) =>
-                test.date.isAfter(date.subtract(Duration(seconds: 1))) &&
-                test.date.isBefore(date.add(Duration(hours: 23, minutes: 59))),
-          )
-          .toList();
-
+    var i = 0;
+    for (MapEntry<DateTime, List<LessonCacheModel>> e in dates.entries) {
+      var realIndex = i;
       Widget ttWidget = BottomTimeTableNavIconWidget(
         widget.data.l10n,
         () {
           _handleNavTap(active, realIndex);
         },
         active == i,
-        date,
+        e.key,
       );
-      if (testsOnDate.isNotEmpty) {
+
+      if (e.value.any((l) => l.test.loadAndGet() != null)) {
         ttWidgets.add(
           Stack(
             children: [
@@ -417,52 +214,21 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
       } else {
         ttWidgets.add(ttWidget);
       }
+
+      i++;
+    }
+
+    bool isEvent(LessonCacheModel model) {
+      return model.type == TimetableConsts.event;
     }
 
     // Build carousel pages using animation dates
-    for (var i = 0; i < _animationDates!.length; i++) {
-      final date = _animationDates![i];
-
-      final lessonsOnDate = lessons!
-          .where(
-            (lesson) =>
-                lesson.start.isAfter(date) &&
-                lesson.end.isBefore(date.add(Duration(hours: 24))),
-          )
-          .toList();
-      final lessonsOnDay = lessons!
-          .where(
-            (lesson) =>
-                lesson.start.getMidnight().millisecondsSinceEpoch ==
-                date.getMidnight().millisecondsSinceEpoch,
-          )
-          .toList();
-      final eventsOnDate = events!
-          .where(
-            (lesson) =>
-                lesson.start.isAfter(date.subtract(Duration(seconds: 1))) &&
-                lesson.end.isBefore(date.add(Duration(hours: 23, minutes: 59))),
-          )
-          .toList();
-      final testsOnDate = tests!
-          .where(
-            (test) =>
-                test.date.isAfter(date.subtract(Duration(seconds: 1))) &&
-                test.date.isBefore(date.add(Duration(hours: 23, minutes: 59))),
-          )
-          .toList();
-
-      ttDays.add(
-        TimeTableDayWidget(
-          widget.data,
-          date,
-          lessons!,
-          lessonsOnDate,
-          eventsOnDate,
-          testsOnDate,
-          lessonsOnDay,
-        ),
-      );
+    for (DateTime date in _animationDates) {
+      final lessons = List<LessonCacheModel>.from(dates[date]!)
+        ..removeWhere(isEvent);
+      final events = List<LessonCacheModel>.from(dates[date]!)
+        ..retainWhere(isEvent);
+      ttDays.add(TimeTableDayWidget(lessons, events));
     }
 
     Widget ttAnimatedCard = BottomTimeTableNavIconWidget(
@@ -587,17 +353,11 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                               color: appStyle.colors.accent,
                             ),
                           ),
-                          onTap: () async {
-                            var newNow = now!.subtract(Duration(days: 7));
-                            if (!mounted) return;
+                          onTap: () {
                             setState(() {
-                              now = newNow;
-                              lessons = null;
-                              dates = null;
-                            });
-                            await initForWeek(newNow);
-                            setState(() {
-                              now = newNow;
+                              updateWeek(
+                                currentMonday.subtract(Duration(days: 7)),
+                              );
                             });
                           },
                         ),
@@ -606,7 +366,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                             spacing: 4,
                             children: [
                               Text(
-                                now!.format(
+                                currentMonday.format(
                                   widget.data.l10n,
                                   FormatMode.yyyymmddwedd,
                                 ),
@@ -622,7 +382,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                                   ),
                                 ),
                                 Text(
-                                  now!.isAWeek()
+                                  currentMonday.isAWeek()
                                       ? widget.data.l10n.a_week
                                       : widget.data.l10n.b_week,
                                   style: appStyle.fonts.B_16R.apply(
@@ -633,9 +393,10 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                             ],
                           ),
                           onTap: () {
-                            now = timeNow();
-                            setActiveToToday();
-                            _controller.jumpToPage(active);
+                            setState(() {
+                              updateWeek(timeNow());
+                              _controller.jumpToPage(active);
+                            });
                           },
                         ),
                         GestureDetector(
@@ -650,17 +411,9 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                               color: appStyle.colors.accent,
                             ),
                           ),
-                          onTap: () async {
-                            var newNow = now!.add(Duration(days: 7));
-                            if (!mounted) return;
+                          onTap: () {
                             setState(() {
-                              now = newNow;
-                              lessons = null;
-                              dates = null;
-                            });
-                            await initForWeek(newNow);
-                            setState(() {
-                              now = newNow;
+                              updateWeek(currentMonday.add(Duration(days: 7)));
                             });
                           },
                         ),
@@ -691,12 +444,8 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
 
                       HapticFeedback.mediumImpact();
 
-                      // Convert animation index to display index
-                      final displayIndex = dates!.indexOf(_animationDates![i]);
-                      maybeCacheNextWeek(displayIndex);
-                      maybeCachePreviousWeek(displayIndex);
                       setState(() {
-                        active = displayIndex;
+                        active = i;
                       });
                     },
                   ),

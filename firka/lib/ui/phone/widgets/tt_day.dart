@@ -1,8 +1,8 @@
-import 'package:firka/core/settings.dart';
-import 'package:firka_common/firka_common.dart';
-import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
-import 'package:firka/ui/components/firka_card.dart';
+import 'package:firka/core/settings.dart';
+import 'package:firka_common/core/debug_helper.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
@@ -11,24 +11,48 @@ import 'package:flutter_svg/svg.dart';
 import 'lesson.dart';
 
 class TimeTableDayWidget extends StatelessWidget {
-  final AppInitialization data;
-  final DateTime date;
-  final List<Lesson> week;
-  final List<Lesson> lessons;
-  final List<Lesson> events;
-  final List<Test> tests;
-  final List<Lesson> day;
+  final List<LessonCacheModel> lessons;
+  final List<LessonCacheModel> events;
 
-  const TimeTableDayWidget(
-    this.data,
-    this.date,
-    this.week,
-    this.lessons,
-    this.events,
-    this.tests,
-    this.day, {
-    super.key,
-  });
+  const TimeTableDayWidget(this.lessons, this.events, {super.key});
+
+  static String simplifyEventName(String e) {
+    return e
+        .replaceAll(" (Nem órarendi nap)", "")
+        .replaceAll(" (Hétfő)", "")
+        .replaceAll(" (Kedd)", "")
+        .replaceAll(" (Szerda)", "")
+        .replaceAll(" (Csütörtök)", "")
+        .replaceAll(" (Péntek)", "")
+        .replaceAll(" (Szombat)", "")
+        .replaceAll(" (Vasárnap)", "")
+        .replaceAll(
+          "Tanítás nélküli munkanap",
+          initData.l10n.tt_non_instructional_day,
+        )
+        .replaceAll("Munkaszüneti nap", initData.l10n.tt_public_holiday)
+        .replaceAll("Tavaszi szünet", initData.l10n.tt_spring_break)
+        .replaceAll("Téli szünet", initData.l10n.tt_winter_break)
+        .replaceAll("Őszi szünet", initData.l10n.tt_autumn_break)
+        .replaceAll("Tanítási nap", initData.l10n.tt_instructional_day)
+        .replaceAll("Első félév vége", initData.l10n.tt_first_semester_end)
+        .replaceAll("Ünnepnap", initData.l10n.tt_holiday)
+        .replaceAll("Pihenőnap", initData.l10n.tt_rest_day)
+        .replaceAll(
+          "Első tanítási nap",
+          initData.l10n.tt_first_instructional_day,
+        )
+        .replaceAll(
+          "Utolsó tanítási nap",
+          initData.l10n.tt_last_instructional_day,
+        )
+        .replaceAll(
+          "Utolsó tanítási nap a végzős évfolyamokon",
+          initData.l10n.tt_last_instructional_day_graduates,
+        )
+        .replaceAll("Egész napos kirándulás", initData.l10n.tt_full_day_trip)
+        .replaceAll("negyedév vége", initData.l10n.tt_quarter_end);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,13 +68,13 @@ class TimeTableDayWidget extends StatelessWidget {
           ),
           SizedBox(height: 12),
           Text(
-            data.l10n.tt_no_classes_l1,
+            initData.l10n.tt_no_classes_l1,
             style: appStyle.fonts.B_16R.apply(
               color: appStyle.colors.textSecondary,
             ),
           ),
           Text(
-            data.l10n.tt_no_classes_l2,
+            initData.l10n.tt_no_classes_l2,
             style: appStyle.fonts.B_16R.apply(
               color: appStyle.colors.textSecondary,
             ),
@@ -59,29 +83,7 @@ class TimeTableDayWidget extends StatelessWidget {
             ...events.map(
               (event) => Center(
                 child: Text(
-                  event.name
-                  .replaceAll(" (Nem órarendi nap)", "")
-                  .replaceAll(" (Hétfő)", "")
-                  .replaceAll(" (Kedd)", "")
-                  .replaceAll(" (Szerda)", "")
-                  .replaceAll(" (Csütörtök)", "")
-                  .replaceAll(" (Péntek)", "")
-                  .replaceAll(" (Szombat)", "")
-                  .replaceAll(" (Vasárnap)", "")
-                  .replaceAll("Tanítás nélküli munkanap", data.l10n.tt_non_instructional_day)
-                  .replaceAll("Munkaszüneti nap", data.l10n.tt_public_holiday)
-                  .replaceAll("Tavaszi szünet", data.l10n.tt_spring_break)
-                  .replaceAll("Téli szünet", data.l10n.tt_winter_break)
-                  .replaceAll("Őszi szünet", data.l10n.tt_autumn_break)
-                  .replaceAll("Tanítási nap", data.l10n.tt_instructional_day)
-                  .replaceAll("Első félév vége", data.l10n.tt_first_semester_end)
-                  .replaceAll("Ünnepnap", data.l10n.tt_holiday)
-                  .replaceAll("Pihenőnap", data.l10n.tt_rest_day)
-                  .replaceAll("Első tanítási nap", data.l10n.tt_first_instructional_day)
-                  .replaceAll("Utolsó tanítási nap", data.l10n.tt_last_instructional_day)
-                  .replaceAll("Utolsó tanítási nap a végzős évfolyamokon", data.l10n.tt_last_instructional_day_graduates)
-                  .replaceAll("Egész napos kirándulás", data.l10n.tt_full_day_trip)
-                  .replaceAll("negyedév vége", data.l10n.tt_quarter_end),
+                  simplifyEventName(event.name),
                   style: appStyle.fonts.B_16R.apply(
                     color: appStyle.colors.textSecondary,
                   ),
@@ -99,7 +101,7 @@ class TimeTableDayWidget extends StatelessWidget {
           margin: EdgeInsets.zero,
           padding: EdgeInsets.all(16),
           child: Text(
-            event.name,
+            simplifyEventName(event.name),
             style: appStyle.fonts.B_16R.apply(
               color: appStyle.colors.textPrimary,
             ),
@@ -112,7 +114,7 @@ class TimeTableDayWidget extends StatelessWidget {
       ttLessons.add(SizedBox());
     }
 
-    var showBreak = data.settings
+    var showBreak = initData.settings
         .group("settings")
         .subGroup("timetable_toast")
         .boolean("breaks");
@@ -122,11 +124,8 @@ class TimeTableDayWidget extends StatelessWidget {
       var nextLesson = lessons.length > i + 1 ? lessons[i + 1] : null;
       ttLessons.add(
         LessonWidget(
-          data,
+          initData,
           lesson,
-          tests.firstWhereOrNull(
-            (test) => test.lessonNumber == lesson.lessonNumber,
-          ),
           active: timeNow().isBetween(
             i > 0 ? lessons[i - 1].end : lesson.start,
             lesson.end,

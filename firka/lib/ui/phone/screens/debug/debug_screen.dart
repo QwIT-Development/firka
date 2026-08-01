@@ -1,9 +1,17 @@
 import 'dart:io';
 
-import 'package:firka/data/models/generic_cache_model.dart';
-import 'package:firka/data/models/homework_cache_model.dart';
-import 'package:firka/data/models/timetable_cache_model.dart';
-import 'package:firka/data/models/token_model.dart';
+import 'package:firka_common/data/models/class_average_cache_model.dart';
+import 'package:firka_common/data/models/class_group_cache_model.dart';
+import 'package:firka_common/data/models/generic_cache_model.dart';
+import 'package:firka_common/data/models/grade_cache_model.dart';
+import 'package:firka_common/data/models/homework_cache_model.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:firka_common/data/models/message_cache_model.dart';
+import 'package:firka_common/data/models/omission_cache_model.dart';
+import 'package:firka_common/data/models/subject_cache_model.dart';
+import 'package:firka_common/data/models/teacher_model.dart';
+import 'package:firka_common/data/models/test_cache_model.dart';
+import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/icon_helper.dart';
 import 'package:firka/core/profile_picture.dart';
@@ -14,7 +22,6 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/state/firka_state.dart';
-import 'package:firka/data/widget.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/services.dart';
@@ -142,11 +149,6 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                   );
                   if (!context.mounted || d == null) return;
                   try {
-                    await WidgetCacheHelper.generateWidgetStateForDate(
-                      d,
-                      appStyle,
-                      widget.data.client,
-                    );
                     if (Platform.isAndroid) {
                       await HomeWidget.updateWidget(
                         qualifiedAndroidName:
@@ -187,7 +189,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
               ElevatedButton(
                 onPressed: () async {
                   logger.finest(
-                    "getStudent(): ${await widget.data.client.getStudent(forceCache: useCache)}",
+                    "getStudent(): ${await widget.data.client!.getStudent()}",
                   );
                 },
                 child: const Text('getStudent()'),
@@ -195,7 +197,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
               ElevatedButton(
                 onPressed: () async {
                   logger.finest(
-                    "getNoticeBoard(): ${await widget.data.client.getNoticeBoard(forceCache: useCache)}",
+                    "getNoticeBoard(): ${await widget.data.client!.getNoticeBoard()}",
                   );
                 },
                 child: const Text('getNoticeBoard()'),
@@ -203,7 +205,15 @@ class _DebugScreen extends FirkaState<DebugScreen> {
               ElevatedButton(
                 onPressed: () async {
                   logger.finest(
-                    "getGrades(): ${await widget.data.client.getGrades(forceCache: useCache)}",
+                    "getInfoBoard(): ${await widget.data.client!.getInfoBoard(from: timeNow())}",
+                  );
+                },
+                child: const Text('getInfoBoard()'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  logger.finest(
+                    "getGrades(): ${await widget.data.client!.getGrades()}",
                   );
                 },
                 child: const Text('getGrades()'),
@@ -216,7 +226,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                   var end = now.add(Duration(days: 7));
 
                   logger.finest(
-                    "getLessons(): ${await widget.data.client.getTimeTable(start, end, forceCache: useCache)}",
+                    "getLessons(): ${await widget.data.client!.getLessons(start, end)}",
                   );
                 },
                 child: const Text('getLessons()'),
@@ -224,7 +234,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
               ElevatedButton(
                 onPressed: () async {
                   logger.finest(
-                    "getHomework(): ${await widget.data.client.getHomework(forceCache: useCache)}",
+                    "getHomework(): ${await widget.data.client!.getHomework(from: timeNow())}",
                   );
                 },
                 child: const Text('getHomework()'),
@@ -232,7 +242,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
               ElevatedButton(
                 onPressed: () async {
                   logger.finest(
-                    "getTests(): ${await widget.data.client.getTests(forceCache: useCache)}",
+                    "getTests(): ${await widget.data.client!.getTests(from: timeNow())}",
                   );
                 },
                 child: const Text('getTests()'),
@@ -240,7 +250,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
               ElevatedButton(
                 onPressed: () async {
                   logger.finest(
-                    "getOmissions(): ${await widget.data.client.getOmissions(forceCache: useCache)}",
+                    "getOmissions(): ${await widget.data.client!.getOmissions()}",
                   );
                 },
                 child: const Text('getOmissions()'),
@@ -262,13 +272,18 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                 onPressed: () async {
                   final isar = widget.data.isar;
                   await isar.writeTxn(() async {
-                    await isar.genericCacheModels.clear();
-                    await isar.timetableCacheModels.clear();
+                    await isar.subjectCacheModels.clear();
+                    await isar.testCacheModels.clear();
+                    await isar.gradeCacheModels.clear();
+                    await isar.omissionCacheModels.clear();
+                    await isar.messageCacheModels.clear();
+                    await isar.classGroupCacheModels.clear();
+                    await isar.classAverageCacheModels.clear();
+                    await isar.lessonCacheModels.clear();
+                    await isar.teacherModels.clear();
                     await isar.homeworkCacheModels.clear();
                   });
-                  widget.data.client.evictMemCache();
                   if (Platform.isIOS) {
-                    await WidgetCacheHelper.clearIOSWidgets();
                   } else {
                     final dataDir = await getApplicationDocumentsDirectory();
                     final widgetFile = File(
@@ -299,8 +314,6 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                   await isar.writeTxn(() async {
                     await isar.tokenModels.clear();
                   });
-
-                  widget.data.tokens = List.empty(growable: true);
 
                   if (!context.mounted) return;
                   context.go('/login');

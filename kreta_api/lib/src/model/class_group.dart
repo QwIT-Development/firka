@@ -11,7 +11,7 @@ class ClassGroup extends NameUid {
   final bool isActive;
   final String type;
 
-  const ClassGroup({
+  ClassGroup({
     required super.uid,
     required super.name,
     required this.headTeacher,
@@ -59,7 +59,7 @@ class SubjectAverage extends UidObj {
   final double? weightedSum;
   final double? weightedCount;
 
-  const SubjectAverage({
+  SubjectAverage({
     required super.uid,
     required this.subject,
     this.average,
@@ -88,7 +88,7 @@ class ClassGroupSubjectAverage extends UidObj {
   final double? studentAverage;
   final double? classGroupAverage;
 
-  const ClassGroupSubjectAverage({
+  ClassGroupSubjectAverage({
     required super.uid,
     required this.subject,
     this.classGroupAverage,

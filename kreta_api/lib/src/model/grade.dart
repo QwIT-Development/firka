@@ -16,10 +16,10 @@ class Grade extends UidObj {
   final String strValue;
   final int? weightPercentage;
   final String? shortStrValue;
-  final UidObj? classGroup;
+  final UidObj classGroup;
   final int sortIndex;
 
-  const Grade({
+  Grade({
     required super.uid,
     required this.recordDate,
     required this.creationDate,
@@ -35,7 +35,7 @@ class Grade extends UidObj {
     required this.strValue,
     this.weightPercentage,
     this.shortStrValue,
-    this.classGroup,
+    required this.classGroup,
     required this.sortIndex,
   });
 
@@ -58,7 +58,7 @@ class Grade extends UidObj {
       strValue: json['SzovegesErtek'],
       weightPercentage: json['SulySzazalekErteke'],
       shortStrValue: json['SzovegesErtekelesRovidNev'],
-      classGroup: json.uid('OsztalyCsoport'),
+      classGroup: json.uid('OsztalyCsoport')!,
       sortIndex: json['SortIndex'],
     );
   }
@@ -80,7 +80,7 @@ class Grade extends UidObj {
       'SzovegesErtek': strValue,
       'SulySzazalekErteke': weightPercentage,
       'SzovegesErtekelesRovidNev': shortStrValue,
-      'OsztalyCsoport': classGroup != null ? {'Uid': classGroup!.uid} : null,
+      'OsztalyCsoport': classGroup,
       'SortIndex': sortIndex,
     };
   }
@@ -103,7 +103,7 @@ class Grade extends UidObj {
         'strValue: "$strValue", '
         'weightPercentage: ${weightPercentage ?? 'null'}, '
         'shortStrValue: "${shortStrValue ?? 'null'}", '
-        'classGroup: ${classGroup ?? 'null'}, '
+        'classGroup: ${classGroup}, '
         'sortIndex: $sortIndex'
         ')';
   }
