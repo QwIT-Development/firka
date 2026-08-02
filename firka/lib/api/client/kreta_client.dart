@@ -83,21 +83,50 @@ class KretaClient {
     return lessons;
   }
 
-  Future<void> renewTimetable() async {
-    DateTime from =
-        /*(await isarInit.lessonCacheModels
-                .filter()
-                .endLessThan(
-                  timeNow().getMidnight().getMonday().subtract(
-                    Duration(days: 7),
-                  ),
-                  include: true,
-                )
-                .sortByEndDesc()
-                .findFirst())
-            ?.end ??*/
-        timeNow().getFirstSchoolDay();
-    DateTime to = timeNow().getMonday().add(Duration(days: 14));
+  Future<void> renewTimetable({bool wholeYear = false}) async {
+    DateTime now = timeNow();
+    DateTime firstDayOfSchool = now.getFirstSchoolDay();
+    DateTime firstDayOfNextYear = firstDayOfSchool.copyWith(
+      year: firstDayOfSchool.year + 1,
+    );
+    DateTime? lastDayOfSchool = await cache
+        .getEvents()
+        .between(
+          firstDayOfNextYear.copyWith(month: 6, day: 1),
+          firstDayOfNextYear.copyWith(month: 8, day: 1),
+        )
+        .startProperty()
+        .max();
+
+    if (lastDayOfSchool == null ||
+        lastDayOfSchool.isBefore(firstDayOfNextYear.copyWith(month: 6))) {
+      wholeYear = true;
+      lastDayOfSchool = firstDayOfNextYear;
+    }
+
+    if (now.isAfter(lastDayOfSchool)) {
+      return;
+    }
+
+    DateTime from = firstDayOfSchool;
+    if (!wholeYear) {
+      from =
+          (await cache
+              .getClassLessons()
+              .between(
+                firstDayOfSchool,
+                timeNow().getMidnight().getMonday().subtract(Duration(days: 7)),
+              )
+              .startProperty()
+              .max()) ??
+          firstDayOfSchool;
+    }
+
+    DateTime to = lastDayOfSchool;
+    if (!wholeYear) {
+      to = to.min(timeNow().getMonday().add(Duration(days: 14)));
+    }
+
     DateTime date = from;
     List<Future> requests = [];
     int i = 0;
