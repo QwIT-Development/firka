@@ -412,7 +412,7 @@ class WatchSyncHelper {
       await isar.tokenModels.clear();
     });
 
-    if (initDone) initData.reauthCubit?.clear();
+    if (initDone) initData.toastCubit?.clear();
 
     await prefs.setBool(_iosFreshInstallHandledKey, true);
     return true;
@@ -495,7 +495,7 @@ class WatchSyncHelper {
         final token = initData.client!.cache.token;
         final expiryDate = token?.expiryDate;
         if (expiryDate != null && expiryDate.isAfter(DateTime.now())) {
-          if (initDone) initData.reauthCubit?.clear();
+          if (initDone) initData.toastCubit?.clear();
           debugPrint(
             '[WatchSync] Cleared reauth flag after iCloud notification (token is valid)',
           );
@@ -742,7 +742,7 @@ class WatchSyncHelper {
 
       if (isForActiveAccount) {
         initData.client!.cache.token = newToken;
-        if (initDone) initData.reauthCubit?.clear();
+        if (initDone) initData.toastCubit?.clear();
       } else {
         debugPrint(
           '[WatchSync] Stored token for inactive account ($watchStudentIdNorm), active is $expectedStudentIdNorm',
@@ -948,7 +948,7 @@ class WatchSyncHelper {
             (expectedStudentIdNorm == null ||
                 newToken.key == expectedStudentIdNorm);
         if (shouldClearReauth) {
-          if (initDone) initData.reauthCubit?.clear();
+          if (initDone) initData.toastCubit?.clear();
         }
 
         debugPrint(
@@ -1023,7 +1023,7 @@ class WatchSyncHelper {
             currentToken.accessToken != null &&
             currentToken.refreshToken != null &&
             currentToken.expiryDate != null &&
-            !(initData.reauthCubit?.state.needsReauth ?? false)) {
+            !initData.client!.needsReauth) {
           debugPrint('[WatchSync] Sending iPhone token to Watch (no response)');
           await _sendTokenToWatchInternal(
             currentToken,
@@ -1040,7 +1040,7 @@ class WatchSyncHelper {
             currentToken.accessToken != null &&
             currentToken.refreshToken != null &&
             currentToken.expiryDate != null &&
-            !(initData.reauthCubit?.state.needsReauth ?? false)) {
+            !initData.client!.needsReauth) {
           debugPrint(
             '[WatchSync] Sending iPhone token to Watch (Watch has no token)',
           );
@@ -1073,7 +1073,7 @@ class WatchSyncHelper {
             currentToken.accessToken != null &&
             currentToken.refreshToken != null &&
             currentToken.expiryDate != null &&
-            !(initData.reauthCubit?.state.needsReauth ?? false)) {
+            !(initData.client!.needsReauth)) {
           await _sendTokenToWatchInternal(
             currentToken,
             allowExpiredAccessToken: true,
@@ -1095,7 +1095,7 @@ class WatchSyncHelper {
               currentToken.expiryDate,
               skew: const Duration(),
             ) &&
-            !(initData.reauthCubit?.state.needsReauth ?? false)) {
+            !initData.client!.needsReauth) {
           await _sendTokenToWatchInternal(
             currentToken,
             allowExpiredAccessToken: true,
@@ -1140,7 +1140,7 @@ class WatchSyncHelper {
 
         if (expectedStudentIdNorm == null ||
             newToken.key == expectedStudentIdNorm) {
-          if (initDone) initData.reauthCubit?.clear();
+          if (initDone) initData.toastCubit?.clear();
         }
 
         debugPrint(

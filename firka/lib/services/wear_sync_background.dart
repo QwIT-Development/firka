@@ -8,7 +8,7 @@ import 'package:isar_community/isar.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 
 import 'package:firka/api/client/kreta_client.dart';
-import 'package:firka/core/bloc/reauth_cubit.dart';
+import 'package:firka/core/bloc/toast_cubit.dart';
 import 'package:firka_common/data/models/app_settings_model.dart';
 import 'package:firka_common/data/models/generic_cache_model.dart';
 import 'package:firka_common/data/models/homework_cache_model.dart';
@@ -33,8 +33,7 @@ void wearSyncBackgroundEntrypoint() {
       final tokens = await isarInit.tokenModels.where().findAll();
       if (tokens.isEmpty) return null;
       final token = tokens.first;
-      final reauthCubit = ReauthCubit();
-      final client = KretaClient(token, reauthCubit);
+      final client = KretaClient(token);
       final payload = await buildWearSyncPayload(client);
       if (payload == null) return null;
       await writeWearSyncCache(cachePath, payload);

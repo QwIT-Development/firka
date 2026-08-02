@@ -24,7 +24,7 @@ import 'package:isar_community/isar.dart';
 import 'package:kreta_api/kreta_api.dart';
 
 import 'package:firka/app/app_state.dart';
-import 'package:firka/core/bloc/reauth_cubit.dart';
+import 'package:firka/core/bloc/toast_cubit.dart';
 import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka_common/data/util.dart';
@@ -44,12 +44,11 @@ const backoffStep = 500;
 class KretaClient {
   Future<TokenModel>? _tokenMutexCompleter;
   final CacheManager cache;
-  final ReauthCubit _reauthCubit;
+  final ToastCubit _toastCubit = initData.toastCubit;
 
-  KretaClient(TokenModel model, this._reauthCubit)
-    : cache = CacheManager(model);
+  KretaClient(TokenModel model) : cache = CacheManager(model);
 
-  bool get needsReauth => _reauthCubit.state.needsReauth;
+  bool get needsReauth => _toastCubit.state.type == ActiveToastType.reauth;
 
   static int lessonStartToMins(LessonCacheModel lesson) {
     return Duration(
@@ -135,30 +134,32 @@ class KretaClient {
   }
 
   Future<void> renewCache({bool reInit = false}) async {
-    if (reInit) {
-      await init();
+    _toastCubit.setActiveToast(.fetching);
+    try {
+      if (reInit) {
+        await init();
+      }
+      await Future.wait([
+        getTests(),
+        getHomework(),
+        renewMessages(),
+        getGrades(),
+      ]);
+      await renewTimetable();
+
+      // manual link
+      await getOmissions();
+
+      cache.resolveTeachers();
+      _toastCubit.setActiveToast(.none);
+    } catch (e) {
+      if (!isTokenExpired(e)) {
+        _toastCubit.setActiveToast(.error, e);
+      }
     }
-    await Future.wait([
-      getTests(),
-      getHomework(),
-      renewMessages(),
-      getGrades(),
-    ]);
-    await renewTimetable();
-
-    // manual link
-    await getOmissions();
-
-    cache.resolveTeachers();
-  }
-
-  void clearReauthFlag() {
-    _reauthCubit.clear();
-    debugPrint('[KretaClient] Reauth flag cleared');
   }
 
   Future<void> _setReauthFlag() async {
-    if (needsReauth) return;
     if (Platform.isIOS) {
       try {
         _watchChannel.invokeMethod('notifyReauthRequired');
@@ -166,7 +167,7 @@ class KretaClient {
         debugPrint('[KretaClient] Watch reauth notification skipped: $e');
       }
     }
-    _reauthCubit.setNeedsReauth(true);
+    _toastCubit.setActiveToast(ActiveToastType.reauth);
     debugPrint('[KretaClient] Reauth flag set');
   }
 
@@ -237,18 +238,14 @@ class KretaClient {
   }
 
   Future<bool> recoverToken() async {
-    logger.info("[Recovery] Starting central token recovery...");
     final now = DateTime.now();
     final localExpiry = cache.token.expiryDate;
     if (localExpiry != null &&
         localExpiry.isAfter(now.add(const Duration(seconds: 60)))) {
-      logger.info(
-        "[Recovery] Existing token is still valid, skipping recovery steps",
-      );
-      clearReauthFlag();
       return true;
     }
 
+    logger.info("[Recovery] Starting central token recovery...");
     logger.info("[Recovery] Step 1: Trying local token refresh...");
     try {
       var tokenModel = await _refreshModelWithCrossDeviceLease(cache.token);
@@ -259,7 +256,6 @@ class KretaClient {
 
       cache.token = tokenModel;
       await _syncTokenToAppleTargets(cache.token);
-      clearReauthFlag();
       logger.info("[Recovery] Step 1 SUCCESS: Local refresh succeeded");
       return true;
     } catch (e) {
@@ -313,7 +309,6 @@ class KretaClient {
           logger.info(
             "[Recovery] Step 2 SUCCESS on attempt ${attempt + 1}: usable iCloud token applied without immediate refresh",
           );
-          clearReauthFlag();
           return true;
         }
 
@@ -329,7 +324,6 @@ class KretaClient {
 
           cache.token = tokenModel;
           await _syncTokenToAppleTargets(cache.token);
-          clearReauthFlag();
           logger.info("[Recovery] Step 2 SUCCESS on attempt ${attempt + 1}");
           return true;
         } catch (e) {

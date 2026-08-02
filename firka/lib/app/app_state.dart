@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
 import 'package:firka/core/bloc/profile_picture_cubit.dart';
-import 'package:firka/core/bloc/reauth_cubit.dart';
+import 'package:firka/core/bloc/toast_cubit.dart';
 import 'package:firka/core/bloc/settings_cubit.dart';
 import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/core/settings.dart';
@@ -59,7 +59,7 @@ class AppInitialization {
   final ThemeCubit themeCubit = ThemeCubit();
   final SettingsCubit settingsCubit = SettingsCubit();
   final ProfilePictureCubit profilePictureCubit = ProfilePictureCubit();
-  final ReauthCubit reauthCubit = ReauthCubit();
+  final ToastCubit toastCubit = ToastCubit();
   final HomeRefreshCubit homeRefreshCubit = HomeRefreshCubit();
   AppLocalizations l10n;
   String userAgent;

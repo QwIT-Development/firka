@@ -1014,7 +1014,6 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                         '[Settings] Failed to clear iCloud token: $e',
                       );
                     }
-                    initData.client!.clearReauthFlag();
                   }
                 } else {
                   if (Platform.isIOS) {

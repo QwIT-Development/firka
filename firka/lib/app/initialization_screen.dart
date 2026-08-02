@@ -13,7 +13,7 @@ import 'package:firka/app/initialization.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/core/bloc/profile_picture_cubit.dart';
-import 'package:firka/core/bloc/reauth_cubit.dart';
+import 'package:firka/core/bloc/toast_cubit.dart';
 import 'package:firka/core/bloc/settings_cubit.dart';
 import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/core/firka_bundle.dart';
@@ -181,7 +181,7 @@ class _InitializationScreenState extends State<InitializationScreen> {
           final themeCubit = initData.themeCubit!;
           final settingsCubit = initData.settingsCubit!;
           final profilePictureCubit = initData.profilePictureCubit!;
-          final reauthCubit = initData.reauthCubit!;
+          final reauthCubit = initData.toastCubit!;
           final homeRefreshCubit = initData.homeRefreshCubit!;
           return MultiBlocProvider(
             providers: [
@@ -190,7 +190,7 @@ class _InitializationScreenState extends State<InitializationScreen> {
               BlocProvider<ProfilePictureCubit>.value(
                 value: profilePictureCubit,
               ),
-              BlocProvider<ReauthCubit>.value(value: reauthCubit),
+              BlocProvider<ToastCubit>.value(value: reauthCubit),
               BlocProvider<HomeRefreshCubit>.value(value: homeRefreshCubit),
             ],
             child: BlocBuilder<ThemeCubit, ThemeState>(
@@ -206,8 +206,6 @@ class _InitializationScreenState extends State<InitializationScreen> {
                       : Brightness.dark,
                   systemStatusBarContrastEnforced: false,
                 );
-
-                logger.info("asked");
 
                 final themeMode = isLight ? ThemeMode.light : ThemeMode.dark;
 

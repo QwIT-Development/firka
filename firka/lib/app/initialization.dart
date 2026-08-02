@@ -162,13 +162,13 @@ Future<void> _initData(AppInitialization init) async {
     return;
   }
   logger.fine("Initializing kréta client as: ${token.username}");
-  init.client = KretaClient(token, init.reauthCubit!);
+  init.client = KretaClient(token);
   await init.client!.init();
 
   if (Platform.isIOS) {
     final expiryDate = token.expiryDate;
     if (expiryDate != null && expiryDate.isAfter(DateTime.now())) {
-      init.reauthCubit?.clear();
+      init.toastCubit?.clear();
     }
 
     unawaited(() async {

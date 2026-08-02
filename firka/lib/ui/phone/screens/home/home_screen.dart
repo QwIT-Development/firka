@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:firka/core/bloc/toast_cubit.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/firka_bundle.dart';
@@ -8,7 +9,7 @@ import 'package:firka/core/settings.dart';
 import 'package:firka/services/watch_sync_helper.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
-import 'package:firka/ui/phone/pages/extras/reauth_toast.dart';
+import 'package:firka/ui/phone/pages/extras/firka_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,15 +19,12 @@ import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/bloc/profile_picture_cubit.dart';
-import 'package:firka/core/bloc/reauth_cubit.dart';
 import 'package:firka/core/bloc/settings_cubit.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/core/image_preloader.dart';
 import 'package:firka/ui/shared/delayed_spinner.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import '../../pages/extras/main_error.dart';
-
-enum ActiveToastType { fetching, error, reauth, none }
 
 bool _fetching = false;
 bool _prefetched = false;
@@ -42,14 +40,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends FirkaState<HomeScreen>
     with WidgetsBindingObserver {
-  Widget? toast;
   bool _disposed = false;
   bool _preloadDone = false;
   bool _didRunSecondaryICloudRecovery = false;
   bool _didRunLiveActivityLogin = false;
   bool _hasCompletedFirstPrefetch = false;
-
-  ActiveToastType activeToast = ActiveToastType.none;
 
   void _setupNotificationListener() {
     final notificationChannel = MethodChannel('firka.app/notifications');
@@ -105,44 +100,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
     }
   }
 
-  Future<void> _runSecondaryICloudRecoveryIfNeeded() async {
-    if (!Platform.isIOS || _didRunSecondaryICloudRecovery) return;
-    _didRunSecondaryICloudRecovery = true;
-
-    final activeToken = initData.client!.cache.token;
-
-    final now = DateTime.now();
-    final shouldRunRecovery =
-        initData.client!.needsReauth ||
-        activeToken == null ||
-        activeToken.expiryDate == null ||
-        activeToken.expiryDate!.isBefore(now.add(const Duration(seconds: 60)));
-
-    if (!shouldRunRecovery) return;
-
-    logger.info(
-      '[Home] Secondary iCloud recovery scheduled (5s delay, startup safety pass)',
-    );
-    await Future.delayed(const Duration(seconds: 5));
-    if (_disposed) return;
-
-    try {
-      final recovered = await WatchSyncHelper.checkAndRecoverFromiCloud(
-        isar: initData.isar,
-        client: initData.client,
-      );
-      if (!recovered) {
-        logger.info('[Home] Secondary iCloud recovery found no fresher token');
-        return;
-      }
-
-      initData.reauthCubit?.clear();
-      logger.info('[Home] Secondary iCloud recovery applied a fresher token');
-    } catch (e) {
-      logger.warning('[Home] Secondary iCloud recovery failed: $e');
-    }
-  }
-
   void prefetch() async {
     if (_prefetched || _fetching) return;
 
@@ -158,24 +115,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
       _fetching = true;
     });
     try {
-      _prefetched = true;
-
-      await _runSecondaryICloudRecoveryIfNeeded();
-
-      try {
-        await initData.client!.refreshTokenProactively().timeout(
-          const Duration(seconds: 60),
-          onTimeout: () {
-            logger.warning('[Home] Token refresh/recovery timed out after 60s');
-            return false;
-          },
-        );
-      } catch (e) {
-        logger.warning('[Home] Token refresh/recovery failed: $e');
-      }
-
       await initData.client!.renewCache(reInit: true);
-      initData.homeRefreshCubit.requestRefresh();
 
       if (Platform.isAndroid) {
         await HomeWidget.updateWidget(
@@ -198,105 +138,15 @@ class _HomeScreenState extends FirkaState<HomeScreen>
           });
         }
       }
-
-      if (!_disposed &&
-          (LiveActivityService.isTokenExpired ||
-              initData.client!.needsReauth)) {
-        activeToast = ActiveToastType.reauth;
-        setState(() {
-          toast = buildReauthToast(context, initData, () {
-            if (!_disposed) {
-              setState(() {
-                activeToast = ActiveToastType.none;
-                toast = null;
-              });
-            }
-          });
-        });
-        return;
-      }
     } catch (e) {
-      if (e is TokenExpiredException || e is InvalidGrantException) {
-        activeToast = ActiveToastType.reauth;
-        if (_disposed) return;
-        setState(() {
-          toast = buildReauthToast(context, initData, () {
-            if (!_disposed) {
-              setState(() {
-                activeToast = ActiveToastType.none;
-                toast = null;
-              });
-            }
-          });
-        });
-        return;
-      }
-
-      activeToast = ActiveToastType.error;
-      var dismissDelay = 120;
-      if (kDebugMode) dismissDelay = 2;
-      Timer(Duration(seconds: dismissDelay), () {
-        if (_disposed) return;
-        setState(() {
-          activeToast = ActiveToastType.none;
-          toast = null;
-        });
-      });
-
       if (_disposed) return;
-      setState(() {
-        toast = Positioned(
-          top: MediaQuery.of(context).size.height / 1.6,
-          left: 0.0,
-          right: 0.0,
-          bottom: 0,
-          child: Center(
-            child: Card(
-              color: appStyle.colors.errorCard,
-              shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(200)),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      initData.l10n.api_error,
-                      style: appStyle.fonts.B_16SB.copyWith(
-                        color: appStyle.colors.errorText,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    GestureDetector(
-                      child: FirkaIconWidget(
-                        FirkaIconType.majesticons,
-                        Majesticon.questionCircleSolid,
-                        color: appStyle.colors.errorAccent,
-                        size: 24,
-                      ),
-                      onTap: () {
-                        var stackTrace = "";
-                        if (e is Error && e.stackTrace != null) {
-                          stackTrace = e.stackTrace.toString();
-                        }
-                        showErrorBottomSheet(context, "$e\n$stackTrace");
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      });
+      (context);
     } finally {
       _hasCompletedFirstPrefetch = true;
       if (!_disposed) {
         setState(() {
+          _prefetched = true;
           _fetching = false;
-          if (activeToast == ActiveToastType.fetching) toast = null;
         });
       }
     }
@@ -363,45 +213,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
       );
     }
 
-    if (_fetching) {
-      if (_disposed) return const SizedBox.shrink();
-      activeToast = ActiveToastType.fetching;
-      toast = Positioned(
-        top: MediaQuery.of(context).size.height / 1.6,
-        left: 0.0,
-        right: 0.0,
-        bottom: 0,
-        child: Center(
-          child: Card(
-            color: appStyle.colors.card,
-            shadowColor: Colors.transparent,
-            child: Padding(
-              padding: EdgeInsets.all(8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      color: appStyle.colors.accent,
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  Text(
-                    initData.l10n.refreshing,
-                    style: appStyle.fonts.B_16SB.copyWith(
-                      color: appStyle.colors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     return BlocListener<SettingsCubit, SettingsState>(
       listener: (context, state) {
@@ -411,14 +222,11 @@ class _HomeScreenState extends FirkaState<HomeScreen>
         listener: (context, state) {
           if (mounted) setState(() {});
         },
-        child: BlocListener<ReauthCubit, ReauthState>(
+        child: BlocListener<ToastCubit, ToastState>(
           listener: (context, state) {
-            if (!mounted || _disposed) return;
-            if (!state.needsReauth && activeToast == ActiveToastType.reauth) {
-              setState(() {
-                activeToast = ActiveToastType.none;
-                toast = null;
-              });
+            if (mounted) setState(() {});
+            if (state.type == .none) {
+              initData.homeRefreshCubit.requestRefresh();
             }
           },
           child: Scaffold(
@@ -427,7 +235,10 @@ class _HomeScreenState extends FirkaState<HomeScreen>
               child: SizedBox(
                 height: MediaQuery.of(context).size.height,
                 child: Stack(
-                  children: [widget.child, toast ?? SizedBox.shrink()],
+                  children: [
+                    widget.child,
+                    ?(context.watch<ToastCubit>().state.buildWidget(context)),
+                  ],
                 ),
               ),
             ),
@@ -496,7 +307,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
     _disposed = true;
     _fetching = false;
     _prefetched = false;
-    activeToast = ActiveToastType.none;
     super.dispose();
   }
 }
