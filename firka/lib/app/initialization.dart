@@ -164,6 +164,7 @@ Future<void> _initData(AppInitialization init) async {
   logger.fine("Initializing kréta client as: ${token.username}");
   init.client = KretaClient(token);
   await init.client!.init();
+  init.client!.renewCache(reInit: false);
 
   if (Platform.isIOS) {
     final expiryDate = token.expiryDate;
