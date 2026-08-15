@@ -47,11 +47,14 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                       color: appStyle.colors.accent,
                     ),
                     SizedBox(width: 4),
-                    Text(
-                      data.l10n.debug_screen,
-                      textAlign: TextAlign.right,
-                      style: appStyle.fonts.B_16R.apply(
-                        color: appStyle.colors.textPrimary,
+                    Flexible(
+                      child: Text(
+                        data.l10n.debug_screen,
+                        textAlign: TextAlign.right,
+                        overflow: TextOverflow.ellipsis,
+                        style: appStyle.fonts.B_16R.apply(
+                          color: appStyle.colors.textPrimary,
+                        ),
                       ),
                     ),
                   ],
@@ -157,15 +160,19 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                                   color: appStyle.colors.accent,
                                                 ),
                                                 SizedBox(width: 4),
-                                                Text(
-                                                  data.l10n.s_your_account,
-                                                  textAlign: TextAlign.right,
-                                                  style: appStyle.fonts.B_16R
-                                                      .apply(
-                                                        color: appStyle
-                                                            .colors
-                                                            .textPrimary,
-                                                      ),
+                                                Flexible(
+                                                  child: Text(
+                                                    data.l10n.s_your_account,
+                                                    textAlign: TextAlign.right,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: appStyle.fonts.B_16R
+                                                        .apply(
+                                                          color: appStyle
+                                                              .colors
+                                                              .textPrimary,
+                                                        ),
+                                                  ),
                                                 ),
                                               ],
                                             ),
@@ -210,15 +217,19 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                                   color: appStyle.colors.accent,
                                                 ),
                                                 SizedBox(width: 4),
-                                                Text(
-                                                  data.l10n.settings_screen,
-                                                  textAlign: TextAlign.right,
-                                                  style: appStyle.fonts.B_16R
-                                                      .apply(
-                                                        color: appStyle
-                                                            .colors
-                                                            .textPrimary,
-                                                      ),
+                                                Flexible(
+                                                  child: Text(
+                                                    data.l10n.settings_screen,
+                                                    textAlign: TextAlign.right,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: appStyle.fonts.B_16R
+                                                        .apply(
+                                                          color: appStyle
+                                                              .colors
+                                                              .textPrimary,
+                                                        ),
+                                                  ),
                                                 ),
                                               ],
                                             ),
