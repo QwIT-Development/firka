@@ -43,6 +43,9 @@ class FirkaToastWidget extends StatefulWidget {
   factory FirkaToastWidget.error(BuildContext context, Object e) {
     return FirkaToastWidget(
       backgroundColor: appStyle.colors.errorCard,
+      onDismiss: () {
+        initData.toastCubit.clear();
+      },
       children: [
         Text(
           initData.l10n.api_error,
