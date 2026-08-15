@@ -1,21 +1,22 @@
-import 'dart:collection';
 import 'dart:io';
 
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:firka_common/data/database.dart';
-import 'package:firka_common/data/models/app_settings_model.dart';
 import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/core/image_preloader.dart';
+import 'package:firka/core/settings.dart';
+import 'package:firka/core/settings/setting.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
+import 'package:firka/core/settings/settings_ui.dart';
 import 'package:firka/ui/components/firka_button.dart';
 import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
-import 'package:isar_community/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
@@ -23,14 +24,15 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/app/initialization.dart';
 import 'package:firka/core/state/firka_state.dart';
-import 'package:firka/core/settings.dart';
 import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/services/watch_sync_helper.dart';
+import 'package:flutter/foundation.dart';
+import 'package:isar_community/isar.dart';
 import '../../widgets/login_webview.dart';
 
 class SettingsScreen extends StatefulWidget {
   final AppInitialization data;
-  final LinkedHashMap<String, SettingsItem> items;
+  final List<SettingsUiNode> items;
 
   const SettingsScreen(this.data, this.items, {super.key});
 
@@ -49,34 +51,92 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
   void initState() {
     super.initState();
 
-    activeIcon = widget.data.settings
-        .group("settings")
-        .subGroup("customization")
-        .subGroup("icon_picker")
-        .iconString("icon_picker");
+    activeIcon = Settings.appIcon.value;
     tokens = isarInit.tokenModels.where().sortByUpdatedAtMsDesc().findAllSync();
   }
 
+  String _roundedDoubleString(double value, DoubleSetting setting) {
+    return setting.precision == 0
+        ? value.toString().split(".")[0]
+        : value.toStringAsPrecision(setting.precision) == "0.0"
+        ? "0"
+        : value.toStringAsPrecision(setting.precision);
+  }
+
+  Widget _boolRow(SettingsUiBoolean item, SettingsRepository settings) {
+    final value = settings.get(item.setting);
+
+    return FirkaCard(
+      height: 52 + 12,
+      left: [
+        item.iconType != null
+            ? Row(
+                children: [
+                  FirkaIconWidget(
+                    item.iconType!,
+                    item.iconData!,
+                    color: appStyle.colors.accent,
+                    package:
+                        item.iconType == FirkaIconType.icons ||
+                            item.iconType == FirkaIconType.majesticonsLocal
+                        ? 'firka'
+                        : null,
+                  ),
+                  SizedBox(width: 4),
+                ],
+              )
+            : SizedBox(),
+        Text(
+          item.title,
+          style: appStyle.fonts.B_16SB.apply(
+            color: appStyle.colors.textPrimary,
+          ),
+        ),
+      ],
+      right: [
+        Switch(
+          value: value,
+          thumbColor: WidgetStateProperty.fromMap({
+            WidgetState.selected: appStyle.colors.buttonSecondaryFill,
+            WidgetState.any: appStyle.colors.accent,
+          }),
+          trackColor: WidgetStateProperty.fromMap({
+            WidgetState.selected: appStyle.colors.accent,
+            WidgetState.any: appStyle.colors.a10p,
+          }),
+          trackOutlineColor: WidgetStateProperty.fromMap({
+            WidgetState.selected: appStyle.colors.accent,
+            WidgetState.any: appStyle.colors.a15p,
+          }),
+          onChanged: (v) async {
+            await settings.set(item.setting, v);
+            setState(() {});
+          },
+        ),
+      ],
+    );
+  }
+
   List<Widget> createWidgetTree(
-    Iterable<SettingsItem> items,
-    SettingsStore settings, {
+    Iterable<SettingsUiNode> items,
+    SettingsRepository settings, {
     bool forceRender = false,
   }) {
     var widgets = List<Widget>.empty(growable: true);
 
     for (var item in items) {
-      if (!forceRender && !item.visibilityProvider()) continue;
-      if (item is SettingsGroup) {
-        widgets.addAll(createWidgetTree(item.children.values, settings));
+      if (!forceRender && !item.visible()) continue;
+      if (item is SettingsUiGroup) {
+        widgets.addAll(createWidgetTree(item.children, settings));
 
         continue;
       }
-      if (item is SettingsPadding) {
+      if (item is SettingsUiPadding) {
         widgets.add(SizedBox(width: item.padding, height: item.padding));
 
         continue;
       }
-      if (item is SettingsBackHeader) {
+      if (item is SettingsUiBackHeader) {
         widgets.add(
           Column(
             children: [
@@ -113,7 +173,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
         continue;
       }
-      if (item is SettingsHeader) {
+      if (item is SettingsUiHeader) {
         widgets.add(
           Text(
             item.title,
@@ -125,7 +185,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
         continue;
       }
-      if (item is SettingsMediumHeader) {
+      if (item is SettingsUiMediumHeader) {
         widgets.add(
           Text(
             item.title,
@@ -137,7 +197,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
         continue;
       }
-      if (item is SettingsHeaderSmall) {
+      if (item is SettingsUiHeaderSmall) {
         widgets.add(
           Text(
             item.title,
@@ -149,7 +209,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
         continue;
       }
-      if (item is SettingsSubGroup) {
+      if (item is SettingsUiSubGroup) {
         List<Widget> cardWidgets = [];
 
         if (item.iconType != null && item.iconData != null) {
@@ -215,8 +275,9 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         continue;
       }
 
-      if (item is SettingsDouble) {
-        var v = item.toRoundedString();
+      if (item is SettingsUiDouble) {
+        final value = settings.get(item.setting);
+        var v = _roundedDoubleString(value, item.setting);
 
         widgets.add(
           GestureDetector(
@@ -258,82 +319,24 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
               ],
             ),
             onTap: () async {
-              showSetDoubleSheet(context, item, widget.data, setState);
+              showSetDoubleSheet(context, item, value, widget.data, setState);
             },
           ),
         );
 
         continue;
       }
-      if (item is SettingsBoolean) {
-        widgets.add(
-          FirkaCard(
-            height: 52 + 12,
-            left: [
-              item.iconType != null
-                  ? Row(
-                      children: [
-                        FirkaIconWidget(
-                          item.iconType!,
-                          item.iconData!,
-                          color: appStyle.colors.accent,
-                          package:
-                              item.iconType == FirkaIconType.icons ||
-                                  item.iconType ==
-                                      FirkaIconType.majesticonsLocal
-                              ? 'firka'
-                              : null,
-                        ),
-                        SizedBox(width: 4),
-                      ],
-                    )
-                  : SizedBox(),
-              Text(
-                item.title,
-                style: appStyle.fonts.B_16SB.apply(
-                  color: appStyle.colors.textPrimary,
-                ),
-              ),
-            ],
-            right: [
-              Switch(
-                value: item.value,
-                // activeColor: appStyle.colors.accent,
-                thumbColor: WidgetStateProperty.fromMap({
-                  WidgetState.selected: appStyle.colors.buttonSecondaryFill,
-                  WidgetState.any: appStyle.colors.accent,
-                }),
-                trackColor: WidgetStateProperty.fromMap({
-                  WidgetState.selected: appStyle.colors.accent,
-                  WidgetState.any: appStyle.colors.a10p,
-                }),
-                trackOutlineColor: WidgetStateProperty.fromMap({
-                  WidgetState.selected: appStyle.colors.accent,
-                  WidgetState.any: appStyle.colors.a15p,
-                }),
-                onChanged: (v) async {
-                  setState(() {
-                    item.value = v;
-                  });
-
-                  await widget.data.isar.writeTxn(() async {
-                    await item.save(widget.data.isar.appSettingsModels);
-                  });
-
-                  await item.postUpdate();
-                },
-              ),
-            ],
-          ),
-        );
+      if (item is SettingsUiBoolean) {
+        widgets.add(_boolRow(item, settings));
 
         continue;
       }
-      if (item is SettingsItemsRadio) {
-        for (var i = 0; i < item.values.length; i++) {
-          var k = item.values[i];
+      if (item is SettingsUiEnum) {
+        final activeIndex = settings.get(item.setting).index;
+        for (var i = 0; i < item.optionLabels.length; i++) {
+          var k = item.optionLabels[i];
 
-          if (item.values[item.activeIndex] == k) {
+          if (i == activeIndex) {
             widgets.add(
               FirkaCard(
                 height: 52 + 12,
@@ -357,13 +360,10 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                         return appStyle.colors.secondary;
                       }),
                       onChanged: (_) async {
-                        item.activeIndex = i;
-
-                        await widget.data.isar.writeTxn(() async {
-                          await item.save(widget.data.isar.appSettingsModels);
-                        });
-
-                        await item.postUpdate();
+                        await settings.set(
+                          item.setting,
+                          item.setting.values[i],
+                        );
                         setState(() {});
                         logger.finest('Settings saved');
                       },
@@ -389,14 +389,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                   right: [SizedBox(height: 16 + 8)],
                 ),
                 onTap: () async {
-                  item.activeIndex = i;
-
-                  await widget.data.isar.writeTxn(() async {
-                    await item.save(widget.data.isar.appSettingsModels);
-                  });
-
-                  await item.postUpdate();
-
+                  await settings.set(item.setting, item.setting.values[i]);
                   setState(() {});
                 },
               ),
@@ -406,7 +399,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
         continue;
       }
-      if (item is ShowLicensePage) {
+      if (item is SettingsUiLicensePage) {
         widgets.add(
           FutureBuilder<List<LicenseEntry>>(
             future: LicenseRegistry.licenses.toList(),
@@ -515,7 +508,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         continue;
       }
 
-      if (item is SettingsAppIconPreview) {
+      if (item is SettingsUiAppIconPreview) {
         widgets.add(
           Container(
             decoration: BoxDecoration(
@@ -549,7 +542,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                         ),
                       ),
                       Text(
-                        settings.appIcons[activeIcon]!,
+                        appIconLabels(widget.data.l10n)[activeIcon]!,
                         style: appStyle.fonts.H_12px.apply(
                           color: appStyle.colors.card,
                         ),
@@ -564,15 +557,11 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
         continue;
       }
-      if (item is SettingsAppIconPicker) {
+      if (item is SettingsUiAppIconPicker) {
         List<Widget> pWidgets = [];
 
         for (var group in item.iconGroups.keys) {
-          if (widget.data.settings
-              .group("settings")
-              .subGroup("customization")
-              .subGroup("icon_picker")
-              .boolean("child_protection")) {
+          if (Settings.childProtection.value) {
             if (group == widget.data.l10n.s_ci_icon_g7) {
               continue;
             }
@@ -636,7 +625,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                     },
                   ),
                   Text(
-                    settings.appIcons[icon]!,
+                    appIconLabels(widget.data.l10n)[icon]!,
                     style: appStyle.fonts.B_12R.apply(
                       color: active
                           ? appStyle.colors.textPrimary
@@ -671,22 +660,8 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
           if (group == widget.data.l10n.s_ci_icon_g7 ||
               group == widget.data.l10n.s_ci_icon_g8) {
-            var settingsWidgets = createWidgetTree(
-              [
-                widget.data.settings
-                        .group("settings")
-                        .subGroup("customization")
-                        .subGroup("icon_picker")["child_protection"]
-                    as SettingsBoolean,
-              ],
-              settings,
-              forceRender: true,
-            );
-
             pWidgets.add(SizedBox(height: 12));
-            for (var w in settingsWidgets) {
-              pWidgets.add(w);
-            }
+            pWidgets.add(_boolRow(item.childProtection, settings));
           }
 
           pWidgets.add(SizedBox(height: 12));
@@ -742,24 +717,14 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                   if (settingAppIcon) return;
                   settingAppIcon = true;
 
-                  widget.data.settings
-                      .group("settings")
-                      .subGroup("customization")
-                      .subGroup("icon_picker")
-                      .setIconString("icon_picker", activeIcon);
-
-                  await widget.data.isar.writeTxn(() async {
-                    await widget.data.settings.save(
-                      widget.data.isar.appSettingsModels,
-                    );
-                  });
+                  await Settings.appIcon.set(activeIcon);
 
                   await Future.delayed(Duration(seconds: 1));
 
                   logger.info(
-                    settings.appIcons.keys
-                        .where((e) => e != "original")
-                        .join(","),
+                    appIconLabels(
+                      widget.data.l10n,
+                    ).keys.where((e) => e != "original").join(","),
                   );
 
                   logger.info(activeIcon);
@@ -768,9 +733,9 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                   logger.info(
                     await channel.invokeMethod('set_icon', {
                       "icon": activeIcon == "original" ? null : activeIcon,
-                      "icons": settings.appIcons.keys
-                          .where((e) => e != "original")
-                          .join(","),
+                      "icons": appIconLabels(
+                        widget.data.l10n,
+                      ).keys.where((e) => e != "original").join(","),
                     }),
                   );
                 },
@@ -781,7 +746,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
         continue;
       }
-      if (item is SettingsKretenAccountPicker) {
+      if (item is SettingsUiKretaAccountPicker) {
         for (TokenModel token in tokens) {
           final jwt = JWT.decode(token.idToken!);
           final payload = jwt.payload as Map<String, dynamic>;
@@ -812,7 +777,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                     ),
                   ],
                   right: [
-                    token.key != item.accountKey
+                    token.key != widget.data.settings.selectedAccountKey
                         ? SizedBox()
                         : Checkbox(
                             value: true,
@@ -822,17 +787,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                               return appStyle.colors.secondary;
                             }),
                             onChanged: (_) async {
-                              setState(() {
-                                // item.activeIndex = i;
-                              });
-
-                              await widget.data.isar.writeTxn(() async {
-                                await item.save(
-                                  widget.data.isar.appSettingsModels,
-                                );
-                              });
-
-                              await item.postUpdate();
+                              setState(() {});
                               logger.finest('Settings saved');
                             },
                           ),
@@ -840,7 +795,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                 ),
               ),
               onTap: () async {
-                if (token.key == item.accountKey) {
+                if (token.key == widget.data.settings.selectedAccountKey) {
                   return;
                 }
 
@@ -867,13 +822,8 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                   }
                 }
 
-                await widget.data.isar.writeTxn(() async {
-                  item.accountKey = token.key;
-
-                  await item.save(widget.data.isar.appSettingsModels);
-                });
-
-                await item.postUpdate();
+                await widget.data.settings.setSelectedAccountKey(token.key);
+                await initializeApp();
 
                 if (Platform.isIOS) {
                   var watchReachable = false;
@@ -995,10 +945,8 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
                 await widget.data.isar.writeTxn(() async {
                   await widget.data.isar.tokenModels.delete(active);
-
-                  item.accountKey = 0;
-                  await item.save(widget.data.isar.appSettingsModels);
                 });
+                await widget.data.settings.setSelectedAccountKey(0);
 
                 final accounts = await widget.data.isar.tokenModels
                     .where()
@@ -1078,7 +1026,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         );
         continue;
       }
-      if (item is SettingsButton) {
+      if (item is SettingsUiButton) {
         widgets.add(
           GestureDetector(
             child: FirkaCard(
@@ -1117,7 +1065,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
         continue;
       }
-      if (item is SettingsLogs) {
+      if (item is SettingsUiLogs) {
         final logFileRegex = RegExp(r'^(\d{4})_(\d{2})_(\d{2})\.log$');
 
         for (final entity in widget.data.appDir.listSync()) {
@@ -1207,7 +1155,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var body = createWidgetTree(widget.items.values, widget.data.settings);
+    var body = createWidgetTree(widget.items, widget.data.settings);
 
     return DefaultAssetBundle(
       bundle: FirkaBundle(),
@@ -1238,10 +1186,14 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
 void showSetDoubleSheet(
   BuildContext context,
-  SettingsDouble setting,
+  SettingsUiDouble item,
+  double initialValue,
   AppInitialization data,
   void Function(VoidCallback fn) setStateOuter,
 ) {
+  final setting = item.setting;
+  double currentValue = initialValue;
+
   showModalBottomSheet(
     context: context,
     elevation: 100,
@@ -1281,7 +1233,7 @@ void showSetDoubleSheet(
                     children: [
                       Center(
                         child: Text(
-                          setting.title,
+                          item.title,
                           style: appStyle.fonts.B_16R.apply(
                             color: appStyle.colors.textPrimary,
                           ),
@@ -1298,11 +1250,11 @@ void showSetDoubleSheet(
                             Expanded(
                               // TODO: Make a firka slider
                               child: Slider(
-                                min: setting.minValue,
-                                value: setting.value,
-                                max: setting.maxValue,
+                                min: setting.min,
+                                value: currentValue,
+                                max: setting.max,
                                 divisions: setting.step != null
-                                    ? ((setting.maxValue - setting.minValue) /
+                                    ? ((setting.max - setting.min) /
                                               setting.step!)
                                           .round()
                                     : null,
@@ -1310,30 +1262,43 @@ void showSetDoubleSheet(
                                 activeColor: appStyle.colors.secondary,
                                 inactiveColor: appStyle.colors.a15p,
                                 onChanged: (v) async {
+                                  var next = setting.step != null
+                                      ? (v / setting.step!).round() *
+                                            setting.step!
+                                      : v;
+                                  next = double.parse(
+                                    setting.precision == 0
+                                        ? next.toString().split(".")[0]
+                                        : next.toStringAsPrecision(
+                                                setting.precision,
+                                              ) ==
+                                              "0.0"
+                                        ? "0"
+                                        : next.toStringAsPrecision(
+                                            setting.precision,
+                                          ),
+                                  );
+
                                   setState(() {
-                                    if (setting.step != null) {
-                                      setting.value =
-                                          (v / setting.step!).round() *
-                                          setting.step!;
-                                    } else {
-                                      setting.value = v;
-                                    }
-                                    setting.value = setting.toRoundedDouble();
+                                    currentValue = next;
                                   });
 
-                                  await data.isar.writeTxn(() async {
-                                    await setting.save(
-                                      data.isar.appSettingsModels,
-                                    );
-
-                                    setStateOuter(() {});
-                                  });
-                                  await setting.postUpdate();
+                                  await data.settings.set(setting, next);
+                                  setStateOuter(() {});
                                 },
                               ),
                             ),
                             Text(
-                              setting.toRoundedString(),
+                              setting.precision == 0
+                                  ? currentValue.toString().split(".")[0]
+                                  : currentValue.toStringAsPrecision(
+                                          setting.precision,
+                                        ) ==
+                                        "0.0"
+                                  ? "0"
+                                  : currentValue.toStringAsPrecision(
+                                      setting.precision,
+                                    ),
                               style: appStyle.fonts.B_16R.apply(
                                 color: appStyle.colors.textPrimary,
                               ),
@@ -1357,7 +1322,7 @@ void showSettingsSheet(
   BuildContext context,
   double height,
   AppInitialization data,
-  LinkedHashMap<String, SettingsItem> items,
+  List<SettingsUiNode> items,
 ) {
   showModalBottomSheet(
     context: context,

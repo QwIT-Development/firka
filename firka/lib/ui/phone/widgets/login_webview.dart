@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:firka_common/core/consts.dart';
-import 'package:firka_common/data/models/app_settings_model.dart';
 import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/app/initialization.dart';
@@ -10,7 +9,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:isar_community/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -18,7 +16,6 @@ import 'package:firka/services/watch_sync_helper.dart';
 import 'package:firka/api/token_grant.dart';
 import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/core/state/firka_state.dart';
-import 'package:firka/core/settings.dart';
 import 'package:firka/ui/theme/style.dart';
 
 class LoginWebviewWidget extends StatefulWidget {
@@ -113,22 +110,14 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
 
                 var tokenModel = TokenModel.fromResp(resp);
 
-                final accountPicker =
-                    (widget.data.settings.group(
-                          "profile_settings",
-                        )["e_kreta_account_picker"]
-                        as SettingsKretenAccountPicker);
-
                 await isar.writeTxn(() async {
                   await isar.tokenModels.put(tokenModel);
                 });
 
-                await isar.writeTxn(() async {
-                  accountPicker.accountKey = tokenModel.key;
-                  await accountPicker.save(widget.data.isar.appSettingsModels);
-                });
-
-                await accountPicker.postUpdate();
+                await widget.data.settings.setSelectedAccountKey(
+                  tokenModel.key,
+                );
+                await initializeApp();
 
                 if (Platform.isIOS) {
                   final watchInstalled =

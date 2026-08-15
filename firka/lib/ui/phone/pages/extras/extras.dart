@@ -5,6 +5,8 @@ import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/core/settings.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka_common/data/models/app_settings_model.dart';
 import 'package:firka_common/ui/components/firka_shadow.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
@@ -122,9 +124,9 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                     context.pop();
                                     context.push(
                                       '/settings',
-                                      extra: data.settings.items.group(
-                                        "profile_settings",
-                                      ),
+                                      extra: buildProfileSettingsTree(
+                                        data.l10n,
+                                      ).children,
                                     );
                                   },
                                   child: SizedBox(
@@ -252,24 +254,9 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                               if (debugCounter == 10) {
                                 final navigator = Navigator.of(context);
                                 final router = GoRouter.of(context);
-                                data.settings
-                                    .group("settings")
-                                    .setBoolean(
-                                      "developer_enabled",
-                                      !data.settings
-                                          .group("settings")
-                                          .boolean("developer_enabled"),
-                                    );
-
-                                await data.isar.writeTxn(() async {
-                                  await data.settings
-                                      .group("settings")["developer_enabled"]!
-                                      .save(data.isar.appSettingsModels);
-                                });
-
-                                await data.settings
-                                    .group("settings")["developer_enabled"]!
-                                    .postUpdate();
+                                await Settings.developerOptsEnabled.set(
+                                  !Settings.developerOptsEnabled.value,
+                                );
 
                                 navigator.pop();
                                 router.go('/home');

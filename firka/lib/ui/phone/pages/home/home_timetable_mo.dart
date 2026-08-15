@@ -313,9 +313,7 @@ class _HomeTimetableMonthlyScreen
                                 context,
                                 MediaQuery.of(context).size.height * 0.4,
                                 widget.data,
-                                widget.data.settings
-                                    .group("settings")
-                                    .subGroup("timetable_toast"),
+                                timetableToastTree(widget.data.l10n),
                               );
                             },
                           ),

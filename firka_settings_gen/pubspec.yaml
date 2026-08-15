@@ -1,0 +1,10 @@
+name: firka_settings_gen
+description: Code generator for firka's annotated settings_schema.dart.
+publish_to: "none"
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  analyzer: ^8.2.0
+  build: ^3.0.0

@@ -6,6 +6,8 @@ import 'package:firka/core/extensions.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/core/settings.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/services/watch_sync_helper.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
@@ -164,8 +166,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
     prefetch();
     _preloadImages();
 
-    if (Platform.isIOS &&
-        initData.settings.group("settings").boolean("beta_warning")) {
+    if (Platform.isIOS && Settings.betaWarning.value) {
       Future.delayed(Duration(seconds: 3), () async {
         await LiveActivityService.showConsentScreenIfNeeded();
       });
@@ -178,9 +179,9 @@ class _HomeScreenState extends FirkaState<HomeScreen>
   }
 
   void _preloadImages() async {
-    final imagePaths = initData.settings.appIcons.keys
-        .map((icon) => "assets/images/icons/$icon.webp")
-        .toList();
+    final imagePaths = appIconLabels(
+      initData.l10n,
+    ).keys.map((icon) => "assets/images/icons/$icon.webp").toList();
     imagePaths.add("assets/images/background.webp");
 
     try {

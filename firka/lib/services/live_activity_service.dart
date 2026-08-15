@@ -4,9 +4,9 @@ import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/api/client/live_activity_backend_client.dart';
 import 'package:firka/data/widget.dart';
 import 'package:kreta_api/kreta_api.dart';
-import 'package:firka_common/data/models/app_settings_model.dart';
 import 'package:firka/services/live_activity_manager.dart';
-import 'package:firka/core/settings.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/ui/phone/screens/live_activity/live_activity_consent_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -215,17 +215,8 @@ class LiveActivityService {
       final userLiveActivityEnabled = await _getUserLiveActivityEnabled(
         client: client,
       );
-      final globalLiveActivitySetting =
-          initData.settings
-                  .group("settings")
-                  .subGroup("notifications")["live_activity_enabled"]
-              as SettingsBoolean;
-
-      if (globalLiveActivitySetting.value != userLiveActivityEnabled) {
-        globalLiveActivitySetting.value = userLiveActivityEnabled;
-        await initData.isar.writeTxn(() async {
-          await globalLiveActivitySetting.save(initData.isar.appSettingsModels);
-        });
+      if (Settings.liveActivityEnabled.value != userLiveActivityEnabled) {
+        await Settings.liveActivityEnabled.setSilently(userLiveActivityEnabled);
         _logger.info(
           'Global LiveActivity setting synced: $userLiveActivityEnabled for user $studentId',
         );
@@ -234,19 +225,10 @@ class LiveActivityService {
       final userMorningEnabled = await _getUserMorningNotificationEnabled(
         client: client,
       );
-      final globalMorningEnabledSetting =
-          initData.settings
-                  .group("settings")
-                  .subGroup("notifications")["morning_notification_enabled"]
-              as SettingsBoolean;
-
-      if (globalMorningEnabledSetting.value != userMorningEnabled) {
-        globalMorningEnabledSetting.value = userMorningEnabled;
-        await initData.isar.writeTxn(() async {
-          await globalMorningEnabledSetting.save(
-            initData.isar.appSettingsModels,
-          );
-        });
+      if (Settings.morningNotificationEnabled.value != userMorningEnabled) {
+        await Settings.morningNotificationEnabled.setSilently(
+          userMorningEnabled,
+        );
         _logger.info(
           'Global morning notification enabled synced: $userMorningEnabled for user $studentId',
         );
@@ -255,34 +237,18 @@ class LiveActivityService {
       final userMorningTime = await _getUserMorningNotificationTime(
         client: client,
       );
-      final globalMorningTimeSetting =
-          initData.settings
-                  .group("settings")
-                  .subGroup("notifications")["morning_notification_time"]
-              as SettingsDouble;
-
-      if (globalMorningTimeSetting.value.toInt() != userMorningTime) {
-        globalMorningTimeSetting.value = userMorningTime.toDouble();
-        await initData.isar.writeTxn(() async {
-          await globalMorningTimeSetting.save(initData.isar.appSettingsModels);
-        });
+      if (Settings.morningNotificationTime.value.toInt() != userMorningTime) {
+        await Settings.morningNotificationTime.setSilently(
+          userMorningTime.toDouble(),
+        );
         _logger.info(
           'Global morning notification time synced: $userMorningTime for user $studentId',
         );
       }
 
       final userBellDelay = await _getUserBellDelay(client: client);
-      final globalBellDelaySetting =
-          initData.settings
-                  .group("settings")
-                  .subGroup("application")["bell_delay"]
-              as SettingsDouble;
-
-      if (globalBellDelaySetting.value != userBellDelay) {
-        globalBellDelaySetting.value = userBellDelay;
-        await initData.isar.writeTxn(() async {
-          await globalBellDelaySetting.save(initData.isar.appSettingsModels);
-        });
+      if (Settings.bellDelay.value != userBellDelay) {
+        await Settings.bellDelay.setSilently(userBellDelay);
         _logger.info(
           'Global bell delay synced: $userBellDelay for user $studentId',
         );
@@ -301,22 +267,14 @@ class LiveActivityService {
         return 'hu';
       }
 
-      final languageSetting =
-          initData.settings
-                  .group("settings")
-                  .subGroup("application")["language"]
-              as SettingsItemsRadio?;
-
-      if (languageSetting == null) return 'hu';
-
-      switch (languageSetting.activeIndex) {
-        case 1:
+      switch (Settings.language.value) {
+        case AppLanguage.hu:
           return 'hu';
-        case 2:
+        case AppLanguage.en:
           return 'en';
-        case 3:
+        case AppLanguage.de:
           return 'de';
-        default: // auto
+        case AppLanguage.auto:
           final systemLang = Platform.localeName.split('_').first;
           if (['hu', 'en', 'de'].contains(systemLang)) {
             return systemLang;
@@ -635,7 +593,7 @@ class LiveActivityService {
 
   /// Check if LiveActivity is enabled in settings
   static Future<bool> isEnabled([
-    SettingsStore? settingsStore,
+    SettingsRepository? settingsStore,
     KretaClient? client,
   ]) async {
     try {
@@ -842,7 +800,7 @@ class LiveActivityService {
   static Future<void> onUserLogin({
     required KretaClient client,
     required String studentName,
-    SettingsStore? settingsStore,
+    SettingsRepository? settingsStore,
   }) async {
     _logger.info('onUserLogin: Function called for $studentName');
 
@@ -1190,7 +1148,7 @@ class LiveActivityService {
   static Future<void> checkAndUpdateTimetable({
     required KretaClient client,
     required String studentName,
-    SettingsStore? settingsStore,
+    SettingsRepository? settingsStore,
     bool forceUpdate = false,
   }) async {
     if (!Platform.isIOS || !_isInitialized) return;
@@ -1473,7 +1431,7 @@ class LiveActivityService {
   static Future<void> _startTimetableMonitoring({
     required KretaClient client,
     required String studentName,
-    SettingsStore? settingsStore,
+    SettingsRepository? settingsStore,
   }) async {
     _stopTimetableMonitoring();
 
@@ -1938,12 +1896,7 @@ class LiveActivityService {
       if (!initDone) {
         return null;
       }
-      final setting =
-          initData.settings
-                  .group("settings")
-                  .subGroup("notifications")["morning_notification_enabled"]
-              as SettingsBoolean?;
-      return setting?.value;
+      return Settings.morningNotificationEnabled.value;
     } catch (e) {
       _logger.warning('Error getting current morning notification enabled: $e');
       return null;
@@ -1956,12 +1909,7 @@ class LiveActivityService {
       if (!initDone) {
         return null;
       }
-      final setting =
-          initData.settings
-                  .group("settings")
-                  .subGroup("notifications")["morning_notification_time"]
-              as SettingsDouble?;
-      return setting?.value;
+      return Settings.morningNotificationTime.value;
     } catch (e) {
       _logger.warning('Error getting current morning notification time: $e');
       return null;

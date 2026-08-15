@@ -1,6 +1,7 @@
 import 'package:firka_common/core/consts.dart';
 import 'package:firka/core/extensions.dart';
-import 'package:firka/core/settings.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
@@ -28,24 +29,14 @@ class LessonWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     // we dont like events
     assert(lesson.type != TimetableConsts.event);
-    final showTests = data.settings
-        .group("settings")
-        .subGroup("timetable_toast")
-        .boolean("tests_and_homework");
+    final showTests = Settings.ttToastTestsAndHw.value;
 
     final test = lesson.test.loadAndGet();
 
     final isSubstituted = lesson.substituteTeacher != null;
     final showSubstitutions =
-        isSubstituted &&
-        data.settings
-            .group("settings")
-            .subGroup("timetable_toast")
-            .boolean("substitution");
-    final showLessonNos = data.settings
-        .group("settings")
-        .subGroup("timetable_toast")
-        .boolean("lesson_no");
+        isSubstituted && Settings.ttToastSubstitution.value;
+    final showLessonNos = Settings.ttToastLessonNo.value;
     final isDismissed = lesson.type == "UresOra";
 
     var accent = appStyle.colors.accent;

@@ -9,6 +9,8 @@ import 'package:isar_community/isar.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:firka/ui/phone/widgets/bubble_test.dart';
@@ -185,10 +187,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
   Widget _buildContent(BuildContext context) {
     List<Widget> ttWidgets = [];
     List<Widget> ttDays = [];
-    final showABTimetable = widget.data.settings
-        .group("settings")
-        .subGroup("timetable_toast")
-        .boolean("ab_timetable");
+    final showABTimetable = Settings.ttToastABTimetable.value;
     // Build navigation icons using original dates
     var i = 0;
     for (MapEntry<DateTime, List<LessonCacheModel>> e in dates.entries) {
@@ -327,9 +326,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                                   context,
                                   MediaQuery.of(context).size.height * 0.4,
                                   widget.data,
-                                  widget.data.settings
-                                      .group("settings")
-                                      .subGroup("timetable_toast"),
+                                  timetableToastTree(widget.data.l10n),
                                 );
                               },
                             ),

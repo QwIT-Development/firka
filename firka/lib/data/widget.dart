@@ -9,7 +9,8 @@ import 'package:firka_common/data/models/lesson_cache_model.dart';
 import 'package:isar_community/isar.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/debug_helper.dart';
-import 'package:firka/core/settings.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:path/path.dart' as p;
@@ -117,43 +118,37 @@ class WidgetCacheHelper {
   /// Call this on: app open, user switch, data refresh
   static Future<void> refreshIOSWidgets(
     KretaClient client,
-    SettingsStore settings,
+    SettingsRepository settings,
   ) async {
     if (!Platform.isIOS) return;
 
     try {
-      final langIndex =
-          (settings.group("settings").subGroup("application")["language"]
-                  as SettingsItemsRadio)
-              .activeIndex;
+      final language = settings.get(SettingsRegistry.language);
       String locale;
-      switch (langIndex) {
-        case 1:
+      switch (language) {
+        case AppLanguage.hu:
           locale = 'hu';
           break;
-        case 2:
+        case AppLanguage.en:
           locale = 'en';
           break;
-        case 3:
+        case AppLanguage.de:
           locale = 'de';
           break;
-        default:
+        case AppLanguage.auto:
           locale = 'hu';
       }
 
-      final themeIndex =
-          (settings.group("settings").subGroup("customization")["theme"]
-                  as SettingsItemsRadio)
-              .activeIndex;
+      final themeBrightness = settings.get(SettingsRegistry.themeBrightness);
       String theme;
-      switch (themeIndex) {
-        case 1:
+      switch (themeBrightness) {
+        case ThemeBrightness.light:
           theme = 'light';
           break;
-        case 2:
+        case ThemeBrightness.dark:
           theme = 'dark';
           break;
-        default:
+        case ThemeBrightness.auto:
           theme =
               SchedulerBinding.instance.platformDispatcher.platformBrightness ==
                   Brightness.light

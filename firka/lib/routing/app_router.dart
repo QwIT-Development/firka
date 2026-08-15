@@ -1,11 +1,12 @@
-import 'dart:collection';
-
 import 'package:firka/ui/phone/pages/home/home_omissions.dart';
 import 'package:firka_common/data/models/subject_cache_model.dart';
 import 'package:flutter/material.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/settings.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
+import 'package:firka/core/settings/settings_ui.dart';
 import 'package:firka/ui/phone/pages/home/home_grades.dart';
 import 'package:firka/ui/phone/pages/home/home_grades_subject.dart';
 import 'package:firka/ui/phone/pages/home/home_main.dart';
@@ -87,8 +88,8 @@ GoRouter createAppRouter() {
         path: '/settings',
         builder: (context, state) {
           final items = state.extra != null
-              ? state.extra! as LinkedHashMap<String, SettingsItem>
-              : initData.settings.items;
+              ? state.extra! as List<SettingsUiNode>
+              : buildSettingsTree(initData.l10n).children;
           return DefaultAssetBundle(
             bundle: FirkaBundle(),
             child: SettingsScreen(initData, items, key: state.pageKey),
@@ -204,9 +205,7 @@ GoRouter createAppRouter() {
 String get _initialLocation {
   if (!initDone) return '/';
   if (initData.client == null) return '/login';
-  final betaWarning = initData.settings
-      .group('settings')
-      .boolean('beta_warning');
+  final betaWarning = Settings.betaWarning.value;
   if (!betaWarning) return '/beta';
   return '/home';
 }
@@ -215,9 +214,7 @@ String? _redirect(BuildContext context, GoRouterState state) {
   if (!initDone) return null;
   final location = state.matchedLocation;
   final hasTokens = initData.client != null;
-  final betaWarning = initData.settings
-      .group('settings')
-      .boolean('beta_warning');
+  final betaWarning = Settings.betaWarning.value;
 
   if (!hasTokens) {
     if (location != '/login') return '/login';

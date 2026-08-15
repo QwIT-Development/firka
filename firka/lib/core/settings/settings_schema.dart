@@ -1,0 +1,99 @@
+import "setting.dart";
+import "settings_repository.dart";
+
+part "settings_schema.gen.dart";
+
+enum AppLanguage { auto, hu, en, de }
+
+enum ThemeBrightness { auto, light, dark }
+
+abstract class SettingsSchema {
+  @DoubleSetting(id: 1001, defaultValue: 0, min: 0, max: 120)
+  double get bellDelay;
+
+  @DoubleSetting(id: 1002, defaultValue: 0.5, min: 0.1, max: 0.99, precision: 2)
+  double get rounding1;
+
+  @DoubleSetting(id: 1003, defaultValue: 0.5, min: 0.1, max: 0.99, precision: 2)
+  double get rounding2;
+
+  @DoubleSetting(id: 1004, defaultValue: 0.5, min: 0.1, max: 0.99, precision: 2)
+  double get rounding3;
+
+  @DoubleSetting(id: 1005, defaultValue: 0.5, min: 0.1, max: 0.99, precision: 2)
+  double get rounding4;
+
+  @BoolSetting(id: 1006, defaultValue: true)
+  bool get classAvgOnGraph;
+
+  @BoolSetting(id: 1007, defaultValue: false)
+  bool get leftHandedMode;
+
+  @EnumSetting(
+    id: 1008,
+    defaultValue: AppLanguage.auto,
+    values: AppLanguage.values,
+  )
+  AppLanguage get language;
+
+  // SettingsAppIconPicker has always persisted under a
+  // hardcoded id of 0 instead of the appIcon constant.
+  @StringSetting(id: 0, defaultValue: "original")
+  String get appIcon;
+
+  @BoolSetting(id: 1010, defaultValue: true)
+  bool get childProtection;
+
+  @BoolSetting(id: 1011, defaultValue: false)
+  bool get betaWarning;
+
+  @BoolSetting(id: 1012, defaultValue: true)
+  bool get ttToastLessonNo;
+
+  @BoolSetting(id: 1013, defaultValue: true)
+  bool get ttToastTestsAndHw;
+
+  @BoolSetting(id: 1014, defaultValue: true)
+  bool get ttToastBreaks;
+
+  @BoolSetting(id: 1015, defaultValue: false)
+  bool get statsForNerds;
+
+  @BoolSetting(id: 1016, defaultValue: false)
+  bool get developerOptsEnabled;
+
+  @EnumSetting(
+    id: 1017,
+    defaultValue: ThemeBrightness.auto,
+    values: ThemeBrightness.values,
+  )
+  ThemeBrightness get themeBrightness;
+
+  @BoolSetting(id: 1018, defaultValue: true)
+  bool get ttToastSubstitution;
+
+  @BoolSetting(id: 1019, defaultValue: false)
+  bool get liveActivityEnabled;
+
+  @BoolSetting(id: 1020, defaultValue: false)
+  bool get liveActivityPrivacyEverDeclined;
+
+  @BoolSetting(id: 1021, defaultValue: true)
+  bool get morningNotificationEnabled;
+
+  @DoubleSetting(
+    id: 1022,
+    defaultValue: 120,
+    min: 30,
+    max: 240,
+    precision: 0,
+    step: 15,
+  )
+  double get morningNotificationTime;
+
+  @BoolSetting(id: 1023, defaultValue: true)
+  bool get ttToastABTimetable;
+
+  @BoolSetting(id: 1024, defaultValue: false)
+  bool get wearOsSupport;
+}

@@ -14,7 +14,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka_common/data/models/homework_cache_model.dart';
 import 'package:firka/core/extensions.dart';
-import 'package:firka/core/settings.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -93,10 +94,7 @@ Future<void> showLessonBottomSheet(
 ) async {
   // we dont like events
   assert(lesson.type != TimetableConsts.event);
-  final statsForNerdsEnabled = data.settings
-      .group("settings")
-      .subGroup("developer")
-      .boolean("stats_for_nerds");
+  final statsForNerdsEnabled = Settings.statsForNerds.value;
 
   Widget? statsForNerds;
 

@@ -10,7 +10,7 @@ import 'package:firka/core/bloc/profile_picture_cubit.dart';
 import 'package:firka/core/bloc/toast_cubit.dart';
 import 'package:firka/core/bloc/settings_cubit.dart';
 import 'package:firka/core/bloc/theme_cubit.dart';
-import 'package:firka/core/settings.dart';
+import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/l10n/app_localizations.dart';
 import 'package:logging/logging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -55,7 +55,7 @@ class AppInitialization {
   /// Set by the wear pairing modal; called when watch sends init_done or sync_done to dismiss the sheet.
   void Function()? dismissWearPairingSheet;
   Uint8List? profilePicture;
-  SettingsStore settings;
+  SettingsRepository settings;
   final ThemeCubit themeCubit = ThemeCubit();
   final SettingsCubit settingsCubit = SettingsCubit();
   final ProfilePictureCubit profilePictureCubit = ProfilePictureCubit();

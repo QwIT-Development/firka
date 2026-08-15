@@ -11,7 +11,9 @@ import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka_common/data/models/app_settings_model.dart';
 import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/services/live_activity_service.dart';
-import 'package:firka/core/settings.dart';
+import 'package:firka/core/settings/settings_effects.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/services/watch_sync_helper.dart';
 import 'package:firka/l10n/app_localizations_de.dart';
 import 'package:firka/l10n/app_localizations_en.dart';
@@ -28,22 +30,20 @@ import 'package:path_provider/path_provider.dart';
 Future<void> initLang(AppInitialization data) async {
   String? languageCode;
 
-  switch ((data.settings.group("settings").subGroup("application")["language"]
-          as SettingsItemsRadio)
-      .activeIndex) {
-    case 1: // hu
+  switch (Settings.language.value) {
+    case AppLanguage.hu:
       data.l10n = AppLocalizationsHu();
       languageCode = 'hu';
       break;
-    case 2: // en
+    case AppLanguage.en:
       data.l10n = AppLocalizationsEn();
       languageCode = 'en';
       break;
-    case 3: // de
+    case AppLanguage.de:
       data.l10n = AppLocalizationsDe();
       languageCode = 'de';
       break;
-    default: // auto
+    case AppLanguage.auto:
       switch (ui.PlatformDispatcher.instance.locale.languageCode) {
         case 'hu':
           data.l10n = AppLocalizationsHu();
@@ -82,18 +82,16 @@ void initTheme(AppInitialization data) {
   final brightness =
       SchedulerBinding.instance.platformDispatcher.platformBrightness;
 
-  switch ((data.settings.group("settings").subGroup("customization")["theme"]
-          as SettingsItemsRadio)
-      .activeIndex) {
-    case 1:
+  switch (Settings.themeBrightness.value) {
+    case ThemeBrightness.light:
       appStyle = lightStyle;
       themeCubit.setLightMode(true);
       break;
-    case 2:
+    case ThemeBrightness.dark:
       appStyle = darkStyle;
       themeCubit.setLightMode(false);
       break;
-    default:
+    case ThemeBrightness.auto:
       if (brightness == Brightness.dark) {
         appStyle = darkStyle;
         themeCubit.setLightMode(false);
@@ -105,11 +103,9 @@ void initTheme(AppInitialization data) {
 }
 
 Future<void> _initData(AppInitialization init) async {
-  await init.settings.load(init.isar.appSettingsModels);
+  await init.settings.loadAll();
   await initLang(init);
   initTheme(init);
-  init.settings = SettingsStore(init.l10n);
-  await init.settings.load(init.isar.appSettingsModels);
 
   var dispatcher = SchedulerBinding.instance.platformDispatcher;
 
@@ -118,10 +114,7 @@ Future<void> _initData(AppInitialization init) async {
   };
 
   dispatcher.onLocaleChanged = () {
-    final languageSetting =
-        init.settings.group("settings").subGroup("application")["language"]
-            as SettingsItemsRadio;
-    final isAutoLanguage = languageSetting.activeIndex == 0;
+    final isAutoLanguage = Settings.language.value == AppLanguage.auto;
     if (!isAutoLanguage) {
       return;
     }
@@ -235,10 +228,13 @@ Future<void> initializeApp() async {
     appDir: await getApplicationDocumentsDirectory(),
     devInfo: devInfo,
     packageInfo: await PackageInfo.fromPlatform(),
-    settings: SettingsStore(AppLocalizationsHu()),
+    settings: SettingsRepository(isar),
     l10n: AppLocalizationsHu(),
     navigatorKey: navigatorKey,
   );
+  initData.settings.cubit = initData.settingsCubit;
+  Settings = initData.settings;
+  registerSettingsEffects(initData.settings, initData);
 
   if (Platform.isIOS) {
     try {

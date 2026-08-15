@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:firka_common/data/models/app_settings_model.dart';
-import 'package:firka/core/settings.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/ui/components/firka_button.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
@@ -109,19 +110,7 @@ class _BetaScreenState extends FirkaState<BetaScreen> {
                     ),
                     onTap: () async {
                       if (counter != 0) return;
-                      await widget.data.isar.writeTxn(() async {
-                        widget.data.settings
-                            .group("settings")
-                            .setBoolean("beta_warning", true);
-
-                        await widget.data.settings
-                            .group("settings")["beta_warning"]!
-                            .save(widget.data.isar.appSettingsModels);
-                      });
-
-                      await widget.data.settings
-                          .group("settings")["beta_warning"]!
-                          .postUpdate();
+                      await Settings.betaWarning.set(true);
                       if (!context.mounted) return;
                       context.go('/home');
                     },

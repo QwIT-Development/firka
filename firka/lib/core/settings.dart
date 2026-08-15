@@ -1,1412 +1,447 @@
-import 'dart:collection';
-import 'dart:core';
-import 'dart:io';
+import "dart:io";
 
-import 'package:firka_common/data/database.dart';
-import 'package:firka_common/data/models/app_settings_model.dart';
-import 'package:firka/services/live_activity_service.dart';
-import 'package:firka/l10n/app_localizations.dart';
-import 'package:firka/ui/shared/firka_icon.dart';
-import 'package:firka_common/core/grade_helper.dart' as helper;
-import 'package:firka_common/data/models/token_model.dart';
-import 'package:firka_common/ui/theme/style.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
-import 'package:isar_community/isar.dart';
-import 'package:majesticons_flutter/majesticons_flutter.dart';
+import "package:firka/core/settings/settings_repository.dart";
+import "package:firka/core/settings/settings_schema.dart";
+import "package:firka/core/settings/settings_ui.dart";
+import "package:firka/l10n/app_localizations.dart";
+import "package:firka/services/live_activity_service.dart";
+import "package:firka/ui/shared/firka_icon.dart";
+import "package:flutter/foundation.dart";
+import "package:majesticons_flutter/majesticons_flutter.dart";
 
-import 'package:firka/app/app_state.dart';
-import 'package:firka/app/initialization.dart';
-import 'package:firka/app/initialization_screen.dart';
-import 'package:firka/services/watch_sync_helper.dart';
-import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
+bool always() => true;
 
-const bellRing = 1001;
-const rounding1 = 1002;
-const rounding2 = 1003;
-const rounding3 = 1004;
-const rounding4 = 1005;
-const classAvgOnGraph = 1006;
-const leftHandedMode = 1007;
-const language = 1008;
-const appIcon = 1009;
-const childProtection = 1010;
-const betaWarning = 1011;
-const ttToastLessonNo = 1012;
-const ttToastTestsAndHw = 1013;
-const ttToastBreaks = 1014;
-const statsForNerds = 1015;
-const developerOptsEnabled = 1016;
-const themeBrightness = 1017;
-const ttToastSubstitution = 1018;
-const liveActivityEnabled = 1019;
-const liveActivityPrivacyEverDeclined = 1020;
-const morningNotificationEnabled = 1021;
-const morningNotificationTime = 1022;
-const ttToastABTimetable = 1023;
-const wearOsSupport = 1024;
+bool never() => false;
 
-bool always() {
-  return true;
-}
+bool isDeveloper() => isDebug() || Settings.developerOptsEnabled.value;
 
-bool never() {
-  return false;
-}
+bool isAndroid() => Platform.isAndroid;
 
-bool isDeveloper() {
-  return isDebug() ||
-      initData.settings.group("settings").boolean("developer_enabled");
-}
+bool isIOS() => Platform.isIOS;
 
-bool isAndroid() {
-  return Platform.isAndroid;
-}
+bool isLiveActivityEnabled() =>
+    Platform.isIOS && Settings.liveActivityEnabled.value;
 
-bool isIOS() {
-  return Platform.isIOS;
-}
+bool isMorningNotificationEnabled() =>
+    Platform.isIOS && Settings.morningNotificationEnabled.value;
 
-bool isLiveActivityEnabled() {
-  return Platform.isIOS &&
-      initData.settings
-          .group("settings")
-          .subGroup("notifications")
-          .boolean("live_activity_enabled");
-}
+bool isWearOsSupportEnabled() =>
+    Platform.isAndroid && Settings.wearOsSupport.value;
 
-bool isMorningNotificationEnabled() {
-  return Platform.isIOS &&
-      initData.settings
-          .group("settings")
-          .subGroup("notifications")
-          .boolean("morning_notification_enabled");
-}
+bool isDebug() => kDebugMode;
 
-bool isWearOsSupportEnabled() {
-  return Platform.isAndroid &&
-      initData.settings
-          .group("settings")
-          .subGroup("wear")
-          .boolean("wear_os_support");
-}
+bool isDebugIOS() => kDebugMode && Platform.isIOS;
 
-bool isDebug() {
-  return kDebugMode;
-}
+Map<String, String> appIconLabels(AppLocalizations l10n) => {
+  "ace": l10n.ic_ace,
+  "ace_f": l10n.ic_ace_f,
+  "bi": l10n.ic_bi,
+  "bi_f": l10n.ic_bi_f,
+  "cactus": l10n.ic_cactus,
+  "cc": l10n.ic_cc,
+  "enby": l10n.ic_enby,
+  "enby_f": l10n.ic_enby_f,
+  "fidesz": l10n.ic_fidesz,
+  "filc": l10n.ic_filc,
+  "filco": l10n.ic_filco,
+  "galaxy": l10n.ic_galaxy,
+  "gay": l10n.ic_gay,
+  "gay_f": l10n.ic_gay_f,
+  "half_firka_2": l10n.ic_half_firka_2,
+  "kreta": l10n.ic_kreta,
+  "lesb": l10n.ic_lesb,
+  "lesb_f": l10n.ic_lesb_f,
+  "lgbtq": l10n.ic_lgbtq,
+  "lgbtq_f": l10n.ic_lgbtq_f,
+  "lgbtqp": l10n.ic_lgbtqp,
+  "lgbtqp_f": l10n.ic_lgbtqp_f,
+  "mkkp": l10n.ic_mkkp,
+  "nuke": l10n.ic_nuke,
+  "modern": l10n.ic_modern,
+  "o1g": l10n.ic_o1g,
+  "old": l10n.ic_old,
+  "original": l10n.ic_original,
+  "paper": l10n.ic_paper,
+  "pear": l10n.ic_pear,
+  "pixel": l10n.ic_pixel,
+  "pixelized": l10n.ic_pixelized,
+  "pride": l10n.ic_pride,
+  "proto": l10n.ic_proto,
+  "refilc": l10n.ic_refilc,
+  "refulc": l10n.ic_refulc,
+  "repont": l10n.ic_repont,
+  "szivacs": l10n.ic_szivacs,
+  "tisza": l10n.ic_tisza,
+  "trans": l10n.ic_trans,
+  "trans_f": l10n.ic_trans_f,
+  "void_icon": l10n.ic_void_icon,
+  "xmas1": l10n.ic_xmas1,
+  "xmas2": l10n.ic_xmas2,
+  "xmas3": l10n.ic_xmas3,
+};
 
-bool isDebugIOS() {
-  return kDebugMode && Platform.isIOS;
-}
+/// Extracted so home_timetable.dart's quick-settings sheet can show just these
+/// rows directly, the same way it did when this lived inline in the old tree.
+List<SettingsUiNode> timetableToastTree(AppLocalizations l10n) => [
+  SettingsUiMediumHeader(l10n.tt_settings_toast, always),
+  SettingsUiPadding(16, always),
+  SettingsUiBoolean(
+    FirkaIconType.majesticons,
+    Majesticon.clockSolid,
+    l10n.tt_settings_toast_lesson_nos,
+    SettingsRegistry.ttToastLessonNo,
+    always,
+  ),
+  SettingsUiBoolean(
+    FirkaIconType.majesticons,
+    Majesticon.editPen4Solid,
+    l10n.tt_settings_toast_lesson_tests,
+    SettingsRegistry.ttToastTestsAndHw,
+    always,
+  ),
+  SettingsUiBoolean(
+    FirkaIconType.majesticons,
+    Majesticon.usersSolid,
+    l10n.tt_settings_toast_lesson_substitution,
+    SettingsRegistry.ttToastSubstitution,
+    always,
+  ),
+  SettingsUiBoolean(
+    FirkaIconType.majesticons,
+    Majesticon.viewRowsLine,
+    l10n.tt_settings_toast_lesson_breaks,
+    SettingsRegistry.ttToastBreaks,
+    always,
+  ),
+  SettingsUiBoolean(
+    FirkaIconType.majesticons,
+    Majesticon.calendarSolid,
+    l10n.tt_settings_toast_lesson_ab_timetable,
+    SettingsRegistry.ttToastABTimetable,
+    always,
+  ),
+];
 
-class SettingsStore {
-  LinkedHashMap<String, SettingsItem> items = LinkedHashMap.of({});
+SettingsUiGroup buildSettingsTree(AppLocalizations l10n) {
+  final childProtection = SettingsUiBoolean(
+    FirkaIconType.majesticons,
+    Majesticon.shieldSolid,
+    l10n.s_ci_child_protection,
+    SettingsRegistry.childProtection,
+    never,
+  );
 
-  Map<String, String> appIcons = {};
-
-  SettingsStore(AppLocalizations l10n) {
-    items["settings"] = SettingsGroup(
-      0,
-      LinkedHashMap.of({
-        "back": SettingsBackHeader(0, l10n.s_a, always),
-        "settings_header": SettingsHeader(0, l10n.s_settings, always),
-        "settings_padding": SettingsPadding(0, 20, always),
-        "application": SettingsSubGroup(
-          0,
-          FirkaIconType.majesticons,
-          Majesticon.settingsCogSolid,
-          l10n.s_a,
-          LinkedHashMap.of({
-            "back": SettingsBackHeader(0, l10n.s_settings, always),
-            "settings_header": SettingsHeader(0, l10n.s_ag, always),
-            "settings_padding": SettingsPadding(0, 23, always),
-            "bell_delay": SettingsDouble(
-              bellRing,
-              FirkaIconType.majesticons,
-              Majesticon.bellSolid,
-              l10n.s_ag_bell_delay,
-              0,
-              0,
-              120,
-              0,
-              always,
-            ),
-            "rounding": SettingsSubGroup(
-              0,
-              FirkaIconType.majesticons,
-              Majesticon.ruler2Solid,
-              l10n.s_ag_rounding,
-              LinkedHashMap.of({
-                "back": SettingsBackHeader(0, l10n.s_ag_rounding, always),
-                "1": SettingsDouble(
-                  rounding1,
-                  null,
-                  null,
-                  l10n.s_ag_r1,
-                  0.1,
-                  0.5,
-                  0.99,
-                  2,
-                  always,
-                ),
-                "2": SettingsDouble(
-                  rounding2,
-                  null,
-                  null,
-                  l10n.s_ag_r2,
-                  0.1,
-                  0.5,
-                  0.99,
-                  2,
-                  always,
-                ),
-                "3": SettingsDouble(
-                  rounding3,
-                  null,
-                  null,
-                  l10n.s_ag_r3,
-                  0.1,
-                  0.5,
-                  0.99,
-                  2,
-                  always,
-                ),
-                "4": SettingsDouble(
-                  rounding4,
-                  null,
-                  null,
-                  l10n.s_ag_r4,
-                  0.1,
-                  0.5,
-                  0.99,
-                  2,
-                  always,
-                ),
-              }),
-              always,
-              null,
-            ),
-            "class_avg_on_graph": SettingsBoolean(
-              classAvgOnGraph,
-              null,
-              null,
-              l10n.s_ag_class_avg_on_graph,
-              true,
-              never,
-            ),
-            "navbar": SettingsSubGroup(
-              0,
-              null, // TODO: icon
-              null,
-              l10n.s_ag_navbar,
-              LinkedHashMap.of({}),
-              never,
-              null,
-            ),
-            "left_handed_mode": SettingsBoolean(
-              leftHandedMode,
-              null,
-              null,
-              l10n.s_ag_left_handed_mode,
-              false,
-              never,
-            ),
-            "live_activity_privacy_ever_declined": SettingsBoolean(
-              liveActivityPrivacyEverDeclined,
-              null,
-              null,
-              "Privacy Ever Declined",
-              false,
-              never,
-            ),
-            "language_header": SettingsHeaderSmall(
-              0,
-              l10n.s_ag_language_header,
-              always,
-            ),
-            "language": SettingsItemsRadio(
-              language,
-              null,
-              null,
-              [
-                l10n.s_ag_language_auto,
-                l10n.s_ag_language_hu,
-                l10n.s_ag_language_en,
-                l10n.s_ag_language_de,
-              ],
-              0,
-              always,
-              () async {
-                await initLang(initData);
-                initData.settings = SettingsStore(initData.l10n);
-                await initData.settings.load(initData.isar.appSettingsModels);
-
-                initData.homeRefreshCubit.requestRefresh();
-              },
-            ),
-          }),
-          always,
-          null,
-        ),
-        "customization": SettingsSubGroup(
-          0,
-          FirkaIconType.majesticons,
-          Majesticon.flower2Solid,
-          l10n.s_c,
-          LinkedHashMap.of({
-            "back": SettingsBackHeader(0, l10n.s_settings, always),
-            "settings_header": SettingsHeader(0, l10n.s_customization, always),
-            "icon_header": SettingsHeaderSmall(0, l10n.s_c_icon_header, always),
-            "icon_header_preview_padding": SettingsPadding(0, 16, always),
-            "icon_preview": SettingsAppIconPreview(0, always),
-            "icon_picker": SettingsSubGroup(
-              0,
-              null,
-              null,
-              l10n.s_c_replace_icon,
-              LinkedHashMap.of({
-                "icon_header": SettingsHeader(0, l10n.s_ci_icon_header, always),
-                "warning_header": SettingsHeader(
-                  0,
-                  l10n.s_ci_warning_header,
-                  isDebug,
-                ),
-                "icon_subtitle": SettingsSubtitle(
-                  0,
-                  l10n.s_ci_icon_subtitle,
-                  always,
-                ),
-                "settings_padding": SettingsPadding(0, 24, always),
-                "icon_preview": SettingsAppIconPreview(0, always),
-                "settings_padding2": SettingsPadding(0, 24, always),
-                "child_protection": SettingsBoolean(
-                  childProtection,
-                  FirkaIconType.majesticons,
-                  Majesticon.shieldSolid,
-                  l10n.s_ci_child_protection,
-                  true,
-                  never,
-                ),
-                "icon_picker": SettingsAppIconPicker(0, "original", {
-                  l10n.s_ci_icon_g1: ["original", "proto", "pride"],
-                  l10n.s_ci_icon_g2: ["pixel", "galaxy", "cactus"],
-                  l10n.s_ci_icon_g3: ["old", "refilc", "filc", "szivacs"],
-                  l10n.s_ci_icon_g4: [
-                    "modern",
-                    "cc",
-                    "paper",
-                    "filco",
-                    "o1g",
-                    "pear",
-                    "half_firka_2",
-                    "nuke",
-                    "refulc",
-                  ],
-                  l10n.s_ci_icon_g5: [
-                    "kreta",
-                    "cc",
-                    "repont",
-                    "void_icon",
-                    "pixelized",
-                    "mkkp",
-                    "fidesz",
-                    "tisza",
-                  ],
-                  l10n.s_ci_icon_g6: ["xmas1", "xmas2", "xmas3"],
-                  l10n.s_ci_icon_g7: [
-                    "lgbtq",
-                    "lgbtqp",
-                    "trans",
-                    "enby",
-                    "ace",
-                    "gay",
-                    "lesb",
-                    "bi",
-                  ],
-                  l10n.s_ci_icon_g8: [
-                    "lgbtq_f",
-                    "lgbtqp_f",
-                    "trans_f",
-                    "enby_f",
-                    "ace_f",
-                    "gay_f",
-                    "lesb_f",
-                    "bi_f",
-                  ],
-                }, always),
-              }),
-              isAndroid,
-              null,
-            ),
-            "icon_theme_padding": SettingsPadding(0, 16, always),
-            "theme_header": SettingsHeaderSmall(
-              0,
-              l10n.s_c_theme_header,
-              always,
-            ),
-            "theme": SettingsItemsRadio(
-              themeBrightness,
-              null,
-              null,
-              [l10n.s_c_theme_auto, l10n.s_c_theme_light, l10n.s_c_theme_dark],
-              0,
-              always,
-              () async {
-                initTheme(initData);
-                initData.homeRefreshCubit.requestRefresh();
-              },
-            ),
-          }),
-          always,
-          null,
-        ),
-        "wear": SettingsSubGroup(
-          0,
-          FirkaIconType.majesticons,
-          Majesticon.clockSolid,
-          l10n.s_wear,
-          LinkedHashMap.of({
-            "back": SettingsBackHeader(0, l10n.s_settings, always),
-            "settings_header": SettingsHeader(0, l10n.s_wear, always),
-            "settings_padding": SettingsPadding(0, 23, always),
-            "wear_os_support": SettingsBoolean(
-              wearOsSupport,
-              FirkaIconType.majesticons,
-              Majesticon.clockSolid,
-              l10n.s_wear_os_support,
-              false,
-              always,
-              () async {
-                if (!Platform.isAndroid) return;
-                final enabled = isWearOsSupportEnabled();
-                if (enabled && initDone) {
-                  final notifStatus = await Permission.notification.status;
-                  if (notifStatus.isDenied || notifStatus.isPermanentlyDenied) {
-                    await Permission.notification.request();
-                  }
-                  await WatchSyncHelper.startWearSyncServiceWithFreshCache(
-                    initData.client!,
-                    initData.appDir.path,
-                  );
-                } else {
-                  await WatchSyncHelper.stopWearSyncService();
-                }
-              },
-            ),
-          }),
-          isAndroid,
-          null,
-        ),
-        "notifications": SettingsSubGroup(
-          0,
+  return SettingsUiGroup([
+    SettingsUiBackHeader(l10n.s_a, always),
+    SettingsUiHeader(l10n.s_settings, always),
+    SettingsUiPadding(20, always),
+    SettingsUiSubGroup(
+      FirkaIconType.majesticons,
+      Majesticon.settingsCogSolid,
+      l10n.s_a,
+      [
+        SettingsUiBackHeader(l10n.s_settings, always),
+        SettingsUiHeader(l10n.s_ag, always),
+        SettingsUiPadding(23, always),
+        SettingsUiDouble(
           FirkaIconType.majesticons,
           Majesticon.bellSolid,
-          l10n.s_n,
-          LinkedHashMap.of({
-            "back": SettingsBackHeader(0, l10n.s_settings, always),
-            "settings_header": SettingsHeader(0, l10n.s_n, always),
-            "settings_padding": SettingsPadding(0, 23, always),
-            "morning_notification_enabled": SettingsBoolean(
-              morningNotificationEnabled,
-              FirkaIconType.majesticons,
-              Majesticon.bellSolid,
-              l10n.s_n_morning,
-              true,
-              always,
-              () async {
-                final setting =
-                    initData.settings
-                            .group("settings")
-                            .subGroup(
-                              "notifications",
-                            )["morning_notification_enabled"]
-                        as SettingsBoolean;
-
-                LiveActivityService.onMorningNotificationEnabledChanged(
-                  setting.value,
-                );
-              },
-            ),
-            "morning_notification_time": SettingsDouble(
-              morningNotificationTime,
-              FirkaIconType.majesticons,
-              Majesticon.clockSolid,
-              l10n.s_n_morning_time,
-              30, // minValue
-              120, // defaultValue
-              240, // maxValue
-              0, // precision (0 = whole numbers)
-              isMorningNotificationEnabled,
-              step: 15,
-            ), // 15 minute steps
-            "live_activity_enabled": SettingsBoolean(
-              liveActivityEnabled,
-              FirkaIconType.majesticons,
-              Majesticon.clockSolid,
-              l10n.s_n_live_activity,
-              false,
-              always,
-              () async {
-                final globalSetting =
-                    initData.settings
-                            .group("settings")
-                            .subGroup("notifications")["live_activity_enabled"]
-                        as SettingsBoolean;
-
-                final enabled = globalSetting.value;
-
-                await LiveActivityService.handleEnabledChange(
-                  enabled,
-                  isManual: true,
-                );
-
-                await LiveActivityService.syncGlobalSettingWithCurrentUser();
-              },
-            ),
-            "test_notification": SettingsButton(
-              0,
-              FirkaIconType.majesticons,
-              Majesticon.bellSolid,
-              l10n.s_n_test,
-              isDebugIOS,
-              () async {
-                await LiveActivityService.sendTestNotification();
-              },
-            ),
-          }),
-          isIOS,
-          null,
+          l10n.s_ag_bell_delay,
+          SettingsRegistry.bellDelay,
+          always,
         ),
-        "extras": SettingsSubGroup(
-          0,
+        SettingsUiSubGroup(
           FirkaIconType.majesticons,
-          Majesticon.lightningBoltSolid,
-          "Extrák",
-          LinkedHashMap.of({
-            "back": SettingsBackHeader(0, l10n.s_settings, always),
-          }),
-          never,
-          null,
+          Majesticon.ruler2Solid,
+          l10n.s_ag_rounding,
+          [
+            SettingsUiBackHeader(l10n.s_ag_rounding, always),
+            SettingsUiDouble(
+              null,
+              null,
+              l10n.s_ag_r1,
+              SettingsRegistry.rounding1,
+              always,
+            ),
+            SettingsUiDouble(
+              null,
+              null,
+              l10n.s_ag_r2,
+              SettingsRegistry.rounding2,
+              always,
+            ),
+            SettingsUiDouble(
+              null,
+              null,
+              l10n.s_ag_r3,
+              SettingsRegistry.rounding3,
+              always,
+            ),
+            SettingsUiDouble(
+              null,
+              null,
+              l10n.s_ag_r4,
+              SettingsRegistry.rounding4,
+              always,
+            ),
+          ],
+          always,
         ),
-        "settings_other_padding": SettingsPadding(0, 20, never),
-        "settings_other_header": SettingsHeaderSmall(0, "Egyéb", never),
-
-        "developer": SettingsSubGroup(
-          0,
+        SettingsUiBoolean(
+          null,
+          null,
+          l10n.s_ag_class_avg_on_graph,
+          SettingsRegistry.classAvgOnGraph,
+          never,
+        ),
+        SettingsUiSubGroup(null, null, l10n.s_ag_navbar, const [], never),
+        SettingsUiBoolean(
+          null,
+          null,
+          l10n.s_ag_left_handed_mode,
+          SettingsRegistry.leftHandedMode,
+          never,
+        ),
+        SettingsUiBoolean(
+          null,
+          null,
+          "Privacy Ever Declined",
+          SettingsRegistry.liveActivityPrivacyEverDeclined,
+          never,
+        ),
+        SettingsUiHeaderSmall(l10n.s_ag_language_header, always),
+        SettingsUiEnum(SettingsRegistry.language, [
+          l10n.s_ag_language_auto,
+          l10n.s_ag_language_hu,
+          l10n.s_ag_language_en,
+          l10n.s_ag_language_de,
+        ], always),
+      ],
+      always,
+    ),
+    SettingsUiSubGroup(
+      FirkaIconType.majesticons,
+      Majesticon.flower2Solid,
+      l10n.s_c,
+      [
+        SettingsUiBackHeader(l10n.s_settings, always),
+        SettingsUiHeader(l10n.s_customization, always),
+        SettingsUiHeaderSmall(l10n.s_c_icon_header, always),
+        SettingsUiPadding(16, always),
+        SettingsUiAppIconPreview(always),
+        SettingsUiSubGroup(null, null, l10n.s_c_replace_icon, [
+          SettingsUiHeader(l10n.s_ci_icon_header, always),
+          SettingsUiHeader(l10n.s_ci_warning_header, isDebug),
+          // s_ci_icon_subtitle is intentionally unrendered: the original renderer
+          // never had a case for SettingsSubtitle either, so this was already dead.
+          SettingsUiPadding(24, always),
+          SettingsUiAppIconPreview(always),
+          SettingsUiPadding(24, always),
+          childProtection,
+          SettingsUiAppIconPicker(
+            {
+              l10n.s_ci_icon_g1: const ["original", "proto", "pride"],
+              l10n.s_ci_icon_g2: const ["pixel", "galaxy", "cactus"],
+              l10n.s_ci_icon_g3: const ["old", "refilc", "filc", "szivacs"],
+              l10n.s_ci_icon_g4: const [
+                "modern",
+                "cc",
+                "paper",
+                "filco",
+                "o1g",
+                "pear",
+                "half_firka_2",
+                "nuke",
+                "refulc",
+              ],
+              l10n.s_ci_icon_g5: const [
+                "kreta",
+                "cc",
+                "repont",
+                "void_icon",
+                "pixelized",
+                "mkkp",
+                "fidesz",
+                "tisza",
+              ],
+              l10n.s_ci_icon_g6: const ["xmas1", "xmas2", "xmas3"],
+              l10n.s_ci_icon_g7: const [
+                "lgbtq",
+                "lgbtqp",
+                "trans",
+                "enby",
+                "ace",
+                "gay",
+                "lesb",
+                "bi",
+              ],
+              l10n.s_ci_icon_g8: const [
+                "lgbtq_f",
+                "lgbtqp_f",
+                "trans_f",
+                "enby_f",
+                "ace_f",
+                "gay_f",
+                "lesb_f",
+                "bi_f",
+              ],
+            },
+            childProtection,
+            always,
+          ),
+        ], isAndroid),
+        SettingsUiPadding(16, always),
+        SettingsUiHeaderSmall(l10n.s_c_theme_header, always),
+        SettingsUiEnum(SettingsRegistry.themeBrightness, [
+          l10n.s_c_theme_auto,
+          l10n.s_c_theme_light,
+          l10n.s_c_theme_dark,
+        ], always),
+      ],
+      always,
+    ),
+    SettingsUiSubGroup(
+      FirkaIconType.majesticons,
+      Majesticon.clockSolid,
+      l10n.s_wear,
+      [
+        SettingsUiBackHeader(l10n.s_settings, always),
+        SettingsUiHeader(l10n.s_wear, always),
+        SettingsUiPadding(23, always),
+        SettingsUiBoolean(
+          FirkaIconType.majesticons,
+          Majesticon.clockSolid,
+          l10n.s_wear_os_support,
+          SettingsRegistry.wearOsSupport,
+          always,
+        ),
+      ],
+      isAndroid,
+    ),
+    SettingsUiSubGroup(
+      FirkaIconType.majesticons,
+      Majesticon.bellSolid,
+      l10n.s_n,
+      [
+        SettingsUiBackHeader(l10n.s_settings, always),
+        SettingsUiHeader(l10n.s_n, always),
+        SettingsUiPadding(23, always),
+        SettingsUiBoolean(
+          FirkaIconType.majesticons,
+          Majesticon.bellSolid,
+          l10n.s_n_morning,
+          SettingsRegistry.morningNotificationEnabled,
+          always,
+        ),
+        SettingsUiDouble(
+          FirkaIconType.majesticons,
+          Majesticon.clockSolid,
+          l10n.s_n_morning_time,
+          SettingsRegistry.morningNotificationTime,
+          isMorningNotificationEnabled,
+        ),
+        SettingsUiBoolean(
+          FirkaIconType.majesticons,
+          Majesticon.clockSolid,
+          l10n.s_n_live_activity,
+          SettingsRegistry.liveActivityEnabled,
+          always,
+        ),
+        SettingsUiButton(
+          FirkaIconType.majesticons,
+          Majesticon.bellSolid,
+          l10n.s_n_test,
+          isDebugIOS,
+          () async => LiveActivityService.sendTestNotification(),
+        ),
+      ],
+      isIOS,
+    ),
+    SettingsUiSubGroup(
+      FirkaIconType.majesticons,
+      Majesticon.lightningBoltSolid,
+      "Extrák",
+      [SettingsUiBackHeader(l10n.s_settings, always)],
+      never,
+    ),
+    SettingsUiPadding(20, never),
+    SettingsUiHeaderSmall("Egyéb", never),
+    SettingsUiSubGroup(
+      FirkaIconType.majesticonsLocal,
+      "wrenchSolid",
+      "Developer",
+      [
+        SettingsUiBackHeader(l10n.s_settings, always),
+        SettingsUiBoolean(
           FirkaIconType.majesticonsLocal,
           "wrenchSolid",
-          'Developer',
-          LinkedHashMap.of({
-            "back": SettingsBackHeader(0, l10n.s_settings, always),
-            "stats_for_nerds": SettingsBoolean(
-              statsForNerds,
-              FirkaIconType.majesticonsLocal,
-              "wrenchSolid",
-              l10n.s_stats_for_nerds,
-              false,
-              always,
-            ),
-            "logs": SettingsLogs(0, always),
-          }),
-          isDeveloper,
-          null,
-        ),
-
-        // misc
-        "beta_warning": SettingsBoolean(
-          betaWarning,
-          null,
-          null,
-          "Beta warning",
-          false,
-          never,
-        ),
-        "timetable_toast": SettingsSubGroup(
-          0,
-          null,
-          null,
-          l10n.tt_settings_toast,
-          LinkedHashMap.of({
-            "header": SettingsMediumHeader(0, l10n.tt_settings_toast, always),
-            "padding": SettingsPadding(0, 16, always),
-            "lesson_no": SettingsBoolean(
-              ttToastLessonNo,
-              FirkaIconType.majesticons,
-              Majesticon.clockSolid,
-              l10n.tt_settings_toast_lesson_nos,
-              true,
-              always,
-            ),
-            "tests_and_homework": SettingsBoolean(
-              ttToastTestsAndHw,
-              FirkaIconType.majesticons,
-              Majesticon.editPen4Solid,
-              l10n.tt_settings_toast_lesson_tests,
-              true,
-              always,
-            ),
-            "substitution": SettingsBoolean(
-              ttToastSubstitution,
-              FirkaIconType.majesticons,
-              Majesticon.usersSolid,
-              l10n.tt_settings_toast_lesson_substitution,
-              true,
-              always,
-            ),
-            "breaks": SettingsBoolean(
-              ttToastBreaks,
-              FirkaIconType.majesticons,
-              Majesticon.viewRowsLine,
-              l10n.tt_settings_toast_lesson_breaks,
-              true,
-              always,
-            ),
-            "ab_timetable": SettingsBoolean(
-              ttToastABTimetable,
-              FirkaIconType.majesticons,
-              Majesticon.calendarSolid,
-              l10n.tt_settings_toast_lesson_ab_timetable,
-              true,
-              always,
-            ),
-          }),
-          never,
-          null,
-        ),
-        "settings_about_padding": SettingsPadding(0, 20, always),
-        "settings_about_header": SettingsHeaderSmall(0, "Névjegy", always),
-        "discord_button": SettingsSubGroup(
-          0,
-          FirkaIconType.majesticons,
-          Majesticon.chatSolid,
-          "Discord",
-          LinkedHashMap.of({}),
+          l10n.s_stats_for_nerds,
+          SettingsRegistry.statsForNerds,
           always,
-          "discord",
         ),
-        "privacy_policy_button": SettingsSubGroup(
-          0,
-          FirkaIconType.majesticons,
-          Majesticon.lockSolid,
-          l10n.privacyLabel,
-          LinkedHashMap.of({}),
-          always,
-          "privacy",
-        ),
-        "license_page": SettingsSubGroup(
-          0,
-          FirkaIconType.majesticons,
-          Majesticon.awardSolid,
-          l10n.licensesLabel,
-          LinkedHashMap.of({
-            "back": SettingsBackHeader(0, l10n.s_settings, always),
-            "header": SettingsMediumHeader(0, l10n.licensesLabel, always),
-            "licenses_header": SettingsHeaderSmall(
-              0,
-              l10n.licenseDescription,
-              always,
-            ),
-            "show_license": ShowLicensePage(),
-          }),
-          always,
-          null,
-        ),
-        "developer_enabled": SettingsBoolean(
-          developerOptsEnabled,
-          null,
-          null,
-          "Developer",
-          false,
-          never,
-        ),
-      }),
-      always,
-    );
-    items["profile_settings"] = SettingsGroup(
-      0,
-      LinkedHashMap.of({
-        "back": SettingsBackHeader(0, l10n.s_your_account, always),
-        "e_kreta_accounts": SettingsHeaderSmall(0, l10n.s_acc_kreta, always),
-        "e_padding": SettingsPadding(0, 8, always),
-        "e_kreta_account_picker": SettingsKretenAccountPicker(0, always),
-      }),
+        SettingsUiLogs(always),
+      ],
+      isDeveloper,
+    ),
+    SettingsUiBoolean(
+      null,
+      null,
+      "Beta warning",
+      SettingsRegistry.betaWarning,
       never,
-    );
-    appIcons = {
-      "ace": l10n.ic_ace,
-      "ace_f": l10n.ic_ace_f,
-      "bi": l10n.ic_bi,
-      "bi_f": l10n.ic_bi_f,
-      "cactus": l10n.ic_cactus,
-      "cc": l10n.ic_cc,
-      "enby": l10n.ic_enby,
-      "enby_f": l10n.ic_enby_f,
-      "fidesz": l10n.ic_fidesz,
-      "filc": l10n.ic_filc,
-      "filco": l10n.ic_filco,
-      "galaxy": l10n.ic_galaxy,
-      "gay": l10n.ic_gay,
-      "gay_f": l10n.ic_gay_f,
-      "half_firka_2": l10n.ic_half_firka_2,
-      "kreta": l10n.ic_kreta,
-      "lesb": l10n.ic_lesb,
-      "lesb_f": l10n.ic_lesb_f,
-      "lgbtq": l10n.ic_lgbtq,
-      "lgbtq_f": l10n.ic_lgbtq_f,
-      "lgbtqp": l10n.ic_lgbtqp,
-      "lgbtqp_f": l10n.ic_lgbtqp_f,
-      "mkkp": l10n.ic_mkkp,
-      "nuke": l10n.ic_nuke,
-      "modern": l10n.ic_modern,
-      "o1g": l10n.ic_o1g,
-      "old": l10n.ic_old,
-      "original": l10n.ic_original,
-      "paper": l10n.ic_paper,
-      "pear": l10n.ic_pear,
-      "pixel": l10n.ic_pixel,
-      "pixelized": l10n.ic_pixelized,
-      "pride": l10n.ic_pride,
-      "proto": l10n.ic_proto,
-      "refilc": l10n.ic_refilc,
-      "refulc": l10n.ic_refulc,
-      "repont": l10n.ic_repont,
-      "szivacs": l10n.ic_szivacs,
-      "tisza": l10n.ic_tisza,
-      "trans": l10n.ic_trans,
-      "trans_f": l10n.ic_trans_f,
-      "void_icon": l10n.ic_void_icon,
-      "xmas1": l10n.ic_xmas1,
-      "xmas2": l10n.ic_xmas2,
-      "xmas3": l10n.ic_xmas3,
-    };
-
-    if (Platform.isIOS) {
-      final bellDelaySetting =
-          group("settings").subGroup("application")["bell_delay"]
-              as SettingsDouble;
-      bellDelaySetting.postUpdate = () async {
-        LiveActivityService.onBellDelayChanged(bellDelaySetting.value);
-      };
-
-      final morningNotificationTimeSetting =
-          group(
-                "settings",
-              ).subGroup("notifications")["morning_notification_time"]
-              as SettingsDouble;
-      morningNotificationTimeSetting.postUpdate = () async {
-        LiveActivityService.onMorningNotificationTimeChanged(
-          morningNotificationTimeSetting.value,
-        );
-      };
-    }
-  }
-
-  LinkedHashMap<String, SettingsItem> group(String key) {
-    return (items[key] as SettingsGroup).children;
-  }
-
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {
-    for (var item in items.values) {
-      await item.save(model);
-    }
-
-    initData.settingsCubit?.notifyChanged();
-  }
-
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {
-    for (var item in items.values) {
-      await item.load(model);
-    }
-  }
-
-  int roundGrade(num grade) {
-    final rounding = group(
-      "settings",
-    ).subGroup("application").subGroup("rounding");
-    return helper.roundGrade(
-      grade,
-      t1: rounding.dbl("1"),
-      t2: rounding.dbl("2"),
-      t3: rounding.dbl("3"),
-      t4: rounding.dbl("4"),
-    );
-  }
-
-  Color getGradeColor(num grade) {
-    switch (roundGrade(grade)) {
-      case 2:
-        return appStyle.colors.grade2;
-      case 3:
-        return appStyle.colors.grade3;
-      case 4:
-        return appStyle.colors.grade4;
-      case 5:
-        return appStyle.colors.grade5;
-      default:
-        return appStyle.colors.grade1;
-    }
-  }
-
-  TokenModel? getSelectedToken() {
-    final accountPicker =
-        (group("profile_settings")["e_kreta_account_picker"]
-            as SettingsKretenAccountPicker);
-    return isarInit.tokenModels.getSync(accountPicker.accountKey) ??
-        isarInit.tokenModels.where().findFirstSync();
-  }
+    ),
+    SettingsUiSubGroup(
+      null,
+      null,
+      l10n.tt_settings_toast,
+      timetableToastTree(l10n),
+      never,
+    ),
+    SettingsUiPadding(20, always),
+    SettingsUiHeaderSmall("Névjegy", always),
+    SettingsUiSubGroup(
+      FirkaIconType.majesticons,
+      Majesticon.chatSolid,
+      "Discord",
+      const [],
+      always,
+      "discord",
+    ),
+    SettingsUiSubGroup(
+      FirkaIconType.majesticons,
+      Majesticon.lockSolid,
+      l10n.privacyLabel,
+      const [],
+      always,
+      "privacy",
+    ),
+    SettingsUiSubGroup(
+      FirkaIconType.majesticons,
+      Majesticon.awardSolid,
+      l10n.licensesLabel,
+      [
+        SettingsUiBackHeader(l10n.s_settings, always),
+        SettingsUiMediumHeader(l10n.licensesLabel, always),
+        SettingsUiHeaderSmall(l10n.licenseDescription, always),
+        SettingsUiLicensePage(always),
+      ],
+      always,
+    ),
+    SettingsUiBoolean(
+      null,
+      null,
+      "Developer",
+      SettingsRegistry.developerOptsEnabled,
+      never,
+    ),
+  ], always);
 }
 
-extension SettingExt on LinkedHashMap<String, SettingsItem> {
-  LinkedHashMap<String, SettingsItem> group(String key) {
-    return (this[key] as SettingsGroup).children;
-  }
-
-  LinkedHashMap<String, SettingsItem> subGroup(String key) {
-    return (this[key] as SettingsSubGroup).children;
-  }
-
-  String string(String key) {
-    return (this[key] as SettingsString).value;
-  }
-
-  void setString(String key, String value) {
-    (this[key] as SettingsString).value = value;
-  }
-
-  String iconString(String key) {
-    return (this[key] as SettingsAppIconPicker).icon;
-  }
-
-  void setIconString(String key, String value) {
-    (this[key] as SettingsAppIconPicker).icon = value;
-  }
-
-  double dbl(String key) {
-    return (this[key] as SettingsDouble).value;
-  }
-
-  void setDbl(String key, double value) {
-    (this[key] as SettingsDouble).value = value;
-  }
-
-  bool boolean(String key) {
-    return (this[key] as SettingsBoolean).value;
-  }
-
-  void setBoolean(String key, bool value) {
-    (this[key] as SettingsBoolean).value = value;
-  }
-}
-
-class SettingsItem {
-  Id key;
-  FirkaIconType? iconType;
-  Object? iconData;
-  bool Function() visibilityProvider;
-  Future<void> Function() postUpdate = () async {};
-
-  SettingsItem(this.key, this.iconType, this.iconData, this.visibilityProvider);
-
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
-
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
-}
-
-class SettingsGroup implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  LinkedHashMap<String, SettingsItem> children;
-
-  SettingsGroup(this.key, this.children, this.visibilityProvider);
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {
-    for (var item in children.values) {
-      await item.load(model);
-    }
-  }
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {
-    for (var item in children.values) {
-      await item.save(model);
-    }
-
-    initData.settingsCubit?.notifyChanged();
-  }
-}
-
-class SettingsSubGroup implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  String title;
-  LinkedHashMap<String, SettingsItem> children;
-  String? redirectTo;
-
-  SettingsSubGroup(
-    this.key,
-    this.iconType,
-    this.iconData,
-    this.title,
-    this.children,
-    this.visibilityProvider,
-    this.redirectTo,
-  );
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {
-    for (var item in children.values) {
-      await item.load(model);
-    }
-  }
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {
-    for (var item in children.values) {
-      await item.save(model);
-    }
-
-    initData.settingsCubit?.notifyChanged();
-  }
-}
-
-class SettingsPadding implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  double padding;
-
-  SettingsPadding(this.key, this.padding, this.visibilityProvider);
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
-}
-
-class SettingsBackHeader implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  String title;
-
-  SettingsBackHeader(this.key, this.title, this.visibilityProvider);
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
-}
-
-class SettingsHeader implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  String title;
-
-  SettingsHeader(this.key, this.title, this.visibilityProvider);
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
-}
-
-class SettingsMediumHeader implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  String title;
-
-  SettingsMediumHeader(this.key, this.title, this.visibilityProvider);
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
-}
-
-class SettingsHeaderSmall implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  String title;
-
-  SettingsHeaderSmall(this.key, this.title, this.visibilityProvider);
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
-}
-
-class ShowLicensePage implements SettingsItem {
-  @override
-  Id key = 0;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider = always;
-  @override
-  Future<void> Function() postUpdate = () async {};
-
-  ShowLicensePage();
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
-}
-
-class SettingsSubtitle implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  String title;
-
-  SettingsSubtitle(this.key, this.title, this.visibilityProvider);
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
-}
-
-class SettingsAppIconPreview implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  String title = "";
-
-  SettingsAppIconPreview(this.key, this.visibilityProvider);
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
-}
-
-class SettingsKretenAccountPicker implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {
-    await initializeApp();
-  };
-  String title = "";
-  String icon = "";
-  int accountKey = 0;
-
-  SettingsKretenAccountPicker(this.key, this.visibilityProvider);
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {
-    var v = await model.get(key);
-    if (v == null || v.valueIndex == null) {
-      accountKey = 0;
-    } else {
-      accountKey = v.valueIndex!;
-    }
-  }
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {
-    var v = AppSettingsModel();
-    v.id = key;
-    v.valueIndex = accountKey;
-
-    await model.put(v);
-
-    initData.settingsCubit?.notifyChanged();
-  }
-}
-
-class SettingsLogs implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  String title = "";
-  String icon = "";
-
-  SettingsLogs(this.key, this.visibilityProvider);
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
-}
-
-class SettingsAppIconPicker implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  String title = "";
-  String icon = "";
-  String defaultValue;
-  Map<String, List<String>> iconGroups;
-
-  SettingsAppIconPicker(
-    this.key,
-    this.defaultValue,
-    this.iconGroups,
-    this.visibilityProvider,
-  );
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {
-    var v = await model.get(key);
-    if (v == null || v.valueString == null) {
-      icon = defaultValue;
-    } else {
-      icon = v.valueString!;
-    }
-  }
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {
-    var v = AppSettingsModel();
-    v.id = key;
-    v.valueString = icon;
-
-    await model.put(v);
-
-    initData.settingsCubit?.notifyChanged();
-  }
-}
-
-class SettingsBoolean implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  String title;
-  bool value = false;
-  bool defaultValue;
-
-  SettingsBoolean(
-    this.key,
-    this.iconType,
-    this.iconData,
-    this.title,
-    this.defaultValue,
-    this.visibilityProvider, [
-    Future<void> Function()? postUpdateFn,
-  ]) {
-    if (postUpdateFn != null) {
-      postUpdate = postUpdateFn;
-    }
-  }
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {
-    var v = await model.get(key);
-    if (v == null || v.valueBool == null) {
-      value = defaultValue;
-    } else {
-      value = v.valueBool!;
-    }
-  }
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {
-    var v = AppSettingsModel();
-    v.id = key;
-    v.valueBool = value;
-
-    await model.put(v);
-
-    initData.settingsCubit?.notifyChanged();
-  }
-}
-
-class SettingsItemsRadio implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate;
-  List<String> values;
-  int activeIndex = 0;
-  int defaultIndex;
-
-  SettingsItemsRadio(
-    this.key,
-    this.iconType,
-    this.iconData,
-    this.values,
-    this.defaultIndex,
-    this.visibilityProvider,
-    this.postUpdate,
-  );
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {
-    var v = await model.get(key);
-    if (v == null || v.valueIndex == null) {
-      activeIndex = defaultIndex;
-    } else {
-      activeIndex = v.valueIndex!;
-    }
-  }
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {
-    var v = AppSettingsModel();
-    v.id = key;
-    v.valueIndex = activeIndex;
-
-    await model.put(v);
-
-    initData.settingsCubit?.notifyChanged();
-  }
-}
-
-class SettingsDouble implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  String title;
-  double value = 0;
-  double minValue = 0.0;
-  double defaultValue;
-  double maxValue = 0.0;
-  int precision;
-  double? step;
-
-  SettingsDouble(
-    this.key,
-    this.iconType,
-    this.iconData,
-    this.title,
-    this.minValue,
-    this.defaultValue,
-    this.maxValue,
-    this.precision,
-    this.visibilityProvider, {
-    this.step,
-  });
-
-  double toRoundedDouble() {
-    return double.parse(toRoundedString());
-  }
-
-  String toRoundedString() {
-    return precision == 0
-        ? value.toString().split(".")[0]
-        : value.toStringAsPrecision(precision) == "0.0"
-        ? "0"
-        : value.toStringAsPrecision(precision);
-  }
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {
-    var v = await model.get(key);
-    if (v == null || v.valueDouble == null) {
-      value = defaultValue;
-    } else {
-      value = v.valueDouble!;
-    }
-  }
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {
-    var v = AppSettingsModel();
-    v.id = key;
-    v.valueDouble = value;
-
-    await model.put(v);
-
-    initData.settingsCubit?.notifyChanged();
-  }
-}
-
-class SettingsString implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  String title;
-  String value = "";
-  String defaultValue;
-
-  SettingsString(
-    this.key,
-    this.iconType,
-    this.iconData,
-    this.title,
-    this.defaultValue,
-    this.visibilityProvider,
-  );
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {
-    var v = await model.get(key);
-    if (v == null || v.valueString == null) {
-      value = defaultValue;
-    } else {
-      value = v.valueString!;
-    }
-  }
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {
-    var v = AppSettingsModel();
-    v.id = key;
-    v.valueString = value;
-
-    await model.put(v);
-
-    initData.settingsCubit?.notifyChanged();
-  }
-}
-
-class SettingsButton implements SettingsItem {
-  @override
-  Id key;
-  @override
-  FirkaIconType? iconType;
-  @override
-  Object? iconData;
-  @override
-  bool Function() visibilityProvider;
-  @override
-  Future<void> Function() postUpdate = () async {};
-  String title;
-  Future<void> Function() onTap;
-
-  SettingsButton(
-    this.key,
-    this.iconType,
-    this.iconData,
-    this.title,
-    this.visibilityProvider,
-    this.onTap,
-  );
-
-  @override
-  Future<void> load(IsarCollection<AppSettingsModel> model) async {}
-
-  @override
-  Future<void> save(IsarCollection<AppSettingsModel> model) async {}
+SettingsUiGroup buildProfileSettingsTree(AppLocalizations l10n) {
+  return SettingsUiGroup([
+    SettingsUiBackHeader(l10n.s_your_account, always),
+    SettingsUiHeaderSmall(l10n.s_acc_kreta, always),
+    SettingsUiPadding(8, always),
+    SettingsUiKretaAccountPicker(always),
+  ], never);
 }
