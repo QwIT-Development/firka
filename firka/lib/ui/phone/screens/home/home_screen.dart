@@ -17,7 +17,6 @@ import 'package:firka/core/bloc/profile_picture_cubit.dart';
 import 'package:firka/core/bloc/settings_cubit.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/core/image_preloader.dart';
-import 'package:firka/ui/shared/delayed_spinner.dart';
 
 bool _fetching = false;
 bool _prefetched = false;
@@ -34,7 +33,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends FirkaState<HomeScreen>
     with WidgetsBindingObserver {
   bool _disposed = false;
-  bool _preloadDone = false;
   bool _didRunLiveActivityLogin = false;
   bool _hasCompletedFirstPrefetch = false;
 
@@ -178,32 +176,11 @@ class _HomeScreenState extends FirkaState<HomeScreen>
       await ImagePreloader.preloadMultipleAssets(FirkaBundle(), imagePaths);
     } catch (e) {
       logger.severe('Home: error preloading images: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _preloadDone = true);
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_preloadDone) {
-      return Scaffold(
-        backgroundColor: appStyle.colors.background,
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SizedBox(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [SizedBox(), DelayedSpinnerWidget(), SizedBox()],
-            ),
-            SizedBox(),
-          ],
-        ),
-      );
-    }
-
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     return BlocListener<SettingsCubit, SettingsState>(
       listener: (context, state) {
@@ -228,7 +205,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
                 child: Stack(
                   children: [
                     widget.child,
-                    ?(context.watch<ToastCubit>().state.buildWidget(context)),
+                    ?(_toastOverlay(context)),
                   ],
                 ),
               ),
@@ -237,6 +214,14 @@ class _HomeScreenState extends FirkaState<HomeScreen>
         ),
       ),
     );
+  }
+
+  Widget? _toastOverlay(BuildContext context) {
+    final toast = context.watch<ToastCubit>().state;
+    if (toast.type == .fetching && !_hasCompletedFirstPrefetch) {
+      return null;
+    }
+    return toast.buildWidget(context);
   }
 
   @override

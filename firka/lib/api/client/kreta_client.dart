@@ -79,7 +79,11 @@ class KretaClient {
     return lessons;
   }
 
-  Future<void> renewTimetable({bool wholeYear = false}) async {
+  Future<void> renewTimetable({
+    bool wholeYear = false,
+    DateTime? skipFrom,
+    DateTime? skipTo,
+  }) async {
     DateTime now = timeNow();
     DateTime firstDayOfSchool = now.getFirstSchoolDay();
     DateTime firstDayOfNextYear = firstDayOfSchool.copyWith(
@@ -129,12 +133,20 @@ class KretaClient {
     int waitAfter = 5;
     while (date.isBefore(to)) {
       DateTime tmpTo = date.add(Duration(days: 14));
-      requests.add(getLessons(date, tmpTo));
+      final alreadyFetched =
+          skipFrom != null &&
+          skipTo != null &&
+          !date.isBefore(skipFrom) &&
+          !tmpTo.isAfter(skipTo);
+      if (!alreadyFetched) {
+        requests.add(getLessons(date, tmpTo));
+        i++;
+      }
       date = tmpTo;
 
-      i++;
       if (waitAfter == i) {
         await Future.wait(requests);
+        requests = [];
         i = 0;
       }
     }
@@ -164,13 +176,16 @@ class KretaClient {
       if (reInit) {
         await init();
       }
+      final currentFrom = timeNow().getMonday();
+      final currentTo = currentFrom.add(const Duration(days: 14));
       await Future.wait([
         getTests(),
         getHomework(),
         renewMessages(),
         getGrades(),
+        getLessons(currentFrom, currentTo),
       ]);
-      await renewTimetable();
+      await renewTimetable(skipFrom: currentFrom, skipTo: currentTo);
 
       // manual link
       await getOmissions();
@@ -556,6 +571,7 @@ class KretaClient {
     isarInit.writeTxnSync(() {
       isarInit.collection<C>().putAllSync(caches);
     });
+    initData.homeRefreshCubit.requestRefresh();
     return caches;
   }
 
