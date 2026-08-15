@@ -52,28 +52,30 @@ Future<void> showFirkaBottomSheet(
               color: appStyle.colors.background,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Align(
-                  heightFactor: 0,
-                  alignment: Alignment.topCenter,
-                  child: Container(
-                    margin: EdgeInsets.only(top: 18),
-                    width: 40,
-                    height: 4,
-                    foregroundDecoration: ShapeDecoration(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadiusGeometry.circular(2),
+            child: SelectionArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Align(
+                    heightFactor: 0,
+                    alignment: Alignment.topCenter,
+                    child: Container(
+                      margin: EdgeInsets.only(top: 18),
+                      width: 40,
+                      height: 4,
+                      foregroundDecoration: ShapeDecoration(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadiusGeometry.circular(2),
+                        ),
+                        color: appStyle.colors.shadowColor,
                       ),
-                      color: appStyle.colors.shadowColor,
                     ),
                   ),
-                ),
-                SizedBox(height: 40),
-                ...children,
-              ],
+                  SizedBox(height: 40),
+                  ...children,
+                ],
+              ),
             ),
           ),
         ),

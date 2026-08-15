@@ -49,6 +49,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
   late List<DateTime> _tabDays;
 
   bool animating = false;
+  int? _programmaticTargetIndex;
 
   _HomeTimetableScreen();
 
@@ -143,29 +144,43 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
 
   void _goToDay(DateTime day, {bool animate = true}) async {
     if (animating) return;
-    HapticFeedback.mediumImpact();
 
     final targetIndex = _indexForDate(day);
     if (targetIndex == _activePageIndex) return;
 
+    HapticFeedback.mediumImpact();
+    _programmaticTargetIndex = targetIndex;
+
     if (!animate) {
+      animating = true;
       _pageController.jumpToPage(targetIndex);
+      animating = false;
       return;
     }
 
     animating = true;
-    await _pageController.animateToPage(
-      targetIndex,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
-    animating = false;
+    try {
+      await _pageController.animateToPage(
+        targetIndex,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } finally {
+      animating = false;
+    }
   }
 
   void _onPageChanged(int index) {
     if (!mounted) return;
 
-    HapticFeedback.mediumImpact();
+    final programmatic = _programmaticTargetIndex != null;
+    if (programmatic && (index == _programmaticTargetIndex || !animating)) {
+      _programmaticTargetIndex = null;
+    }
+    if (!programmatic) {
+      HapticFeedback.mediumImpact();
+    }
+
     setState(() {
       _activePageIndex = index;
       final weekMonday = _activeWeekMonday;
@@ -239,9 +254,8 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                 onPageChanged: _onPageChanged,
                 itemBuilder: (context, index) {
                   final day = _dateForIndex(index);
-                  final lessons = List<LessonCacheModel>.from(
-                    _lessonsFor(day),
-                  )..removeWhere(isEvent);
+                  final lessons = List<LessonCacheModel>.from(_lessonsFor(day))
+                    ..removeWhere(isEvent);
                   final events = List<LessonCacheModel>.from(_lessonsFor(day))
                     ..retainWhere(isEvent);
                   return TimeTableDayWidget(
@@ -272,9 +286,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                   ),
                 ],
               ),
-              child: Center(
-                child: Wrap(spacing: 16, children: ttWidgets),
-              ),
+              child: Center(child: Wrap(spacing: 16, children: ttWidgets)),
             ),
           ],
         ),
@@ -373,8 +385,9 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                             ),
                           ),
                           onTap: () {
-                            final targetMonday = _currentTabWeekMonday
-                                .subtract(Duration(days: 7));
+                            final targetMonday = _currentTabWeekMonday.subtract(
+                              Duration(days: 7),
+                            );
                             final offset = _activeDay
                                 .difference(_currentTabWeekMonday)
                                 .inDays;
