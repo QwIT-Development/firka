@@ -1,4 +1,5 @@
 import 'package:firka/ui/phone/pages/home/home_omissions.dart';
+import 'package:firka_common/data/models/message_cache_model.dart';
 import 'package:firka_common/data/models/subject_cache_model.dart';
 import 'package:flutter/material.dart';
 import 'package:firka/core/firka_bundle.dart';
@@ -23,8 +24,6 @@ import 'package:firka/routing/chart_interaction_scope.dart';
 import 'package:firka/routing/shell_with_nav_bar.dart';
 import 'package:firka/routing/swipable_navigator_container.dart';
 import 'package:go_router/go_router.dart';
-
-import 'package:kreta_api/kreta_api.dart';
 
 GoRouter createAppRouter() {
   final subjectRoute = GoRoute(
@@ -99,7 +98,7 @@ GoRouter createAppRouter() {
       GoRoute(
         path: '/message',
         builder: (context, state) {
-          final info = state.extra as MessageItem?;
+          final info = state.extra as MessageCacheModel?;
           if (info == null) {
             return const SizedBox.shrink();
           }

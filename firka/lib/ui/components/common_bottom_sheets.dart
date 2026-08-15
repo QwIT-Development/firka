@@ -516,7 +516,7 @@ Future<void> showHomeworkBottomSheet(
         margin: EdgeInsets.all(0),
         padding: EdgeInsets.all(12),
         child: Html(
-          data: homework.description,
+          data: homework.description.withoutFontFeatureSettings(),
           style: {
             "*": Style.fromTextStyle(
               appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),

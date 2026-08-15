@@ -317,4 +317,16 @@ extension StringExtension on String {
       "${string[0]}.",
     ).shortenName(index - string.length + 2 + 1);
   }
+
+  /// Removes CSS font-feature-settings. flutter_html passes values like
+  /// `normal` into FontFeature, which requires a 4-character OpenType tag.
+  String withoutFontFeatureSettings() {
+    return replaceAll(
+      RegExp(
+        r'''font-feature-settings\s*:\s*[^;}"']+;?''',
+        caseSensitive: false,
+      ),
+      "",
+    );
+  }
 }

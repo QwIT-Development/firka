@@ -1,10 +1,10 @@
 import 'package:firka/core/extensions.dart';
 import 'package:firka/app/app_state.dart';
+import 'package:firka_common/data/models/message_cache_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
@@ -12,7 +12,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 class MessageScreen extends StatelessWidget {
   final AppInitialization data;
-  final MessageItem message;
+  final MessageCacheModel message;
 
   const MessageScreen(this.data, this.message, {super.key});
 
@@ -84,7 +84,10 @@ class MessageScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            message.date.format(data.l10n, FormatMode.yyyymmdd),
+                            message.createdAt.format(
+                              data.l10n,
+                              FormatMode.yyyymmdd,
+                            ),
                             textAlign: TextAlign.center,
                             style: appStyle.fonts.B_16R.apply(
                               color: appStyle.colors.textSecondary,
@@ -153,7 +156,8 @@ class MessageScreen extends StatelessWidget {
                               padding: const EdgeInsets.all(12),
                               child: SingleChildScrollView(
                                 child: Html(
-                                  data: message.contentHTML,
+                                  data: message.contentHtml
+                                      .withoutFontFeatureSettings(),
                                   onLinkTap: (url, map, element) => {
                                     if (url != null) launchUrlString(url),
                                   },
