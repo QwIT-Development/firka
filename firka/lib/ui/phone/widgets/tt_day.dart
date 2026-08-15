@@ -14,8 +14,14 @@ import 'lesson.dart';
 class TimeTableDayWidget extends StatelessWidget {
   final List<LessonCacheModel> lessons;
   final List<LessonCacheModel> events;
+  final Future<void> Function()? onRefresh;
 
-  const TimeTableDayWidget(this.lessons, this.events, {super.key});
+  const TimeTableDayWidget(
+    this.lessons,
+    this.events, {
+    this.onRefresh,
+    super.key,
+  });
 
   static String simplifyEventName(String e) {
     return e
@@ -58,40 +64,52 @@ class TimeTableDayWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (lessons.isEmpty) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SvgPicture.asset(
-            "assets/images/logos/dave.svg",
-            width: 48,
-            height: 48,
-          ),
-          SizedBox(height: 12),
-          Text(
-            initData.l10n.tt_no_classes_l1,
-            style: appStyle.fonts.B_16R.apply(
-              color: appStyle.colors.textSecondary,
-            ),
-          ),
-          Text(
-            initData.l10n.tt_no_classes_l2,
-            style: appStyle.fonts.B_16R.apply(
-              color: appStyle.colors.textSecondary,
-            ),
-          ),
-          if (events.isNotEmpty)
-            ...events.map(
-              (event) => Center(
-                child: Text(
-                  simplifyEventName(event.name),
-                  style: appStyle.fonts.B_16R.apply(
-                    color: appStyle.colors.textSecondary,
+      return RefreshIndicator(
+        onRefresh: onRefresh ?? () async {},
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(top: 70 + 16 + 20, left: 20, right: 20),
+          children: [
+            SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.45,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    "assets/images/logos/dave.svg",
+                    width: 48,
+                    height: 48,
                   ),
-                ),
+                  SizedBox(height: 12),
+                  Text(
+                    initData.l10n.tt_no_classes_l1,
+                    style: appStyle.fonts.B_16R.apply(
+                      color: appStyle.colors.textSecondary,
+                    ),
+                  ),
+                  Text(
+                    initData.l10n.tt_no_classes_l2,
+                    style: appStyle.fonts.B_16R.apply(
+                      color: appStyle.colors.textSecondary,
+                    ),
+                  ),
+                  if (events.isNotEmpty)
+                    ...events.map(
+                      (event) => Center(
+                        child: Text(
+                          simplifyEventName(event.name),
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-        ],
+          ],
+        ),
       );
     }
 
@@ -164,15 +182,19 @@ class TimeTableDayWidget extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(top: 70 + 16 + 20, left: 20, right: 20),
-      child: ListView.separated(
-        separatorBuilder: (context, index) => SizedBox(height: 16),
-        itemBuilder: (context, index) {
-          if (ttLessons.length == index) {
-            return SizedBox(height: 55);
-          }
-          return ttLessons[index];
-        },
-        itemCount: ttLessons.length + 1,
+      child: RefreshIndicator(
+        onRefresh: onRefresh ?? () async {},
+        child: ListView.separated(
+          physics: const AlwaysScrollableScrollPhysics(),
+          separatorBuilder: (context, index) => SizedBox(height: 16),
+          itemBuilder: (context, index) {
+            if (ttLessons.length == index) {
+              return SizedBox(height: 55);
+            }
+            return ttLessons[index];
+          },
+          itemCount: ttLessons.length + 1,
+        ),
       ),
     );
   }

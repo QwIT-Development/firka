@@ -93,8 +93,13 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
           GradeSummaryBar(grades: allGrades, l10n: widget.data.l10n),
           SizedBox(height: 20),
           Expanded(
-            child: ListView(
-              children: [
+            child: RefreshIndicator(
+              onRefresh: () => widget.data.client!.pullRefresh(
+                () => widget.data.client!.getGrades(),
+              ),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
                 Text(
                   widget.data.l10n.your_subjects,
                   style: appStyle.fonts.H_14px.apply(
@@ -240,6 +245,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
                 ),*/
               ],
             ),
+          ),
           ),
         ],
       ),

@@ -126,13 +126,13 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: RefreshIndicator(
-        onRefresh: () => Future.value(),
+        onRefresh: () => widget.data.client!.refreshHomeFeed(),
         notificationPredicate: (ScrollNotification notification) {
           return notification.depth == 0;
         },
         triggerMode: RefreshIndicatorTriggerMode.onEdge,
-        displacement: 0,
         child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           clipBehavior: Clip.none,
           children: [
             SizedBox(height: 24),

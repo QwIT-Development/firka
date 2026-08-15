@@ -186,6 +186,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
         listenWhen: (previous, current) =>
             current.refreshTrigger != previous.refreshTrigger,
         listener: (context, state) {
+          _lessonsCache.clear();
           setState(() {});
         },
         child: _buildContent(context),
@@ -243,7 +244,16 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                   )..removeWhere(isEvent);
                   final events = List<LessonCacheModel>.from(_lessonsFor(day))
                     ..retainWhere(isEvent);
-                  return TimeTableDayWidget(lessons, events);
+                  return TimeTableDayWidget(
+                    lessons,
+                    events,
+                    onRefresh: () => widget.data.client!.pullRefresh(
+                      () => widget.data.client!.getLessonsCovering(
+                        _currentTabWeekMonday,
+                        _currentTabWeekMonday.add(const Duration(days: 7)),
+                      ),
+                    ),
+                  );
                 },
               ),
             ),

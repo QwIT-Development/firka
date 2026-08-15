@@ -373,11 +373,20 @@ class _HomeTimetableMonthlyScreen
                 left: 20,
                 right: 20,
               ),
-              child: GridView.count(
-                crossAxisCount: 7,
-                mainAxisSpacing: 16,
-                mainAxisExtent: 62,
-                children: ttDays,
+              child: RefreshIndicator(
+                onRefresh: () => widget.data.client!.pullRefresh(
+                  () => widget.data.client!.getLessonsCovering(
+                    currentMonthStart,
+                    currentMonthEnd,
+                  ),
+                ),
+                child: GridView.count(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  crossAxisCount: 7,
+                  mainAxisSpacing: 16,
+                  mainAxisExtent: 62,
+                  children: ttDays,
+                ),
               ),
             ),
           ),

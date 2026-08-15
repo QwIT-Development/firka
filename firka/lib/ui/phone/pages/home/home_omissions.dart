@@ -177,10 +177,15 @@ class _HomeOmissionsScreen extends FirkaState<HomeOmissionsScreen> {
           OmissionBar(),
           SizedBox(height: 20),
           Expanded(
-            child: ListView(
-              children: [
-                Text(
-                  initData.l10n.subjects,
+            child: RefreshIndicator(
+              onRefresh: () => widget.data.client!.pullRefresh(
+                () => widget.data.client!.getOmissions(),
+              ),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  Text(
+                    initData.l10n.subjects,
                   style: appStyle.fonts.B_16SB.copyWith(
                     color: appStyle.colors.textPrimary,
                   ),
@@ -292,6 +297,7 @@ class _HomeOmissionsScreen extends FirkaState<HomeOmissionsScreen> {
                     }),
               ],
             ),
+          ),
           ),
         ],
       ),

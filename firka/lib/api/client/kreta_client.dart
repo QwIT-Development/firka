@@ -199,6 +199,49 @@ class KretaClient {
     }
   }
 
+  /// Runs [action] without the fetching toast. Sets the error toast on failure.
+  Future<void> pullRefresh(Future Function() action) async {
+    try {
+      await action();
+    } catch (e) {
+      if (!isTokenExpired(e)) {
+        _toastCubit.setActiveToast(.error, e);
+      }
+    }
+  }
+
+  /// Refetches everything shown on the home feed (not the full school-year cache).
+  Future<void> refreshHomeFeed() async {
+    await pullRefresh(() async {
+      final weekFrom = timeNow().getMonday();
+      final weekTo = weekFrom.add(const Duration(days: 7));
+      await Future.wait([
+        getStudent(),
+        getTests(),
+        getHomework(),
+        renewMessages(),
+        getGrades(),
+        getLessons(weekFrom, weekTo),
+      ]);
+      // manual link
+      await getOmissions();
+      cache.resolveTeachers();
+    });
+  }
+
+  /// Fetches lessons in 14-day chunks so [from]..[to] stays under the API range limit.
+  Future<void> getLessonsCovering(DateTime from, DateTime to) async {
+    DateTime date = from;
+    final requests = <Future>[];
+    while (date.isBefore(to)) {
+      final tmpTo = date.add(const Duration(days: 14));
+      final end = tmpTo.isAfter(to) ? to : tmpTo;
+      requests.add(getLessons(date, end));
+      date = tmpTo;
+    }
+    await Future.wait(requests);
+  }
+
   Future<void> _setReauthFlag() async {
     if (Platform.isIOS) {
       try {
