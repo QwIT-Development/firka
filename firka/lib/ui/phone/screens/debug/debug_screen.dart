@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:firka_common/data/models/class_average_cache_model.dart';
 import 'package:firka_common/data/models/class_group_cache_model.dart';
-import 'package:firka_common/data/models/generic_cache_model.dart';
 import 'package:firka_common/data/models/grade_cache_model.dart';
 import 'package:firka_common/data/models/homework_cache_model.dart';
 import 'package:firka_common/data/models/lesson_cache_model.dart';
@@ -23,7 +22,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
-import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:path/path.dart' as p;

@@ -30,7 +30,8 @@ class SettingsSchemaBuilder implements Builder {
         .whereType<ClassDeclaration>()
         .firstWhere((c) => c.name.lexeme == "SettingsSchema");
 
-    final entries = <(String name, String dartType, String annotationClass, String args)>[];
+    final entries =
+        <(String name, String dartType, String annotationClass, String args)>[];
     for (final member in schemaClass.members) {
       if (member is! MethodDeclaration || !member.isGetter) continue;
 

@@ -3,7 +3,6 @@ import 'package:firka_common/core/consts.dart';
 import 'package:firka_common/data/models/token_model.dart';
 
 import 'package:firka/app/app_state.dart';
-import 'package:firka_common/data/models/token_model.dart';
 import 'package:kreta_api/kreta_api.dart';
 
 Future<TokenGrantResponse> getAccessToken(String code) async {
@@ -58,8 +57,8 @@ Future<TokenGrantResponse> extendToken(TokenModel model) async {
   };
 
   final formData = <String, String>{
-    "institute_code": model.iss!,
-    "refresh_token": model.refreshToken!,
+    "institute_code": model.iss,
+    "refresh_token": model.refreshToken,
     "grant_type": "refresh_token",
     "client_id": Constants.clientId,
   };

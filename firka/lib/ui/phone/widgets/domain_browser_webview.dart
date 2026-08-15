@@ -18,11 +18,7 @@ class DomainBrowserWebviewWidget extends StatefulWidget {
   final AppInitialization? data;
   final String? url;
 
-  const DomainBrowserWebviewWidget({
-    super.key,
-    this.data,
-    this.url,
-  });
+  const DomainBrowserWebviewWidget({super.key, this.data, this.url});
 
   @override
   State<DomainBrowserWebviewWidget> createState() =>
@@ -51,8 +47,10 @@ class _DomainBrowserWebviewWidgetState
       end: 0.0,
     ).animate(_fadeAnimationController!);
 
-    assert(widget.data != null && widget.url != null,
-        'DomainBrowserWebviewWidget requires non-null data and url');
+    assert(
+      widget.data != null && widget.url != null,
+      'DomainBrowserWebviewWidget requires non-null data and url',
+    );
 
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -93,10 +91,12 @@ class _DomainBrowserWebviewWidgetState
       return const SizedBox.shrink();
     }
 
-    final data = widget.data!;
     final mediaQuery = MediaQuery.of(context);
     final safePadding = mediaQuery.padding;
-    final displayUrl = (widget.url ?? '').replaceFirst(RegExp(r'^https?://'), '');
+    final displayUrl = (widget.url ?? '').replaceFirst(
+      RegExp(r'^https?://'),
+      '',
+    );
     final displayParts = displayUrl.split('/');
     final host = displayParts.isNotEmpty ? displayParts.first : displayUrl;
     final path = displayParts.length > 1
@@ -158,7 +158,7 @@ class _DomainBrowserWebviewWidgetState
                       color: appStyle.colors.accent,
                       size: 16,
                     ),
-                    ),
+                  ),
                 ),
               ],
             ),
@@ -186,8 +186,8 @@ class _DomainBrowserWebviewWidgetState
                             opacity: _isLoading
                                 ? 1.0
                                 : _fadeAnimationController!.isAnimating
-                                    ? _fadeAnimation!.value
-                                    : 0.0,
+                                ? _fadeAnimation!.value
+                                : 0.0,
                             duration: const Duration(milliseconds: 300),
                             child: Container(
                               color: appStyle.colors.background,
@@ -232,7 +232,8 @@ class _DomainBrowserWebviewWidgetState
                                 text: path,
                                 style: appStyle.fonts.B_14R.copyWith(
                                   fontSize: 16,
-                                  color: appStyle.colors.textTeritary ??
+                                  color:
+                                      appStyle.colors.textTeritary ??
                                       appStyle.colors.textSecondary,
                                 ),
                               ),

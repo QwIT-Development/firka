@@ -15,7 +15,6 @@ import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka_common/ui/theme/style.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
-import 'package:kreta_api/kreta_api.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 class _LessonSliderState extends State<LessonSlider> {

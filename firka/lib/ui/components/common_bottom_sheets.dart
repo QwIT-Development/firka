@@ -11,7 +11,6 @@ import 'package:firka_common/data/util.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:firka_common/ui/shared/grade_small_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kreta_api/kreta_api.dart';
 import 'package:firka_common/data/models/homework_cache_model.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings/settings_repository.dart';
@@ -30,7 +29,6 @@ import 'package:go_router/go_router.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka_common/ui/components/grade.dart';
-import 'package:firka_common/core/grade_helper.dart';
 
 Future<void> showFirkaBottomSheet(
   BuildContext context,
@@ -726,7 +724,7 @@ class _GradeCalculatorSheetContentState
                     min: 0,
                     max: (_snapPoints.length - 1).toDouble(),
                     divisions: _snapPoints.length - 1,
-                    label: '${weightPercent}%',
+                    label: '$weightPercent%',
                     onChanged: (v) => setState(() => weightIndex = v.round()),
                   ),
                 ),

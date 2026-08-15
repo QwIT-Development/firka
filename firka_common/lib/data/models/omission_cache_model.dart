@@ -1,4 +1,3 @@
-import 'package:firka_common/data/database.dart';
 import 'package:firka_common/data/models/generic_cache_model.dart';
 import 'package:firka_common/data/models/lesson_cache_model.dart';
 import 'package:firka_common/data/util.dart';

@@ -1,9 +1,7 @@
 import 'package:firka/ui/phone/widgets/grade_summary_bar.dart';
 import 'package:firka/ui/phone/widgets/info_card.dart';
-import 'package:firka_common/data/database.dart';
 import 'package:firka_common/data/models/grade_cache_model.dart';
 import 'package:firka_common/data/models/subject_cache_model.dart';
-import 'package:firka_common/data/models/teacher_model.dart';
 import 'package:firka_common/data/util.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:firka/core/extensions.dart';

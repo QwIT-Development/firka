@@ -1,3 +1,4 @@
+import 'package:firka_common/data/models/subject_cache_model.dart';
 import 'package:flutter/material.dart';
 import 'package:kreta_api/kreta_api.dart';
 
@@ -58,9 +59,7 @@ class LessonCardSmall extends StatelessWidget {
             height: 24,
             child: Center(
               child: ClassIconWidget(
-                uid: uid,
-                className: subjectName,
-                category: category,
+                subject: SubjectCacheModel()..name = subjectName,
                 color: iconColor ?? wearStyle.colors.accent,
                 size: 16,
               ),

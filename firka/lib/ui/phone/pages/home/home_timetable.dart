@@ -85,7 +85,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
       tempTargetIndex = oldIndex < targetIndex ? oldIndex + 1 : oldIndex - 1;
 
       // Create a new order where target day is next to current day
-      List<DateTime> reorderedDates = List.from(_animationDates!);
+      List<DateTime> reorderedDates = List.from(_animationDates);
       final targetDate = reorderedDates.removeAt(targetIndex);
       reorderedDates.insert(tempTargetIndex, targetDate);
 

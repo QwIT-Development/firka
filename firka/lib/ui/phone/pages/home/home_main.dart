@@ -1,38 +1,20 @@
 import 'dart:async';
-import 'dart:collection';
 
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:firka_common/data/models/grade_cache_model.dart';
-import 'package:firka_common/data/models/homework_cache_model.dart';
 import 'package:firka_common/data/models/lesson_cache_model.dart';
-import 'package:firka_common/data/models/message_cache_model.dart';
-import 'package:firka_common/data/models/omission_cache_model.dart';
-import 'package:firka_common/data/models/student_cache_model.dart';
-import 'package:firka_common/data/models/test_cache_model.dart';
 import 'package:firka/ui/phone/widgets/info_card.dart';
-import 'package:firka/ui/phone/widgets/lesson.dart';
 import 'package:firka/ui/phone/widgets/lesson_slider.dart';
 import 'package:firka_common/data/util.dart';
-import 'package:firka_common/ui/components/filled_circle.dart';
-import 'package:flutter/rendering.dart';
 import 'package:isar_community/isar.dart';
-import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/extensions.dart';
-import 'package:firka/ui/phone/widgets/home_main_starting_soon.dart';
-import 'package:firka/ui/shared/delayed_spinner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/state/firka_state.dart';
-import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
 import 'package:firka/ui/theme/style.dart';
-import 'package:firka/ui/shared/firka_icon.dart';
 import '../../widgets/home_main_welcome.dart';
-import '../../widgets/lesson_big.dart';
 
 class HomeMainScreen extends StatefulWidget {
   final AppInitialization data;

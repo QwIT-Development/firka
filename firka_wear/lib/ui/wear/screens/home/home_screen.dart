@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:firka_common/data/models/subject_cache_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_arc_text/flutter_arc_text.dart';
@@ -336,10 +337,8 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
                 child: ClassIconWidget(
                   color: wearStyle.colors.accent,
                   size: 16,
-                  uid: currentLesson.uid,
-                  className: currentLesson.name,
-                  category: currentLesson.subject?.name ?? '',
-                ).build(context),
+                  subject: SubjectCacheModel()..name = currentLesson.name,
+                ),
               ),
               const SizedBox(height: 4),
               Center(

@@ -152,8 +152,7 @@ class IOSWidgetHelper {
             },
       'theme': lesson.theme,
       'roomName': lesson.roomName,
-      'isCancelled':
-          lesson.state.name?.toLowerCase().contains('elmarad') ?? false,
+      'isCancelled': lesson.state.name.toLowerCase().contains('elmarad'),
       'isSubstitution': lesson.substituteTeacher != null,
     };
   }

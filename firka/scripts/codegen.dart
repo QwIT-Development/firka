@@ -13,7 +13,9 @@ void main() async {
 
   if (_iconsOutOfDate(root)) {
     final inputs = _iconsInputs(root);
-    final manifestFile = File(p.join(root, 'android/app/src/main/AndroidManifest.xml'));
+    final manifestFile = File(
+      p.join(root, 'android/app/src/main/AndroidManifest.xml'),
+    );
     String? manifestBackup;
     if (manifestFile.existsSync()) {
       manifestBackup = manifestFile.readAsStringSync();

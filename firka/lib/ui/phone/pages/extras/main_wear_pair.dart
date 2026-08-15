@@ -76,7 +76,7 @@ class _WearPairSheetContentState extends State<_WearPairSheetContent> {
         'idToken': m.idToken,
         'accessToken': m.accessToken,
         'refreshToken': m.refreshToken,
-        'expiryDate': m.expiryDate!.millisecondsSinceEpoch,
+        'expiryDate': m.expiryDate.millisecondsSinceEpoch,
       },
       'lastSyncAt': widget.payload['lastSyncAt'],
       'timetable': widget.payload['timetable'],

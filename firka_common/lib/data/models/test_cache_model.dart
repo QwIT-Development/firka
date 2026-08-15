@@ -1,6 +1,5 @@
 import 'package:firka_common/data/models/generic_cache_model.dart';
 import 'package:firka_common/data/models/lesson_cache_model.dart';
-import 'package:firka_common/data/models/subject_cache_model.dart';
 import 'package:firka_common/data/util.dart';
 import 'package:isar_community/isar.dart';
 import 'package:kreta_api/kreta_api.dart';

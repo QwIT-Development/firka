@@ -55,8 +55,7 @@ class LiveActivityBackendClient {
           'roomName': lesson.roomName,
           'isSubstitution': lesson.substituteTeacher != null,
           'substituteTeacher': lesson.substituteTeacher,
-          'isCancelled':
-              lesson.state.name?.toLowerCase().contains('elmarad') ?? false,
+          'isCancelled': lesson.state.name.toLowerCase().contains('elmarad'),
           'lastModified': validLastModified.toIso8601String(),
         };
       }).toList();
@@ -141,8 +140,7 @@ class LiveActivityBackendClient {
           'roomName': lesson.roomName,
           'isSubstitution': lesson.substituteTeacher != null,
           'substituteTeacher': lesson.substituteTeacher,
-          'isCancelled':
-              lesson.state.name?.toLowerCase().contains('elmarad') ?? false,
+          'isCancelled': lesson.state.name.toLowerCase().contains('elmarad'),
           'lastModified': validLastModified.toIso8601String(),
         };
       }).toList();

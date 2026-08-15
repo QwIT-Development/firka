@@ -1,7 +1,5 @@
 import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:firka_common/data/models/lesson_cache_model.dart';
-import 'package:firka_common/data/models/omission_cache_model.dart';
-import 'package:firka_common/data/models/test_cache_model.dart';
 import 'package:firka_common/data/util.dart';
 import 'package:isar_community/isar.dart';
 import 'package:kreta_api/kreta_api.dart';
@@ -9,11 +7,9 @@ import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/ui/theme/style.dart';
-import 'package:firka/ui/shared/delayed_spinner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:transparent_pointer/transparent_pointer.dart';
 
@@ -87,7 +83,7 @@ class _HomeTimetableMonthlyScreen
     // column-major -> row-major
     for (var week = 0; week < 7; week++) {
       for (var day = 0; day < 7; day++) {
-        final d = dates![week * 7 + day];
+        final d = dates[week * 7 + day];
 
         bool outOfRange =
             d.isBefore(currentMonthStart) || d.isAfter(currentMonthEnd);
@@ -339,12 +335,12 @@ class _HomeTimetableMonthlyScreen
                         ),
                         onTap: () async {
                           setState(() {
-                            now = DateTime(now!.year, now!.month - 1);
+                            now = DateTime(now.year, now.month - 1);
                           });
                         },
                       ),
                       Text(
-                        now!
+                        now
                             .format(widget.data.l10n, FormatMode.yyyymmmm)
                             .toLowerCase(),
                         style: appStyle.fonts.B_16R.apply(
@@ -360,7 +356,7 @@ class _HomeTimetableMonthlyScreen
                         ),
                         onTap: () async {
                           setState(() {
-                            now = DateTime(now!.year, now!.month + 1);
+                            now = DateTime(now.year, now.month + 1);
                           });
                         },
                       ),

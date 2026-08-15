@@ -1,6 +1,4 @@
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:firka_common/data/database.dart';
-import 'package:firka_common/data/models/student_cache_model.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:isar_community/isar.dart';
 

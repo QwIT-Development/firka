@@ -124,7 +124,7 @@ class SettingsUiButton extends SettingsUiNode {
 }
 
 class SettingsUiAppIconPreview extends SettingsUiNode {
-  const SettingsUiAppIconPreview(bool Function() visible) : super(visible);
+  const SettingsUiAppIconPreview(super.visible);
 }
 
 class SettingsUiAppIconPicker extends SettingsUiNode {
@@ -139,13 +139,13 @@ class SettingsUiAppIconPicker extends SettingsUiNode {
 }
 
 class SettingsUiKretaAccountPicker extends SettingsUiNode {
-  const SettingsUiKretaAccountPicker(bool Function() visible) : super(visible);
+  const SettingsUiKretaAccountPicker(super.visible);
 }
 
 class SettingsUiLogs extends SettingsUiNode {
-  const SettingsUiLogs(bool Function() visible) : super(visible);
+  const SettingsUiLogs(super.visible);
 }
 
 class SettingsUiLicensePage extends SettingsUiNode {
-  const SettingsUiLicensePage(bool Function() visible) : super(visible);
+  const SettingsUiLicensePage(super.visible);
 }

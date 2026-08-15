@@ -8,7 +8,6 @@ import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/ui/theme/style.dart';
 
 class WelcomeWidget extends StatefulWidget {

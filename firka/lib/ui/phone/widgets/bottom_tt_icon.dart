@@ -1,6 +1,5 @@
 import 'package:firka/core/extensions.dart';
 import 'package:firka/l10n/app_localizations.dart';
-import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firka/ui/theme/style.dart';

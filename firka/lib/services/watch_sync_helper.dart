@@ -116,9 +116,6 @@ class WatchSyncHelper {
     required TokenModel currentToken,
   }) {
     final currentExpiry = currentToken.expiryDate;
-    if (currentExpiry == null) {
-      return true;
-    }
 
     final incomingVersion =
         incomingTokenVersion ??
@@ -160,7 +157,6 @@ class WatchSyncHelper {
 
     final currentRefresh = currentToken.refreshToken;
     if (incomingRefreshToken != null &&
-        currentRefresh != null &&
         incomingRefreshToken != currentRefresh) {
       if (incomingIdToken != null && incomingIdToken != currentToken.idToken) {
         return true;
@@ -195,7 +191,7 @@ class WatchSyncHelper {
       'idToken': token.idToken,
       'accessToken': token.accessToken,
       'refreshToken': token.refreshToken,
-      'expiryDate': token.expiryDate!.millisecondsSinceEpoch,
+      'expiryDate': token.expiryDate.millisecondsSinceEpoch,
       'tokenVersion': tokenVersion,
       'updatedAtMs': updatedAtMs,
     };
@@ -412,7 +408,7 @@ class WatchSyncHelper {
       await isar.tokenModels.clear();
     });
 
-    if (initDone) initData.toastCubit?.clear();
+    if (initDone) initData.toastCubit.clear();
 
     await prefs.setBool(_iosFreshInstallHandledKey, true);
     return true;
@@ -493,9 +489,9 @@ class WatchSyncHelper {
         );
       } else {
         final token = initData.client!.cache.token;
-        final expiryDate = token?.expiryDate;
-        if (expiryDate != null && expiryDate.isAfter(DateTime.now())) {
-          if (initDone) initData.toastCubit?.clear();
+        final expiryDate = token.expiryDate;
+        if (expiryDate.isAfter(DateTime.now())) {
+          if (initDone) initData.toastCubit.clear();
           debugPrint(
             '[WatchSync] Cleared reauth flag after iCloud notification (token is valid)',
           );
@@ -513,17 +509,6 @@ class WatchSyncHelper {
     }
 
     final token = initData.client!.cache.token;
-    if (token == null) {
-      debugPrint('[WatchSync] No active token available');
-      return {'error': 'no_token'};
-    }
-
-    if (token.accessToken == null ||
-        token.refreshToken == null ||
-        token.expiryDate == null) {
-      debugPrint('[WatchSync] Token incomplete');
-      return {'error': 'token_incomplete'};
-    }
 
     if (initData.client!.needsReauth) {
       debugPrint('[WatchSync] iPhone needs reauth');
@@ -699,12 +684,8 @@ class WatchSyncHelper {
       final watchIdToken = tokenData['idToken'] as String?;
       final watchRefreshToken = tokenData['refreshToken'] as String?;
 
-      final isForActiveAccount =
-          expectedStudentIdNorm == null ||
-          watchStudentIdNorm == expectedStudentIdNorm;
-      if (isForActiveAccount &&
-          currentToken != null &&
-          currentToken.key == watchStudentIdNorm) {
+      final isForActiveAccount = watchStudentIdNorm == expectedStudentIdNorm;
+      if (isForActiveAccount && currentToken.key == watchStudentIdNorm) {
         if (!_isIncomingTokenNewerThanCurrent(
           incomingExpiry: watchExpiryDate,
           incomingIdToken: watchIdToken,
@@ -742,7 +723,7 @@ class WatchSyncHelper {
 
       if (isForActiveAccount) {
         initData.client!.cache.token = newToken;
-        if (initDone) initData.toastCubit?.clear();
+        if (initDone) initData.toastCubit.clear();
       } else {
         debugPrint(
           '[WatchSync] Stored token for inactive account ($watchStudentIdNorm), active is $expectedStudentIdNorm',
@@ -765,13 +746,6 @@ class WatchSyncHelper {
     final watchInstalled = await isWatchAppInstalled();
     if (!watchInstalled) {
       debugPrint('[WatchSync] No paired Watch app, skipping token send');
-      return;
-    }
-
-    if (token.accessToken == null ||
-        token.refreshToken == null ||
-        token.expiryDate == null) {
-      debugPrint('[WatchSync] Token incomplete, not sending to Watch');
       return;
     }
 
@@ -870,8 +844,7 @@ class WatchSyncHelper {
       final expectedStudentIdNorm = initData.client!.cache.token.key;
 
       final iCloudStudentIdNorm = tokenData['studentIdNorm'] as int?;
-      if (expectedStudentIdNorm != null &&
-          iCloudStudentIdNorm != expectedStudentIdNorm) {
+      if (iCloudStudentIdNorm != expectedStudentIdNorm) {
         debugPrint(
           '[WatchSync] iCloud token belongs to different account ($iCloudStudentIdNorm), active is $expectedStudentIdNorm - ignoring',
         );
@@ -903,17 +876,15 @@ class WatchSyncHelper {
       final iCloudRefreshToken = tokenData['refreshToken'] as String?;
 
       final currentToken = initData.client!.cache.token;
-      final localExpiry = currentToken?.expiryDate;
-      final shouldAccept = currentToken == null
-          ? true
-          : _isIncomingTokenNewerThanCurrent(
-              incomingExpiry: iCloudExpiryDate,
-              incomingIdToken: iCloudIdToken,
-              incomingRefreshToken: iCloudRefreshToken,
-              incomingTokenVersion: iCloudTokenVersion,
-              incomingUpdatedAtMs: iCloudUpdatedAtMs,
-              currentToken: currentToken,
-            );
+      final localExpiry = currentToken.expiryDate;
+      final shouldAccept = _isIncomingTokenNewerThanCurrent(
+        incomingExpiry: iCloudExpiryDate,
+        incomingIdToken: iCloudIdToken,
+        incomingRefreshToken: iCloudRefreshToken,
+        incomingTokenVersion: iCloudTokenVersion,
+        incomingUpdatedAtMs: iCloudUpdatedAtMs,
+        currentToken: currentToken,
+      );
 
       if (shouldAccept) {
         debugPrint(
@@ -937,18 +908,14 @@ class WatchSyncHelper {
           await effectiveIsar.tokenModels.put(newToken);
         });
 
-        if (effectiveClient != null &&
-            (expectedStudentIdNorm == null ||
-                newToken.key == expectedStudentIdNorm)) {
+        if (effectiveClient != null && newToken.key == expectedStudentIdNorm) {
           effectiveClient.cache.token = newToken;
         }
 
         final shouldClearReauth =
-            !iCloudAccessExpired &&
-            (expectedStudentIdNorm == null ||
-                newToken.key == expectedStudentIdNorm);
+            !iCloudAccessExpired && newToken.key == expectedStudentIdNorm;
         if (shouldClearReauth) {
-          if (initDone) initData.toastCubit?.clear();
+          if (initDone) initData.toastCubit.clear();
         }
 
         debugPrint(
@@ -973,13 +940,6 @@ class WatchSyncHelper {
     bool forceAccountSwitch = false,
   }) async {
     if (!Platform.isIOS) return;
-
-    if (token.accessToken == null ||
-        token.refreshToken == null ||
-        token.expiryDate == null) {
-      debugPrint('[WatchSync] Token incomplete, not saving to iCloud');
-      return;
-    }
 
     final watchInstalled = await isWatchAppInstalled();
     if (!watchInstalled) {
@@ -1019,11 +979,7 @@ class WatchSyncHelper {
 
       if (result == null) {
         debugPrint('[WatchSync] No response from Watch');
-        if (currentToken != null &&
-            currentToken.accessToken != null &&
-            currentToken.refreshToken != null &&
-            currentToken.expiryDate != null &&
-            !initData.client!.needsReauth) {
+        if (!initData.client!.needsReauth) {
           debugPrint('[WatchSync] Sending iPhone token to Watch (no response)');
           await _sendTokenToWatchInternal(
             currentToken,
@@ -1036,11 +992,7 @@ class WatchSyncHelper {
       final tokenData = result as Map<dynamic, dynamic>;
       if (tokenData.containsKey('error')) {
         debugPrint('[WatchSync] Watch returned error: ${tokenData['error']}');
-        if (currentToken != null &&
-            currentToken.accessToken != null &&
-            currentToken.refreshToken != null &&
-            currentToken.expiryDate != null &&
-            !initData.client!.needsReauth) {
+        if (!initData.client!.needsReauth) {
           debugPrint(
             '[WatchSync] Sending iPhone token to Watch (Watch has no token)',
           );
@@ -1064,16 +1016,11 @@ class WatchSyncHelper {
         return;
       }
 
-      if (expectedStudentIdNorm != null &&
-          watchStudentIdNorm != expectedStudentIdNorm) {
+      if (watchStudentIdNorm != expectedStudentIdNorm) {
         debugPrint(
           '[WatchSync] Watch token belongs to different account ($watchStudentIdNorm), active is $expectedStudentIdNorm - keeping active account',
         );
-        if (currentToken != null &&
-            currentToken.accessToken != null &&
-            currentToken.refreshToken != null &&
-            currentToken.expiryDate != null &&
-            !(initData.client!.needsReauth)) {
+        if (!(initData.client!.needsReauth)) {
           await _sendTokenToWatchInternal(
             currentToken,
             allowExpiredAccessToken: true,
@@ -1087,11 +1034,7 @@ class WatchSyncHelper {
         debugPrint(
           '[WatchSync] Watch provided expired token, ignoring and keeping iPhone token',
         );
-        if (currentToken != null &&
-            currentToken.accessToken != null &&
-            currentToken.refreshToken != null &&
-            currentToken.expiryDate != null &&
-            _isAccessTokenUsable(
+        if (_isAccessTokenUsable(
               currentToken.expiryDate,
               skew: const Duration(),
             ) &&
@@ -1107,16 +1050,14 @@ class WatchSyncHelper {
       final watchUpdatedAtMs = _asInt(tokenData['updatedAtMs']);
       final watchIdToken = tokenData['idToken'] as String?;
       final watchRefreshToken = tokenData['refreshToken'] as String?;
-      final shouldAccept = currentToken == null
-          ? true
-          : _isIncomingTokenNewerThanCurrent(
-              incomingExpiry: watchExpiryDate,
-              incomingIdToken: watchIdToken,
-              incomingRefreshToken: watchRefreshToken,
-              incomingTokenVersion: watchTokenVersion,
-              incomingUpdatedAtMs: watchUpdatedAtMs,
-              currentToken: currentToken,
-            );
+      final shouldAccept = _isIncomingTokenNewerThanCurrent(
+        incomingExpiry: watchExpiryDate,
+        incomingIdToken: watchIdToken,
+        incomingRefreshToken: watchRefreshToken,
+        incomingTokenVersion: watchTokenVersion,
+        incomingUpdatedAtMs: watchUpdatedAtMs,
+        currentToken: currentToken,
+      );
       if (shouldAccept) {
         debugPrint('[WatchSync] Watch has newer token, updating iPhone');
         final newToken = TokenModel.fromValues(
@@ -1138,9 +1079,8 @@ class WatchSyncHelper {
 
         initData.client!.cache.token = newToken;
 
-        if (expectedStudentIdNorm == null ||
-            newToken.key == expectedStudentIdNorm) {
-          if (initDone) initData.toastCubit?.clear();
+        if (newToken.key == expectedStudentIdNorm) {
+          if (initDone) initData.toastCubit.clear();
         }
 
         debugPrint(

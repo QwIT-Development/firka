@@ -1,7 +1,6 @@
 import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka_common/core/grade_helper.dart';
 import 'package:firka_common/data/models/grade_cache_model.dart';
-import 'package:kreta_api/kreta_api.dart';
 import 'package:firka_common/ui/components/grade.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';

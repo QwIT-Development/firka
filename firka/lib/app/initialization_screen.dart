@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:firka/api/client/kreta_client.dart';
-import 'package:firka/core/extensions.dart';
-import 'package:firka_common/core/debug_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -46,7 +43,6 @@ class _InitializationScreenState extends State<InitializationScreen> {
       colorScheme: ColorScheme.fromSeed(
         seedColor: style.colors.accent,
         brightness: style.isLight ? Brightness.light : Brightness.dark,
-        background: style.colors.background,
         surface: style.colors.card,
       ),
       useMaterial3: false,
@@ -178,11 +174,11 @@ class _InitializationScreenState extends State<InitializationScreen> {
             appRouter = _router;
           }
 
-          final themeCubit = initData.themeCubit!;
-          final settingsCubit = initData.settingsCubit!;
-          final profilePictureCubit = initData.profilePictureCubit!;
-          final reauthCubit = initData.toastCubit!;
-          final homeRefreshCubit = initData.homeRefreshCubit!;
+          final themeCubit = initData.themeCubit;
+          final settingsCubit = initData.settingsCubit;
+          final profilePictureCubit = initData.profilePictureCubit;
+          final reauthCubit = initData.toastCubit;
+          final homeRefreshCubit = initData.homeRefreshCubit;
           return MultiBlocProvider(
             providers: [
               BlocProvider<ThemeCubit>.value(value: themeCubit),

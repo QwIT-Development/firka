@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:firka_common/core/consts.dart';
-import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/app/initialization.dart';
 import 'package:flutter/foundation.dart';

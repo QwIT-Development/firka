@@ -1,14 +1,6 @@
-import 'dart:collection';
-
-import 'package:firka/core/extensions.dart';
-import 'package:firka_common/core/grade_helper.dart';
-import 'package:firka_common/data/models/class_average_cache_model.dart';
-import 'package:firka_common/data/models/grade_cache_model.dart';
-import 'package:firka_common/data/models/lesson_cache_model.dart';
 import 'package:firka_common/data/models/subject_cache_model.dart';
 import 'package:firka_common/data/util.dart';
 import 'package:isar_community/isar.dart';
-import 'package:kreta_api/kreta_api.dart';
 import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka_common/core/grade_helper.dart';
 import 'package:firka/ui/phone/widgets/grade_chart.dart';
@@ -18,13 +10,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
-import 'package:firka/core/settings.dart';
 import 'package:firka/ui/theme/style.dart';
-import 'package:firka/ui/shared/delayed_spinner.dart';
 
 class HomeGradesScreen extends StatefulWidget {
   final AppInitialization data;

@@ -21,9 +21,6 @@ import 'package:firka/core/image_preloader.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/shared/delayed_spinner.dart';
 
-const String _privacyUrlHungarian = 'https://firka.app/privacy-policy';
-const String _privacyUrlOther = 'https://firka.app/privacy-policy';
-
 class LoginScreen extends StatefulWidget {
   final AppInitialization data;
   const LoginScreen(this.data, {super.key});
@@ -44,7 +41,7 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
   }
 
   String _getPrivacyPolicyUrl() {
-    return  "https://firka.app/privacy";
+    return "https://firka.app/privacy";
   }
 
   Future<void> _showPrivacyPolicyWebview() async {
@@ -58,10 +55,7 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
       builder: (BuildContext context) {
         return SizedBox(
           height: MediaQuery.sizeOf(context).height,
-          child: DomainBrowserWebviewWidget(
-            data: widget.data,
-            url: url,
-          ),
+          child: DomainBrowserWebviewWidget(data: widget.data, url: url),
         );
       },
     );
@@ -295,7 +289,8 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
                                       ),
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 8),
+                                        horizontal: 8,
+                                      ),
                                       child: LayoutBuilder(
                                         builder: (ctx, constraints) =>
                                             _FloatingCardsSlide(
@@ -661,7 +656,7 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
   double _sceneWidth = 0;
   double _sceneHeight = 0;
 
- //we needed a cooldown, so that again, the phone doesn't turn into a bomb  | EDIT: actually this was fixed by the minimum speed, so we don't need it anymore
+  //we needed a cooldown, so that again, the phone doesn't turn into a bomb  | EDIT: actually this was fixed by the minimum speed, so we don't need it anymore
   // DateTime? _lastVibration;
 
   Offset _clampVel(Offset v) => Offset(
@@ -673,7 +668,7 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
     // final now = DateTime.now();
     // if (_lastVibration != null &&
     //     now.difference(_lastVibration!).inMilliseconds < 2) //first used 50 but it wasn't good enough, so now it's 2
-    //   return; 
+    //   return;
     // _lastVibration = now;
     Vibration.vibrate(duration: 20);
   }
@@ -896,7 +891,7 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
-          //background rectangle 
+          //background rectangle
           Positioned(
             left: 0,
             right: 0,
@@ -904,7 +899,7 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
             bottom: 0,
             child: Container(
               decoration: BoxDecoration(
-                color: appStyle.colors.buttonSecondaryFill,  //button color xdddd
+                color: appStyle.colors.buttonSecondaryFill, //button color xdddd
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(32),
                   topRight: Radius.circular(32),
@@ -952,7 +947,7 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.55),
+          color: Colors.black.withValues(alpha: 0.55),
           borderRadius: BorderRadius.circular(10),
         ),
         width: math.min(260, _sceneWidth - 24),
@@ -973,10 +968,14 @@ class _FloatingCardsSlideState extends State<_FloatingCardsSlide>
                   'accel: (${accel.x.toStringAsFixed(2)}, ${accel.y.toStringAsFixed(2)}, ${accel.z.toStringAsFixed(2)})',
                 ),
               Text('baseline set: ${_baseline != null}'),
-              Text('scene: ${_sceneWidth.toStringAsFixed(0)} x ${_sceneHeight.toStringAsFixed(0)}'),
+              Text(
+                'scene: ${_sceneWidth.toStringAsFixed(0)} x ${_sceneHeight.toStringAsFixed(0)}',
+              ),
               Text('center: ${formatOffset(center)}'),
               Text('card[0] pos: ${formatOffset(firstPos)}'),
-              Text('card[0] vel: ${formatOffset(firstVel)} | |v|=${speed.toStringAsFixed(2)}'),
+              Text(
+                'card[0] vel: ${formatOffset(firstVel)} | |v|=${speed.toStringAsFixed(2)}',
+              ),
               Text('cards: ${_cards.length}'),
             ],
           ),

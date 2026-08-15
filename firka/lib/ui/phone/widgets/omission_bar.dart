@@ -1,7 +1,6 @@
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka_common/core/debug_helper.dart';
-import 'package:firka_common/data/database.dart';
 import 'package:firka_common/data/models/lesson_cache_model.dart';
 import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka_common/data/models/omission_cache_model.dart';
@@ -9,13 +8,8 @@ import 'package:firka_common/data/util.dart';
 import 'package:intl/intl.dart';
 import 'package:isar_community/isar.dart';
 import 'package:kreta_api/kreta_api.dart';
-import 'package:firka_common/ui/components/grade.dart';
-import 'package:firka_common/core/grade_helper.dart';
-import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:flutter/material.dart';
-import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import 'package:firka/l10n/app_localizations.dart';
 import 'package:firka/ui/theme/style.dart';
 
 class OmissionBar extends StatelessWidget {

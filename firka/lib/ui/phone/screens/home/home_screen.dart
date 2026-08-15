@@ -1,32 +1,23 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:firka/core/bloc/toast_cubit.dart';
-import 'package:kreta_api/kreta_api.dart';
-import 'package:firka/core/extensions.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
-import 'package:firka/services/watch_sync_helper.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
-import 'package:firka/ui/phone/pages/extras/firka_toast.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
-import 'package:majesticons_flutter/majesticons_flutter.dart';
 
-import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/bloc/profile_picture_cubit.dart';
 import 'package:firka/core/bloc/settings_cubit.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/core/image_preloader.dart';
 import 'package:firka/ui/shared/delayed_spinner.dart';
-import 'package:firka/ui/shared/firka_icon.dart';
-import '../../pages/extras/main_error.dart';
 
 bool _fetching = false;
 bool _prefetched = false;
@@ -44,7 +35,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
     with WidgetsBindingObserver {
   bool _disposed = false;
   bool _preloadDone = false;
-  bool _didRunSecondaryICloudRecovery = false;
   bool _didRunLiveActivityLogin = false;
   bool _hasCompletedFirstPrefetch = false;
 
@@ -130,7 +120,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
         if (!_didRunLiveActivityLogin) {
           _didRunLiveActivityLogin = true;
           final token = initData.client!.cache.token;
-          final studentName = token?.username ?? "Student";
+          final studentName = token.username;
           LiveActivityService.onUserLogin(
             client: initData.client!,
             studentName: studentName,
@@ -255,7 +245,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
     if (state == AppLifecycleState.resumed && !_disposed) {
       logger.info('[Home] App resumed to foreground, re-running prefetch');
       _prefetched = false;
-      _didRunSecondaryICloudRecovery = false;
       prefetch();
       setState(() {});
 
@@ -273,7 +262,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
     Future.delayed(const Duration(milliseconds: 500), () async {
       if (_disposed || _didRunLiveActivityLogin) return;
       _didRunLiveActivityLogin = true;
-      final studentName = initData.client!.cache.token.username ?? 'Student';
+      final studentName = initData.client!.cache.token.username;
       LiveActivityService.onUserLogin(
         client: initData.client!,
         studentName: studentName,
@@ -288,7 +277,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
   void _refreshLiveActivityOnResume() async {
     if (!_hasCompletedFirstPrefetch) return;
     try {
-      final studentName = initData.client!.cache.token.username ?? "Student";
+      final studentName = initData.client!.cache.token.username;
       await LiveActivityService.checkAndUpdateTimetable(
         client: initData.client!,
         studentName: studentName,

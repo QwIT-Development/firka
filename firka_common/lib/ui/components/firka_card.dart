@@ -50,9 +50,7 @@ class FirkaCard extends StatelessWidget {
       height: height,
       shadow: shadow,
       isLightMode: isLightMode,
-      child: extra == null
-          ? alignedRow
-          : Column(children: [alignedRow, extra!]),
+      child: extra == null ? alignedRow : Column(children: [alignedRow, extra]),
     );
   }
 

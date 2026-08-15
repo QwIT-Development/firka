@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:firka_common/ui/theme/style.dart';
 
-import '../../firka_common.dart';
-
 class CounterDigitWidget extends StatelessWidget {
   final String c;
 

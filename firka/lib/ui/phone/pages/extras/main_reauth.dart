@@ -1,8 +1,6 @@
-import 'package:firka/core/settings.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/widgets/login_webview.dart';
-import 'package:firka_common/data/database.dart';
 import 'package:flutter/material.dart';
 
 void showReauthBottomSheet(

@@ -1,12 +1,8 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:convert';
-import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:firka/core/extensions.dart';
-import 'package:firka/core/settings.dart';
-import 'package:firka_common/core/consts.dart';
 import 'package:firka_common/data/cache_manager.dart';
 import 'package:firka_common/data/database.dart';
 import 'package:firka_common/data/models/class_average_cache_model.dart';
@@ -207,7 +203,7 @@ class KretaClient {
     String? leaseOperationId;
 
     try {
-      if (Platform.isIOS && studentIdNorm != null) {
+      if (Platform.isIOS) {
         final watchInstalled = await WatchSyncHelper.isWatchAppInstalled();
         if (watchInstalled) {
           final leaseReady = await WatchSyncHelper.waitForWatchRefreshLease(
@@ -228,7 +224,7 @@ class KretaClient {
       final extended = await extendToken(sourceToken);
       return TokenModel.fromResp(extended);
     } finally {
-      if (Platform.isIOS && studentIdNorm != null && leaseOperationId != null) {
+      if (Platform.isIOS && leaseOperationId != null) {
         await WatchSyncHelper.releaseIPhoneRefreshLease(
           studentIdNorm: studentIdNorm,
           operationId: leaseOperationId,
@@ -239,11 +235,6 @@ class KretaClient {
 
   Future<void> _syncTokenToAppleTargets(TokenModel token) async {
     if (!Platform.isIOS) return;
-    if (token.accessToken == null ||
-        token.refreshToken == null ||
-        token.expiryDate == null) {
-      return;
-    }
 
     final watchInstalled = await WatchSyncHelper.isWatchAppInstalled();
     if (!watchInstalled) {
@@ -269,8 +260,7 @@ class KretaClient {
   Future<bool> recoverToken() async {
     final now = DateTime.now();
     final localExpiry = cache.token.expiryDate;
-    if (localExpiry != null &&
-        localExpiry.isAfter(now.add(const Duration(seconds: 60)))) {
+    if (localExpiry.isAfter(now.add(const Duration(seconds: 60)))) {
       return true;
     }
 
@@ -331,10 +321,9 @@ class KretaClient {
         iCloudHasToken = true;
 
         final recoveredExpiry = cache.token.expiryDate;
-        if (recoveredExpiry != null &&
-            recoveredExpiry.isAfter(
-              timeNow().add(const Duration(seconds: 60)),
-            )) {
+        if (recoveredExpiry.isAfter(
+          timeNow().add(const Duration(seconds: 60)),
+        )) {
           logger.info(
             "[Recovery] Step 2 SUCCESS on attempt ${attempt + 1}: usable iCloud token applied without immediate refresh",
           );
@@ -380,8 +369,7 @@ class KretaClient {
     final now = timeNow();
     final fiveMinutesFromNow = now.add(const Duration(minutes: 5));
 
-    if (cache.token.expiryDate == null ||
-        cache.token.expiryDate!.isBefore(fiveMinutesFromNow)) {
+    if (cache.token.expiryDate.isBefore(fiveMinutesFromNow)) {
       logger.info(
         "[Proactive] Token expired or expiring soon, starting recovery...",
       );

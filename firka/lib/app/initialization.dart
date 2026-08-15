@@ -3,12 +3,10 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:firka_common/data/database.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/api/client/kreta_client.dart';
-import 'package:firka_common/data/models/app_settings_model.dart';
 import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/core/settings/settings_effects.dart';
@@ -128,7 +126,7 @@ Future<void> _initData(AppInitialization init) async {
           "[Init] System locale changed in auto mode: $previousLocale -> $nextLocale",
         );
       }
-      init.themeCubit?.refresh();
+      init.themeCubit.refresh();
     }());
   };
 
@@ -161,8 +159,8 @@ Future<void> _initData(AppInitialization init) async {
 
   if (Platform.isIOS) {
     final expiryDate = token.expiryDate;
-    if (expiryDate != null && expiryDate.isAfter(DateTime.now())) {
-      init.toastCubit?.clear();
+    if (expiryDate.isAfter(DateTime.now())) {
+      init.toastCubit.clear();
     }
 
     unawaited(() async {

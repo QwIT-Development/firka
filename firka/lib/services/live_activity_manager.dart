@@ -242,8 +242,7 @@ class LiveActivityManager {
       'nextRoomName': isBeforeSchool ? null : nextLesson?.roomName,
       'nextStartTime': nextStartTimeForActivity?.toUtc().toIso8601String(),
       'isSubstitution': currentLesson.substituteTeacher != null,
-      'isCancelled':
-          currentLesson.state.name?.toLowerCase().contains('elmarad') ?? false,
+      'isCancelled': currentLesson.state.name.toLowerCase().contains('elmarad'),
       'substituteTeacher': currentLesson.substituteTeacher,
       'currentTime': now.toUtc().toIso8601String(),
       'mode': mode,

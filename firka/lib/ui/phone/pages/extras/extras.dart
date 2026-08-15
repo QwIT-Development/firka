@@ -7,7 +7,6 @@ import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
-import 'package:firka_common/data/models/app_settings_model.dart';
 import 'package:firka_common/ui/components/firka_shadow.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:firka/ui/theme/style.dart';

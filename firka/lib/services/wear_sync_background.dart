@@ -8,10 +8,6 @@ import 'package:isar_community/isar.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 
 import 'package:firka/api/client/kreta_client.dart';
-import 'package:firka/core/bloc/toast_cubit.dart';
-import 'package:firka_common/data/models/app_settings_model.dart';
-import 'package:firka_common/data/models/generic_cache_model.dart';
-import 'package:firka_common/data/models/homework_cache_model.dart';
 import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/services/wear_sync_cache.dart';
 

@@ -254,7 +254,7 @@ class LiveActivityService {
         );
       }
 
-      initData.themeCubit?.refresh();
+      initData.themeCubit.refresh();
     } catch (e) {
       _logger.warning('Error syncing global settings: $e');
     }
@@ -422,37 +422,23 @@ class LiveActivityService {
         _logger.info(
           'Background fetch: attempting to fetch fresh data from KRÉTA API',
         );
-        final timetableResponse = await client.getLessons(
-          startOfWeek,
-          endOfWeek,
-        );
+        await client.getLessons(startOfWeek, endOfWeek);
 
-        if (true) {
-          allLessons = <Lesson>[];
-          _logger.info(
-            'Background fetch: successfully fetched ${allLessons.length} lessons from KRÉTA API',
-          );
-        } else {
-          throw Exception('KRÉTA API returned null response');
-        }
+        allLessons = <Lesson>[];
+        _logger.info(
+          'Background fetch: successfully fetched ${allLessons.length} lessons from KRÉTA API',
+        );
       } catch (e) {
         _logger.warning(
           'Background fetch: KRÉTA API failed ($e), falling back to cache',
         );
         try {
-          final cachedResponse = await client.getLessons(
-            startOfWeek,
-            endOfWeek,
+          await client.getLessons(startOfWeek, endOfWeek);
+
+          allLessons = <Lesson>[];
+          _logger.info(
+            'Background fetch: successfully loaded ${allLessons.length} lessons from cache',
           );
-          if (true) {
-            allLessons = <Lesson>[];
-            _logger.info(
-              'Background fetch: successfully loaded ${allLessons.length} lessons from cache',
-            );
-          } else {
-            _logger.severe('Background fetch: both API and cache failed');
-            return false;
-          }
         } catch (cacheError) {
           _logger.severe(
             'Background fetch: cache fallback also failed: $cacheError',
@@ -480,10 +466,7 @@ class LiveActivityService {
 
         try {
           final candidateDayEnd = candidateDay.add(const Duration(days: 1));
-          final response = await client.getLessons(
-            candidateDay,
-            candidateDayEnd,
-          );
+          await client.getLessons(candidateDay, candidateDayEnd);
 
           if (true) {
             final schoolLessons = [].where((lesson) {
@@ -668,9 +651,9 @@ class LiveActivityService {
             );
           }
 
-          final studentResp = await effectiveClient.getStudent();
+          await effectiveClient.getStudent();
           final activeToken = initData.client!.cache.token;
-          final studentName = null ?? activeToken?.username ?? "Student";
+          final studentName = activeToken.username;
 
           await onUserLogin(
             client: effectiveClient,
@@ -838,37 +821,23 @@ class LiveActivityService {
         _logger.info(
           'onUserLogin: Attempting to fetch fresh timetable from KRÉTA API',
         );
-        final timetableResponse = await client.getLessons(
-          startOfWeek,
-          endOfWeek,
-        );
+        await client.getLessons(startOfWeek, endOfWeek);
 
-        if (true) {
-          allLessons = <Lesson>[];
-          _logger.info(
-            'onUserLogin: Successfully fetched ${allLessons.length} lessons from KRÉTA API',
-          );
-        } else {
-          throw Exception('KRÉTA API returned null response');
-        }
+        allLessons = <Lesson>[];
+        _logger.info(
+          'onUserLogin: Successfully fetched ${allLessons.length} lessons from KRÉTA API',
+        );
       } catch (e) {
         _logger.warning(
           'onUserLogin: KRÉTA API failed ($e), falling back to cache',
         );
         try {
-          final cachedResponse = await client.getLessons(
-            startOfWeek,
-            endOfWeek,
+          await client.getLessons(startOfWeek, endOfWeek);
+
+          allLessons = <Lesson>[];
+          _logger.info(
+            'onUserLogin: Successfully loaded ${allLessons.length} lessons from cache',
           );
-          if (true) {
-            allLessons = <Lesson>[];
-            _logger.info(
-              'onUserLogin: Successfully loaded ${allLessons.length} lessons from cache',
-            );
-          } else {
-            _logger.severe('onUserLogin: Both API and cache failed');
-            return;
-          }
         } catch (cacheError) {
           _logger.severe(
             'onUserLogin: Cache fallback also failed: $cacheError',
@@ -891,10 +860,7 @@ class LiveActivityService {
 
       List<Lesson> nextWeekBreakEvents = [];
       try {
-        final nextWeekResponse = await client.getLessons(
-          nextWeekStart,
-          nextWeekEnd,
-        );
+        await client.getLessons(nextWeekStart, nextWeekEnd);
 
         if (true) {
           nextWeekBreakEvents = <Lesson>[].where((lesson) {
@@ -995,10 +961,7 @@ class LiveActivityService {
 
           try {
             final candidateDayEnd = candidateDay.add(const Duration(days: 1));
-            final response = await client.getLessons(
-              candidateDay,
-              candidateDayEnd,
-            );
+            await client.getLessons(candidateDay, candidateDayEnd);
 
             if (true) {
               final schoolLessons = [].where((lesson) {
@@ -1173,33 +1136,17 @@ class LiveActivityService {
       List<Lesson> allLessons = [];
 
       try {
-        final timetableResponse = await client.getLessons(
-          startOfWeek,
-          endOfWeek,
-        );
+        await client.getLessons(startOfWeek, endOfWeek);
 
-        if (true) {
-          allLessons = List<Lesson>.from([]);
-        } else {
-          throw Exception('KRÉTA API returned null response');
-        }
+        allLessons = List<Lesson>.from([]);
       } catch (e) {
         _logger.warning(
           'checkAndUpdateTimetable: KRÉTA API failed ($e), falling back to cache',
         );
         try {
-          final cachedResponse = await client.getLessons(
-            startOfWeek,
-            endOfWeek,
-          );
-          if (true) {
-            allLessons = <Lesson>[];
-          } else {
-            _logger.severe(
-              'checkAndUpdateTimetable: Both API and cache failed',
-            );
-            return;
-          }
+          await client.getLessons(startOfWeek, endOfWeek);
+
+          allLessons = <Lesson>[];
         } catch (cacheError) {
           _logger.severe(
             'checkAndUpdateTimetable: Cache fallback also failed: $cacheError',
@@ -1217,10 +1164,7 @@ class LiveActivityService {
 
       List<Lesson> nextWeekBreakEvents = [];
       try {
-        final nextWeekResponse = await client.getLessons(
-          nextWeekStart,
-          nextWeekEnd,
-        );
+        await client.getLessons(nextWeekStart, nextWeekEnd);
 
         if (true) {
           nextWeekBreakEvents = <Lesson>[].where((lesson) {
@@ -1317,10 +1261,7 @@ class LiveActivityService {
 
           try {
             final candidateDayEnd = candidateDay.add(const Duration(days: 1));
-            final response = await client.getLessons(
-              candidateDay,
-              candidateDayEnd,
-            );
+            await client.getLessons(candidateDay, candidateDayEnd);
 
             if (true) {
               final schoolLessons = [].where((lesson) {
@@ -1838,8 +1779,7 @@ class LiveActivityService {
             final settingsStore = initData.settings;
 
             final studentResp = await client.getStudent();
-            final studentName =
-                studentResp.name ?? client.cache.token.username ?? 'Student';
+            final studentName = studentResp.name;
 
             await checkAndUpdateTimetable(
               client: client,
@@ -1943,7 +1883,7 @@ class LiveActivityService {
       );
 
       try {
-        final response = await client.getLessons(weekStart, weekEnd);
+        await client.getLessons(weekStart, weekEnd);
 
         if (true) {
           final breakEvents = [].where((lesson) {
@@ -1971,13 +1911,13 @@ class LiveActivityService {
             breakEvents.sort((a, b) => a.start.compareTo(b.start));
             lastBreakDay = breakEvents.last;
             _logger.info(
-              '[GlobalBreakSearcher] Found ${breakEvents.length} break event(s) in week ${weeksSearched + 1}, last: ${lastBreakDay} on ${lastBreakDay}',
+              '[GlobalBreakSearcher] Found ${breakEvents.length} break event(s) in week ${weeksSearched + 1}, last: $lastBreakDay on $lastBreakDay',
             );
           } else if (schoolLessons.isNotEmpty) {
             schoolLessons.sort((a, b) => a.start.compareTo(b.start));
             firstSchoolDayAfterBreak = schoolLessons.first;
             _logger.info(
-              '[GlobalBreakSearcher] Found first school day after break: ${firstSchoolDayAfterBreak} on ${firstSchoolDayAfterBreak}',
+              '[GlobalBreakSearcher] Found first school day after break: $firstSchoolDayAfterBreak on $firstSchoolDayAfterBreak',
             );
             break;
           } else {
@@ -1985,10 +1925,6 @@ class LiveActivityService {
               '[GlobalBreakSearcher] Week ${weeksSearched + 1} is empty, continuing search...',
             );
           }
-        } else {
-          _logger.info(
-            '[GlobalBreakSearcher] Week ${weeksSearched + 1} returned no data, continuing search...',
-          );
         }
       } catch (e) {
         final isTokenError =
@@ -2007,7 +1943,7 @@ class LiveActivityService {
         }
 
         try {
-          final cachedResponse = await client.getLessons(weekStart, weekEnd);
+          await client.getLessons(weekStart, weekEnd);
 
           if (true) {
             final weekLessons = [];
@@ -2040,20 +1976,16 @@ class LiveActivityService {
               breakEvents.sort((a, b) => a.start.compareTo(b.start));
               lastBreakDay = breakEvents.last;
               _logger.info(
-                '[GlobalBreakSearcher] Found ${breakEvents.length} break event(s) in cached week ${weeksSearched + 1}, last: ${lastBreakDay} on ${lastBreakDay}',
+                '[GlobalBreakSearcher] Found ${breakEvents.length} break event(s) in cached week ${weeksSearched + 1}, last: $lastBreakDay on $lastBreakDay',
               );
             } else if (schoolLessons.isNotEmpty) {
               schoolLessons.sort((a, b) => a.start.compareTo(b.start));
               firstSchoolDayAfterBreak = schoolLessons.first;
               _logger.info(
-                '[GlobalBreakSearcher] Found first school day after break in cache: ${firstSchoolDayAfterBreak} on ${firstSchoolDayAfterBreak}',
+                '[GlobalBreakSearcher] Found first school day after break in cache: $firstSchoolDayAfterBreak on $firstSchoolDayAfterBreak',
               );
               break;
             }
-          } else {
-            _logger.info(
-              '[GlobalBreakSearcher] No cache available for week ${weeksSearched + 1}',
-            );
           }
         } catch (cacheError) {
           _logger.warning(

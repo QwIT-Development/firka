@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:firka_common/core/consts.dart';
-import 'package:firka_common/data/models/token_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firka/api/client/kreta_client.dart';

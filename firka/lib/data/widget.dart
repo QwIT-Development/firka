@@ -4,9 +4,7 @@ import 'dart:io';
 
 import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/data/ios_widget_helper.dart';
-import 'package:firka_common/data/database.dart';
 import 'package:firka_common/data/models/lesson_cache_model.dart';
-import 'package:isar_community/isar.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/settings/settings_repository.dart';
@@ -103,8 +101,6 @@ class WidgetCacheHelper {
     KretaClient client,
   ) async {
     final dataDir = await getApplicationDocumentsDirectory();
-    final dayStart = DateTime(date.year, date.month, date.day);
-    final dayEnd = dayStart.add(Duration(hours: 23, minutes: 59));
 
     final json = toJson(style, []);
     json['displayDate'] =
@@ -160,11 +156,11 @@ class WidgetCacheHelper {
       final todayMidnight = DateTime(now.year, now.month, now.day);
       final tomorrowMidnight = todayMidnight.add(Duration(days: 1));
 
-      final todayResponse = await client.getLessons(
+      await client.getLessons(
         todayMidnight,
         todayMidnight.add(Duration(hours: 23, minutes: 59)),
       );
-      final tomorrowResponse = await client.getLessons(
+      await client.getLessons(
         tomorrowMidnight,
         tomorrowMidnight.add(Duration(hours: 23, minutes: 59)),
       );
@@ -181,7 +177,7 @@ class WidgetCacheHelper {
       if (tomorrowLessons.isEmpty) {
         for (int i = 2; i <= 7; i++) {
           final dayMidnight = todayMidnight.add(Duration(days: i));
-          final dayResponse = await client.getLessons(
+          await client.getLessons(
             dayMidnight,
             dayMidnight.add(Duration(hours: 23, minutes: 59)),
           );
@@ -201,7 +197,7 @@ class WidgetCacheHelper {
       final grades = [];
 
       debugPrint(
-        'iOS widget refresh: ${grades.length} grades fetched (cached: ${gradesResponse})',
+        'iOS widget refresh: ${grades.length} grades fetched (cached: $gradesResponse)',
       );
 
       final Map<String, double> subjectAverages = {};

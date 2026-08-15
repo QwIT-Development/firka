@@ -85,7 +85,7 @@ class SettingsAccountPickerView extends StatelessWidget {
   }
 
   Widget _accountRow(BuildContext context, TokenModel token) {
-    final jwt = JWT.decode(token.idToken!);
+    final jwt = JWT.decode(token.idToken);
     final payload = jwt.payload as Map<String, dynamic>;
     String studentRole = payload["role"];
     if (studentRole == "Tanulo") {
@@ -150,14 +150,12 @@ class SettingsAccountPickerView extends StatelessWidget {
           '[Settings] Failed to clear shared language state on account switch: $e',
         );
       }
-      if (previousAccountId != null) {
-        try {
-          await WatchSyncHelper.clearRefreshLeaseForAccount(previousAccountId);
-        } catch (e) {
-          logger.warning(
-            '[Settings] Failed to clear refresh lease on account switch: $e',
-          );
-        }
+      try {
+        await WatchSyncHelper.clearRefreshLeaseForAccount(previousAccountId);
+      } catch (e) {
+        logger.warning(
+          '[Settings] Failed to clear refresh lease on account switch: $e',
+        );
       }
     }
 
