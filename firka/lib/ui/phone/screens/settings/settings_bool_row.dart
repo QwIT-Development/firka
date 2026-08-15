@@ -22,11 +22,6 @@ Widget buildBoolRow(
                   item.iconType!,
                   item.iconData!,
                   color: appStyle.colors.accent,
-                  package:
-                      item.iconType == FirkaIconType.icons ||
-                          item.iconType == FirkaIconType.majesticonsLocal
-                      ? 'firka'
-                      : null,
                 ),
                 SizedBox(width: 4),
               ],

@@ -163,11 +163,6 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
               item.iconType!,
               item.iconData!,
               color: appStyle.colors.accent,
-              package:
-                  item.iconType == FirkaIconType.icons ||
-                      item.iconType == FirkaIconType.majesticonsLocal
-                  ? 'firka'
-                  : null,
             ),
           );
           cardWidgets.add(SizedBox(width: 8));
@@ -236,12 +231,6 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                             item.iconType!,
                             item.iconData!,
                             color: appStyle.colors.accent,
-                            package:
-                                item.iconType == FirkaIconType.icons ||
-                                    item.iconType ==
-                                        FirkaIconType.majesticonsLocal
-                                ? 'firka'
-                                : null,
                           ),
                           SizedBox(width: 4),
                         ],
@@ -388,12 +377,6 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                             item.iconType!,
                             item.iconData!,
                             color: appStyle.colors.accent,
-                            package:
-                                item.iconType == FirkaIconType.icons ||
-                                    item.iconType ==
-                                        FirkaIconType.majesticonsLocal
-                                ? 'firka'
-                                : null,
                           ),
                           SizedBox(width: 8),
                         ],
