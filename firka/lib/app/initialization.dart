@@ -154,8 +154,23 @@ Future<void> _initData(AppInitialization init) async {
   }
   logger.fine("Initializing kréta client as: ${token.username}");
   init.client = KretaClient(token);
-  await init.client!.init();
-  init.client!.renewCache(reInit: false);
+
+  // Don't block first paint on the network: render whatever is already
+  // cached, then stream in student/timetable/grades/etc. as they arrive.
+  unawaited(() async {
+    try {
+      await init.client!.init();
+    } catch (e) {
+      logger.warning("[Init] Failed to initialize KretaClient: $e");
+      if (!isTokenExpired(e)) {
+        init.toastCubit.setActiveToast(.error, e);
+      }
+    }
+    init.homeRefreshCubit.requestRefresh();
+
+    await init.client!.renewCache(reInit: false);
+    init.homeRefreshCubit.requestRefresh();
+  }());
 
   if (Platform.isIOS) {
     final expiryDate = token.expiryDate;

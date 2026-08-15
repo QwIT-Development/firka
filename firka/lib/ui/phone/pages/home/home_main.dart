@@ -50,6 +50,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
 
   Widget _buildContent(BuildContext context) {
     final now = timeNow();
+    final student = widget.data.client!.cache.findStudentOrNull();
     final infoItems = widget.data.client!.cache.getMessages().findAllSync();
     final gradeItems = widget.data.client!.cache.getGrades().findAllSync();
     final testItems = widget.data.client!.cache.getTests().findAllSync();
@@ -116,12 +117,8 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
           clipBehavior: Clip.none,
           children: [
             SizedBox(height: 24),
-            WelcomeWidget(
-              widget.data.l10n,
-              now,
-              widget.data.client!.cache.findStudent(),
-              todayLesson,
-            ),
+            if (student != null)
+              WelcomeWidget(widget.data.l10n, now, student, todayLesson),
             SizedBox(height: 48),
             LessonSlider(todayLesson, testsTomorrow),
             SizedBox(height: 24),

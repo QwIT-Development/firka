@@ -27,10 +27,16 @@ class CacheManager {
   CacheManager(this.token);
 
   StudentCacheModel findStudent() {
+    return findStudentOrNull()!;
+  }
+
+  /// Same as [findStudent], but returns null instead of throwing when the
+  /// student hasn't been synced yet (e.g. before the first successful sync).
+  StudentCacheModel? findStudentOrNull() {
     return isarInit.studentCacheModels
         .filter()
         .group(isCurrentStudent)
-        .findFirstSync()!;
+        .findFirstSync();
   }
 
   int genCacheKey(Identifiable identifiable) {
