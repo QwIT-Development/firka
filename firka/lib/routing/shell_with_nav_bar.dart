@@ -41,7 +41,7 @@ class ShellWithNavBar extends StatelessWidget {
         child: SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(55, 16, 55, 12),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
