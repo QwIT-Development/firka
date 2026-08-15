@@ -205,7 +205,7 @@ SettingsUiGroup buildSettingsTree(AppLocalizations l10n) {
         SettingsUiBoolean(
           null,
           null,
-          "Privacy Ever Declined",
+          l10n.s_ag_privacy_ever_declined,
           SettingsRegistry.liveActivityPrivacyEverDeclined,
           never,
         ),
@@ -360,16 +360,16 @@ SettingsUiGroup buildSettingsTree(AppLocalizations l10n) {
     SettingsUiSubGroup(
       FirkaIconType.majesticons,
       Majesticon.lightningBoltSolid,
-      "Extrák",
+      l10n.s_extras,
       [SettingsUiBackHeader(l10n.s_settings, always)],
       never,
     ),
     SettingsUiPadding(20, never),
-    SettingsUiHeaderSmall("Egyéb", never),
+    SettingsUiHeaderSmall(l10n.s_other, never),
     SettingsUiSubGroup(
       FirkaIconType.majesticonsLocal,
       "wrenchSolid",
-      "Developer",
+      l10n.s_developer,
       [
         SettingsUiBackHeader(l10n.s_settings, always),
         SettingsUiBoolean(
@@ -386,7 +386,7 @@ SettingsUiGroup buildSettingsTree(AppLocalizations l10n) {
     SettingsUiBoolean(
       null,
       null,
-      "Beta warning",
+      l10n.s_beta_warning,
       SettingsRegistry.betaWarning,
       never,
     ),
@@ -398,7 +398,7 @@ SettingsUiGroup buildSettingsTree(AppLocalizations l10n) {
       never,
     ),
     SettingsUiPadding(20, always),
-    SettingsUiHeaderSmall("Névjegy", always),
+    SettingsUiHeaderSmall(l10n.s_about, always),
     SettingsUiSubGroup(
       FirkaIconType.majesticons,
       Majesticon.chatSolid,
@@ -430,7 +430,7 @@ SettingsUiGroup buildSettingsTree(AppLocalizations l10n) {
     SettingsUiBoolean(
       null,
       null,
-      "Developer",
+      l10n.s_developer,
       SettingsRegistry.developerOptsEnabled,
       never,
     ),
