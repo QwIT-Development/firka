@@ -143,6 +143,7 @@ class ThemePreviewData {
         start: ttBase.add(const Duration(minutes: 55)),
         end: ttBase.add(const Duration(minutes: 100)),
         roomName: "123",
+        type: "UresOra",
         test: testLektion,
       ),
       _lesson(
@@ -346,6 +347,7 @@ class ThemePreviewData {
     required DateTime end,
     required String roomName,
     String? substituteTeacher,
+    String type = "OrarendiOra",
     TestCacheModel? test,
   }) {
     final lesson = LessonCacheModel()
@@ -358,7 +360,7 @@ class ThemePreviewData {
       ..name = subject.name
       ..roomName = roomName
       ..state = "Naplozott"
-      ..type = "OrarendiOra"
+      ..type = type
       ..teacher = "Tanár"
       ..substituteTeacher = substituteTeacher;
     lesson.subject.value = subject;
