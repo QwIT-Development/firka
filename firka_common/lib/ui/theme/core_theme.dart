@@ -1,9 +1,13 @@
 import "package:flutter/material.dart";
 
+part "core/butcher_vanity.dart";
 part "core/firka.dart";
+part "core/refilc.dart";
 
 const Map<String, CoreTheme> coreThemes = {
   "firka": firkaCore,
+  "refilc": refilcCore,
+  "butcher_vanity": butcherVanityCore,
 };
 
 /// App chrome colors (everything except grade colors)

@@ -10,6 +10,8 @@ import "package:firka/l10n/app_localizations.dart";
 import "package:firka/ui/shared/firka_icon.dart";
 import "package:firka/ui/theme/style.dart";
 import "package:firka_common/ui/components/firka_card.dart";
+import "package:firka_common/ui/theme/core_theme.dart";
+import "package:firka_common/ui/theme/grade_theme.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:go_router/go_router.dart";
@@ -125,23 +127,66 @@ class _SettingsPersonalizationViewState
     );
   }
 
-  Widget _swatchPreview(List<Color> colors) {
-    return FirkaCard.single(
-      width: double.infinity,
-      padding: EdgeInsets.zero,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: SizedBox(
-          height: 88,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final color in colors)
-                Expanded(child: ColoredBox(color: color)),
-            ],
-          ),
-        ),
-      ),
+  List<Color> _coreSwatch(CoreThemeColors colors) {
+    return [
+      colors.secondary,
+      colors.accent,
+      colors.background,
+      colors.card,
+    ];
+  }
+
+  List<Color> _gradeSwatch(GradeThemeColors colors) {
+    return [
+      colors.grade5,
+      colors.grade4,
+      colors.grade3,
+      colors.grade2,
+      colors.grade1,
+    ];
+  }
+
+  Widget _coreThemePager() {
+    final cores = coreThemes.values.toList(growable: false);
+    final selectedId = _settings.get(SettingsRegistry.selectedCoreThemeId);
+    var selectedIndex = cores.indexWhere((theme) => theme.id == selectedId);
+    if (selectedIndex < 0) selectedIndex = 0;
+
+    return _PresetSwatchPager(
+      key: const ValueKey("core-themes"),
+      swatches: [
+        for (final core in cores)
+          _coreSwatch(core.forBrightness(appStyle.isLight)),
+      ],
+      selectedIndex: selectedIndex,
+      onSelected: (index) async {
+        await _settings.set(
+          SettingsRegistry.selectedCoreThemeId,
+          cores[index].id,
+        );
+      },
+    );
+  }
+
+  Widget _gradeThemePager() {
+    final grades = gradeThemes.values.toList(growable: false);
+    final selectedId = _settings.get(SettingsRegistry.selectedGradeThemeId);
+    var selectedIndex = grades.indexWhere((theme) => theme.id == selectedId);
+    if (selectedIndex < 0) selectedIndex = 0;
+
+    return _PresetSwatchPager(
+      key: const ValueKey("grade-themes"),
+      swatches: [
+        for (final grade in grades)
+          _gradeSwatch(grade.forBrightness(appStyle.isLight)),
+      ],
+      selectedIndex: selectedIndex,
+      onSelected: (index) async {
+        await _settings.set(
+          SettingsRegistry.selectedGradeThemeId,
+          grades[index].id,
+        );
+      },
     );
   }
 
@@ -567,25 +612,14 @@ class _SettingsPersonalizationViewState
                   },
                 ),
               _sectionLabel(_l10n.s_c_colors_header),
-              _swatchPreview([
-                appStyle.colors.secondary,
-                appStyle.colors.accent,
-                appStyle.colors.background,
-                appStyle.colors.card,
-              ]),
+              _coreThemePager(),
               _stubCustomizeButton(),
               _sectionLabel(_l10n.s_c_theme_header),
               _themeOption(_l10n.s_c_theme_auto, ThemeBrightness.auto),
               _themeOption(_l10n.s_c_theme_light, ThemeBrightness.light),
               _themeOption(_l10n.s_c_theme_dark, ThemeBrightness.dark),
               _sectionLabel(_l10n.s_c_grade_colors_header),
-              _swatchPreview([
-                  appStyle.colors.grade5,
-                  appStyle.colors.grade4,
-                  appStyle.colors.grade3,
-                  appStyle.colors.grade2,
-                  appStyle.colors.grade1,
-                ]),
+              _gradeThemePager(),
               _stubCustomizeButton(),
               _sectionLabel(_l10n.s_c_title_style_header),
               _fontPicker(selectedFont),
@@ -595,6 +629,168 @@ class _SettingsPersonalizationViewState
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _PresetSwatchPager extends StatefulWidget {
+  final List<List<Color>> swatches;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  const _PresetSwatchPager({
+    super.key,
+    required this.swatches,
+    required this.selectedIndex,
+    required this.onSelected,
+  });
+
+  @override
+  State<_PresetSwatchPager> createState() => _PresetSwatchPagerState();
+}
+
+class _PresetSwatchPagerState extends State<_PresetSwatchPager> {
+  late final PageController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = PageController(initialPage: widget.selectedIndex);
+  }
+
+  @override
+  void didUpdateWidget(_PresetSwatchPager oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_controller.hasClients) return;
+    if (widget.selectedIndex == oldWidget.selectedIndex) return;
+    if (_controller.page?.round() == widget.selectedIndex) return;
+    _controller.animateToPage(
+      widget.selectedIndex,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Color _accentFor(double page) {
+    final index = page.round().clamp(0, widget.swatches.length - 1);
+    final swatch = widget.swatches[index];
+    if (swatch.length > 1) return swatch[1];
+    return appStyle.colors.accent;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FirkaCard.single(
+      width: double.infinity,
+      height: 88,
+      padding: EdgeInsets.zero,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            PageView.builder(
+              controller: _controller,
+              itemCount: widget.swatches.length,
+              physics: widget.swatches.length <= 1
+                  ? const NeverScrollableScrollPhysics()
+                  : null,
+              onPageChanged: (index) {
+                if (index == widget.selectedIndex) return;
+                widget.onSelected(index);
+              },
+              itemBuilder: (context, index) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final color in widget.swatches[index])
+                      Expanded(child: ColoredBox(color: color)),
+                  ],
+                );
+              },
+            ),
+            if (widget.swatches.length > 1)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 8,
+                child: IgnorePointer(
+                  child: AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, _) {
+                      final page = _controller.hasClients
+                          ? (_controller.page ??
+                                widget.selectedIndex.toDouble())
+                          : widget.selectedIndex.toDouble();
+                      return Center(
+                        child: _SwatchPageDots(
+                          count: widget.swatches.length,
+                          page: page,
+                          accent: _accentFor(page),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SwatchPageDots extends StatelessWidget {
+  final int count;
+  final double page;
+  final Color accent;
+
+  const _SwatchPageDots({
+    required this.count,
+    required this.page,
+    required this.accent,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xCCFFFFFF),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < count; i++) ...[
+            if (i > 0) const SizedBox(width: 5),
+            _dot(i),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _dot(int index) {
+    final t = (1 - (index - page).abs()).clamp(0.0, 1.0);
+    final size = 5.0 + 3.0 * t;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Color.lerp(
+          accent.withValues(alpha: 0.28),
+          accent,
+          t,
+        ),
       ),
     );
   }
