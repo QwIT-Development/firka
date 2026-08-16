@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 
 part "grade/firka.dart";
+part "grade/rainbow.dart";
 
 class GradeThemeColors {
   final Color grade5;
@@ -32,8 +33,16 @@ class GradeTheme {
   GradeThemeColors forBrightness(bool isLight) => isLight ? light : dark;
 }
 
-const Map<String, GradeTheme> gradeThemes = {
+final Map<String, GradeTheme> gradeThemes = {
   "firka": firkaGrade,
+  "red": redGrade,
+  "orange": orangeGrade,
+  "yellow": yellowGrade,
+  "green": greenGrade,
+  "blue": blueGrade,
+  "indigo": indigoGrade,
+  "pink": pinkGrade,
+  "purple": purpleGrade,
 };
 
 GradeTheme resolveGrade(String id) => gradeThemes[id] ?? firkaGrade;
