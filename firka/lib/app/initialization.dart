@@ -18,6 +18,7 @@ import 'package:firka/l10n/app_localizations_de.dart';
 import 'package:firka/l10n/app_localizations_en.dart';
 import 'package:firka/l10n/app_localizations_hu.dart';
 import 'package:firka/core/swear_generator.dart';
+import 'package:firka/ui/phone/screens/themes/builtin_theme_id.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
@@ -96,34 +97,56 @@ void initTheme(AppInitialization data) {
   };
 
   FirkaStyle baseStyle;
+  final coreId = Settings.selectedCoreThemeId.value;
+  final gradeId = Settings.selectedGradeThemeId.value;
   switch (Settings.themeBrightness.value) {
     case ThemeBrightness.light:
-      baseStyle = lightStyle;
+      baseStyle = styleFor(
+        coreId: coreId,
+        gradeId: gradeId,
+        isLight: true,
+        fonts: fonts,
+      );
       themeCubit.setLightMode(true);
       break;
     case ThemeBrightness.dark:
-      baseStyle = darkStyle;
+      baseStyle = styleFor(
+        coreId: coreId,
+        gradeId: gradeId,
+        isLight: false,
+        fonts: fonts,
+      );
       themeCubit.setLightMode(false);
       break;
     case ThemeBrightness.auto:
       if (brightness == Brightness.dark) {
-        baseStyle = darkStyle;
+        baseStyle = styleFor(
+          coreId: coreId,
+          gradeId: gradeId,
+          isLight: false,
+          fonts: fonts,
+        );
         themeCubit.setLightMode(false);
       } else {
-        baseStyle = lightStyle;
+        baseStyle = styleFor(
+          coreId: coreId,
+          gradeId: gradeId,
+          isLight: true,
+          fonts: fonts,
+        );
         themeCubit.setLightMode(true);
       }
   }
 
-  appStyle = FirkaStyle(
-    isLight: baseStyle.isLight,
-    colors: baseStyle.colors,
-    fonts: fonts,
-  );
+  appStyle = baseStyle;
 }
-
 Future<void> _initData(AppInitialization init) async {
   await init.settings.loadAll();
+  final selectedThemeId = Settings.selectedThemeId.value;
+  final normalized = normalizeSelectedThemeId(selectedThemeId);
+  if (normalized != selectedThemeId) {
+    await Settings.selectedThemeId.set(normalized);
+  }
   await initLang(init);
   initTheme(init);
 

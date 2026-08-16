@@ -30,9 +30,12 @@ class SettingsRegistry {
   static const titleFont = EnumSetting(id: 1026, defaultValue: TitleFont.montserrat, values: TitleFont.values);
   static const titleWeight = DoubleSetting(id: 1027, defaultValue: 700, min: 100, max: 900, precision: 0, step: 100);
   static const titleCapitalization = EnumSetting(id: 1028, defaultValue: TitleCapitalization.normal, values: TitleCapitalization.values);
+  static const selectedThemeId = StringSetting(id: 1029, defaultValue: "builtin-firka-firka");
+  static const selectedCoreThemeId = StringSetting(id: 1030, defaultValue: "firka");
+  static const selectedGradeThemeId = StringSetting(id: 1031, defaultValue: "firka");
 
   static const all = <Setting>[
-    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, liveActivityEnabled, liveActivityPrivacyEverDeclined, morningNotificationEnabled, morningNotificationTime, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization,
+    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, liveActivityEnabled, liveActivityPrivacyEverDeclined, morningNotificationEnabled, morningNotificationTime, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId,
   ];
 }
 
@@ -64,4 +67,7 @@ extension SettingsAccessors on SettingsRepository {
   SilentlySettable<TitleFont> get titleFont => SilentlySettable(this, SettingsRegistry.titleFont);
   SilentlySettable<double> get titleWeight => SilentlySettable(this, SettingsRegistry.titleWeight);
   SilentlySettable<TitleCapitalization> get titleCapitalization => SilentlySettable(this, SettingsRegistry.titleCapitalization);
+  SilentlySettable<String> get selectedThemeId => SilentlySettable(this, SettingsRegistry.selectedThemeId);
+  SilentlySettable<String> get selectedCoreThemeId => SilentlySettable(this, SettingsRegistry.selectedCoreThemeId);
+  SilentlySettable<String> get selectedGradeThemeId => SilentlySettable(this, SettingsRegistry.selectedGradeThemeId);
 }

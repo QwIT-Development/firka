@@ -549,6 +549,7 @@ class _SettingsPersonalizationViewState
                 title: _l10n.s_c_my_themes,
                 iconType: FirkaIconType.majesticons,
                 iconData: Majesticon.editPen4Solid,
+                onTap: () => context.push("/themes"),
               ),
               _shortcutRow(
                 title: _l10n.s_c_manage_subjects,

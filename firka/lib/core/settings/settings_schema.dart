@@ -133,4 +133,13 @@ abstract class SettingsSchema {
     values: TitleCapitalization.values,
   )
   TitleCapitalization get titleCapitalization;
+
+  @StringSetting(id: 1029, defaultValue: "builtin-firka-firka")
+  String get selectedThemeId;
+
+  @StringSetting(id: 1030, defaultValue: "firka")
+  String get selectedCoreThemeId;
+
+  @StringSetting(id: 1031, defaultValue: "firka")
+  String get selectedGradeThemeId;
 }

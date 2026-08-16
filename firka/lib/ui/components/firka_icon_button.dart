@@ -5,8 +5,14 @@ import "package:firka/ui/theme/style.dart";
 class FirkaIconButton extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
+  final Color? color;
 
-  const FirkaIconButton({required this.child, this.onTap, super.key});
+  const FirkaIconButton({
+    required this.child,
+    this.onTap,
+    this.color,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +22,7 @@ class FirkaIconButton extends StatelessWidget {
       padding: const EdgeInsets.all(6),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: appStyle.colors.buttonSecondaryFill,
+        color: color ?? appStyle.colors.buttonSecondaryFill,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(

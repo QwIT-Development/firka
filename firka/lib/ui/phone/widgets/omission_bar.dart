@@ -13,13 +13,20 @@ import 'package:flutter/material.dart';
 import 'package:firka/ui/theme/style.dart';
 
 class OmissionBar extends StatelessWidget {
-  const OmissionBar({super.key});
+  /// When set, draws these segments instead of reading the Isar cache.
+  final List<OmissionState?>? previewSegments;
+
+  const OmissionBar({super.key, this.previewSegments});
 
   static Color stateToColor(OmissionCacheModel? o) {
-    if (o == null) {
+    return stateColor(o?.state);
+  }
+
+  static Color stateColor(OmissionState? state) {
+    if (state == null) {
       return appStyle.colors.a15p;
     }
-    switch (o.state) {
+    switch (state) {
       case OmissionState.excused:
         return appStyle.colors.accent;
       case OmissionState.unexcused:
@@ -34,27 +41,36 @@ class OmissionBar extends StatelessWidget {
     DateTime now = timeNow();
     DateTime startOfTheYear = now.getFirstSchoolDay();
 
-    final dates = initData.client!.cache
-        .getTimeTable()
-        .between(startOfTheYear, now)
-        .findAllSync()
-        .map((l) => l.start.getMidnight())
-        .toSet();
+    late final List<Color> segmentColors;
+    if (previewSegments != null) {
+      segmentColors = previewSegments!.map(stateColor).toList();
+    } else {
+      final dates = initData.client!.cache
+          .getTimeTable()
+          .between(startOfTheYear, now)
+          .findAllSync()
+          .map((l) => l.start.getMidnight())
+          .toSet();
 
-    final omittedDates = initData.client!.cache
-        .getOmissions()
-        .findAllSync()
-        .groupList((o) => o.lesson.loadAndGet()!.start);
+      final omittedDates = initData.client!.cache
+          .getOmissions()
+          .findAllSync()
+          .groupList((o) => o.lesson.loadAndGet()!.start);
+
+      segmentColors = dates
+          .map((i) => stateToColor(omittedDates[i]?.firstOrNull))
+          .toList();
+    }
 
     final bar = ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Row(
-        children: dates
+        children: segmentColors
             .map(
-              (i) => Expanded(
+              (color) => Expanded(
                 child: Container(
                   height: 12,
-                  color: stateToColor(omittedDates[i]?.firstOrNull),
+                  color: color,
                 ),
               ),
             )

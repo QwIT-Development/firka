@@ -11,6 +11,7 @@ import 'package:firka_common/data/models/subject_cache_model.dart';
 import 'package:firka_common/data/models/teacher_model.dart';
 import 'package:firka_common/data/models/test_cache_model.dart';
 import 'package:firka_common/data/models/token_model.dart';
+import 'package:firka_common/data/models/user_theme_model.dart';
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -34,6 +35,7 @@ Future<Isar> initDB() async {
       AppSettingsModelSchema,
       SubjectCacheModelSchema,
       StudentCacheModelSchema,
+      UserThemeModelSchema,
     ],
     inspector: true,
     directory: dir.path,

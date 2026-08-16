@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firka_common/ui/theme/core_theme.dart';
+import 'package:firka_common/ui/theme/grade_theme.dart';
 
 // Design system token names; ignore non_constant_identifier_names for consistency with design specs
 // ignore_for_file: non_constant_identifier_names
@@ -264,85 +266,71 @@ FirkaFonts buildAppFonts({
 
 final _defaultFonts = buildAppFonts();
 
-final FirkaStyle lightStyle = FirkaStyle(
+FirkaColors mergeColors(CoreThemeColors core, GradeThemeColors grades) {
+  return FirkaColors(
+    background: core.background,
+    backgroundAmoled: core.backgroundAmoled,
+    background0p: core.background0p,
+    success: core.success,
+    shadowBlur: core.shadowBlur,
+    textPrimary: core.textPrimary,
+    textSecondary: core.textSecondary,
+    textTertiary: core.textTertiary,
+    textTeritary: core.textTeritary,
+    textPrimaryLight: core.textPrimaryLight,
+    textSecondaryLight: core.textSecondaryLight,
+    textTertiaryLight: core.textTertiaryLight,
+    card: core.card,
+    cardTranslucent: core.cardTranslucent,
+    buttonSecondaryFill: core.buttonSecondaryFill,
+    buttonDisabledIcon: core.buttonDisabledIcon,
+    accent: core.accent,
+    secondary: core.secondary,
+    shadowColor: core.shadowColor,
+    a10p: core.a10p,
+    a15p: core.a15p,
+    warningAccent: core.warningAccent,
+    warningText: core.warningText,
+    warning15p: core.warning15p,
+    warningCard: core.warningCard,
+    errorAccent: core.errorAccent,
+    errorText: core.errorText,
+    error15p: core.error15p,
+    errorCard: core.errorCard,
+    grade5: grades.grade5,
+    grade4: grades.grade4,
+    grade3: grades.grade3,
+    grade2: grades.grade2,
+    grade1: grades.grade1,
+  );
+}
+
+FirkaStyle styleFor({
+  required String coreId,
+  required String gradeId,
+  required bool isLight,
+  required FirkaFonts fonts,
+}) {
+  final core = resolveCore(coreId).forBrightness(isLight);
+  final grades = resolveGrade(gradeId).forBrightness(isLight);
+  return FirkaStyle(
+    isLight: isLight,
+    colors: mergeColors(core, grades),
+    fonts: fonts,
+  );
+}
+
+FirkaStyle get lightStyle => styleFor(
+  coreId: "firka",
+  gradeId: "firka",
   isLight: true,
-  colors: FirkaColors(
-    background: Color(0xFFFAFFF0),
-    backgroundAmoled: Colors.black,
-    background0p: Color(0x00fafff0),
-    success: Color(0xFF92EA3B),
-    shadowBlur: 2,
-    textPrimary: Color(0xFF394C0A),
-    textSecondary: Color(0xCC394C0A),
-    textTertiary: Color(0x80394C0A),
-    textTeritary: Color(0xFF97A474),
-    textPrimaryLight: Color(0xFF394C0A),
-    textSecondaryLight: Color(0xCC394C0A),
-    textTertiaryLight: Color(0x80394C0A),
-    card: Color(0xFFF3FBDE),
-    cardTranslucent: Color(0x80F3FBDE),
-    buttonSecondaryFill: Color(0xFFFEFFFD),
-    buttonDisabledIcon: Color(0xFFCDD9B3),
-    accent: Color(0xFFA7DC22),
-    secondary: Color(0xFF6E8F1B),
-    shadowColor: Color(0x33647e22),
-    a10p: Color(0x1aa7dc22),
-    a15p: Color(0x26a7dc22),
-    warningAccent: Color(0xFFFFA046),
-    warningText: Color(0xFF8F531B),
-    warning15p: Color(0x26FFA046),
-    warningCard: Color(0xFFFAEBDC),
-    errorAccent: Color(0xFFFF54A1),
-    errorText: Color(0xFF8F1B4F),
-    error15p: Color(0x26FF54A1),
-    errorCard: Color(0xFFFADCE9),
-    grade5: Color(0xFF22CCAD),
-    grade4: Color(0xFF92EA3B),
-    grade3: Color(0xFFF9CF00),
-    grade2: Color(0xFFFFA046),
-    grade1: Color(0xFFFF54A1),
-  ),
   fonts: _defaultFonts,
 );
 
-final FirkaStyle darkStyle = FirkaStyle(
+FirkaStyle get darkStyle => styleFor(
+  coreId: "firka",
+  gradeId: "firka",
   isLight: false,
-  colors: FirkaColors(
-    background: Color(0xFF0D1202),
-    backgroundAmoled: Colors.black,
-    background0p: Color(0x00fafff0),
-    success: Color(0xFF92EA3B),
-    shadowBlur: 0,
-    textPrimary: Color(0xFFEAF7CC),
-    textSecondary: Color(0xB3EAF7CC),
-    textTertiary: Color(0x80EAF7CC),
-    textTeritary: Color(0xFF97A474),
-    textPrimaryLight: Color(0xFF394C0A),
-    textSecondaryLight: Color(0xCC394C0A),
-    textTertiaryLight: Color(0x80394C0A),
-    card: Color(0xFF141905),
-    cardTranslucent: Color(0x80141905),
-    buttonSecondaryFill: Color(0xFF20290B),
-    buttonDisabledIcon: Color(0xFF465422),
-    accent: Color(0xFFA7DC22),
-    secondary: Color(0xFFCBEE71),
-    shadowColor: Color(0x26CBEE71),
-    a10p: Color(0x1AA7DC22),
-    a15p: Color(0x26A7DC22),
-    warningAccent: Color(0xFFFFA046),
-    warningText: Color(0xFFF0B37A),
-    warning15p: Color(0x26FFA046),
-    warningCard: Color(0xFF201203),
-    errorAccent: Color(0xFFFF54A1),
-    errorText: Color(0xFFF59EC5),
-    error15p: Color(0x26FF54A1),
-    errorCard: Color(0xFF1E030F),
-    grade5: Color(0xFF22CCAD),
-    grade4: Color(0xFF92EA3B),
-    grade3: Color(0xFFF9CF00),
-    grade2: Color(0xFFFFA046),
-    grade1: Color(0xFFFF54A1),
-  ),
   fonts: _defaultFonts,
 );
 
