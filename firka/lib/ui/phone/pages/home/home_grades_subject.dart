@@ -6,6 +6,7 @@ import 'package:firka_common/data/util.dart';
 import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:firka/core/extensions.dart';
 import 'package:firka/ui/components/common_bottom_sheets.dart';
+import 'package:firka/ui/components/firka_icon_button.dart';
 import 'package:firka/ui/phone/widgets/grade_chart.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
@@ -232,19 +233,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                   ),
                 ],
               ),
-              GestureDetector(
-                child: Card(
-                  color: appStyle.colors.buttonSecondaryFill,
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: FirkaIconWidget(
-                      FirkaIconType.majesticons,
-                      Majesticon.menuSolid,
-                      size: 26.0,
-                      color: appStyle.colors.accent,
-                    ),
-                  ),
-                ),
+              FirkaIconButton(
                 onTap: () {
                   showSubjectBottomSheetSettings(
                     context,
@@ -255,6 +244,12 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                     },
                   );
                 },
+                child: FirkaIconWidget(
+                  FirkaIconType.majesticons,
+                  Majesticon.menuSolid,
+                  size: 20.0,
+                  color: appStyle.colors.accent,
+                ),
               ),
             ],
           ),

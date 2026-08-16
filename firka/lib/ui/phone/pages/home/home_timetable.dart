@@ -9,6 +9,7 @@ import 'package:firka/core/settings.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/ui/theme/style.dart';
+import 'package:firka/ui/components/firka_icon_button.dart';
 import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:firka/ui/phone/widgets/bubble_test.dart';
 import 'package:flutter/material.dart';
@@ -417,52 +418,31 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                           ),
                         ),
                         Row(
+                          spacing: 8,
                           children: [
-                            GestureDetector(
-                              child: Card(
-                                color: appStyle.colors.buttonSecondaryFill,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: FirkaIconWidget(
-                                    FirkaIconType.majesticons,
-                                    Majesticon.tableSolid,
-                                    size: 26.0,
-                                    color: appStyle.colors.accent,
-                                  ),
-                                ),
-                              ),
+                            FirkaIconButton(
                               onTap: () {
                                 context.push('/timetable/monthly');
                               },
+                              child: FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.tableSolid,
+                                size: 20.0,
+                                color: appStyle.colors.accent,
+                              ),
                             ),
                             /* TODO: 1.1.0
 
-                        Card(
-                          color: appStyle.colors.buttonSecondaryFill,
-                          child: Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: FirkaIconWidget(
-                              FirkaIconType.majesticons,
-                              Majesticon.plusLine,
-                              size: 32.0,
-                              color: appStyle.colors.accent,
-                            ),
+                        FirkaIconButton(
+                          child: FirkaIconWidget(
+                            FirkaIconType.majesticons,
+                            Majesticon.plusLine,
+                            size: 20.0,
+                            color: appStyle.colors.accent,
                           ),
                         ),
                         */
-                            GestureDetector(
-                              child: Card(
-                                color: appStyle.colors.buttonSecondaryFill,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: FirkaIconWidget(
-                                    FirkaIconType.majesticons,
-                                    Majesticon.settingsCogSolid,
-                                    size: 26.0,
-                                    color: appStyle.colors.accent,
-                                  ),
-                                ),
-                              ),
+                            FirkaIconButton(
                               onTap: () {
                                 showSettingsSheet(
                                   context,
@@ -471,6 +451,12 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                                   timetableToastTree(widget.data.l10n),
                                 );
                               },
+                              child: FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.settingsCogSolid,
+                                size: 20.0,
+                                color: appStyle.colors.accent,
+                              ),
                             ),
                           ],
                         ),

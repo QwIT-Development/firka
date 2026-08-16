@@ -1,3 +1,4 @@
+import 'package:firka/ui/components/firka_icon_button.dart';
 import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:firka_common/data/models/lesson_cache_model.dart';
 import 'package:firka_common/data/util.dart';
@@ -260,50 +261,29 @@ class _HomeTimetableMonthlyScreen
                         ),
                       ),
                       Row(
+                        spacing: 8,
                         children: [
-                          GestureDetector(
-                            child: Card(
-                              color: appStyle.colors.buttonSecondaryFill,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: FirkaIconWidget(
-                                  FirkaIconType.majesticons,
-                                  Majesticon.tableSolid,
-                                  size: 26.0,
-                                  color: appStyle.colors.accent,
-                                ),
-                              ),
-                            ),
+                          FirkaIconButton(
                             onTap: () {
                               context.pop();
                             },
+                            child: FirkaIconWidget(
+                              FirkaIconType.majesticons,
+                              Majesticon.tableSolid,
+                              size: 20.0,
+                              color: appStyle.colors.accent,
+                            ),
                           ),
                           // Nincs elkészítve jelenleg: Dolgozat stb hozzáadása(?)
-                          // Card(
-                          //   color: appStyle.colors.buttonSecondaryFill,
-                          //   child: Padding(
-                          //     padding: const EdgeInsets.all(4),
-                          //     child: FirkaIconWidget(
-                          //       FirkaIconType.majesticons,
-                          //       Majesticon.plusLine,
-                          //       size: 32.0,
-                          //       color: appStyle.colors.accent,
-                          //     ),
+                          // FirkaIconButton(
+                          //   child: FirkaIconWidget(
+                          //     FirkaIconType.majesticons,
+                          //     Majesticon.plusLine,
+                          //     size: 20.0,
+                          //     color: appStyle.colors.accent,
                           //   ),
                           // ),
-                          GestureDetector(
-                            child: Card(
-                              color: appStyle.colors.buttonSecondaryFill,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: FirkaIconWidget(
-                                  FirkaIconType.majesticons,
-                                  Majesticon.settingsCogSolid,
-                                  size: 26.0,
-                                  color: appStyle.colors.accent,
-                                ),
-                              ),
-                            ),
+                          FirkaIconButton(
                             onTap: () {
                               showSettingsSheet(
                                 context,
@@ -312,6 +292,12 @@ class _HomeTimetableMonthlyScreen
                                 timetableToastTree(widget.data.l10n),
                               );
                             },
+                            child: FirkaIconWidget(
+                              FirkaIconType.majesticons,
+                              Majesticon.settingsCogSolid,
+                              size: 20.0,
+                              color: appStyle.colors.accent,
+                            ),
                           ),
                         ],
                       ),

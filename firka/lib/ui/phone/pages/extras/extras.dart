@@ -1,16 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import 'package:firka/app/app_state.dart';
-import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
-import 'package:firka_common/ui/components/firka_shadow.dart';
+import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:firka/ui/theme/style.dart';
-import 'package:go_router/go_router.dart';
+
+Widget _extrasActionTile({
+  required double width,
+  required VoidCallback onTap,
+  required Widget icon,
+  required String label,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: FirkaCard.single(
+      width: width,
+      height: 60,
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      child: Row(
+        children: [
+          icon,
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              label,
+              textAlign: TextAlign.right,
+              overflow: TextOverflow.ellipsis,
+              style: appStyle.fonts.B_16R.apply(
+                color: appStyle.colors.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
 void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
   Widget Function(double) debugBtn = (_) => const SizedBox();
@@ -18,52 +49,20 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
   logger.finest("showExtrasBottomSheet() developer mode: ${isDeveloper()}");
 
   if (isDeveloper()) {
-    debugBtn = (double itemWidth) => GestureDetector(
+    debugBtn = (double itemWidth) => _extrasActionTile(
       // Fejlesztői menü
+      width: itemWidth,
       onTap: () {
         context.pop();
         context.push('/debug');
       },
-      child: SizedBox(
-        height: 60,
-        width: itemWidth,
-        child: FirkaShadow(
-          shadow: true,
-          child: Card(
-            color: appStyle.colors.card,
-            shadowColor: context.watch<ThemeCubit>().state.isLightMode
-                ? null
-                : Colors.transparent,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Row(
-                  children: [
-                    FirkaIconWidget(
-                      FirkaIconType.majesticons,
-                      Majesticon.bug2Solid,
-                      size: 22.0,
-                      color: appStyle.colors.accent,
-                    ),
-                    SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        data.l10n.debug_screen,
-                        textAlign: TextAlign.right,
-                        overflow: TextOverflow.ellipsis,
-                        style: appStyle.fonts.B_16R.apply(
-                          color: appStyle.colors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
+      icon: FirkaIconWidget(
+        FirkaIconType.majesticons,
+        Majesticon.bug2Solid,
+        size: 22.0,
+        color: appStyle.colors.accent,
       ),
+      label: data.l10n.debug_screen,
     );
   }
 
@@ -116,12 +115,13 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                           builder: (context, constraints) {
                             final itemWidth = (constraints.maxWidth - 8) / 2;
                             return Wrap(
-                              spacing: 2,
-                              runSpacing: 2,
+                              spacing: 8,
+                              runSpacing: 8,
                               children: [
                                 debugBtn(itemWidth),
-                                GestureDetector(
+                                _extrasActionTile(
                                   // Fiókod
+                                  width: itemWidth,
                                   onTap: () {
                                     context.pop();
                                     context.push(
@@ -131,113 +131,28 @@ void showExtrasBottomSheet(BuildContext context, AppInitialization data) {
                                       ).children,
                                     );
                                   },
-                                  child: SizedBox(
-                                    height: 60,
-                                    width: itemWidth,
-                                    child: FirkaShadow(
-                                      shadow: true,
-                                      child: Card(
-                                        color: appStyle.colors.card,
-                                        shadowColor:
-                                            context
-                                                .watch<ThemeCubit>()
-                                                .state
-                                                .isLightMode
-                                            ? null
-                                            : Colors.transparent,
-                                        child: Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 12.0,
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                FirkaIconWidget(
-                                                  FirkaIconType.majesticons,
-                                                  Majesticon.userSolid,
-                                                  size: 22.0,
-                                                  color: appStyle.colors.accent,
-                                                ),
-                                                SizedBox(width: 4),
-                                                Flexible(
-                                                  child: Text(
-                                                    data.l10n.s_your_account,
-                                                    textAlign: TextAlign.right,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: appStyle.fonts.B_16R
-                                                        .apply(
-                                                          color: appStyle
-                                                              .colors
-                                                              .textPrimary,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
+                                  icon: FirkaIconWidget(
+                                    FirkaIconType.majesticons,
+                                    Majesticon.userSolid,
+                                    size: 22.0,
+                                    color: appStyle.colors.accent,
                                   ),
+                                  label: data.l10n.s_your_account,
                                 ),
-                                GestureDetector(
+                                _extrasActionTile(
                                   // Beállítás
+                                  width: itemWidth,
                                   onTap: () {
                                     context.pop();
                                     context.push('/settings');
                                   },
-                                  child: SizedBox(
-                                    height: 60,
-                                    width: itemWidth,
-                                    child: FirkaShadow(
-                                      shadow: true,
-                                      child: Card(
-                                        color: appStyle.colors.card,
-                                        shadowColor:
-                                            context
-                                                .watch<ThemeCubit>()
-                                                .state
-                                                .isLightMode
-                                            ? null
-                                            : Colors.transparent,
-                                        child: Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 12.0,
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                FirkaIconWidget(
-                                                  FirkaIconType.majesticons,
-                                                  Majesticon.settingsCogSolid,
-                                                  size: 22.0,
-                                                  color: appStyle.colors.accent,
-                                                ),
-                                                SizedBox(width: 4),
-                                                Flexible(
-                                                  child: Text(
-                                                    data.l10n.settings_screen,
-                                                    textAlign: TextAlign.right,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: appStyle.fonts.B_16R
-                                                        .apply(
-                                                          color: appStyle
-                                                              .colors
-                                                              .textPrimary,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
+                                  icon: FirkaIconWidget(
+                                    FirkaIconType.majesticons,
+                                    Majesticon.settingsCogSolid,
+                                    size: 22.0,
+                                    color: appStyle.colors.accent,
                                   ),
+                                  label: data.l10n.settings_screen,
                                 ),
                                 // Ide jön a többi gomb majd
                               ],
