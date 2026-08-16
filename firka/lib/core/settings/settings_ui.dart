@@ -127,6 +127,15 @@ class SettingsUiAppIconPreview extends SettingsUiNode {
   const SettingsUiAppIconPreview(super.visible);
 }
 
+class SettingsUiPersonalization extends SettingsUiNode {
+  final List<SettingsUiNode> appIconPickerChildren;
+
+  const SettingsUiPersonalization(
+    this.appIconPickerChildren,
+    bool Function() visible,
+  ) : super(visible);
+}
+
 class SettingsUiAppIconPicker extends SettingsUiNode {
   final Map<String, List<String>> iconGroups;
   final SettingsUiBoolean childProtection;

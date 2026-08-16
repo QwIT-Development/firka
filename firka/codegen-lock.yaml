@@ -1,15 +1,16 @@
 icons:
   "flutter_launcher_icons.yaml": "c600507ca0df7cebd0f708124842512a14ed3d597b779176200d6ba25b1335b1"
-  "pubspec.yaml": "a6ae0bd67a2b6226bec2dfd55437b3db2b7ca4a03f315c1a0a8c2f4b505c7c87"
+  "pubspec.yaml": "d0f795bcffd597e260202b29476fc99caa3bb4aac5abd48a210cadb9f45c19e7"
   "assets/images/logos/colored_logo.webp": "4b4fa99d144fe6694aa4487ba1b26aeecafae41e3c877836cd7da28d61a77983"
   "assets/images/logos/monochrome_logo.png": "188d2b0a64c70323b09bcee721663d6698fb557066f20ddaec97bba6869c1c6c"
   "assets/images/logos/colored_logo_without_mustache.png": "d11cff9f38985885873bfdd2d84e61f8fab03803eada94d4caac1545ef3685f3"
   "assets/images/logos/colored_logo_only_mustache.png": "bad6220c11bdfb1dfe04e5173bd2ebedd3999689d4b3a68fc63dc520c96dd33b"
 l10n:
   "l10n.yml": "a57bc304cac4a2b0235593586f17f400a5165d67fc9aadeaa11893cfa36ee082"
-  "lib/l10n/app_de.arb": "c6a12eaadf03b012a6a377b3efa4e606bd985355e76e6351956a017f4cfdadc1"
-  "lib/l10n/app_hu.arb": "a63aace8d129dbc054c4996dd9ef7d54aad96888241ce1310518b10a9a7b561d"
-  "lib/l10n/app_en.arb": "b2d72778fedb46155f41eb210906ed8ffba8b12744a2800b039951e0a2a88133"
+  "lib/l10n/app_hu.arb": "e11b8fe4d4fd239584792971c341f1e329fb91f5f49fa6baa664c98b06fc5176"
+  "lib/l10n/app_de.arb": "5114c70b506f290217161881336d6118c975d59f32347bbdc94a51c1a25293e7"
+  "lib/l10n/app_en.arb": "a5417b2de058a67db40fa7bfb3526d800fd2f82349dfbc895cff8b298069e707"
+  "lib/l10n/app_pl.arb": "36cad0796cf8bd20fe969d5fd8443430d25fa932028c0177917ecef6964a08dd"
 isar:
   "lib/data/models/app_settings_model.dart": "5eb5af345f1347f104257f0999763650fe2673f9da1754bd12d3f756fe5c9723"
   "lib/data/models/token_model.dart": "8c957cd07e473827d78fd8fd4fb6c1336b636a69c25c93618e1e7f94b7cf0683"

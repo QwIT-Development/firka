@@ -160,7 +160,7 @@ class _WelcomeWidgetState extends State<WelcomeWidget> {
             getIconForCycle(dayCycle),
             const SizedBox(height: 16.0),
             Text(
-              getTitle(dayCycle),
+              headingText(getTitle(dayCycle)),
               style: appStyle.fonts.H_H2.copyWith(
                 color: appStyle.colors.textPrimary,
               ),

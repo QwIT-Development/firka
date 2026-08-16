@@ -63,7 +63,7 @@ class _HomeOmissionsScreen extends FirkaState<HomeOmissionsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.data.l10n.omissions,
+            headingText(widget.data.l10n.omissions),
             style: appStyle.fonts.H_H2.apply(
               color: appStyle.colors.textPrimary,
             ),

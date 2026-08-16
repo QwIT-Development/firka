@@ -7,6 +7,18 @@ enum AppLanguage { auto, hu, en, de }
 
 enum ThemeBrightness { auto, light, dark }
 
+enum TitleFont {
+  montserrat,
+  monoton,
+  pirataOne,
+  justMeAgainDownHere,
+  figtree,
+  firaCode,
+  vollkorn,
+}
+
+enum TitleCapitalization { lower, normal, upper }
+
 abstract class SettingsSchema {
   @DoubleSetting(id: 1001, defaultValue: 0, min: 0, max: 120)
   double get bellDelay;
@@ -96,4 +108,29 @@ abstract class SettingsSchema {
 
   @BoolSetting(id: 1024, defaultValue: false)
   bool get wearOsSupport;
+
+  // 1025 is reserved for the selected Kréta account outside SettingsRegistry.
+  @EnumSetting(
+    id: 1026,
+    defaultValue: TitleFont.montserrat,
+    values: TitleFont.values,
+  )
+  TitleFont get titleFont;
+
+  @DoubleSetting(
+    id: 1027,
+    defaultValue: 700,
+    min: 100,
+    max: 900,
+    precision: 0,
+    step: 100,
+  )
+  double get titleWeight;
+
+  @EnumSetting(
+    id: 1028,
+    defaultValue: TitleCapitalization.normal,
+    values: TitleCapitalization.values,
+  )
+  TitleCapitalization get titleCapitalization;
 }

@@ -254,7 +254,7 @@ class _HomeTimetableMonthlyScreen
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        widget.data.l10n.timetable,
+                        headingText(widget.data.l10n.timetable),
                         style: appStyle.fonts.H_H2.apply(
                           color: appStyle.colors.textPrimary,
                         ),

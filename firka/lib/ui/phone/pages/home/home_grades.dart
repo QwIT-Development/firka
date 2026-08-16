@@ -80,7 +80,7 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
           Row(
             children: [
               Text(
-                widget.data.l10n.subjects,
+                headingText(widget.data.l10n.subjects),
                 style: appStyle.fonts.H_H2.apply(
                   color: appStyle.colors.textPrimary,
                 ),

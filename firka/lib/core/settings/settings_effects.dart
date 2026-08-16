@@ -23,8 +23,19 @@ void registerSettingsEffects(
 
   repo.onChange(SettingsRegistry.themeBrightness, (_) async {
     initTheme(initData);
+    initData.themeCubit.refresh();
     initData.homeRefreshCubit.requestRefresh();
   });
+
+  Future<void> refreshTitleStyle(_) async {
+    initTheme(initData);
+    initData.themeCubit.refresh();
+    initData.homeRefreshCubit.requestRefresh();
+  }
+
+  repo.onChange(SettingsRegistry.titleFont, refreshTitleStyle);
+  repo.onChange(SettingsRegistry.titleWeight, refreshTitleStyle);
+  repo.onChange(SettingsRegistry.titleCapitalization, refreshTitleStyle);
 
   repo.onChange(SettingsRegistry.wearOsSupport, (enabled) async {
     if (!Platform.isAndroid) return;

@@ -12,6 +12,7 @@ import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/core/settings/settings_effects.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
+import 'package:firka/core/settings/title_font.dart';
 import 'package:firka/services/watch_sync_helper.dart';
 import 'package:firka/l10n/app_localizations_de.dart';
 import 'package:firka/l10n/app_localizations_en.dart';
@@ -80,24 +81,45 @@ void initTheme(AppInitialization data) {
   final brightness =
       SchedulerBinding.instance.platformDispatcher.platformBrightness;
 
+  final titleFont = Settings.titleFont.value;
+  final titleWeight = Settings.titleWeight.value;
+  final fonts = buildAppFonts(
+    headingFamily: titleFont.fontFamily,
+    headingWeight: titleWeight,
+    supportsWeight: titleFont.supportsWeight,
+  );
+
+  appHeadingTextCase = switch (Settings.titleCapitalization.value) {
+    TitleCapitalization.lower => HeadingTextCase.lower,
+    TitleCapitalization.upper => HeadingTextCase.upper,
+    TitleCapitalization.normal => HeadingTextCase.normal,
+  };
+
+  FirkaStyle baseStyle;
   switch (Settings.themeBrightness.value) {
     case ThemeBrightness.light:
-      appStyle = lightStyle;
+      baseStyle = lightStyle;
       themeCubit.setLightMode(true);
       break;
     case ThemeBrightness.dark:
-      appStyle = darkStyle;
+      baseStyle = darkStyle;
       themeCubit.setLightMode(false);
       break;
     case ThemeBrightness.auto:
       if (brightness == Brightness.dark) {
-        appStyle = darkStyle;
+        baseStyle = darkStyle;
         themeCubit.setLightMode(false);
       } else {
-        appStyle = lightStyle;
+        baseStyle = lightStyle;
         themeCubit.setLightMode(true);
       }
   }
+
+  appStyle = FirkaStyle(
+    isLight: baseStyle.isLight,
+    colors: baseStyle.colors,
+    fonts: fonts,
+  );
 }
 
 Future<void> _initData(AppInitialization init) async {

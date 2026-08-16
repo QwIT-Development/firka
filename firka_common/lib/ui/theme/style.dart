@@ -140,96 +140,129 @@ class FirkaStyle {
   });
 }
 
-final _defaultFonts = FirkaFonts(
-  H_H1: TextStyle(
-    fontSize: 30,
-    fontFamily: 'Montserrat',
-    fontVariations: [FontVariation("wght", 700)],
-  ),
-  H_18px: TextStyle(
-    fontSize: 18,
-    fontFamily: 'Montserrat',
-    fontVariations: [FontVariation("wght", 700)],
-  ),
-  H_H2: TextStyle(
-    fontSize: 20,
-    fontFamily: 'Montserrat',
-    fontVariations: [FontVariation("wght", 700)],
-  ),
-  H_16px: TextStyle(
-    fontSize: 16,
-    fontFamily: 'Montserrat',
-    fontVariations: [FontVariation("wght", 600)],
-  ),
-  H_14px: TextStyle(
-    fontSize: 14,
-    fontFamily: 'Montserrat',
-    fontVariations: [FontVariation("wght", 600)],
-  ),
-  H_12px: TextStyle(
-    fontSize: 12,
-    fontFamily: 'Montserrat',
-    fontVariations: [FontVariation("wght", 600)],
-  ),
-  H_16px_trimmed: TextStyle(
-    fontSize: 16,
-    fontFamily: 'Montserrat',
-    fontVariations: [FontVariation("wght", 600)],
-    height: 1.3,
-  ),
-  B_16R: TextStyle(
-    fontSize: 16,
-    fontFamily: 'Figtree',
-    fontVariations: [FontVariation("wght", 500)],
-    height: 1.3,
-  ),
-  B_16SB: TextStyle(
-    fontSize: 16,
-    fontFamily: 'Figtree',
-    fontVariations: [FontVariation("wght", 600)],
-    height: 1.3,
-  ),
-  B_14R: TextStyle(
-    fontSize: 14,
-    fontFamily: 'Figtree',
-    fontVariations: [FontVariation("wght", 500)],
-    height: 1.3,
-  ),
-  B_14SB: TextStyle(
-    fontSize: 14,
-    fontFamily: 'Figtree',
-    fontVariations: [FontVariation("wght", 600)],
-    height: 1.3,
-  ),
-  B_15SB: TextStyle(
-    fontSize: 15,
-    fontFamily: 'Figtree',
-    fontVariations: [FontVariation("wght", 700)],
-    height: 1.3,
-  ),
-  B_12R: TextStyle(
-    fontSize: 12,
-    fontFamily: 'Figtree',
-    fontVariations: [FontVariation("wght", 600)],
-    height: 1.3,
-  ),
-  B_12SB: TextStyle(
-    fontSize: 12,
-    fontFamily: 'Figtree',
-    fontVariations: [FontVariation("wght", 700)],
-    height: 1.3,
-  ),
-  P_14: TextStyle(
-    fontSize: 14,
-    fontFamily: 'RobotoMono',
-    fontVariations: [FontVariation("wght", 700)],
-  ),
-  P_12: TextStyle(
-    fontSize: 12,
-    fontFamily: 'RobotoMono',
-    fontVariations: [FontVariation("wght", 700)],
-  ),
-);
+enum HeadingTextCase { lower, normal, upper }
+
+HeadingTextCase appHeadingTextCase = HeadingTextCase.normal;
+
+String headingText(String text) {
+  switch (appHeadingTextCase) {
+    case HeadingTextCase.lower:
+      return text.toLowerCase();
+    case HeadingTextCase.upper:
+      return text.toUpperCase();
+    case HeadingTextCase.normal:
+      return text;
+  }
+}
+
+FirkaFonts buildAppFonts({
+  String headingFamily = "Montserrat",
+  double headingWeight = 700,
+  bool supportsWeight = true,
+}) {
+  List<FontVariation>? headingVariations(double weight) {
+    if (!supportsWeight) return null;
+    return [FontVariation("wght", weight)];
+  }
+
+  final boldWeight = supportsWeight ? headingWeight : 700.0;
+  final semiWeight = supportsWeight
+      ? (headingWeight * 600 / 700).clamp(100.0, 900.0).toDouble()
+      : 600.0;
+
+  return FirkaFonts(
+    H_H1: TextStyle(
+      fontSize: 30,
+      fontFamily: headingFamily,
+      fontVariations: headingVariations(boldWeight),
+    ),
+    H_18px: TextStyle(
+      fontSize: 18,
+      fontFamily: headingFamily,
+      fontVariations: headingVariations(boldWeight),
+    ),
+    H_H2: TextStyle(
+      fontSize: 20,
+      fontFamily: headingFamily,
+      fontVariations: headingVariations(boldWeight),
+    ),
+    H_16px: TextStyle(
+      fontSize: 16,
+      fontFamily: headingFamily,
+      fontVariations: headingVariations(semiWeight),
+    ),
+    H_14px: TextStyle(
+      fontSize: 14,
+      fontFamily: headingFamily,
+      fontVariations: headingVariations(semiWeight),
+    ),
+    H_12px: TextStyle(
+      fontSize: 12,
+      fontFamily: headingFamily,
+      fontVariations: headingVariations(semiWeight),
+    ),
+    H_16px_trimmed: TextStyle(
+      fontSize: 16,
+      fontFamily: headingFamily,
+      fontVariations: headingVariations(semiWeight),
+      height: 1.3,
+    ),
+    B_16R: TextStyle(
+      fontSize: 16,
+      fontFamily: "Figtree",
+      fontVariations: [FontVariation("wght", 500)],
+      height: 1.3,
+    ),
+    B_16SB: TextStyle(
+      fontSize: 16,
+      fontFamily: "Figtree",
+      fontVariations: [FontVariation("wght", 600)],
+      height: 1.3,
+    ),
+    B_14R: TextStyle(
+      fontSize: 14,
+      fontFamily: "Figtree",
+      fontVariations: [FontVariation("wght", 500)],
+      height: 1.3,
+    ),
+    B_14SB: TextStyle(
+      fontSize: 14,
+      fontFamily: "Figtree",
+      fontVariations: [FontVariation("wght", 600)],
+      height: 1.3,
+    ),
+    B_15SB: TextStyle(
+      fontSize: 15,
+      fontFamily: "Figtree",
+      fontVariations: [FontVariation("wght", 700)],
+      height: 1.3,
+    ),
+    B_12R: TextStyle(
+      fontSize: 12,
+      fontFamily: "Figtree",
+      fontVariations: [FontVariation("wght", 600)],
+      height: 1.3,
+    ),
+    B_12SB: TextStyle(
+      fontSize: 12,
+      fontFamily: "Figtree",
+      fontVariations: [FontVariation("wght", 700)],
+      height: 1.3,
+    ),
+    P_14: TextStyle(
+      fontSize: 14,
+      fontFamily: "RobotoMono",
+      fontVariations: [FontVariation("wght", 700)],
+    ),
+    P_12: TextStyle(
+      fontSize: 12,
+      fontFamily: "RobotoMono",
+      fontVariations: [FontVariation("wght", 700)],
+    ),
+  );
+}
+
+final _defaultFonts = buildAppFonts();
 
 final FirkaStyle lightStyle = FirkaStyle(
   isLight: true,

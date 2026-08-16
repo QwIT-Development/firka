@@ -110,6 +110,26 @@ flutter:
       fonts:
         - asset: assets/fonts/RobotoMono-VariableFont_wght.ttf
           style: normal
+    - family: Monoton
+      fonts:
+        - asset: assets/fonts/Monoton-Regular.ttf
+          style: normal
+    - family: Pirata One
+      fonts:
+        - asset: assets/fonts/PirataOne-Regular.ttf
+          style: normal
+    - family: Just Me Again Down Here
+      fonts:
+        - asset: assets/fonts/JustMeAgainDownHere.ttf
+          style: normal
+    - family: Fira Code
+      fonts:
+        - asset: assets/fonts/FiraCode-VariableFont_wght.ttf
+          style: normal
+    - family: Vollkorn
+      fonts:
+        - asset: assets/fonts/Vollkorn-VariableFont_wght.ttf
+          style: normal
 
 dependency_overrides:
   vector_math: ^2.2.0

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:firka_common/data/database.dart';
 import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/core/bloc/app_icon_picker_cubit.dart';
+import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/core/settings/setting.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
@@ -23,6 +26,7 @@ import 'settings_app_icon_picker.dart';
 import 'settings_bool_row.dart';
 import 'settings_license_page.dart';
 import 'settings_logs.dart';
+import 'settings_personalization_view.dart';
 
 class SettingsScreen extends StatefulWidget {
   final AppInitialization data;
@@ -39,6 +43,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
   late List<TokenModel> tokens;
   late final AppIconPickerCubit appIconPickerCubit;
+  StreamSubscription<ThemeState>? _themeSub;
 
   @override
   void initState() {
@@ -46,10 +51,14 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
     tokens = isarInit.tokenModels.where().sortByUpdatedAtMsDesc().findAllSync();
     appIconPickerCubit = AppIconPickerCubit(Settings.appIcon.value);
+    _themeSub = widget.data.themeCubit.stream.listen((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
   void dispose() {
+    _themeSub?.cancel();
     appIconPickerCubit.close();
     super.dispose();
   }
@@ -121,7 +130,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
       if (item is SettingsUiHeader) {
         widgets.add(
           Text(
-            item.title,
+            headingText(item.title),
             style: appStyle.fonts.H_H1.apply(
               color: appStyle.colors.textPrimary,
             ),
@@ -133,7 +142,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
       if (item is SettingsUiMediumHeader) {
         widgets.add(
           Text(
-            item.title,
+            headingText(item.title),
             style: appStyle.fonts.H_H2.apply(
               color: appStyle.colors.textPrimary,
             ),
@@ -340,6 +349,16 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
 
       if (item is SettingsUiAppIconPreview) {
         widgets.add(SettingsAppIconPreviewView(data: widget.data));
+
+        continue;
+      }
+      if (item is SettingsUiPersonalization) {
+        widgets.add(
+          SettingsPersonalizationView(
+            data: widget.data,
+            item: item,
+          ),
+        );
 
         continue;
       }
