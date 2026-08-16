@@ -171,9 +171,12 @@ GoRouter createAppRouter() {
                 routes: [
                   GoRoute(
                     path: 'monthly',
-                    builder: (context, state) => DefaultAssetBundle(
-                      bundle: FirkaBundle(),
-                      child: HomeTimetableMonthlyScreen(initData),
+                    pageBuilder: (context, state) => _viewSwitchPage(
+                      key: state.pageKey,
+                      child: DefaultAssetBundle(
+                        bundle: FirkaBundle(),
+                        child: HomeTimetableMonthlyScreen(initData),
+                      ),
                     ),
                   ),
                   subjectRoute,
@@ -237,4 +240,34 @@ String? _redirect(BuildContext context, GoRouterState state) {
   }
 
   return null;
+}
+
+CustomTransitionPage<void> _viewSwitchPage({
+  required LocalKey key,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: key,
+    opaque: false,
+    transitionDuration: const Duration(milliseconds: 300),
+    reverseTransitionDuration: const Duration(milliseconds: 250),
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOut,
+        reverseCurve: Curves.easeIn,
+      );
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.04),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
 }
