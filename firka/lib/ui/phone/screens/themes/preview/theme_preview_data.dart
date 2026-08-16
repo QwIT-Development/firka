@@ -19,6 +19,7 @@ class ThemePreviewData {
     required this.messages,
     required this.tests,
     required this.grades,
+    required this.chartGrades,
     required this.omissions,
     required this.omissionBarSegments,
     required this.omissionExcusedCount,
@@ -38,6 +39,7 @@ class ThemePreviewData {
   final List<MessageCacheModel> messages;
   final List<TestCacheModel> tests;
   final List<GradeCacheModel> grades;
+  final List<GradeCacheModel> chartGrades;
   final List<OmissionCacheModel> omissions;
   final List<OmissionState?> omissionBarSegments;
   final int omissionExcusedCount;
@@ -208,6 +210,31 @@ class ThemePreviewData {
       _grade(509, matematika, 5, midnight.subtract(const Duration(days: 15))),
     ];
 
+    final sept = DateTime(
+      day.month >= DateTime.september ? day.year : day.year - 1,
+      DateTime.september,
+      15,
+    );
+    final chartSpanDays = day.difference(sept).inDays.clamp(1, 365);
+    const chartValues = [
+      1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
+      3, 3, 3, 3, 3, 3, 3, 4, 4, 4,
+      4, 4, 3, 3, 4, 4, 4, 4, 5, 5,
+      5, 4, 4, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    ];
+    final chartGrades = [
+      for (var i = 0; i < chartValues.length; i++)
+        _grade(
+          700 + i,
+          matematika,
+          chartValues[i],
+          sept.add(
+            Duration(days: (i * chartSpanDays / (chartValues.length - 1)).round()),
+          ),
+        ),
+    ];
+
     final omissions = [
       _omission(
         601,
@@ -318,6 +345,7 @@ class ThemePreviewData {
       messages: messages,
       tests: [homeTest],
       grades: grades,
+      chartGrades: chartGrades,
       omissions: omissions,
       omissionBarSegments: omissionBarSegments,
       omissionExcusedCount: 2,
@@ -380,8 +408,9 @@ class ThemePreviewData {
     int id,
     SubjectCacheModel subject,
     int value,
-    DateTime at,
-  ) {
+    DateTime at, {
+    int? weightPercentage = 100,
+  }) {
     final grade = GradeCacheModel()
       ..cacheKey = id
       ..createdAt = at
@@ -391,7 +420,7 @@ class ThemePreviewData {
       ..valueType = "Osztalyzat"
       ..writtenAt = at
       ..numericValue = value
-      ..weightPercentage = 100
+      ..weightPercentage = weightPercentage
       ..textValue = value.toString()
       ..teacherName = "Tanár";
     grade.subject.value = subject;

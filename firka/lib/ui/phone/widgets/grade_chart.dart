@@ -13,10 +13,12 @@ import 'package:flutter/material.dart';
 class GradeChart extends StatefulWidget {
   final List<GradeCacheModel> grades;
   final bool halfYearFallback;
+  final bool plotRawValues;
   GradeChart({
     super.key,
     required List<GradeCacheModel> grades,
     this.halfYearFallback = true,
+    this.plotRawValues = false,
   }) : grades = grades.where((g) => g.hasClassicValue()).toList()
          ..sort((a, b) => a.writtenAt.compareTo(b.writtenAt));
 
@@ -49,19 +51,21 @@ class _GradeChartState extends State<GradeChart> {
 
   void _computeSpots() {
     spots = [];
-    for (var i = 0; i < widget.grades.length; i++) {
-      final grade = widget.grades[i];
-      if (!grade.shouldIncludeInAverage()) {
-        continue;
+    if (!widget.plotRawValues) {
+      for (var i = 0; i < widget.grades.length; i++) {
+        final grade = widget.grades[i];
+        if (!grade.shouldIncludeInAverage()) {
+          continue;
+        }
+
+        final partialAvg = widget.grades
+            .take(i + 1)
+            .getSubjectAverage(halfYearFallback: widget.halfYearFallback);
+
+        spots.add(
+          DateSpot(spots.length.toDouble(), partialAvg!, grade.writtenAt),
+        );
       }
-
-      final partialAvg = widget.grades
-          .take(i + 1)
-          .getSubjectAverage(halfYearFallback: widget.halfYearFallback);
-
-      spots.add(
-        DateSpot(spots.length.toDouble(), partialAvg!, grade.writtenAt),
-      );
     }
 
     if (spots.isEmpty) {
