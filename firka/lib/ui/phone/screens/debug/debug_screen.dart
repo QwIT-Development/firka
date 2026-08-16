@@ -22,6 +22,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
+import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:path/path.dart' as p;
@@ -335,7 +336,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                           child: FirkaIconWidget(
                             FirkaIconType.majesticons,
                             getIconData(e),
-                            color: Colors.black,
+                            color: appStyle.colors.textPrimary,
                           ),
                         ),
                       ],
