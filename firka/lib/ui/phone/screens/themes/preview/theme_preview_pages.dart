@@ -167,9 +167,9 @@ class ThemePreviewHomeGrades extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          GradeChart(grades: allGrades),
+          GradeChart(grades: preview.chartGrades, plotRawValues: true),
           const SizedBox(height: 10),
-          GradeSummaryBar(grades: allGrades, l10n: data.l10n),
+          GradeSummaryBar(grades: preview.chartGrades, l10n: data.l10n),
           const SizedBox(height: 20),
           Expanded(
             child: ListView(
