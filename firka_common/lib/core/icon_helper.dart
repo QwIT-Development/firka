@@ -28,6 +28,7 @@ enum ClassIcon {
   technika,
   dance,
   philosophy,
+  erettsegi,
   ofo,
   diligence,
   attitude,
@@ -65,6 +66,7 @@ Map<ClassIcon, RegExp> _descriptors = {
   ClassIcon.technika: RegExp(r'technika'),
   ClassIcon.dance: RegExp(r'tanc'),
   ClassIcon.philosophy: RegExp(r'filozofia'),
+  ClassIcon.erettsegi: RegExp(r'erettsegi'),
   ClassIcon.ofo: RegExp(r'osztaly(fonoki|kozosseg)|kozossegi|neveles'),
   ClassIcon.diligence: RegExp(r'szorgalom'),
   ClassIcon.attitude: RegExp(r'magatartas'),
@@ -92,6 +94,7 @@ Map<ClassIcon, Uint8List> _iconMap = {
   ClassIcon.networking: Majesticon.cloudSolid,
   ClassIcon.technika: Majesticon.ruler2Solid,
   ClassIcon.language: Majesticon.tooltipsSolid,
+  ClassIcon.erettsegi: Majesticon.awardSolid,
   ClassIcon.database: Majesticon.dataSolid,
 };
 
