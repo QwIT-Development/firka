@@ -43,6 +43,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
   final PageController _pageController = PageController(
     initialPage: _originIndex,
   );
+  final GlobalKey _pageViewKey = GlobalKey();
 
   int _activePageIndex = _originIndex;
   late DateTime _currentTabWeekMonday;
@@ -51,11 +52,21 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
   bool animating = false;
   int? _programmaticTargetIndex;
 
+  late final AnimationController _weekSlideController;
+  Widget? _outgoingWeek;
+  int _weekSlideDir = 0;
+
   _HomeTimetableScreen();
 
   @override
   void initState() {
     super.initState();
+
+    _weekSlideController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+      value: 1,
+    );
 
     var today = timeNow().getMidnight();
     var anchor = today;
@@ -70,6 +81,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
 
   @override
   void dispose() {
+    _weekSlideController.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -142,6 +154,94 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     return index;
   }
 
+  Widget _dayPageFor(DateTime day) {
+    bool isEvent(LessonCacheModel model) {
+      return model.type == TimetableConsts.event;
+    }
+
+    final lessons = List<LessonCacheModel>.from(_lessonsFor(day))
+      ..removeWhere(isEvent);
+    final events = List<LessonCacheModel>.from(_lessonsFor(day))
+      ..retainWhere(isEvent);
+    return TimeTableDayWidget(
+      lessons,
+      events,
+      onRefresh: () => widget.data.client!.pullRefresh(
+        () => widget.data.client!.getLessonsCovering(
+          _currentTabWeekMonday,
+          _currentTabWeekMonday.add(const Duration(days: 7)),
+        ),
+      ),
+    );
+  }
+
+  Widget _weekTabBar(List<DateTime> days, DateTime activeDay) {
+    final tabs = <Widget>[];
+    for (final day in days) {
+      Widget ttWidget = BottomTimeTableNavIconWidget(
+        widget.data.l10n,
+        () {
+          _goToDay(day);
+        },
+        day.isAtSameMomentAs(activeDay),
+        day,
+      );
+
+      if (_lessonsFor(day).any((l) => l.test.loadAndGet() != null)) {
+        tabs.add(
+          Stack(
+            children: [
+              ttWidget,
+              Transform.translate(offset: Offset(34, -9), child: BubbleTest()),
+            ],
+          ),
+        );
+      } else {
+        tabs.add(ttWidget);
+      }
+    }
+
+    return Container(
+      padding: EdgeInsets.only(bottom: 2),
+      decoration: ShapeDecoration(
+        color: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+        shadows: [
+          BoxShadow(
+            color: appStyle.colors.background,
+            blurRadius: 36,
+            offset: Offset(0, -27),
+          ),
+        ],
+      ),
+      child: Center(child: Wrap(spacing: 16, children: tabs)),
+    );
+  }
+
+  Widget _weekPanel({
+    required Widget dayChild,
+    required List<DateTime> tabDays,
+    required DateTime activeDay,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(child: dayChild),
+        _weekTabBar(tabDays, activeDay),
+      ],
+    );
+  }
+
+  void _shiftWeek(int weeks) {
+    final targetMonday = _currentTabWeekMonday.add(Duration(days: 7 * weeks));
+    final offset = _activeDay.difference(_currentTabWeekMonday).inDays;
+    var target = targetMonday.add(Duration(days: offset));
+    if (!_isDayVisible(target)) {
+      target = _visibleDaysOfWeek(targetMonday).first;
+    }
+    _goToDay(target, animate: false);
+  }
+
   void _goToDay(DateTime day, {bool animate = true}) async {
     if (animating) return;
 
@@ -151,10 +251,18 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     HapticFeedback.mediumImpact();
     _programmaticTargetIndex = targetIndex;
 
+    final weekChanged = !day.getMonday().getMidnight().isAtSameMomentAs(
+      _currentTabWeekMonday,
+    );
+
     if (!animate) {
-      animating = true;
-      _pageController.jumpToPage(targetIndex);
-      animating = false;
+      if (weekChanged) {
+        await _slideToWeek(targetIndex, day);
+      } else {
+        animating = true;
+        _pageController.jumpToPage(targetIndex);
+        animating = false;
+      }
       return;
     }
 
@@ -167,6 +275,34 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
       );
     } finally {
       animating = false;
+    }
+  }
+
+  Future<void> _slideToWeek(int targetIndex, DateTime day) async {
+    _visibleDaysOfWeek(day.getMonday().getMidnight());
+
+    _outgoingWeek = _weekPanel(
+      dayChild: _dayPageFor(_activeDay),
+      tabDays: List<DateTime>.from(_tabDays),
+      activeDay: _activeDay,
+    );
+    _weekSlideDir = targetIndex > _activePageIndex ? 1 : -1;
+    _weekSlideController.value = 0;
+
+    animating = true;
+    _pageController.jumpToPage(targetIndex);
+    if (mounted) setState(() {});
+
+    try {
+      await _weekSlideController.forward();
+    } finally {
+      if (mounted) {
+        _outgoingWeek = null;
+        animating = false;
+        setState(() {});
+      } else {
+        animating = false;
+      }
     }
   }
 
@@ -210,37 +346,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
   }
 
   Widget _buildContent(BuildContext context) {
-    List<Widget> ttWidgets = [];
     final showABTimetable = Settings.ttToastABTimetable.value;
-    final activeDay = _activeDay;
-
-    for (DateTime day in _tabDays) {
-      Widget ttWidget = BottomTimeTableNavIconWidget(
-        widget.data.l10n,
-        () {
-          _goToDay(day);
-        },
-        day.isAtSameMomentAs(activeDay),
-        day,
-      );
-
-      if (_lessonsFor(day).any((l) => l.test.loadAndGet() != null)) {
-        ttWidgets.add(
-          Stack(
-            children: [
-              ttWidget,
-              Transform.translate(offset: Offset(34, -9), child: BubbleTest()),
-            ],
-          ),
-        );
-      } else {
-        ttWidgets.add(ttWidget);
-      }
-    }
-
-    bool isEvent(LessonCacheModel model) {
-      return model.type == TimetableConsts.event;
-    }
 
     return Stack(
       children: [
@@ -249,44 +355,46 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                onPageChanged: _onPageChanged,
-                itemBuilder: (context, index) {
-                  final day = _dateForIndex(index);
-                  final lessons = List<LessonCacheModel>.from(_lessonsFor(day))
-                    ..removeWhere(isEvent);
-                  final events = List<LessonCacheModel>.from(_lessonsFor(day))
-                    ..retainWhere(isEvent);
-                  return TimeTableDayWidget(
-                    lessons,
-                    events,
-                    onRefresh: () => widget.data.client!.pullRefresh(
-                      () => widget.data.client!.getLessonsCovering(
-                        _currentTabWeekMonday,
-                        _currentTabWeekMonday.add(const Duration(days: 7)),
-                      ),
+              child: ClipRect(
+                child: AnimatedBuilder(
+                  animation: _weekSlideController,
+                  builder: (context, child) {
+                    final sliding = _outgoingWeek != null;
+                    final t = sliding
+                        ? Curves.easeInOut.transform(_weekSlideController.value)
+                        : 1.0;
+                    final dx = _weekSlideDir * MediaQuery.sizeOf(context).width;
+                    return Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Transform.translate(
+                          offset: Offset((1 - t) * dx, 0),
+                          child: IgnorePointer(ignoring: sliding, child: child),
+                        ),
+                        if (_outgoingWeek != null)
+                          IgnorePointer(
+                            child: Transform.translate(
+                              offset: Offset(-t * dx, 0),
+                              child: _outgoingWeek,
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                  child: _weekPanel(
+                    dayChild: PageView.builder(
+                      key: _pageViewKey,
+                      controller: _pageController,
+                      onPageChanged: _onPageChanged,
+                      itemBuilder: (context, index) {
+                        return _dayPageFor(_dateForIndex(index));
+                      },
                     ),
-                  );
-                },
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.only(bottom: 2),
-              decoration: ShapeDecoration(
-                color: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(0),
-                ),
-                shadows: [
-                  BoxShadow(
-                    color: appStyle.colors.background,
-                    blurRadius: 36,
-                    offset: Offset(0, -27),
+                    tabDays: _tabDays,
+                    activeDay: _activeDay,
                   ),
-                ],
+                ),
               ),
-              child: Center(child: Wrap(spacing: 16, children: ttWidgets)),
             ),
           ],
         ),
@@ -385,19 +493,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                             ),
                           ),
                           onTap: () {
-                            final targetMonday = _currentTabWeekMonday.subtract(
-                              Duration(days: 7),
-                            );
-                            final offset = _activeDay
-                                .difference(_currentTabWeekMonday)
-                                .inDays;
-                            var target = targetMonday.add(
-                              Duration(days: offset),
-                            );
-                            if (!_isDayVisible(target)) {
-                              target = _visibleDaysOfWeek(targetMonday).first;
-                            }
-                            _goToDay(target, animate: false);
+                            _shiftWeek(-1);
                           },
                         ),
                         GestureDetector(
@@ -452,19 +548,7 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
                             ),
                           ),
                           onTap: () {
-                            final targetMonday = _currentTabWeekMonday.add(
-                              Duration(days: 7),
-                            );
-                            final offset = _activeDay
-                                .difference(_currentTabWeekMonday)
-                                .inDays;
-                            var target = targetMonday.add(
-                              Duration(days: offset),
-                            );
-                            if (!_isDayVisible(target)) {
-                              target = _visibleDaysOfWeek(targetMonday).first;
-                            }
-                            _goToDay(target, animate: false);
+                            _shiftWeek(1);
                           },
                         ),
                       ],
