@@ -6,6 +6,7 @@ import "package:firka/app/app_state.dart";
 import "package:firka/app/initialization.dart";
 import "package:firka/services/live_activity_service.dart";
 import "package:firka/services/watch_sync_helper.dart";
+import "package:firka/ui/phone/screens/themes/builtin_theme_id.dart";
 
 import "settings_repository.dart";
 import "settings_schema.dart";
@@ -36,6 +37,24 @@ void registerSettingsEffects(
   repo.onChange(SettingsRegistry.titleFont, refreshTitleStyle);
   repo.onChange(SettingsRegistry.titleWeight, refreshTitleStyle);
   repo.onChange(SettingsRegistry.titleCapitalization, refreshTitleStyle);
+
+  Future<void> refreshPresetTheme(_) async {
+    if (isBuiltinThemeId(Settings.selectedThemeId.value)) {
+      final next = composeBuiltinThemeId(
+        Settings.selectedCoreThemeId.value,
+        Settings.selectedGradeThemeId.value,
+      );
+      if (next != Settings.selectedThemeId.value) {
+        await Settings.selectedThemeId.setSilently(next);
+      }
+    }
+    initTheme(initData);
+    initData.themeCubit.refresh();
+    initData.homeRefreshCubit.requestRefresh();
+  }
+
+  repo.onChange(SettingsRegistry.selectedCoreThemeId, refreshPresetTheme);
+  repo.onChange(SettingsRegistry.selectedGradeThemeId, refreshPresetTheme);
 
   repo.onChange(SettingsRegistry.wearOsSupport, (enabled) async {
     if (!Platform.isAndroid) return;

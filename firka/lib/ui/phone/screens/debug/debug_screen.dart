@@ -23,6 +23,7 @@ import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:firka/ui/theme/style.dart';
+import 'package:firka_common/ui/components/filled_circle.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:path/path.dart' as p;
@@ -319,6 +320,16 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                 },
                 child: const Text('wipe users'),
               ),
+              const SizedBox(height: 20),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 16,
+                runSpacing: 16,
+                children: [
+                  for (final entry in _themeColorSwatches())
+                    _themeColorSwatch(context, entry.$1, entry.$2),
+                ],
+              ),
               SizedBox(
                 height: 600,
                 child: GridView.count(
@@ -361,4 +372,71 @@ class _DebugScreen extends FirkaState<DebugScreen> {
       ),
     );
   }
+}
+
+List<(String, Color)> _themeColorSwatches() {
+  final c = appStyle.colors;
+  return [
+    ("background", c.background),
+    ("backgroundAmoled", c.backgroundAmoled),
+    ("background0p", c.background0p),
+    ("success", c.success),
+    ("textPrimary", c.textPrimary),
+    ("textSecondary", c.textSecondary),
+    ("textTertiary", c.textTertiary),
+    if (c.textTeritary != null) ("textTeritary", c.textTeritary!),
+    ("textPrimaryLight", c.textPrimaryLight),
+    ("textSecondaryLight", c.textSecondaryLight),
+    ("textTertiaryLight", c.textTertiaryLight),
+    ("card", c.card),
+    ("cardTranslucent", c.cardTranslucent),
+    ("buttonSecondaryFill", c.buttonSecondaryFill),
+    ("buttonDisabledIcon", c.buttonDisabledIcon),
+    ("accent", c.accent),
+    ("secondary", c.secondary),
+    ("shadowColor", c.shadowColor),
+    ("a10p", c.a10p),
+    ("a15p", c.a15p),
+    ("warningAccent", c.warningAccent),
+    ("warningText", c.warningText),
+    ("warning15p", c.warning15p),
+    ("warningCard", c.warningCard),
+    ("errorAccent", c.errorAccent),
+    ("errorText", c.errorText),
+    ("error15p", c.error15p),
+    ("errorCard", c.errorCard),
+    ("grade5", c.grade5),
+    ("grade4", c.grade4),
+    ("grade3", c.grade3),
+    ("grade2", c.grade2),
+    ("grade1", c.grade1),
+  ];
+}
+
+Widget _themeColorSwatch(BuildContext context, String name, Color color) {
+  final darkBg = color.computeLuminance() > 0.5;
+  final bg = darkBg ? const Color(0xFF121212) : const Color(0xFFF2F2F2);
+  final labelColor = darkBg ? const Color(0xFFF2F2F2) : const Color(0xFF121212);
+
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+    decoration: BoxDecoration(
+      color: bg,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          name,
+          style: TextTheme.of(context).bodySmall?.copyWith(color: labelColor),
+        ),
+        FilledCircle(
+          diameter: 40,
+          color: color,
+          child: const SizedBox(),
+        ),
+      ],
+    ),
+  );
 }
