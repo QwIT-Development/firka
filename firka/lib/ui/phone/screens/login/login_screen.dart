@@ -15,7 +15,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:vibration/vibration.dart';
 
+import 'package:firka/api/login_finish.dart';
+import 'package:firka/api/mock_login.dart';
 import 'package:firka/core/bloc/theme_cubit.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/core/image_preloader.dart';
 import 'package:firka/ui/theme/style.dart';
@@ -32,12 +36,136 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
   late LoginWebviewWidget _loginWebView;
   bool _preloadDone = false;
 
+  final _mockUsernameController = TextEditingController(text: "student");
+  final _mockPasswordController = TextEditingController(text: "student");
+  bool _mockLoginInProgress = false;
+  String? _mockLoginError;
+
   @override
   void initState() {
     super.initState();
     _loginWebView = LoginWebviewWidget(widget.data);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _preloadImages();
+  }
+
+  @override
+  void dispose() {
+    _mockUsernameController.dispose();
+    _mockPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showMockModeDialog() async {
+    final wasEnabled = Settings.mockBackendEnabled.value;
+    final urlController = TextEditingController(
+      text: Settings.mockBackendUrl.value,
+    );
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: appStyle.colors.card,
+          title: Text(
+            wasEnabled ? 'Disable mock mode?' : 'Enable mock mode?',
+            style: appStyle.fonts.H_16px.copyWith(
+              color: appStyle.colors.textPrimary,
+            ),
+          ),
+          content: wasEnabled
+              ? Text(
+                  'Logging in will go back to the real e-Kréta service.',
+                  style: appStyle.fonts.B_14R.apply(
+                    color: appStyle.colors.textSecondary,
+                  ),
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Logging in will talk to this mock kréta server instead of the real e-Kréta service. Use the mock API\'s IP, not localhost.',
+                      style: appStyle.fonts.B_14R.apply(
+                        color: appStyle.colors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: urlController,
+                      autofocus: true,
+                      style: appStyle.fonts.B_14R.apply(
+                        color: appStyle.colors.textPrimary,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'http://10.0.0.144:8090',
+                        hintStyle: appStyle.fonts.B_14R.apply(
+                          color: appStyle.colors.textTertiary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+          actions: [
+            TextButton(
+              child: Text(
+                'Cancel',
+                style: appStyle.fonts.B_14R.apply(
+                  color: appStyle.colors.textSecondary,
+                ),
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+            ),
+            TextButton(
+              child: Text(
+                wasEnabled ? 'Disable' : 'Enable',
+                style: appStyle.fonts.B_14R.apply(color: appStyle.colors.accent),
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    if (!wasEnabled) {
+      await Settings.mockBackendUrl.set(urlController.text.trim());
+    }
+    await Settings.mockBackendEnabled.set(!wasEnabled);
+    if (!mounted) return;
+    setState(() {
+      _mockLoginError = null;
+    });
+  }
+
+  Future<void> _submitMockLogin() async {
+    setState(() {
+      _mockLoginInProgress = true;
+      _mockLoginError = null;
+    });
+
+    try {
+      final resp = await mockLogin(
+        _mockUsernameController.text,
+        _mockPasswordController.text,
+      );
+      await completeLogin(widget.data, resp);
+      if (!mounted) return;
+      appRouter?.go('/home');
+    } catch (ex) {
+      if (!mounted) return;
+      setState(() {
+        _mockLoginError = ex.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _mockLoginInProgress = false;
+        });
+      }
+    }
   }
 
   String _getPrivacyPolicyUrl() {
@@ -85,6 +213,143 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
         _preloadDone = true;
       });
     }
+  }
+
+  Widget _buildRealLoginButton() {
+    return InkWell(
+      onTap: () {
+        showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          showDragHandle: false,
+          builder: (BuildContext context) {
+            return SizedBox(
+              height: MediaQuery.sizeOf(context).height,
+              child: _loginWebView,
+            );
+          },
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        height: 48,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: ShapeDecoration(
+          color: appStyle.colors.accent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          shadows: [
+            BoxShadow(
+              color: appStyle.colors.textPrimary.withAlpha(13),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            widget.data.l10n.loginBtn,
+            textAlign: TextAlign.center,
+            style: appStyle.fonts.H_16px.copyWith(
+              color: appStyle.colors.textPrimaryLight,
+              fontVariations: const [FontVariation("wght", 800)],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMockLoginField(
+    TextEditingController controller,
+    String hint, {
+    bool obscure = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: appStyle.colors.card,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscure,
+        textInputAction: TextInputAction.next,
+        cursorColor: appStyle.colors.accent,
+        style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: appStyle.fonts.B_16R.apply(
+            color: appStyle.colors.textTertiary,
+          ),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMockLoginForm() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Mock mode, will connect to: ${Settings.mockBackendUrl.value.isEmpty ? "(not set, long-press the logo to disable then enable again and fill in the URL)" : Settings.mockBackendUrl.value}',
+          textAlign: TextAlign.center,
+          style: appStyle.fonts.B_12R.copyWith(
+            color: appStyle.colors.textTertiary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _buildMockLoginField(_mockUsernameController, 'Username'),
+        const SizedBox(height: 8),
+        _buildMockLoginField(
+          _mockPasswordController,
+          'Password',
+          obscure: true,
+        ),
+        if (_mockLoginError != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            _mockLoginError!,
+            textAlign: TextAlign.center,
+            style: appStyle.fonts.B_12R.copyWith(color: Colors.red),
+          ),
+        ],
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: _mockLoginInProgress ? null : _submitMockLogin,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: double.infinity,
+            height: 48,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: ShapeDecoration(
+              color: appStyle.colors.accent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Center(
+              child: _mockLoginInProgress
+                  ? const DelayedSpinnerWidget()
+                  : Text(
+                      widget.data.l10n.loginBtn,
+                      textAlign: TextAlign.center,
+                      style: appStyle.fonts.H_16px.copyWith(
+                        color: appStyle.colors.textPrimaryLight,
+                        fontVariations: const [FontVariation("wght", 800)],
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -176,33 +441,44 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
                   const SizedBox(height: 16),
                   Padding(
                     padding: EdgeInsets.only(left: paddingWidthHorizontal),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 30,
-                          height: 30,
-                          clipBehavior: Clip.antiAlias,
-                          decoration: ShapeDecoration(
-                            image: DecorationImage(
-                              image: PreloadedImageProvider(
-                                DefaultAssetBundle.of(context),
-                                'assets/images/logos/colored_logo.webp',
+                    child: GestureDetector(
+                      onLongPress: _showMockModeDialog,
+                      behavior: HitTestBehavior.opaque,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 8,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 30,
+                              height: 30,
+                              clipBehavior: Clip.antiAlias,
+                              decoration: ShapeDecoration(
+                                image: DecorationImage(
+                                  image: PreloadedImageProvider(
+                                    DefaultAssetBundle.of(context),
+                                    'assets/images/logos/colored_logo.webp',
+                                  ),
+                                  fit: BoxFit.cover,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
-                              fit: BoxFit.cover,
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Firka Napló',
+                              style: appStyle.fonts.H_18px.copyWith(
+                                color: appStyle.colors.textPrimary,
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Firka Napló',
-                          style: appStyle.fonts.H_18px.copyWith(
-                            color: appStyle.colors.textPrimary,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -459,61 +735,13 @@ class _LoginScreenState extends FirkaState<LoginScreen> {
                 right: 0,
                 child: Column(
                   children: [
-                    Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: paddingWidthHorizontal,
-                        ),
-                        child: InkWell(
-                          onTap: () {
-                            showModalBottomSheet<void>(
-                              context: context,
-                              isScrollControlled: true,
-                              showDragHandle: false,
-                              builder: (BuildContext context) {
-                                return SizedBox(
-                                  height: MediaQuery.sizeOf(context).height,
-                                  child: _loginWebView,
-                                );
-                              },
-                            );
-                          },
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            width: double.infinity,
-                            height: 48,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            decoration: ShapeDecoration(
-                              color: appStyle.colors.accent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              shadows: [
-                                BoxShadow(
-                                  color: appStyle.colors.textPrimary.withAlpha(
-                                    13,
-                                  ),
-                                  blurRadius: 2,
-                                  offset: const Offset(0, 1),
-                                  spreadRadius: 0,
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                widget.data.l10n.loginBtn,
-                                textAlign: TextAlign.center,
-                                style: appStyle.fonts.H_16px.copyWith(
-                                  color: appStyle.colors.textPrimaryLight,
-                                  fontVariations: const [
-                                    FontVariation("wght", 800),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: paddingWidthHorizontal,
                       ),
+                      child: Settings.mockBackendEnabled.value
+                          ? _buildMockLoginForm()
+                          : _buildRealLoginButton(),
                     ),
                     const SizedBox(height: 20),
                     GestureDetector(

@@ -21,6 +21,7 @@ import 'package:kreta_api/kreta_api.dart';
 
 import 'package:firka/app/app_state.dart';
 import 'package:firka/core/bloc/toast_cubit.dart';
+import 'package:firka/core/dev/mock_backend.dart';
 import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka_common/data/util.dart';
@@ -480,7 +481,7 @@ class KretaClient {
     };
 
     return await dio.get(
-      url,
+      MockBackend.rewrite(url),
       options: Options(
         method: method,
         headers: headers,

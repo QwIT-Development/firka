@@ -7,10 +7,10 @@ icons:
   "assets/images/logos/colored_logo_only_mustache.png": "bad6220c11bdfb1dfe04e5173bd2ebedd3999689d4b3a68fc63dc520c96dd33b"
 l10n:
   "l10n.yml": "a57bc304cac4a2b0235593586f17f400a5165d67fc9aadeaa11893cfa36ee082"
-  "lib/l10n/app_hu.arb": "e11b8fe4d4fd239584792971c341f1e329fb91f5f49fa6baa664c98b06fc5176"
-  "lib/l10n/app_de.arb": "5114c70b506f290217161881336d6118c975d59f32347bbdc94a51c1a25293e7"
-  "lib/l10n/app_en.arb": "a5417b2de058a67db40fa7bfb3526d800fd2f82349dfbc895cff8b298069e707"
-  "lib/l10n/app_pl.arb": "36cad0796cf8bd20fe969d5fd8443430d25fa932028c0177917ecef6964a08dd"
+  "lib/l10n/app_de.arb": "125070dd8de963b7e3b91196c4e94c4d18404a4013fd3bd41a43b92ec9109fc9"
+  "lib/l10n/app_hu.arb": "90bffe2a339abbc9ece90a19d2fac0c56f07f2f54c713e45fb710c9a09dc01a6"
+  "lib/l10n/app_en.arb": "f1898853cf2503aaf28f79640a4ed81dd8ce9b156d8a618d2492550ecc7c3f24"
+  "lib/l10n/app_pl.arb": "a8426455757e587c7635c3a62c650a4aae2a0cac1de1175e8ab7fb0d3b387537"
 isar:
   "lib/data/models/app_settings_model.dart": "5eb5af345f1347f104257f0999763650fe2673f9da1754bd12d3f756fe5c9723"
   "lib/data/models/token_model.dart": "8c957cd07e473827d78fd8fd4fb6c1336b636a69c25c93618e1e7f94b7cf0683"

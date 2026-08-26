@@ -20,6 +20,8 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:firka/core/debug_helper.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:firka/ui/theme/style.dart';
@@ -44,6 +46,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
   Uint8List? profilePictureData;
 
   bool useCache = true;
+  late TextEditingController _mockBackendUrlController;
 
   @override
   void initState() {
@@ -51,6 +54,15 @@ class _DebugScreen extends FirkaState<DebugScreen> {
 
     _picker = ImagePicker();
     profilePictureData = widget.data.profilePicture;
+    _mockBackendUrlController = TextEditingController(
+      text: Settings.mockBackendUrl.value,
+    );
+  }
+
+  @override
+  void dispose() {
+    _mockBackendUrlController.dispose();
+    super.dispose();
   }
 
   @override
@@ -98,6 +110,30 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                     },
                   ),
                 ],
+              ),
+              const SizedBox(height: 5),
+              Row(
+                children: [
+                  Text('use mock backend'),
+                  Switch(
+                    value: Settings.mockBackendEnabled.value,
+                    onChanged: (bool value) {
+                      setState(() {
+                        Settings.mockBackendEnabled.set(value);
+                      });
+                    },
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: _mockBackendUrlController,
+                  decoration: const InputDecoration(labelText: 'mock backend url'),
+                  onSubmitted: (value) {
+                    Settings.mockBackendUrl.set(value);
+                  },
+                ),
               ),
               const SizedBox(height: 20),
               profilePicture,

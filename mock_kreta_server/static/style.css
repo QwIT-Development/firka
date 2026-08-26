@@ -1,0 +1,168 @@
+:root {
+  color-scheme: light dark;
+  --bg: #16181c;
+  --panel: #1f2228;
+  --border: #33373f;
+  --text: #e7e9ec;
+  --muted: #9aa0aa;
+  --accent: #6fae4a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+header h1 {
+  font-size: 18px;
+  margin: 0;
+}
+
+header span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+nav button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+nav button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #10140c;
+}
+
+main {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.panel {
+  display: none;
+}
+
+.panel.active {
+  display: block;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 4px 6px;
+  text-align: left;
+}
+
+th {
+  background: var(--panel);
+  color: var(--muted);
+  font-weight: 500;
+}
+
+input[type=text], input[type=number], textarea, select {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 13px;
+}
+
+.row-actions {
+  white-space: nowrap;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+button {
+  background: var(--accent);
+  color: #10140c;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+button.secondary {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+button.danger {
+  background: #b3543f;
+  color: #fff;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 8px 12px;
+  max-width: 640px;
+  margin-bottom: 20px;
+}
+
+.form-grid label {
+  align-self: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.status {
+  color: var(--muted);
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+h2 {
+  font-size: 16px;
+  margin-top: 0;
+}
+
+h3 {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 28px;
+}

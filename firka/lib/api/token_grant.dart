@@ -3,6 +3,7 @@ import 'package:firka_common/core/consts.dart';
 import 'package:firka_common/data/models/token_model.dart';
 
 import 'package:firka/app/app_state.dart';
+import 'package:firka/core/dev/mock_backend.dart';
 import 'package:kreta_api/kreta_api.dart';
 
 Future<TokenGrantResponse> getAccessToken(String code) async {
@@ -23,7 +24,7 @@ Future<TokenGrantResponse> getAccessToken(String code) async {
 
   try {
     final response = await dio.post(
-      KretaLoginEndpoints.tokenGrantUrl,
+      MockBackend.rewrite(KretaLoginEndpoints.tokenGrantUrl),
       options: Options(headers: headers),
       data: formData,
     );
@@ -76,7 +77,7 @@ Future<TokenGrantResponse> extendToken(TokenModel model) async {
       }
 
       final response = await dio.post(
-        KretaLoginEndpoints.tokenGrantUrl,
+        MockBackend.rewrite(KretaLoginEndpoints.tokenGrantUrl),
         options: Options(headers: headers),
         data: formData,
       );

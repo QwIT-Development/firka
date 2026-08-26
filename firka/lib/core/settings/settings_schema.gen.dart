@@ -33,9 +33,11 @@ class SettingsRegistry {
   static const selectedThemeId = StringSetting(id: 1029, defaultValue: "builtin-firka-firka");
   static const selectedCoreThemeId = StringSetting(id: 1030, defaultValue: "firka");
   static const selectedGradeThemeId = StringSetting(id: 1031, defaultValue: "firka");
+  static const mockBackendEnabled = BoolSetting(id: 1032, defaultValue: false);
+  static const mockBackendUrl = StringSetting(id: 1033, defaultValue: "http://10.0.0.144:8090");
 
   static const all = <Setting>[
-    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, liveActivityEnabled, liveActivityPrivacyEverDeclined, morningNotificationEnabled, morningNotificationTime, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId,
+    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, liveActivityEnabled, liveActivityPrivacyEverDeclined, morningNotificationEnabled, morningNotificationTime, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl,
   ];
 }
 
@@ -70,4 +72,6 @@ extension SettingsAccessors on SettingsRepository {
   SilentlySettable<String> get selectedThemeId => SilentlySettable(this, SettingsRegistry.selectedThemeId);
   SilentlySettable<String> get selectedCoreThemeId => SilentlySettable(this, SettingsRegistry.selectedCoreThemeId);
   SilentlySettable<String> get selectedGradeThemeId => SilentlySettable(this, SettingsRegistry.selectedGradeThemeId);
+  SilentlySettable<bool> get mockBackendEnabled => SilentlySettable(this, SettingsRegistry.mockBackendEnabled);
+  SilentlySettable<String> get mockBackendUrl => SilentlySettable(this, SettingsRegistry.mockBackendUrl);
 }

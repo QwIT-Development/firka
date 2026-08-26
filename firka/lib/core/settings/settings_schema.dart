@@ -142,4 +142,10 @@ abstract class SettingsSchema {
 
   @StringSetting(id: 1031, defaultValue: "firka")
   String get selectedGradeThemeId;
+
+  @BoolSetting(id: 1032, defaultValue: false)
+  bool get mockBackendEnabled;
+
+  @StringSetting(id: 1033, defaultValue: "http://10.0.0.144:8090")
+  String get mockBackendUrl;
 }
