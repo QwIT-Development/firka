@@ -195,6 +195,7 @@ Future<void> _initData(AppInitialization init) async {
   final token = init.settings.getSelectedToken();
   if (token == null) {
     logger.warning("[Init] No token available!");
+    init.client = null;
     return;
   }
   logger.fine("Initializing kréta client as: ${token.username}");

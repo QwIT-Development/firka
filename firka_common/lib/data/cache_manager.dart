@@ -107,6 +107,26 @@ class CacheManager {
     );
   }
 
+  Future<void> clearAccountData() async {
+    await isarInit.writeTxn(() async {
+      await getGrades().deleteAll();
+      await getHomeworks().deleteAll();
+      await getTests().deleteAll();
+      await getOmissions().deleteAll();
+      await getTimeTable().deleteAll();
+      await getClassAverages().deleteAll();
+      await getMessages().deleteAll();
+      await isarInit.classGroupCacheModels
+          .filter()
+          .group(isCurrentClassGroup)
+          .deleteAll();
+      await isarInit.studentCacheModels
+          .filter()
+          .group(isCurrentStudent)
+          .deleteAll();
+    });
+  }
+
   void resolveTeachers() {
     Set<TeacherModel> teachers = HashSet<TeacherModel>(
       equals: (t, t2) =>

@@ -229,6 +229,12 @@ class SettingsAccountPickerView extends StatelessWidget {
         }
       }
 
+      try {
+        await data.client!.cache.clearAccountData();
+      } catch (e) {
+        logger.warning('[Settings] Failed to clear cached data on logout: $e');
+      }
+
       await data.isar.writeTxn(() async {
         await data.isar.tokenModels.delete(active);
       });
@@ -287,9 +293,10 @@ class SettingsAccountPickerView extends StatelessWidget {
 
       await initializeApp();
 
-      if (!context.mounted) return;
-      final nav = Navigator.of(context);
-      if (nav.canPop()) nav.pop();
+      if (context.mounted) {
+        final nav = Navigator.of(context);
+        if (nav.canPop()) nav.pop();
+      }
       if (accounts.isEmpty) {
         appRouter?.go('/login');
       } else {
