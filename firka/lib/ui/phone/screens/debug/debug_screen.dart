@@ -23,10 +23,12 @@ import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/core/state/firka_state.dart';
+import 'package:firka/ui/phone/screens/epic_grades/epic_grades_screen.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
+import 'package:isar_community/isar.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -252,6 +254,60 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                   );
                 },
                 child: const Text('getGrades()'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final grades = widget.data.isar.gradeCacheModels
+                      .where()
+                      .findAllSync();
+
+                  if (grades.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('no new grades uwu')),
+                    );
+                    return;
+                  }
+
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          EpicGradesScreen(grades, widget.data.l10n),
+                    ),
+                  );
+                },
+                child: const Text('Epikus jegyszerzés'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final grades = widget.data.isar.gradeCacheModels
+                      .where()
+                      .findAllSync();
+
+                  if (grades.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('no new grades uwu')),
+                    );
+                    return;
+                  }
+
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          EpicCardFaceDebugScreen(grades.first, widget.data.l10n),
+                    ),
+                  );
+                },
+                child: const Text('Epikus jegyszerzés (card face debug)'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const EpicParticleDebugScreen(),
+                    ),
+                  );
+                },
+                child: const Text('Epikus jegyszerzés (particle debug)'),
               ),
               ElevatedButton(
                 onPressed: () async {
