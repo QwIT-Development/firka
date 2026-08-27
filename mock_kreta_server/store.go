@@ -93,23 +93,23 @@ type ClassGroup struct {
 }
 
 type Grade struct {
-	Uid                       string      `json:"Uid"`
-	RogzitesDatuma            string      `json:"RogzitesDatuma"`
-	KeszitesDatuma            string      `json:"KeszitesDatuma"`
-	LattamozasDatuma          string      `json:"LattamozasDatuma,omitempty"`
-	Tantargy                  Subject     `json:"Tantargy"`
-	Tema                      string      `json:"Tema,omitempty"`
-	Tipus                     NameUidDesc `json:"Tipus"`
-	Mod                       NameUidDesc `json:"Mod"`
-	ErtekFajta                NameUidDesc `json:"ErtekFajta"`
-	ErtekeloTanarNeve         string      `json:"ErtekeloTanarNeve"`
-	Kind                      string      `json:"Kind,omitempty"`
-	SzamErtek                 int         `json:"SzamErtek,omitempty"`
-	SzovegesErtek             string      `json:"SzovegesErtek"`
-	SulySzazalekErteke        int         `json:"SulySzazalekErteke,omitempty"`
-	SzovegesErtekelesRovidNev string      `json:"SzovegesErtekelesRovidNev,omitempty"`
-	OsztalyCsoport            UidRef      `json:"OsztalyCsoport"`
-	SortIndex                 int         `json:"SortIndex"`
+	Uid                       string       `json:"Uid"`
+	RogzitesDatuma            string       `json:"RogzitesDatuma"`
+	KeszitesDatuma            string       `json:"KeszitesDatuma"`
+	LattamozasDatuma          string       `json:"LattamozasDatuma,omitempty"`
+	Tantargy                  Subject      `json:"Tantargy"`
+	Tema                      string       `json:"Tema,omitempty"`
+	Tipus                     NameUidDesc  `json:"Tipus"`
+	Mod                       *NameUidDesc `json:"Mod,omitempty"`
+	ErtekFajta                NameUidDesc  `json:"ErtekFajta"`
+	ErtekeloTanarNeve         string       `json:"ErtekeloTanarNeve"`
+	Jelleg                    string       `json:"Jelleg,omitempty"`
+	SzamErtek                 int          `json:"SzamErtek,omitempty"`
+	SzovegesErtek             string       `json:"SzovegesErtek"`
+	SulySzazalekErteke        int          `json:"SulySzazalekErteke,omitempty"`
+	SzovegesErtekelesRovidNev string       `json:"SzovegesErtekelesRovidNev,omitempty"`
+	OsztalyCsoport            UidRef       `json:"OsztalyCsoport"`
+	SortIndex                 int          `json:"SortIndex"`
 }
 
 type Homework struct {

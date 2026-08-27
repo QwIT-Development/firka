@@ -84,18 +84,20 @@ func seedData() storeData {
 		},
 		Grades: []Grade{
 			{
-				Uid:               "1000",
-				RogzitesDatuma:    iso(today.Add(-24 * time.Hour)),
-				KeszitesDatuma:    iso(today.Add(-24 * time.Hour)),
-				Tantargy:          mathSubject,
-				Tema:              "Másodfokú egyenletek",
-				Tipus:             NameUidDesc{Uid: "1", Nev: "Írásbeli", Leiras: "Írásbeli felelet"},
-				ErtekFajta:        NameUidDesc{Uid: "1", Nev: "Osztályzat", Leiras: "Osztályzat"},
-				ErtekeloTanarNeve: "Kovács Béla",
-				SzamErtek:         5,
-				SzovegesErtek:     "Jeles",
-				OsztalyCsoport:    classGroup,
-				SortIndex:         1,
+				Uid:                "1000",
+				RogzitesDatuma:     iso(today.Add(-24 * time.Hour)),
+				KeszitesDatuma:     iso(today.Add(-24 * time.Hour)),
+				Tantargy:           mathSubject,
+				Tema:               "Másodfokú egyenletek",
+				Tipus:              NameUidDesc{Uid: "1", Nev: "Írásbeli", Leiras: "Írásbeli felelet"},
+				ErtekFajta:         NameUidDesc{Uid: "1", Nev: "Osztályzat", Leiras: "Osztályzat"},
+				ErtekeloTanarNeve:  "Kovács Béla",
+				Jelleg:             "Ertekeles",
+				SzamErtek:          5,
+				SzovegesErtek:      "Jeles",
+				SulySzazalekErteke: 100,
+				OsztalyCsoport:     classGroup,
+				SortIndex:          1,
 			},
 		},
 		Homework: []Homework{
@@ -128,8 +130,13 @@ func seedData() storeData {
 		},
 		Omissions: []Omission{
 			{
-				Uid:              "4000",
-				Tantargy:         mathSubject,
+				Uid:      "4000",
+				Tantargy: mathSubject,
+				Ora: &OmittedLesson{
+					KezdoDatum: iso(today.Add(-48 * time.Hour)),
+					VegDatum:   iso(today.Add(-48*time.Hour + 45*time.Minute)),
+					Oraszam:    1,
+				},
 				Datum:            iso(today.Add(-48 * time.Hour)),
 				RogzitoTanarNeve: "Kovács Béla",
 				Tipus:            NameUidDesc{Uid: "1", Nev: "Hiányzás", Leiras: "Hiányzás"},
@@ -201,4 +208,4 @@ func seedData() storeData {
 	}
 }
 
-//xdd mi a faszom ez kreta 
+//xdd mi a faszom ez kreta

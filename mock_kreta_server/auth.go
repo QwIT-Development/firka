@@ -22,12 +22,14 @@ func base64URL(v any) string {
 	return base64.RawURLEncoding.EncodeToString(b)
 }
 
-func buildIdToken(instituteCode, userId, username string) string {
+func buildIdToken(instituteCode, userId, username, studentName string) string {
 	header := map[string]string{"alg": "none", "typ": "JWT"}
 	payload := map[string]any{
 		"kreta:institute_code":    instituteCode,
 		"kreta:institute_user_id": userId,
 		"kreta:user_name":         username,
+		"name":                    studentName,
+		"role":                    "Tanulo",
 		"iat":                     time.Now().Unix(),
 	}
 	sig := make([]byte, 16)
@@ -186,7 +188,7 @@ func (s *Server) handleToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	access, refresh := s.auth.issueTokens(info)
-	idToken := buildIdToken(info.instituteCode, info.userId, info.username)
+	idToken := buildIdToken(info.instituteCode, info.userId, info.username, student.Nev)
 
 	resp := map[string]any{
 		"id_token":      idToken,

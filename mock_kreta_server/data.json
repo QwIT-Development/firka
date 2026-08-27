@@ -19,6 +19,7 @@
     "SzuletesiHonap": 9,
     "SzuletesiNap": 1,
     "EmailCim": "teszt.elek@example.com",
+    "Telefonszam": "+3612345678",
     "TanevUid": "2025/2026",
     "Gondviselok": [
       {
@@ -75,7 +76,7 @@
       "KeszitesDatuma": "2026-08-25T00:00:00",
       "Tantargy": {
         "Uid": "1,MATEK",
-        "Nev": "Matematika",
+        "Nev": "meow",
         "Kategoria": {
           "Uid": "1",
           "Nev": "Kötelező",
@@ -83,29 +84,166 @@
         },
         "SortIndex": 1
       },
-      "Tema": "Másodfokú egyenletek",
+      "Tema": "meoow",
       "Tipus": {
         "Uid": "1",
         "Nev": "Írásbeli",
         "Leiras": "Írásbeli felelet"
-      },
-      "Mod": {
-        "Uid": "",
-        "Nev": "",
-        "Leiras": ""
       },
       "ErtekFajta": {
         "Uid": "1",
         "Nev": "Osztályzat",
         "Leiras": "Osztályzat"
       },
-      "ErtekeloTanarNeve": "Kovács Béla",
+      "ErtekeloTanarNeve": "mrrp",
+      "Jelleg": "Ertekeles",
       "SzamErtek": 5,
       "SzovegesErtek": "Jeles",
+      "SulySzazalekErteke": 100,
       "OsztalyCsoport": {
         "Uid": "10,11.A"
       },
       "SortIndex": 1
+    },
+    {
+      "Uid": "",
+      "RogzitesDatuma": "2026-08-26T20:53:37.494Z",
+      "KeszitesDatuma": "2026-08-26T20:53:37.494Z",
+      "Tantargy": {
+        "Uid": "",
+        "Nev": "meow",
+        "Kategoria": {
+          "Uid": "1",
+          "Nev": "Kötelező",
+          "Leiras": ""
+        },
+        "SortIndex": 0
+      },
+      "Tema": "meoow",
+      "Tipus": {
+        "Uid": "1",
+        "Nev": "Írásbeli",
+        "Leiras": ""
+      },
+      "ErtekFajta": {
+        "Uid": "1",
+        "Nev": "Osztályzat",
+        "Leiras": ""
+      },
+      "ErtekeloTanarNeve": "meow",
+      "Jelleg": "Ertekeles",
+      "SzamErtek": 4,
+      "SzovegesErtek": "Jeles",
+      "SulySzazalekErteke": 100,
+      "OsztalyCsoport": {
+        "Uid": ""
+      },
+      "SortIndex": 0
+    },
+    {
+      "Uid": "",
+      "RogzitesDatuma": "2026-08-27T16:13:00.121Z",
+      "KeszitesDatuma": "2026-08-27T16:13:00.121Z",
+      "Tantargy": {
+        "Uid": "",
+        "Nev": "meow",
+        "Kategoria": {
+          "Uid": "1",
+          "Nev": "Kötelező",
+          "Leiras": ""
+        },
+        "SortIndex": 0
+      },
+      "Tema": "meoow",
+      "Tipus": {
+        "Uid": "1",
+        "Nev": "Írásbeli",
+        "Leiras": ""
+      },
+      "ErtekFajta": {
+        "Uid": "1",
+        "Nev": "Osztályzat",
+        "Leiras": ""
+      },
+      "ErtekeloTanarNeve": "meow",
+      "Jelleg": "Ertekeles",
+      "SzamErtek": 3,
+      "SzovegesErtek": "Jeles",
+      "SulySzazalekErteke": 100,
+      "OsztalyCsoport": {
+        "Uid": ""
+      },
+      "SortIndex": 0
+    },
+    {
+      "Uid": "",
+      "RogzitesDatuma": "2026-08-27T16:13:00.269Z",
+      "KeszitesDatuma": "2026-08-27T16:13:00.269Z",
+      "Tantargy": {
+        "Uid": "",
+        "Nev": "meow",
+        "Kategoria": {
+          "Uid": "1",
+          "Nev": "Kötelező",
+          "Leiras": ""
+        },
+        "SortIndex": 0
+      },
+      "Tema": "meoow",
+      "Tipus": {
+        "Uid": "1",
+        "Nev": "Írásbeli",
+        "Leiras": ""
+      },
+      "ErtekFajta": {
+        "Uid": "1",
+        "Nev": "Osztályzat",
+        "Leiras": ""
+      },
+      "ErtekeloTanarNeve": "meow",
+      "Jelleg": "Ertekeles",
+      "SzamErtek": 2,
+      "SzovegesErtek": "Jeles",
+      "SulySzazalekErteke": 100,
+      "OsztalyCsoport": {
+        "Uid": ""
+      },
+      "SortIndex": 0
+    },
+    {
+      "Uid": "",
+      "RogzitesDatuma": "2026-08-27T16:13:00.399Z",
+      "KeszitesDatuma": "2026-08-27T16:13:00.399Z",
+      "Tantargy": {
+        "Uid": "",
+        "Nev": "meow",
+        "Kategoria": {
+          "Uid": "1",
+          "Nev": "Kötelező",
+          "Leiras": ""
+        },
+        "SortIndex": 0
+      },
+      "Tema": "meoow",
+      "Tipus": {
+        "Uid": "1",
+        "Nev": "Írásbeli",
+        "Leiras": ""
+      },
+      "ErtekFajta": {
+        "Uid": "1",
+        "Nev": "Osztályzat",
+        "Leiras": ""
+      },
+      "ErtekeloTanarNeve": "meow",
+      "Jelleg": "Ertekeles",
+      "SzamErtek": 1,
+      "SzovegesErtek": "Jeles",
+      "SulySzazalekErteke": 100,
+      "OsztalyCsoport": {
+        "Uid": ""
+      },
+      "SortIndex": 0
     }
   ],
   "homework": [
@@ -178,6 +316,11 @@
         },
         "SortIndex": 1
       },
+      "Ora": {
+        "KezdoDatum": "2026-08-24T00:00:00",
+        "VegDatum": "2026-08-24T00:00:00",
+        "Oraszam": 1
+      },
       "Datum": "2026-08-24T00:00:00",
       "RogzitoTanarNeve": "Kovács Béla",
       "Tipus": {
@@ -212,6 +355,11 @@
           "Leiras": ""
         },
         "SortIndex": 0
+      },
+      "Ora": {
+        "KezdoDatum": "2026-08-26T20:00:26.713Z",
+        "VegDatum": "2026-08-26T20:00:26.713Z",
+        "Oraszam": 1
       },
       "Datum": "2026-08-26T20:00:26.713Z",
       "RogzitoTanarNeve": "fasz",
@@ -283,6 +431,52 @@
       "DigitalisTamogatoEszkozTipusList": [],
       "Letrehozas": "2026-07-27T00:00:00",
       "UtolsoModositas": "2026-07-27T00:00:00"
+    },
+    {
+      "Uid": "",
+      "Datum": "2026-08-26T20:15:10.348Z",
+      "KezdetIdopont": "2026-08-26T20:10:10.348Z",
+      "VegIdopont": "2026-08-26T20:50:10.348Z",
+      "Nev": "meow",
+      "Oraszam": 1,
+      "OsztalyCsoport": {
+        "Uid": "",
+        "Nev": ""
+      },
+      "TanarNeve": "meow",
+      "Tantargy": {
+        "Uid": "",
+        "Nev": "meow",
+        "Kategoria": {
+          "Uid": "1",
+          "Nev": "Kötelező",
+          "Leiras": ""
+        },
+        "SortIndex": 0
+      },
+      "TeremNeve": "meoow szoba",
+      "Tipus": {
+        "Uid": "1",
+        "Nev": "Tanóra",
+        "Leiras": ""
+      },
+      "TanuloJelenlet": {
+        "Uid": "",
+        "Nev": "",
+        "Leiras": ""
+      },
+      "Allapot": {
+        "Uid": "1",
+        "Nev": "Megtartott",
+        "Leiras": ""
+      },
+      "IsTanuloHaziFeladatEnabled": true,
+      "IsHaziFeladatMegoldva": false,
+      "Csatolmanyok": [],
+      "IsDigitalisOra": false,
+      "DigitalisTamogatoEszkozTipusList": [],
+      "Letrehozas": "2026-08-26T20:15:10.348Z",
+      "UtolsoModositas": "2026-08-26T20:15:10.348Z"
     }
   ],
   "notices": [
