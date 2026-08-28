@@ -14,29 +14,22 @@ import "package:flutter_svg/flutter_svg.dart";
 import "package:majesticons_flutter/majesticons_flutter.dart";
 import "package:vibration/vibration.dart";
 
-const _starLarge = "assets/images/epic_grades/star_large.svg";
-const _starMedium = "assets/images/epic_grades/star_medium.svg";
-const _starSmall = "assets/images/epic_grades/star_small.svg";
+const _starLarge = "assets/images/surprise_grades/star_large.svg";
+const _starMedium = "assets/images/surprise_grades/star_medium.svg";
+const _starSmall = "assets/images/surprise_grades/star_small.svg";
 const _gradeEmojis = {5: "🏆", 4: "😃", 3: "😐", 2: "😬", 1: "💩"};
-const _flipDuration = Duration(milliseconds: 1000);
+const _flipDuration = Duration(milliseconds: 400);
 
 String _gradeEmoji(int? value) => _gradeEmojis[value] ?? "✨";
 
-String _rankLabel(
-  AppLocalizations l10n,
-  List<GradeCacheModel> allGrades,
-  int value,
-) {
-  final numeric = allGrades.map((g) => g.numericValue).whereType<int>();
-  final total = numeric.length;
-  final matching = numeric.where((v) => v == value).length;
-  final fraction = total == 0 ? 0.0 : matching / total;
-
-  if (fraction < 0.10) return l10n.epic_grade_rank_5;
-  if (fraction < 0.25) return l10n.epic_grade_rank_4;
-  if (fraction < 0.45) return l10n.epic_grade_rank_3;
-  if (fraction < 0.70) return l10n.epic_grade_rank_2;
-  return l10n.epic_grade_rank_1;
+String _rankLabel(AppLocalizations l10n, int value) {
+  return switch (value) {
+    5 => l10n.surprise_grade_rank_5,
+    4 => l10n.surprise_grade_rank_4,
+    3 => l10n.surprise_grade_rank_3,
+    2 => l10n.surprise_grade_rank_2,
+    _ => l10n.surprise_grade_rank_1,
+  };
 }
 
 (Alignment, double) _pickCardEdge(Random rand) {
@@ -70,17 +63,23 @@ String _describeGradeWeight(AppLocalizations l10n, GradeCacheModel grade) {
   return grade.type.isEmpty ? weightText : "${grade.type}, $weightText";
 }
 
-class EpicGradesScreen extends StatefulWidget {
+class SurpriseGradesScreen extends StatefulWidget {
   final List<GradeCacheModel> grades;
   final AppLocalizations l10n;
+  final ValueChanged<GradeCacheModel>? onRevealed;
 
-  const EpicGradesScreen(this.grades, this.l10n, {super.key});
+  const SurpriseGradesScreen(
+    this.grades,
+    this.l10n, {
+    this.onRevealed,
+    super.key,
+  });
 
   @override
-  State<EpicGradesScreen> createState() => _EpicGradesScreenState();
+  State<SurpriseGradesScreen> createState() => _SurpriseGradesScreenState();
 }
 
-class _EpicGradesScreenState extends State<EpicGradesScreen> {
+class _SurpriseGradesScreenState extends State<SurpriseGradesScreen> {
   int _page = 0;
 
   @override
@@ -136,6 +135,7 @@ class _EpicGradesScreenState extends State<EpicGradesScreen> {
                   grades: widget.grades,
                   l10n: widget.l10n,
                   onIndexChanged: (i) => setState(() => _page = i),
+                  onRevealed: widget.onRevealed,
                 ),
               ),
             ),
@@ -181,11 +181,13 @@ class _CardDeck extends StatefulWidget {
   final List<GradeCacheModel> grades;
   final AppLocalizations l10n;
   final ValueChanged<int> onIndexChanged;
+  final ValueChanged<GradeCacheModel>? onRevealed;
 
   const _CardDeck({
     required this.grades,
     required this.l10n,
     required this.onIndexChanged,
+    this.onRevealed,
   });
 
   @override
@@ -207,10 +209,11 @@ class _CardDeckState extends State<_CardDeck> with TickerProviderStateMixin {
   static const _sprayCount = 30;
   static const _sprayLifespanFraction = 0.12;
   static const _shakeMaxAmplitude = 8.0;
+  static const _burstPattern = [0, 45, 55, 30, 70, 18];
+  static const _burstIntensities = [0, 255, 0, 180, 0, 110];
 
   double get _restOffset =>
-      (MediaQuery.sizeOf(context).width + _cardWidth) / 2 -
-      _peekVisibleSliver;
+      (MediaQuery.sizeOf(context).width + _cardWidth) / 2 - _peekVisibleSliver;
   static const _shakeTuningSpanMs = 2400.0;
   static const _shakeRateDx = 113 / _shakeTuningSpanMs;
   static const _shakeRateDy = 97 / _shakeTuningSpanMs;
@@ -247,7 +250,11 @@ class _CardDeckState extends State<_CardDeck> with TickerProviderStateMixin {
     vsync: this,
     duration: _holdDuration,
   );
-  final _flipKey = GlobalKey<_EpicFlipCardState>();
+  late final _flipShakeController = AnimationController(
+    vsync: this,
+    duration: _flipDuration,
+  );
+  final _flipKey = GlobalKey<_SurpriseFlipCardState>();
   final _rand = Random();
 
   int _index = 0;
@@ -280,6 +287,7 @@ class _CardDeckState extends State<_CardDeck> with TickerProviderStateMixin {
     _holdTimer?.cancel();
     _settleController.dispose();
     _shakeController.dispose();
+    _flipShakeController.dispose();
     super.dispose();
   }
 
@@ -323,6 +331,7 @@ class _CardDeckState extends State<_CardDeck> with TickerProviderStateMixin {
       Vibration.cancel();
       Vibration.vibrate(duration: 28, amplitude: 200);
       _shakeController.value = 0;
+      _flipShakeController.forward(from: 0);
       _flipKey.currentState?.flip();
     });
   }
@@ -418,20 +427,34 @@ class _CardDeckState extends State<_CardDeck> with TickerProviderStateMixin {
           clipBehavior: Clip.none,
           children: [
             AnimatedBuilder(
-              animation: _shakeController,
+              animation: Listenable.merge([
+                _shakeController,
+                _flipShakeController,
+              ]),
               builder: (context, child) {
                 final shakeT = _shakeController.value;
                 final elapsedMs = shakeT * _holdDuration.inMilliseconds;
-                final amplitude =
+                var amplitude =
                     _shakeMaxAmplitude * (1 / 3 + 2 / 3 * shakeT * shakeT);
-                final shakeDx = sin(elapsedMs * _shakeRateDx) * amplitude;
-                final shakeDy = cos(elapsedMs * _shakeRateDy) * amplitude * 0.5;
-                final shakeAngle =
+                var shakeDx = sin(elapsedMs * _shakeRateDx) * amplitude;
+                var shakeDy = cos(elapsedMs * _shakeRateDy) * amplitude * 0.5;
+                var shakeAngle =
                     sin(elapsedMs * _shakeRateAngle) * 0.03 * shakeT * shakeT;
+
+                final flipT = _flipShakeController.value;
+                if (flipT > 0 && flipT < 1) {
+                  final flipMs = flipT * _flipDuration.inMilliseconds;
+                  final flipAmp = _shakeMaxAmplitude * (1 - flipT);
+                  shakeDx += sin(flipMs * _shakeRateDx) * flipAmp;
+                  shakeDy += cos(flipMs * _shakeRateDy) * flipAmp * 0.5;
+                  shakeAngle +=
+                      sin(flipMs * _shakeRateAngle) * 0.03 * (1 - flipT);
+                }
                 return Transform.translate(
                   offset: Offset(_dragDx + shakeDx, shakeDy),
                   child: Transform.rotate(
-                    angle: (_dragDx / _restOffset) * _peekCornerAngle + shakeAngle,
+                    angle:
+                        (_dragDx / _restOffset) * _peekCornerAngle + shakeAngle,
                     child: child,
                   ),
                 );
@@ -439,17 +462,21 @@ class _CardDeckState extends State<_CardDeck> with TickerProviderStateMixin {
               child: SizedBox(
                 width: _cardWidth,
                 height: _cardHeight,
-                child: _EpicFlipCard(
+                child: _SurpriseFlipCard(
                   key: _flipKey,
                   grade: widget.grades[_index],
-                  allGrades: widget.grades,
                   l10n: widget.l10n,
                   initiallyRevealed: _revealedIndices.contains(_index),
                   onRevealed: () {
                     final revealedGrade = widget.grades[_index];
                     setState(() => _revealedIndices.add(_index));
+                    widget.onRevealed?.call(revealedGrade);
                     Future.delayed(_flipDuration, () {
                       if (!mounted) return;
+                      Vibration.vibrate(
+                        pattern: _burstPattern,
+                        intensities: _burstIntensities,
+                      );
                       setState(() {
                         _revealEmoji = _gradeEmoji(revealedGrade.numericValue);
                         _revealBurstTrigger++;
@@ -521,8 +548,8 @@ class _CardDeckState extends State<_CardDeck> with TickerProviderStateMixin {
           height: _cardHeight,
           child: IgnorePointer(
             child: isRevealed
-                ? _EpicCardFace.back(grade, widget.grades, widget.l10n)
-                : _EpicCardFace.front(grade, widget.grades, widget.l10n),
+                ? _SurpriseCardFace.back(grade, widget.l10n)
+                : _SurpriseCardFace.front(grade, widget.l10n),
           ),
         ),
       ),
@@ -530,16 +557,14 @@ class _CardDeckState extends State<_CardDeck> with TickerProviderStateMixin {
   }
 }
 
-class _EpicFlipCard extends StatefulWidget {
+class _SurpriseFlipCard extends StatefulWidget {
   final GradeCacheModel grade;
-  final List<GradeCacheModel> allGrades;
   final AppLocalizations l10n;
   final bool initiallyRevealed;
   final VoidCallback onRevealed;
 
-  const _EpicFlipCard({
+  const _SurpriseFlipCard({
     required this.grade,
-    required this.allGrades,
     required this.l10n,
     required this.initiallyRevealed,
     required this.onRevealed,
@@ -547,10 +572,10 @@ class _EpicFlipCard extends StatefulWidget {
   });
 
   @override
-  State<_EpicFlipCard> createState() => _EpicFlipCardState();
+  State<_SurpriseFlipCard> createState() => _SurpriseFlipCardState();
 }
 
-class _EpicFlipCardState extends State<_EpicFlipCard>
+class _SurpriseFlipCardState extends State<_SurpriseFlipCard>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   bool _showFront = true;
@@ -568,7 +593,7 @@ class _EpicFlipCardState extends State<_EpicFlipCard>
   }
 
   @override
-  void didUpdateWidget(covariant _EpicFlipCard oldWidget) {
+  void didUpdateWidget(covariant _SurpriseFlipCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.grade != oldWidget.grade) {
       _showFront = !widget.initiallyRevealed;
@@ -603,12 +628,8 @@ class _EpicFlipCardState extends State<_EpicFlipCard>
             ..setEntry(3, 2, 0.001)
             ..rotateY(displayAngle),
           child: isBack
-              ? _EpicCardFace.back(widget.grade, widget.allGrades, widget.l10n)
-              : _EpicCardFace.front(
-                  widget.grade,
-                  widget.allGrades,
-                  widget.l10n,
-                ),
+              ? _SurpriseCardFace.back(widget.grade, widget.l10n)
+              : _SurpriseCardFace.front(widget.grade, widget.l10n),
         );
       },
     );
@@ -664,16 +685,13 @@ class _GridPainter extends CustomPainter {
       oldDelegate.color != color;
 }
 
-class _EpicCardFace extends StatelessWidget {
+class _SurpriseCardFace extends StatelessWidget {
   final GradeCacheModel grade;
-  final List<GradeCacheModel> allGrades;
   final AppLocalizations l10n;
   final bool isBack;
 
-  const _EpicCardFace.front(this.grade, this.allGrades, this.l10n)
-    : isBack = false;
-  const _EpicCardFace.back(this.grade, this.allGrades, this.l10n)
-    : isBack = true;
+  const _SurpriseCardFace.front(this.grade, this.l10n) : isBack = false;
+  const _SurpriseCardFace.back(this.grade, this.l10n) : isBack = true;
 
   @override
   Widget build(BuildContext context) {
@@ -771,7 +789,7 @@ class _EpicCardFace extends StatelessWidget {
           width: 216,
           height: 159,
           child: _TexturedGridBox(
-            child: Center(child: _EpicBadge(grade, allGrades, l10n)),
+            child: Center(child: _SurpriseBadge(grade, l10n)),
           ),
         ),
         Positioned(
@@ -813,17 +831,45 @@ class _EpicCardFace extends StatelessWidget {
   }
 }
 
-class _EpicBadge extends StatelessWidget {
+class SurpriseGradeMiniCard extends StatelessWidget {
   final GradeCacheModel grade;
-  final List<GradeCacheModel> allGrades;
+  final AppLocalizations l10n;
+  final double width;
+
+  const SurpriseGradeMiniCard(
+    this.grade,
+    this.l10n, {
+    required this.width,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      height: width * _CardDeckState._cardHeight / _CardDeckState._cardWidth,
+      child: FittedBox(
+        fit: BoxFit.fill,
+        child: SizedBox(
+          width: _CardDeckState._cardWidth,
+          height: _CardDeckState._cardHeight,
+          child: _SurpriseCardFace.front(grade, l10n),
+        ),
+      ),
+    );
+  }
+}
+
+class _SurpriseBadge extends StatelessWidget {
+  final GradeCacheModel grade;
   final AppLocalizations l10n;
 
-  const _EpicBadge(this.grade, this.allGrades, this.l10n);
+  const _SurpriseBadge(this.grade, this.l10n);
 
   @override
   Widget build(BuildContext context) {
     final rank = grade.numericValue != null
-        ? _rankLabel(l10n, allGrades, grade.numericValue!)
+        ? _rankLabel(l10n, grade.numericValue!)
         : null;
 
     return Column(
@@ -1037,18 +1083,19 @@ class _EdgeParticle {
   });
 }
 
-class EpicCardFaceDebugScreen extends StatefulWidget {
+class SurpriseCardFaceDebugScreen extends StatefulWidget {
   final GradeCacheModel grade;
   final AppLocalizations l10n;
 
-  const EpicCardFaceDebugScreen(this.grade, this.l10n, {super.key});
+  const SurpriseCardFaceDebugScreen(this.grade, this.l10n, {super.key});
 
   @override
-  State<EpicCardFaceDebugScreen> createState() =>
-      _EpicCardFaceDebugScreenState();
+  State<SurpriseCardFaceDebugScreen> createState() =>
+      _SurpriseCardFaceDebugScreenState();
 }
 
-class _EpicCardFaceDebugScreenState extends State<EpicCardFaceDebugScreen> {
+class _SurpriseCardFaceDebugScreenState
+    extends State<SurpriseCardFaceDebugScreen> {
   bool _isBack = false;
 
   @override
@@ -1084,16 +1131,8 @@ class _EpicCardFaceDebugScreenState extends State<EpicCardFaceDebugScreen> {
                   width: 240,
                   height: 300,
                   child: _isBack
-                      ? _EpicCardFace.back(
-                          widget.grade,
-                          [widget.grade],
-                          widget.l10n,
-                        )
-                      : _EpicCardFace.front(
-                          widget.grade,
-                          [widget.grade],
-                          widget.l10n,
-                        ),
+                      ? _SurpriseCardFace.back(widget.grade, widget.l10n)
+                      : _SurpriseCardFace.front(widget.grade, widget.l10n),
                 ),
               ),
             ),
@@ -1104,15 +1143,16 @@ class _EpicCardFaceDebugScreenState extends State<EpicCardFaceDebugScreen> {
   }
 }
 
-class EpicParticleDebugScreen extends StatefulWidget {
-  const EpicParticleDebugScreen({super.key});
+class SurpriseParticleDebugScreen extends StatefulWidget {
+  const SurpriseParticleDebugScreen({super.key});
 
   @override
-  State<EpicParticleDebugScreen> createState() =>
-      _EpicParticleDebugScreenState();
+  State<SurpriseParticleDebugScreen> createState() =>
+      _SurpriseParticleDebugScreenState();
 }
 
-class _EpicParticleDebugScreenState extends State<EpicParticleDebugScreen> {
+class _SurpriseParticleDebugScreenState
+    extends State<SurpriseParticleDebugScreen> {
   int _burstId = 0;
 
   @override

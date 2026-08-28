@@ -96,7 +96,7 @@ flutter:
     - assets/images/cactus_error_screen.png
     - assets/images/logos/dave_error.png
     - assets/icons/button/colorwheel.png
-    - assets/images/epic_grades/
+    - assets/images/surprise_grades/
 
   fonts:
     - family: Montserrat

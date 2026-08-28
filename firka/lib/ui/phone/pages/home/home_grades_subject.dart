@@ -18,6 +18,7 @@ import 'package:isar_community/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
 import 'package:firka/app/app_state.dart';
+import 'package:firka/core/last_seen_helper.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/ui/theme/style.dart';
@@ -30,11 +31,14 @@ class HomeGradesSubjectScreen extends StatefulWidget {
   factory HomeGradesSubjectScreen.subject(SubjectCacheModel subject) {
     return HomeGradesSubjectScreen(
       subject,
-      initData.client!.cache
-          .getGrades()
-          .subject((s) => s.cacheKeyEqualTo(subject.cacheKey))
-          .sortByCreatedAtDesc()
-          .findAllSync(),
+      LastSeenHelper.openedGrades(
+        initData.settings.selectedAccountKey,
+        initData.client!.cache
+            .getGrades()
+            .subject((s) => s.cacheKeyEqualTo(subject.cacheKey))
+            .sortByCreatedAtDesc()
+            .findAllSync(),
+      ),
     );
   }
 

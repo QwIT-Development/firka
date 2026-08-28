@@ -1,4 +1,10 @@
+import 'package:firka_common/data/last_seen.dart';
+import 'package:firka_common/data/models/grade_cache_model.dart';
 import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:firka/core/last_seen_helper.dart';
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
+import 'package:firka/ui/phone/screens/surprise_grades/surprise_grades_screen.dart';
 import 'package:firka/ui/phone/widgets/info_card.dart';
 import 'package:firka/ui/phone/widgets/lesson_slider.dart';
 import 'package:firka_common/data/util.dart';
@@ -35,13 +41,69 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _seedLastSeen();
       if (mounted) setState(() => _fadeNewInserts = true);
     });
   }
 
+  List<GradeCacheModel> _newGrades() {
+    if (!Settings.surpriseGrades.value) return const [];
+
+    final account = widget.data.settings.selectedAccountKey;
+    final seen = LastSeenHelper.get(account, LastSeenHelper.grades);
+    if (seen == null) return const [];
+
+    return LastSeen.newerThan(
+      widget.data.client!.cache.getGrades().findAllSync(),
+      seen,
+    );
+  }
+
+  Future<void> _seedLastSeen() async {
+    final account = widget.data.settings.selectedAccountKey;
+    final existing = LastSeenHelper.get(account, LastSeenHelper.grades);
+    if (existing != null) return;
+
+    final newest = LastSeen.newestOf(
+      widget.data.client!.cache.getGrades().findAllSync(),
+    );
+    if (newest == null) return;
+
+    await LastSeenHelper.set(account, LastSeenHelper.grades, newest);
+  }
+
+  void _openNewGrades(List<GradeCacheModel> grades) async {
+    if (grades.isEmpty) return;
+
+    final revealed = <int>{};
+    await Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute(
+        builder: (context) => SurpriseGradesScreen(
+          grades,
+          widget.data.l10n,
+          onRevealed: (g) => revealed.add(g.cacheKey),
+        ),
+      ),
+    );
+
+    final newest = revealed.length == grades.length
+        ? LastSeen.newestOf(grades)
+        : null;
+    if (newest != null) {
+      await LastSeenHelper.set(
+        widget.data.settings.selectedAccountKey,
+        LastSeenHelper.grades,
+        newest,
+      );
+    }
+
+    if (mounted) setState(() {});
+  }
+
   void _onRefreshRequested(BuildContext context) async {
     final cubit = context.read<HomeRefreshCubit>();
+    await _seedLastSeen();
     if (mounted) {
       setState(() {});
       cubit.onRefreshComplete();
@@ -66,8 +128,12 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
   Widget _buildContent(BuildContext context, ToastState toastState) {
     final now = timeNow();
     final student = widget.data.client!.cache.findStudentOrNull();
+    final newGrades = _newGrades();
     final infoItems = widget.data.client!.cache.getMessages().findAllSync();
-    final gradeItems = widget.data.client!.cache.getGrades().findAllSync();
+    final gradeItems = LastSeenHelper.openedGrades(
+      widget.data.settings.selectedAccountKey,
+      widget.data.client!.cache.getGrades().findAllSync(),
+    );
     final testItems = widget.data.client!.cache.getTests().findAllSync();
     final homeworkItems = widget.data.client!.cache
         .getHomeworks()
@@ -154,8 +220,13 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
                 child: const Center(child: DelayedSpinnerWidget()),
               ),
             _FadeInWhenLoaded(
-              loaded: todayLesson.isNotEmpty,
-              child: LessonSlider(todayLesson, testsTomorrow),
+              loaded: todayLesson.isNotEmpty || newGrades.isNotEmpty,
+              child: LessonSlider(
+                todayLesson,
+                testsTomorrow,
+                newGrades: newGrades,
+                onNewGradesTap: () => _openNewGrades(newGrades),
+              ),
             ),
             SizedBox(height: 24),
             ...noticeBoardWidgets

@@ -23,7 +23,7 @@ import 'package:firka/core/debug_helper.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/core/state/firka_state.dart';
-import 'package:firka/ui/phone/screens/epic_grades/epic_grades_screen.dart';
+import 'package:firka/ui/phone/screens/surprise_grades/surprise_grades_screen.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/services.dart';
@@ -271,7 +271,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) =>
-                          EpicGradesScreen(grades, widget.data.l10n),
+                          SurpriseGradesScreen(grades, widget.data.l10n),
                     ),
                   );
                 },
@@ -293,7 +293,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) =>
-                          EpicCardFaceDebugScreen(grades.first, widget.data.l10n),
+                          SurpriseCardFaceDebugScreen(grades.first, widget.data.l10n),
                     ),
                   );
                 },
@@ -303,7 +303,7 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const EpicParticleDebugScreen(),
+                      builder: (context) => const SurpriseParticleDebugScreen(),
                     ),
                   );
                 },

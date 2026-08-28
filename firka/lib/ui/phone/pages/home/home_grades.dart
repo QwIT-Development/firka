@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:firka/core/state/firka_state.dart';
 import 'package:firka/app/app_state.dart';
+import 'package:firka/core/last_seen_helper.dart';
 import 'package:firka/core/bloc/home_refresh_cubit.dart';
 import 'package:firka/ui/theme/style.dart';
 
@@ -38,7 +39,10 @@ class _HomeGradesScreen extends FirkaState<HomeGradesScreen> {
   }
 
   Widget _buildContent(BuildContext context) {
-    final allGrades = widget.data.client!.cache.getGrades().findAllSync();
+    final allGrades = LastSeenHelper.openedGrades(
+      widget.data.settings.selectedAccountKey,
+      widget.data.client!.cache.getGrades().findAllSync(),
+    );
 
     final subjectAverage = allGrades.getSubjectAverage();
     final roundedSubjectAverage = allGrades.getRoundedSubjectAverage();
