@@ -299,6 +299,26 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                 },
                 child: const Text('Epikus jegyszerzés (card face debug)'),
               ),
+                            ElevatedButton(
+                onPressed: () async {
+                  final token = widget.data.settings.getSelectedToken();
+                  if (token == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('No token available to copy')),
+                    );
+                    return;
+                  }
+
+                  await Clipboard.setData(
+                    ClipboardData(text: token.accessToken),
+                  );
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Access token copied')),
+                  );
+                },
+                child: const Text('Copy JWT'),
+              ),
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).push(
