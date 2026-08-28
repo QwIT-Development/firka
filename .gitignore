@@ -105,3 +105,4 @@ firka/debug-info/
 tool_logs/build/*.log
 tool_logs/d8dx_fix/*.log
 tool_logs/pub_fix/*.log
+secrets/upload_certificate.pem
