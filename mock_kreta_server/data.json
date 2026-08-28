@@ -71,47 +71,12 @@
   ],
   "grades": [
     {
-      "Uid": "1000",
-      "RogzitesDatuma": "2026-08-25T00:00:00",
-      "KeszitesDatuma": "2026-08-25T00:00:00",
+      "Uid": "admin-1787910857503014843-0",
+      "RogzitesDatuma": "2026-08-28T09:53:09.136Z",
+      "KeszitesDatuma": "2026-08-28T09:53:09.136Z",
       "Tantargy": {
         "Uid": "1,MATEK",
-        "Nev": "meow",
-        "Kategoria": {
-          "Uid": "1",
-          "Nev": "Kötelező",
-          "Leiras": "Kötelező tantárgy"
-        },
-        "SortIndex": 1
-      },
-      "Tema": "meoow",
-      "Tipus": {
-        "Uid": "1",
-        "Nev": "Írásbeli",
-        "Leiras": "Írásbeli felelet"
-      },
-      "ErtekFajta": {
-        "Uid": "1",
-        "Nev": "Osztályzat",
-        "Leiras": "Osztályzat"
-      },
-      "ErtekeloTanarNeve": "mrrp",
-      "Jelleg": "Ertekeles",
-      "SzamErtek": 5,
-      "SzovegesErtek": "Jeles",
-      "SulySzazalekErteke": 100,
-      "OsztalyCsoport": {
-        "Uid": "10,11.A"
-      },
-      "SortIndex": 1
-    },
-    {
-      "Uid": "admin-1787903644593071178-1",
-      "RogzitesDatuma": "2026-08-26T20:53:37.494Z",
-      "KeszitesDatuma": "2026-08-26T20:53:37.494Z",
-      "Tantargy": {
-        "Uid": "1,MATEK",
-        "Nev": "meow",
+        "Nev": "szia xou",
         "Kategoria": {
           "Uid": "1",
           "Nev": "Kötelező",
@@ -119,7 +84,7 @@
         },
         "SortIndex": 0
       },
-      "Tema": "meoow",
+      "Tema": "szia xou",
       "Tipus": {
         "Uid": "1",
         "Nev": "Írásbeli",
@@ -130,7 +95,42 @@
         "Nev": "Osztályzat",
         "Leiras": ""
       },
-      "ErtekeloTanarNeve": "meow",
+      "ErtekeloTanarNeve": "xou",
+      "Jelleg": "Ertekeles",
+      "SzamErtek": 5,
+      "SzovegesErtek": "Jeles",
+      "SulySzazalekErteke": 100,
+      "OsztalyCsoport": {
+        "Uid": "10,11.A"
+      },
+      "SortIndex": 0
+    },
+    {
+      "Uid": "admin-1787910857503016597-1",
+      "RogzitesDatuma": "2026-08-28T09:53:31.201Z",
+      "KeszitesDatuma": "2026-08-28T09:53:31.201Z",
+      "Tantargy": {
+        "Uid": "1,MATEK",
+        "Nev": "szia xou",
+        "Kategoria": {
+          "Uid": "1",
+          "Nev": "Kötelező",
+          "Leiras": ""
+        },
+        "SortIndex": 0
+      },
+      "Tema": "szia xou",
+      "Tipus": {
+        "Uid": "1",
+        "Nev": "Írásbeli",
+        "Leiras": ""
+      },
+      "ErtekFajta": {
+        "Uid": "1",
+        "Nev": "Osztályzat",
+        "Leiras": ""
+      },
+      "ErtekeloTanarNeve": "szia xou",
       "Jelleg": "Ertekeles",
       "SzamErtek": 4,
       "SzovegesErtek": "Jeles",
@@ -141,12 +141,12 @@
       "SortIndex": 0
     },
     {
-      "Uid": "admin-1787903644593072300-2",
-      "RogzitesDatuma": "2026-08-27T16:13:00.121Z",
-      "KeszitesDatuma": "2026-08-27T16:13:00.121Z",
+      "Uid": "admin-1787910857503016887-2",
+      "RogzitesDatuma": "2026-08-28T09:53:38.256Z",
+      "KeszitesDatuma": "2026-08-28T09:53:38.256Z",
       "Tantargy": {
         "Uid": "1,MATEK",
-        "Nev": "meow",
+        "Nev": "szia xou",
         "Kategoria": {
           "Uid": "1",
           "Nev": "Kötelező",
@@ -154,7 +154,7 @@
         },
         "SortIndex": 0
       },
-      "Tema": "meoow",
+      "Tema": "szia xou",
       "Tipus": {
         "Uid": "1",
         "Nev": "Írásbeli",
@@ -165,7 +165,7 @@
         "Nev": "Osztályzat",
         "Leiras": ""
       },
-      "ErtekeloTanarNeve": "meow",
+      "ErtekeloTanarNeve": "szia xou",
       "Jelleg": "Ertekeles",
       "SzamErtek": 3,
       "SzovegesErtek": "Jeles",
@@ -176,12 +176,12 @@
       "SortIndex": 0
     },
     {
-      "Uid": "admin-1787903644593072591-3",
-      "RogzitesDatuma": "2026-08-27T16:13:00.269Z",
-      "KeszitesDatuma": "2026-08-27T16:13:00.269Z",
+      "Uid": "admin-1787910857503017128-3",
+      "RogzitesDatuma": "2026-08-28T09:53:39.615Z",
+      "KeszitesDatuma": "2026-08-28T09:53:39.615Z",
       "Tantargy": {
         "Uid": "1,MATEK",
-        "Nev": "meow",
+        "Nev": "szia xou",
         "Kategoria": {
           "Uid": "1",
           "Nev": "Kötelező",
@@ -189,7 +189,7 @@
         },
         "SortIndex": 0
       },
-      "Tema": "meoow",
+      "Tema": "szia xou",
       "Tipus": {
         "Uid": "1",
         "Nev": "Írásbeli",
@@ -200,7 +200,7 @@
         "Nev": "Osztályzat",
         "Leiras": ""
       },
-      "ErtekeloTanarNeve": "meow",
+      "ErtekeloTanarNeve": "szia xou",
       "Jelleg": "Ertekeles",
       "SzamErtek": 2,
       "SzovegesErtek": "Jeles",
@@ -211,12 +211,12 @@
       "SortIndex": 0
     },
     {
-      "Uid": "admin-1787903644593072771-4",
-      "RogzitesDatuma": "2026-08-27T16:13:00.399Z",
-      "KeszitesDatuma": "2026-08-27T16:13:00.399Z",
+      "Uid": "admin-1787910857503017428-4",
+      "RogzitesDatuma": "2026-08-28T09:53:39.743Z",
+      "KeszitesDatuma": "2026-08-28T09:53:39.743Z",
       "Tantargy": {
         "Uid": "1,MATEK",
-        "Nev": "meow",
+        "Nev": "szia xou",
         "Kategoria": {
           "Uid": "1",
           "Nev": "Kötelező",
@@ -224,7 +224,7 @@
         },
         "SortIndex": 0
       },
-      "Tema": "meoow",
+      "Tema": "szia xou",
       "Tipus": {
         "Uid": "1",
         "Nev": "Írásbeli",
@@ -235,429 +235,9 @@
         "Nev": "Osztályzat",
         "Leiras": ""
       },
-      "ErtekeloTanarNeve": "meow",
+      "ErtekeloTanarNeve": "szia xou",
       "Jelleg": "Ertekeles",
       "SzamErtek": 1,
-      "SzovegesErtek": "Jeles",
-      "SulySzazalekErteke": 100,
-      "OsztalyCsoport": {
-        "Uid": "10,11.A"
-      },
-      "SortIndex": 0
-    },
-    {
-      "Uid": "9001",
-      "RogzitesDatuma": "2026-08-27T22:01:29",
-      "KeszitesDatuma": "2026-08-27T22:01:29",
-      "Tantargy": {
-        "Uid": "1,MATEK",
-        "Nev": "meow",
-        "Kategoria": {
-          "Uid": "1",
-          "Nev": "Kötelező",
-          "Leiras": "Kötelező tantárgy"
-        },
-        "SortIndex": 1
-      },
-      "Tema": "friss jegy teszt",
-      "Tipus": {
-        "Uid": "1",
-        "Nev": "Írásbeli",
-        "Leiras": "Írásbeli felelet"
-      },
-      "ErtekFajta": {
-        "Uid": "1",
-        "Nev": "Osztályzat",
-        "Leiras": "Osztályzat"
-      },
-      "ErtekeloTanarNeve": "mrrp",
-      "Jelleg": "Ertekeles",
-      "SzamErtek": 4,
-      "SzovegesErtek": "Jó",
-      "SulySzazalekErteke": 100,
-      "OsztalyCsoport": {
-        "Uid": "10,11.A"
-      },
-      "SortIndex": 1
-    },
-    {
-      "Uid": "9002",
-      "RogzitesDatuma": "2026-08-27T22:06:53",
-      "KeszitesDatuma": "2026-08-27T22:06:53",
-      "Tantargy": {
-        "Uid": "1,MATEK",
-        "Nev": "meow",
-        "Kategoria": {
-          "Uid": "1",
-          "Nev": "Kötelező",
-          "Leiras": "Kötelező tantárgy"
-        },
-        "SortIndex": 1
-      },
-      "Tema": "masodik teszt",
-      "Tipus": {
-        "Uid": "1",
-        "Nev": "Írásbeli",
-        "Leiras": "Írásbeli felelet"
-      },
-      "ErtekFajta": {
-        "Uid": "1",
-        "Nev": "Osztályzat",
-        "Leiras": "Osztályzat"
-      },
-      "ErtekeloTanarNeve": "mrrp",
-      "Jelleg": "Ertekeles",
-      "SzamErtek": 5,
-      "SzovegesErtek": "Jeles",
-      "SulySzazalekErteke": 100,
-      "OsztalyCsoport": {
-        "Uid": "10,11.A"
-      },
-      "SortIndex": 1
-    },
-    {
-      "Uid": "9101",
-      "RogzitesDatuma": "2026-08-27T22:15:17",
-      "KeszitesDatuma": "2026-08-27T22:15:17",
-      "Tantargy": {
-        "Uid": "1,MATEK",
-        "Nev": "meow",
-        "Kategoria": {
-          "Uid": "1",
-          "Nev": "Kötelező",
-          "Leiras": "Kötelező tantárgy"
-        },
-        "SortIndex": 1
-      },
-      "Tema": "Fuggvenyek",
-      "Tipus": {
-        "Uid": "1",
-        "Nev": "Írásbeli",
-        "Leiras": "Írásbeli felelet"
-      },
-      "ErtekFajta": {
-        "Uid": "1",
-        "Nev": "Osztályzat",
-        "Leiras": "Osztályzat"
-      },
-      "ErtekeloTanarNeve": "mrrp",
-      "Jelleg": "Ertekeles",
-      "SzamErtek": 5,
-      "SzovegesErtek": "x",
-      "SulySzazalekErteke": 100,
-      "OsztalyCsoport": {
-        "Uid": "10,11.A"
-      },
-      "SortIndex": 1
-    },
-    {
-      "Uid": "9102",
-      "RogzitesDatuma": "2026-08-27T22:15:18",
-      "KeszitesDatuma": "2026-08-27T22:15:18",
-      "Tantargy": {
-        "Uid": "1,MATEK",
-        "Nev": "meow",
-        "Kategoria": {
-          "Uid": "1",
-          "Nev": "Kötelező",
-          "Leiras": "Kötelező tantárgy"
-        },
-        "SortIndex": 1
-      },
-      "Tema": "Dolgozat",
-      "Tipus": {
-        "Uid": "1",
-        "Nev": "Írásbeli",
-        "Leiras": "Írásbeli felelet"
-      },
-      "ErtekFajta": {
-        "Uid": "1",
-        "Nev": "Osztályzat",
-        "Leiras": "Osztályzat"
-      },
-      "ErtekeloTanarNeve": "mrrp",
-      "Jelleg": "Ertekeles",
-      "SzamErtek": 4,
-      "SzovegesErtek": "x",
-      "SulySzazalekErteke": 100,
-      "OsztalyCsoport": {
-        "Uid": "10,11.A"
-      },
-      "SortIndex": 1
-    },
-    {
-      "Uid": "9103",
-      "RogzitesDatuma": "2026-08-27T22:15:19",
-      "KeszitesDatuma": "2026-08-27T22:15:19",
-      "Tantargy": {
-        "Uid": "1,MATEK",
-        "Nev": "meow",
-        "Kategoria": {
-          "Uid": "1",
-          "Nev": "Kötelező",
-          "Leiras": "Kötelező tantárgy"
-        },
-        "SortIndex": 1
-      },
-      "Tema": "Felelet",
-      "Tipus": {
-        "Uid": "1",
-        "Nev": "Írásbeli",
-        "Leiras": "Írásbeli felelet"
-      },
-      "ErtekFajta": {
-        "Uid": "1",
-        "Nev": "Osztályzat",
-        "Leiras": "Osztályzat"
-      },
-      "ErtekeloTanarNeve": "mrrp",
-      "Jelleg": "Ertekeles",
-      "SzamErtek": 3,
-      "SzovegesErtek": "x",
-      "SulySzazalekErteke": 100,
-      "OsztalyCsoport": {
-        "Uid": "10,11.A"
-      },
-      "SortIndex": 1
-    },
-    {
-      "Uid": "9201",
-      "RogzitesDatuma": "2026-08-27T22:26:04",
-      "KeszitesDatuma": "2026-08-27T22:26:04",
-      "Tantargy": {
-        "Uid": "1,MATEK",
-        "Nev": "meow",
-        "Kategoria": {
-          "Uid": "1",
-          "Nev": "Kötelező",
-          "Leiras": "Kötelező tantárgy"
-        },
-        "SortIndex": 1
-      },
-      "Tema": "Dolgozat",
-      "Tipus": {
-        "Uid": "1",
-        "Nev": "Írásbeli",
-        "Leiras": "Írásbeli felelet"
-      },
-      "ErtekFajta": {
-        "Uid": "1",
-        "Nev": "Osztályzat",
-        "Leiras": "Osztályzat"
-      },
-      "ErtekeloTanarNeve": "mrrp",
-      "Jelleg": "Ertekeles",
-      "SzamErtek": 2,
-      "SzovegesErtek": "Kettes",
-      "SulySzazalekErteke": 100,
-      "OsztalyCsoport": {
-        "Uid": "10,11.A"
-      },
-      "SortIndex": 1
-    },
-    {
-      "Uid": "9202",
-      "RogzitesDatuma": "2026-08-27T22:26:05",
-      "KeszitesDatuma": "2026-08-27T22:26:05",
-      "Tantargy": {
-        "Uid": "1,MATEK",
-        "Nev": "meow",
-        "Kategoria": {
-          "Uid": "1",
-          "Nev": "Kötelező",
-          "Leiras": "Kötelező tantárgy"
-        },
-        "SortIndex": 1
-      },
-      "Tema": "Temazaro",
-      "Tipus": {
-        "Uid": "1",
-        "Nev": "Írásbeli",
-        "Leiras": "Írásbeli felelet"
-      },
-      "ErtekFajta": {
-        "Uid": "1",
-        "Nev": "Osztályzat",
-        "Leiras": "Osztályzat"
-      },
-      "ErtekeloTanarNeve": "mrrp",
-      "Jelleg": "Ertekeles",
-      "SzamErtek": 1,
-      "SzovegesErtek": "Egyes",
-      "SulySzazalekErteke": 100,
-      "OsztalyCsoport": {
-        "Uid": "10,11.A"
-      },
-      "SortIndex": 1
-    },
-    {
-      "Uid": "9301",
-      "RogzitesDatuma": "2026-08-27T22:27:29",
-      "KeszitesDatuma": "2026-08-27T22:27:29",
-      "Tantargy": {
-        "Uid": "1,MATEK",
-        "Nev": "meow",
-        "Kategoria": {
-          "Uid": "1",
-          "Nev": "Kötelező",
-          "Leiras": "Kötelező tantárgy"
-        },
-        "SortIndex": 1
-      },
-      "Tema": "Rohamdolgozat",
-      "Tipus": {
-        "Uid": "1",
-        "Nev": "Írásbeli",
-        "Leiras": "Írásbeli felelet"
-      },
-      "ErtekFajta": {
-        "Uid": "1",
-        "Nev": "Osztályzat",
-        "Leiras": "Osztályzat"
-      },
-      "ErtekeloTanarNeve": "mrrp",
-      "Jelleg": "Ertekeles",
-      "SzamErtek": 5,
-      "SzovegesErtek": "Jeles",
-      "SulySzazalekErteke": 100,
-      "OsztalyCsoport": {
-        "Uid": "10,11.A"
-      },
-      "SortIndex": 1
-    },
-    {
-      "Uid": "9302",
-      "RogzitesDatuma": "2026-08-27T22:27:30",
-      "KeszitesDatuma": "2026-08-27T22:27:30",
-      "Tantargy": {
-        "Uid": "1,MATEK",
-        "Nev": "meow",
-        "Kategoria": {
-          "Uid": "1",
-          "Nev": "Kötelező",
-          "Leiras": "Kötelező tantárgy"
-        },
-        "SortIndex": 1
-      },
-      "Tema": "Szodolgozat",
-      "Tipus": {
-        "Uid": "1",
-        "Nev": "Írásbeli",
-        "Leiras": "Írásbeli felelet"
-      },
-      "ErtekFajta": {
-        "Uid": "1",
-        "Nev": "Osztályzat",
-        "Leiras": "Osztályzat"
-      },
-      "ErtekeloTanarNeve": "mrrp",
-      "Jelleg": "Ertekeles",
-      "SzamErtek": 4,
-      "SzovegesErtek": "Jo",
-      "SulySzazalekErteke": 100,
-      "OsztalyCsoport": {
-        "Uid": "10,11.A"
-      },
-      "SortIndex": 1
-    },
-    {
-      "Uid": "admin-1787903644593072981-14",
-      "RogzitesDatuma": "2026-08-28T07:50:02.769Z",
-      "KeszitesDatuma": "2026-08-28T07:50:02.769Z",
-      "Tantargy": {
-        "Uid": "1,MATEK",
-        "Nev": "meowfdg",
-        "Kategoria": {
-          "Uid": "1",
-          "Nev": "Kötelező",
-          "Leiras": ""
-        },
-        "SortIndex": 0
-      },
-      "Tema": "fasz",
-      "Tipus": {
-        "Uid": "1",
-        "Nev": "Írásbeli",
-        "Leiras": ""
-      },
-      "ErtekFajta": {
-        "Uid": "1",
-        "Nev": "Osztályzat",
-        "Leiras": ""
-      },
-      "ErtekeloTanarNeve": "mrrpdfg",
-      "Jelleg": "Ertekeles",
-      "SzamErtek": 5,
-      "SzovegesErtek": "Jeles",
-      "SulySzazalekErteke": 100,
-      "OsztalyCsoport": {
-        "Uid": "10,11.A"
-      },
-      "SortIndex": 0
-    },
-    {
-      "Uid": "admin-1787903983129659754-15",
-      "RogzitesDatuma": "2026-08-28T07:57:39.668Z",
-      "KeszitesDatuma": "2026-08-28T07:57:39.668Z",
-      "Tantargy": {
-        "Uid": "1,MATEK",
-        "Nev": "meowfdg",
-        "Kategoria": {
-          "Uid": "1",
-          "Nev": "Kötelező",
-          "Leiras": ""
-        },
-        "SortIndex": 0
-      },
-      "Tema": "sdfsfd",
-      "Tipus": {
-        "Uid": "1",
-        "Nev": "Írásbeli",
-        "Leiras": ""
-      },
-      "ErtekFajta": {
-        "Uid": "1",
-        "Nev": "Osztályzat",
-        "Leiras": ""
-      },
-      "ErtekeloTanarNeve": "meowfdg",
-      "Jelleg": "Ertekeles",
-      "SzamErtek": 5,
-      "SzovegesErtek": "Jeles",
-      "SulySzazalekErteke": 100,
-      "OsztalyCsoport": {
-        "Uid": "10,11.A"
-      },
-      "SortIndex": 0
-    },
-    {
-      "Uid": "admin-1787903983129661557-16",
-      "RogzitesDatuma": "2026-08-28T07:59:36.023Z",
-      "KeszitesDatuma": "2026-08-28T07:59:36.023Z",
-      "Tantargy": {
-        "Uid": "1,MATEK",
-        "Nev": "meowfdg",
-        "Kategoria": {
-          "Uid": "1",
-          "Nev": "Kötelező",
-          "Leiras": ""
-        },
-        "SortIndex": 0
-      },
-      "Tema": "fasz",
-      "Tipus": {
-        "Uid": "1",
-        "Nev": "Írásbeli",
-        "Leiras": ""
-      },
-      "ErtekFajta": {
-        "Uid": "1",
-        "Nev": "Osztályzat",
-        "Leiras": ""
-      },
-      "ErtekeloTanarNeve": "meowfdg",
-      "Jelleg": "Ertekeles",
-      "SzamErtek": 5,
       "SzovegesErtek": "Jeles",
       "SulySzazalekErteke": 100,
       "OsztalyCsoport": {
