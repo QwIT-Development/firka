@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 )
@@ -38,24 +39,57 @@ func buildIdToken(instituteCode, userId, username, studentName string) string {
 }
 
 type sessionInfo struct {
-	instituteCode string
-	userId        string
-	username      string
+	InstituteCode string `json:"instituteCode"`
+	UserId        string `json:"userId"`
+	Username      string `json:"username"`
 }
 
 type AuthStore struct {
 	mu            sync.Mutex
+	path          string
 	pendingCodes  map[string]bool
 	accessTokens  map[string]sessionInfo
 	refreshTokens map[string]sessionInfo
 }
 
-func NewAuthStore() *AuthStore {
-	return &AuthStore{
+type authFile struct {
+	AccessTokens  map[string]sessionInfo `json:"accessTokens"`
+	RefreshTokens map[string]sessionInfo `json:"refreshTokens"`
+}
+
+func NewAuthStore(path string) *AuthStore {
+	a := &AuthStore{
+		path:          path,
 		pendingCodes:  map[string]bool{},
 		accessTokens:  map[string]sessionInfo{},
 		refreshTokens: map[string]sessionInfo{},
 	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return a
+	}
+	var f authFile
+	if json.Unmarshal(raw, &f) != nil {
+		return a
+	}
+	if f.AccessTokens != nil {
+		a.accessTokens = f.AccessTokens
+	}
+	if f.RefreshTokens != nil {
+		a.refreshTokens = f.RefreshTokens
+	}
+	return a
+}
+
+func (a *AuthStore) save() {
+	raw, err := json.MarshalIndent(authFile{
+		AccessTokens:  a.accessTokens,
+		RefreshTokens: a.refreshTokens,
+	}, "", "  ")
+	if err != nil {
+		return
+	}
+	os.WriteFile(a.path, raw, 0o644)
 }
 
 func (a *AuthStore) issueCode() string {
@@ -83,6 +117,7 @@ func (a *AuthStore) issueTokens(info sessionInfo) (string, string) {
 	refresh := randomToken()
 	a.accessTokens[access] = info
 	a.refreshTokens[refresh] = info
+	a.save()
 	return access, refresh
 }
 
@@ -94,6 +129,7 @@ func (a *AuthStore) consumeRefresh(token string) (sessionInfo, bool) {
 		return sessionInfo{}, false
 	}
 	delete(a.refreshTokens, token)
+	a.save()
 	return info, true
 }
 
@@ -158,9 +194,9 @@ func (s *Server) handleToken(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		info = sessionInfo{
-			instituteCode: cfg.InstituteCode,
-			userId:        student.Uid,
-			username:      cfg.Username,
+			InstituteCode: cfg.InstituteCode,
+			UserId:        student.Uid,
+			Username:      cfg.Username,
 		}
 	case "refresh_token":
 		token := r.FormValue("refresh_token")
@@ -178,9 +214,9 @@ func (s *Server) handleToken(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		info = sessionInfo{
-			instituteCode: cfg.InstituteCode,
-			userId:        student.Uid,
-			username:      cfg.Username,
+			InstituteCode: cfg.InstituteCode,
+			UserId:        student.Uid,
+			Username:      cfg.Username,
 		}
 	default:
 		w.WriteHeader(http.StatusBadRequest)
@@ -188,7 +224,7 @@ func (s *Server) handleToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	access, refresh := s.auth.issueTokens(info)
-	idToken := buildIdToken(info.instituteCode, info.userId, info.username, student.Nev)
+	idToken := buildIdToken(info.InstituteCode, info.UserId, info.Username, student.Nev)
 
 	resp := map[string]any{
 		"id_token":      idToken,

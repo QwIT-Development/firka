@@ -23,7 +23,7 @@ func main() {
 
 	s := &Server{
 		store: NewStore(*dataPath),
-		auth:  NewAuthStore(),
+		auth:  NewAuthStore("auth.json"),
 	}
 
 	mux := http.NewServeMux()

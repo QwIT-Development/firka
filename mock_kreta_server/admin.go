@@ -2,8 +2,38 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 )
+
+func fillGradeBlanks(store *Store, grades []Grade) []Grade {
+	groups := store.GetClassGroups()
+	groupUid := ""
+	subjectUid := ""
+	if len(groups) > 0 {
+		groupUid = groups[0].Uid
+	}
+	for _, g := range store.GetGrades() {
+		if g.Tantargy.Uid != "" {
+			subjectUid = g.Tantargy.Uid
+			break
+		}
+	}
+
+	for i := range grades {
+		if grades[i].Uid == "" {
+			grades[i].Uid = fmt.Sprintf("admin-%d-%d", time.Now().UnixNano(), i)
+		}
+		if grades[i].OsztalyCsoport.Uid == "" {
+			grades[i].OsztalyCsoport.Uid = groupUid
+		}
+		if grades[i].Tantargy.Uid == "" {
+			grades[i].Tantargy.Uid = subjectUid
+		}
+	}
+	return grades
+}
 
 func decodeBody(r *http.Request, v any) error {
 	defer r.Body.Close()
@@ -74,7 +104,7 @@ func (s *Server) registerAdminRoutes(mux *http.ServeMux) {
 			if err := decodeBody(r, &v); err != nil {
 				return err
 			}
-			s.store.SetGrades(v)
+			s.store.SetGrades(fillGradeBlanks(s.store, v))
 			return nil
 		},
 	))
