@@ -1,19 +1,24 @@
 import "package:firka/core/settings/settings_repository.dart";
 import "package:firka/core/settings/settings_ui.dart";
+import "package:firka/ui/phone/screens/settings/settings_metrics.dart";
+import "package:firka/ui/phone/screens/settings/settings_toggle.dart";
 import "package:firka/ui/shared/firka_icon.dart";
 import "package:firka/ui/theme/style.dart";
 import "package:firka_common/ui/components/firka_card.dart";
 import "package:flutter/material.dart";
 
 Widget buildBoolRow(
+  BuildContext context,
   SettingsUiBoolean item,
   SettingsRepository settings,
   void Function(VoidCallback fn) setStateOuter,
 ) {
   final value = settings.get(item.setting);
+  final scale = settingsScale(context);
 
   return FirkaCard(
-    height: 52 + 12,
+    height: settingsItemHeight * scale,
+    rounding: settingsItemRounding * scale,
     left: [
       item.iconType != null
           ? Row(
@@ -23,7 +28,7 @@ Widget buildBoolRow(
                   item.iconData!,
                   color: appStyle.colors.accent,
                 ),
-                SizedBox(width: 4),
+                SizedBox(width: 12 * scale),
               ],
             )
           : SizedBox(),
@@ -33,20 +38,9 @@ Widget buildBoolRow(
       ),
     ],
     right: [
-      Switch(
+      SettingsToggle(
         value: value,
-        thumbColor: WidgetStateProperty.fromMap({
-          WidgetState.selected: appStyle.colors.buttonSecondaryFill,
-          WidgetState.any: appStyle.colors.accent,
-        }),
-        trackColor: WidgetStateProperty.fromMap({
-          WidgetState.selected: appStyle.colors.accent,
-          WidgetState.any: appStyle.colors.a10p,
-        }),
-        trackOutlineColor: WidgetStateProperty.fromMap({
-          WidgetState.selected: appStyle.colors.accent,
-          WidgetState.any: appStyle.colors.a15p,
-        }),
+        scale: scale,
         onChanged: (v) async {
           await settings.set(item.setting, v);
           setStateOuter(() {});

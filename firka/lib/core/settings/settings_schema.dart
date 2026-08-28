@@ -148,4 +148,37 @@ abstract class SettingsSchema {
 
   @StringSetting(id: 1033, defaultValue: "http://10.0.0.144:8090")
   String get mockBackendUrl;
+
+  @StringSetting(id: 1034, defaultValue: "{}")
+  String get lastSeen;
+
+  @BoolSetting(id: 1035, defaultValue: true)
+  bool get surpriseGrades;
+
+  @BoolSetting(id: 1036, defaultValue: true)
+  bool get seasonalAppIcons;
+
+  @BoolSetting(id: 1037, defaultValue: false)
+  bool get uwuMode;
+
+  @BoolSetting(id: 1038, defaultValue: true)
+  bool get notifyAll;
+
+  @BoolSetting(id: 1039, defaultValue: true)
+  bool get notifyGrades;
+
+  @BoolSetting(id: 1040, defaultValue: true)
+  bool get notifyHomeworkTests;
+
+  @BoolSetting(id: 1041, defaultValue: true)
+  bool get notifyAbsences;
+
+  @BoolSetting(id: 1042, defaultValue: true)
+  bool get notifyLessons;
+
+  @BoolSetting(id: 1043, defaultValue: true)
+  bool get notifyMessages;
+
+  @StringSetting(id: 1044, defaultValue: "[]")
+  String get notifyMutedSubjects;
 }

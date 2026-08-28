@@ -14,6 +14,7 @@ class FirkaCard extends StatelessWidget {
   final Attach attached;
   final Color? color;
   final bool? isLightMode;
+  final double? rounding;
   final Widget child;
 
   factory FirkaCard({
@@ -29,6 +30,7 @@ class FirkaCard extends StatelessWidget {
     double? height,
     double? width,
     bool? isLightMode,
+    double? rounding,
   }) {
     final leftRow = Row(children: left);
 
@@ -50,6 +52,7 @@ class FirkaCard extends StatelessWidget {
       height: height,
       shadow: shadow,
       isLightMode: isLightMode,
+      rounding: rounding,
       child: extra == null ? alignedRow : Column(children: [alignedRow, extra]),
     );
   }
@@ -64,13 +67,14 @@ class FirkaCard extends StatelessWidget {
     this.height,
     this.width,
     this.isLightMode,
+    this.rounding,
     required this.child,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    final defaultRounding = 16.0;
+    final defaultRounding = rounding ?? 16.0;
     final attachedRounding = 8.0;
     final isLight =
         isLightMode ?? Theme.of(context).brightness == Brightness.light;

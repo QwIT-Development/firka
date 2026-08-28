@@ -59,6 +59,7 @@ class SettingsUiSubGroup extends SettingsUiNode {
   final String title;
   final List<SettingsUiNode> children;
   final String? redirectTo;
+  final String? subtitle;
 
   const SettingsUiSubGroup(
     this.iconType,
@@ -67,6 +68,7 @@ class SettingsUiSubGroup extends SettingsUiNode {
     this.children,
     bool Function() visible, [
     this.redirectTo,
+    this.subtitle,
   ]) : super(visible);
 }
 
@@ -157,4 +159,8 @@ class SettingsUiLogs extends SettingsUiNode {
 
 class SettingsUiLicensePage extends SettingsUiNode {
   const SettingsUiLicensePage(super.visible);
+}
+
+class SettingsUiSubjectNotifications extends SettingsUiNode {
+  const SettingsUiSubjectNotifications(super.visible);
 }

@@ -185,7 +185,7 @@ class SettingsAppIconPickerView extends StatelessWidget {
       if (group == data.l10n.s_ci_icon_g7 || group == data.l10n.s_ci_icon_g8) {
         pWidgets.add(SizedBox(height: 12));
         pWidgets.add(
-          buildBoolRow(item.childProtection, settings, setStateOuter),
+          buildBoolRow(context, item.childProtection, settings, setStateOuter),
         );
       }
 

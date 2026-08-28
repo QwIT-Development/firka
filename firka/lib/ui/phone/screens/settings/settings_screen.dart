@@ -24,6 +24,7 @@ import 'package:firka/core/state/firka_state.dart';
 import 'settings_account_picker.dart';
 import 'settings_app_icon_picker.dart';
 import 'settings_bool_row.dart';
+import 'settings_metrics.dart';
 import 'settings_license_page.dart';
 import 'settings_logs.dart';
 import 'settings_personalization_view.dart';
@@ -77,6 +78,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
     bool forceRender = false,
   }) {
     var widgets = List<Widget>.empty(growable: true);
+    final scale = settingsScale(context);
 
     for (var item in items) {
       if (!forceRender && !item.visible()) continue;
@@ -93,34 +95,38 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
       if (item is SettingsUiBackHeader) {
         widgets.add(
           Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Transform.translate(
-                    offset: const Offset(-4, 0),
-                    child: GestureDetector(
-                      child: FirkaIconWidget(
-                        FirkaIconType.majesticons,
-                        Majesticon.chevronLeftLine,
-                        color: appStyle.colors.textSecondary,
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => Navigator.of(context).pop(),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 8, 16, 8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Transform.translate(
+                        offset: const Offset(-8, 0),
+                        child: FirkaIconWidget(
+                          FirkaIconType.majesticons,
+                          Majesticon.chevronLeftLine,
+                          color: appStyle.colors.textSecondary,
+                        ),
                       ),
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ),
-                  Transform.translate(
-                    offset: const Offset(-4, 1),
-                    child: Text(
-                      item.title,
-                      style: appStyle.fonts.B_16R.apply(
-                        color: appStyle.colors.textPrimary,
+                      Transform.translate(
+                        offset: const Offset(-8, 1),
+                        child: Text(
+                          item.title,
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
-              SizedBox(height: 13),
+              SizedBox(height: 5),
             ],
           ),
         );
@@ -174,21 +180,42 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
               color: appStyle.colors.accent,
             ),
           );
-          cardWidgets.add(SizedBox(width: 8));
+          cardWidgets.add(SizedBox(width: 12 * scale));
         }
 
         cardWidgets.add(
-          Text(
-            item.title,
-            style: appStyle.fonts.B_16SB.apply(
-              color: appStyle.colors.textPrimary,
-            ),
-          ),
+          item.subtitle == null
+              ? Text(
+                  item.title,
+                  style: appStyle.fonts.B_16SB.apply(
+                    color: appStyle.colors.textPrimary,
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 2,
+                  children: [
+                    Text(
+                      item.title,
+                      style: appStyle.fonts.B_16SB
+                          .apply(color: appStyle.colors.textPrimary)
+                          .copyWith(height: 1.1),
+                    ),
+                    Text(
+                      item.subtitle!,
+                      style: appStyle.fonts.B_14R
+                          .apply(color: appStyle.colors.textSecondary)
+                          .copyWith(height: 1.1),
+                    ),
+                  ],
+                ),
         );
 
         widgets.add(
           GestureDetector(
             onTap: () {
+              if (item.children.isEmpty && item.redirectTo == null) return;
               if (item.redirectTo != null && item.redirectTo == "discord") {
                 launchUrlString(
                   "https://discord.com/invite/firka-1111649116020285532",
@@ -204,6 +231,8 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
             },
             child: item.redirectTo != null
                 ? FirkaCard(
+                    height: settingsItemHeight * scale,
+                    rounding: settingsItemRounding * scale,
                     left: cardWidgets,
                     right: [
                       RotationTransition(
@@ -217,7 +246,11 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                       ),
                     ],
                   )
-                : FirkaCard(left: cardWidgets),
+                : FirkaCard(
+                    height: settingsItemHeight * scale,
+                    rounding: settingsItemRounding * scale,
+                    left: cardWidgets,
+                  ),
           ),
         );
 
@@ -231,7 +264,8 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         widgets.add(
           GestureDetector(
             child: FirkaCard(
-              height: 52 + 12,
+              height: settingsItemHeight * scale,
+              rounding: settingsItemRounding * scale,
               left: [
                 item.iconType != null
                     ? Row(
@@ -270,7 +304,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         continue;
       }
       if (item is SettingsUiBoolean) {
-        widgets.add(buildBoolRow(item, settings, setState));
+        widgets.add(buildBoolRow(context, item, settings, setState));
 
         continue;
       }
@@ -282,7 +316,8 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
           if (i == activeIndex) {
             widgets.add(
               FirkaCard(
-                height: 52 + 12,
+                height: settingsItemHeight * scale,
+              rounding: settingsItemRounding * scale,
                 left: [
                   Text(
                     k,
@@ -320,7 +355,8 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
             widgets.add(
               GestureDetector(
                 child: FirkaCard(
-                  height: 52 + 12,
+                  height: settingsItemHeight * scale,
+              rounding: settingsItemRounding * scale,
                   left: [
                     Text(
                       k,
@@ -388,6 +424,8 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         widgets.add(
           GestureDetector(
             child: FirkaCard(
+              height: settingsItemHeight * scale,
+              rounding: settingsItemRounding * scale,
               left: [
                 item.iconType != null
                     ? Row(
@@ -437,21 +475,16 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
         child: Scaffold(
           backgroundColor: appStyle.colors.background,
           body: SafeArea(
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height,
-              child: Stack(
-                children: [
-                  Padding(
-                    padding: EdgeInsetsGeometry.all(20),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: body,
-                      ),
-                    ),
+            child: Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: body,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

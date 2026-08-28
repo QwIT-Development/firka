@@ -35,9 +35,20 @@ class SettingsRegistry {
   static const selectedGradeThemeId = StringSetting(id: 1031, defaultValue: "firka");
   static const mockBackendEnabled = BoolSetting(id: 1032, defaultValue: false);
   static const mockBackendUrl = StringSetting(id: 1033, defaultValue: "http://10.0.0.144:8090");
+  static const lastSeen = StringSetting(id: 1034, defaultValue: "{}");
+  static const surpriseGrades = BoolSetting(id: 1035, defaultValue: true);
+  static const seasonalAppIcons = BoolSetting(id: 1036, defaultValue: true);
+  static const uwuMode = BoolSetting(id: 1037, defaultValue: false);
+  static const notifyAll = BoolSetting(id: 1038, defaultValue: true);
+  static const notifyGrades = BoolSetting(id: 1039, defaultValue: true);
+  static const notifyHomeworkTests = BoolSetting(id: 1040, defaultValue: true);
+  static const notifyAbsences = BoolSetting(id: 1041, defaultValue: true);
+  static const notifyLessons = BoolSetting(id: 1042, defaultValue: true);
+  static const notifyMessages = BoolSetting(id: 1043, defaultValue: true);
+  static const notifyMutedSubjects = StringSetting(id: 1044, defaultValue: "[]");
 
   static const all = <Setting>[
-    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, liveActivityEnabled, liveActivityPrivacyEverDeclined, morningNotificationEnabled, morningNotificationTime, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl,
+    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, liveActivityEnabled, liveActivityPrivacyEverDeclined, morningNotificationEnabled, morningNotificationTime, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl, lastSeen, surpriseGrades, seasonalAppIcons, uwuMode, notifyAll, notifyGrades, notifyHomeworkTests, notifyAbsences, notifyLessons, notifyMessages, notifyMutedSubjects,
   ];
 }
 
@@ -74,4 +85,15 @@ extension SettingsAccessors on SettingsRepository {
   SilentlySettable<String> get selectedGradeThemeId => SilentlySettable(this, SettingsRegistry.selectedGradeThemeId);
   SilentlySettable<bool> get mockBackendEnabled => SilentlySettable(this, SettingsRegistry.mockBackendEnabled);
   SilentlySettable<String> get mockBackendUrl => SilentlySettable(this, SettingsRegistry.mockBackendUrl);
+  SilentlySettable<String> get lastSeen => SilentlySettable(this, SettingsRegistry.lastSeen);
+  SilentlySettable<bool> get surpriseGrades => SilentlySettable(this, SettingsRegistry.surpriseGrades);
+  SilentlySettable<bool> get seasonalAppIcons => SilentlySettable(this, SettingsRegistry.seasonalAppIcons);
+  SilentlySettable<bool> get uwuMode => SilentlySettable(this, SettingsRegistry.uwuMode);
+  SilentlySettable<bool> get notifyAll => SilentlySettable(this, SettingsRegistry.notifyAll);
+  SilentlySettable<bool> get notifyGrades => SilentlySettable(this, SettingsRegistry.notifyGrades);
+  SilentlySettable<bool> get notifyHomeworkTests => SilentlySettable(this, SettingsRegistry.notifyHomeworkTests);
+  SilentlySettable<bool> get notifyAbsences => SilentlySettable(this, SettingsRegistry.notifyAbsences);
+  SilentlySettable<bool> get notifyLessons => SilentlySettable(this, SettingsRegistry.notifyLessons);
+  SilentlySettable<bool> get notifyMessages => SilentlySettable(this, SettingsRegistry.notifyMessages);
+  SilentlySettable<String> get notifyMutedSubjects => SilentlySettable(this, SettingsRegistry.notifyMutedSubjects);
 }
