@@ -9,6 +9,7 @@ const _lockFileName = 'codegen-lock.yaml';
 
 void main() async {
   final root = _projectRoot();
+  print(root);
   var ran = false;
 
   if (_iconsOutOfDate(root)) {
@@ -56,7 +57,7 @@ void main() async {
     ran = true;
   }
 
-  if (_isarOutOfDate(root) || _isarGeneratedFilesMissing(root)) {
+  if (_isarOutOfDate(p.join(p.dirname(root), "firka_common")) || _isarGeneratedFilesMissing(p.join(p.dirname(root), "firka_common"))) {
     final inputs = _isarInputs(root);
     final hashes = _computeHashes(root, inputs);
     stdout.writeln(
