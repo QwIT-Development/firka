@@ -133,4 +133,5 @@ flutter:
           style: normal
 
 dependency_overrides:
+  html: 0.15.6
   vector_math: ^2.2.0
