@@ -9,6 +9,7 @@ const _lockFileName = 'codegen-lock.yaml';
 
 void main() async {
   final root = _projectRoot();
+  print(root);
   var ran = false;
 
   if (_iconsOutOfDate(root)) {
@@ -56,14 +57,15 @@ void main() async {
     ran = true;
   }
 
-  if (_isarOutOfDate(root) || _isarGeneratedFilesMissing(root)) {
-    final inputs = _isarInputs(root);
-    final hashes = _computeHashes(root, inputs);
+  var common = p.join(p.dirname(root), "firka_common");
+  if (_isarOutOfDate(common) || _isarGeneratedFilesMissing(common)) {
+    final inputs = _isarInputs(common);
+    final hashes = _computeHashes(common, inputs);
     stdout.writeln(
       'Isar generated dart files out of date or missing, running build_runner...',
     );
-    await _run('dart', ['run', 'build_runner', 'build'], root);
-    _updateLockWithHashes(root, 'isar', hashes);
+    await _run('dart', ['run', 'build_runner', 'build'], common);
+    _updateLockWithHashes(common, 'isar', hashes);
     ran = true;
   }
 
