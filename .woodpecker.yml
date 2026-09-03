@@ -42,4 +42,4 @@ steps:
     commands:
       - export PUB_CACHE="$CI_WORKSPACE/.pub-cache"
       - cd firka
-      - flutter build apk --release
+      - flutter build appbundle --release
