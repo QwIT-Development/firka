@@ -37,9 +37,21 @@ steps:
       - cd firka
       - dart run scripts/codegen.dart
 
-  - name: build
+  - name: build-release
     image: git.firka.app/firka/firka-builder:latest
+    when:
+      - branch: main
     commands:
       - export PUB_CACHE="$CI_WORKSPACE/.pub-cache"
       - cd firka
       - flutter build appbundle --release
+
+  - name: build-debug
+    image: git.firka.app/firka/firka-builder:latest
+    when:
+      - branch:
+          exclude: main
+    commands:
+      - export PUB_CACHE="$CI_WORKSPACE/.pub-cache"
+      - cd firka
+      - flutter build apk --debug --split-per-abi
