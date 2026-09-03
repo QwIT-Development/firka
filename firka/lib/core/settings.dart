@@ -28,6 +28,8 @@ bool isMorningNotificationEnabled() =>
 bool isWearOsSupportEnabled() =>
     Platform.isAndroid && Settings.wearOsSupport.value;
 
+bool isPushNotificationsEnabled() => Settings.notifyAll.value;
+
 bool isDebug() => kDebugMode;
 
 bool isDebugIOS() => kDebugMode && Platform.isIOS;
@@ -298,10 +300,62 @@ SettingsUiGroup buildSettingsTree(AppLocalizations l10n) {
       FirkaIconType.majesticons,
       Majesticon.bellSolid,
       l10n.s_notifications,
-      const [],
-      always,
+      [
+        SettingsUiBackHeader(l10n.s_settings, always),
+        SettingsUiHeader(l10n.s_notifications, always),
+        SettingsUiPadding(23, always),
+        SettingsUiBoolean(
+          FirkaIconType.majesticons,
+          Majesticon.bellSolid,
+          l10n.s_notif_push_enabled,
+          SettingsRegistry.notifyAll,
+          always,
+        ),
+        SettingsUiHeaderSmall(l10n.s_notif_wakeup_interval_header, isPushNotificationsEnabled),
+        SettingsUiEnum(SettingsRegistry.notifyWakeupInterval, [
+          l10n.s_notif_wakeup_hourly,
+          l10n.s_notif_wakeup_two_hourly,
+        ], isPushNotificationsEnabled),
+        SettingsUiHeaderSmall(l10n.s_notif_categories_header, isPushNotificationsEnabled),
+        SettingsUiBoolean(
+          null,
+          null,
+          l10n.s_notif_grades,
+          SettingsRegistry.notifyGrades,
+          isPushNotificationsEnabled,
+        ),
+        SettingsUiBoolean(
+          null,
+          null,
+          l10n.s_notif_homework_tests,
+          SettingsRegistry.notifyHomeworkTests,
+          isPushNotificationsEnabled,
+        ),
+        SettingsUiBoolean(
+          null,
+          null,
+          l10n.s_notif_absences,
+          SettingsRegistry.notifyAbsences,
+          isPushNotificationsEnabled,
+        ),
+        SettingsUiBoolean(
+          null,
+          null,
+          l10n.s_notif_lessons,
+          SettingsRegistry.notifyLessons,
+          isPushNotificationsEnabled,
+        ),
+        SettingsUiBoolean(
+          null,
+          null,
+          l10n.s_notif_messages,
+          SettingsRegistry.notifyMessages,
+          isPushNotificationsEnabled,
+        ),
+      ],
+      isAndroid,
       null,
-      l10n.s_todo,
+      l10n.s_notifications_desc,
     ),
     SettingsUiSubGroup(
       FirkaIconType.majesticons,

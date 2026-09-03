@@ -19,6 +19,11 @@ enum TitleFont {
 
 enum TitleCapitalization { lower, normal, upper }
 
+/// How often the background wakeup push (that triggers a silent data refresh
+/// + local notification) should fire. Backed by FCM topics `wakeup-hourly`/
+/// `wakeup-2hourly` sent by the `fcm-notifier` backend service.
+enum NotifyWakeupInterval { hourly, twoHourly }
+
 abstract class SettingsSchema {
   @DoubleSetting(id: 1001, defaultValue: 0, min: 0, max: 120)
   double get bellDelay;
@@ -181,4 +186,11 @@ abstract class SettingsSchema {
 
   @StringSetting(id: 1044, defaultValue: "[]")
   String get notifyMutedSubjects;
+
+  @EnumSetting(
+    id: 1045,
+    defaultValue: NotifyWakeupInterval.hourly,
+    values: NotifyWakeupInterval.values,
+  )
+  NotifyWakeupInterval get notifyWakeupInterval;
 }

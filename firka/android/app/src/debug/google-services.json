@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "219357380322",
+    "project_id": "firka-4633b",
+    "storage_bucket": "firka-4633b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219357380322:android:5b776732799faa5c08a8bb",
+        "android_client_info": {
+          "package_name": "app.firka.naplo.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-3VE9--eKRDGm1UW_P9JLaM2Hyd2Wfx4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

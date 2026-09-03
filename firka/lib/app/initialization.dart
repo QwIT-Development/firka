@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka_common/data/models/token_model.dart';
+import 'package:firka/services/fcm_service.dart';
 import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/core/settings/settings_effects.dart';
 import 'package:firka/core/settings/settings_repository.dart';
@@ -305,6 +306,14 @@ Future<void> initializeApp() async {
     } catch (e, st) {
       logger.severe('Failed to initialize LiveActivity: $e', e, st);
     }
+  }
+
+  try {
+    await FcmService.initialize().timeout(const Duration(seconds: 8));
+  } on TimeoutException catch (e, st) {
+    logger.warning('FcmService init timed out: $e', e, st);
+  } catch (e, st) {
+    logger.severe('Failed to initialize FcmService: $e', e, st);
   }
 
   await _initData(initData);

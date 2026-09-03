@@ -3,6 +3,7 @@ import "dart:io";
 import "package:dart_jsonwebtoken/dart_jsonwebtoken.dart";
 import "package:firka/app/app_state.dart";
 import "package:firka/app/initialization.dart";
+import "package:firka/services/fcm_service.dart";
 import "package:firka/services/live_activity_service.dart";
 import "package:firka/services/watch_sync_helper.dart";
 import "package:firka/ui/shared/firka_icon.dart";
@@ -141,6 +142,7 @@ class SettingsAccountPickerView extends StatelessWidget {
     }
 
     final previousAccountId = data.client!.cache.token.key;
+    await FcmService.onUserLogout();
     if (Platform.isIOS) {
       await LiveActivityService.onUserLogout();
       try {
@@ -161,6 +163,13 @@ class SettingsAccountPickerView extends StatelessWidget {
 
     await data.settings.setSelectedAccountKey(token.key);
     await initializeApp();
+
+    if (data.client != null) {
+      await FcmService.onUserLogin(
+        client: data.client!,
+        settingsStore: data.settings,
+      );
+    }
 
     if (Platform.isIOS) {
       var watchReachable = false;
@@ -207,6 +216,7 @@ class SettingsAccountPickerView extends StatelessWidget {
 
   Future<void> _logout(BuildContext context) async {
     try {
+      await FcmService.onUserLogout();
       if (Platform.isIOS) {
         await LiveActivityService.onUserLogout();
       }
