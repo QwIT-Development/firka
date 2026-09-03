@@ -12,6 +12,19 @@ class LastSeenHelper {
   static const omissions = "omissions";
   static const messages = "messages";
 
+  /// Separate dedup namespace for the FCM wakeup notification pipeline
+  /// (`NotificationDiffService`), distinct from the kinds above: those track
+  /// what the user has manually *opened* in the UI (e.g. for the "surprise
+  /// grades" reveal), which a background push must not silently mark as seen.
+  static const notifGrades = "notif_grades";
+  static const notifHomework = "notif_homework";
+  static const notifTests = "notif_tests";
+  static const notifAbsences = "notif_absences";
+  static const notifLessons = "notif_lessons";
+  static const notifLessonsCancelled = "notif_lessons_cancelled";
+  static const notifLessonsSubstituted = "notif_lessons_substituted";
+  static const notifMessages = "notif_messages";
+
   static Map<String, dynamic> _read() {
     try {
       final decoded = jsonDecode(Settings.lastSeen.value);
