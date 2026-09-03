@@ -24,6 +24,7 @@ import 'package:firka/core/state/firka_state.dart';
 import 'settings_account_picker.dart';
 import 'settings_app_icon_picker.dart';
 import 'settings_bool_row.dart';
+import 'settings_fcm_status.dart';
 import 'settings_metrics.dart';
 import 'settings_license_page.dart';
 import 'settings_logs.dart';
@@ -457,6 +458,10 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
       }
       if (item is SettingsUiLogs) {
         widgets.add(SettingsLogsView(data: widget.data));
+        continue;
+      }
+      if (item is SettingsUiFcmStatus) {
+        widgets.add(SettingsFcmStatusView(data: widget.data));
         continue;
       }
     }

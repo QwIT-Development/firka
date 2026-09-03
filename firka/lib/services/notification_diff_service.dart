@@ -242,4 +242,98 @@ class NotificationDiffService {
 
   static String _fmtDateTime(DateTime d) =>
       '${_fmtDate(d)} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
+  /// Sample content per category for [showTestNotification]. `titleSingle`
+  /// matches the wording `_checkAccount` uses for a lone new item on a
+  /// single-account device; `titleMulti` drops the possessive so it reads
+  /// naturally with a "(username)" suffix appended per account.
+  static const _testContent = {
+    LastSeenHelper.notifGrades: (
+      titleSingle: 'Új jegyed érkezett',
+      titleMulti: 'Új jegy érkezett',
+      body: 'Matematika: 5 (2026-01-02)',
+    ),
+    LastSeenHelper.notifHomework: (
+      titleSingle: 'Új házi feladatod érkezett',
+      titleMulti: 'Új házi feladat érkezett',
+      body: 'Történelem: Olvasd el a 24. fejezetet (határidő: 2026-01-05)',
+    ),
+    LastSeenHelper.notifTests: (
+      titleSingle: 'Új témazáród/dolgozatod érkezett',
+      titleMulti: 'Új témazáró/dolgozat érkezett',
+      body: 'Fizika: Mechanika témazáró (2026-01-09 10:00)',
+    ),
+    LastSeenHelper.notifAbsences: (
+      titleSingle: 'Új hiányzásod/késésed érkezett',
+      titleMulti: 'Új hiányzás/késés érkezett',
+      body: 'Kémia: Igazolatlan hiányzás (2026-01-02 09:00)',
+    ),
+    LastSeenHelper.notifLessons: (
+      titleSingle: 'Órarendváltozás történt',
+      titleMulti: 'Órarendváltozás történt',
+      body: 'Kémia (A-002, 2026-01-06 12:00)',
+    ),
+    LastSeenHelper.notifLessonsCancelled: (
+      titleSingle: 'Elmaradt órád van',
+      titleMulti: 'Elmaradt óra',
+      body: 'Testnevelés - Nagy Béla (2026-01-06 12:00)',
+    ),
+    LastSeenHelper.notifLessonsSubstituted: (
+      titleSingle: 'Helyettesítés van az órarendedben',
+      titleMulti: 'Helyettesítés',
+      body: 'Kémia: Nagy Béla -> Kovács Anna (2026-01-06 09:50)',
+    ),
+    LastSeenHelper.notifMessages: (
+      titleSingle: 'Új üzeneted érkezett',
+      titleMulti: 'Új üzenet érkezett',
+      body: 'Nulladik óra átnevezése első órára - Müller Attila (2026-01-15 07:42)',
+    ),
+  };
+
+  static const _simulatedUsernames = ['Gipsz Jakab', 'Kis Anna'];
+
+  /// Fires a local notification with placeholder content for [kind], for
+  /// eyeballing what each category looks like on-device without needing
+  /// real new data from the backend. Bypasses last-seen diffing entirely,
+  /// so it always shows regardless of what's already been seen.
+  ///
+  /// With a single account logged in (the common case), shows one
+  /// notification with the personalized singular title. With more than one
+  /// account, fires one per account instead, with the impersonal title
+  /// suffixed by that account's username so they're distinguishable — this
+  /// mirrors what a real multi-account wakeup would look like, since
+  /// [checkAll] runs the diff separately per account. Pass
+  /// [simulateMultiAccount] to preview that layout without needing a second
+  /// account actually logged in on this device.
+  static Future<void> showTestNotification(
+    String kind, {
+    bool simulateMultiAccount = false,
+  }) async {
+    final content = _testContent[kind];
+    if (content == null) return;
+    await LocalNotificationService.init();
+
+    final usernames = simulateMultiAccount
+        ? _simulatedUsernames
+        : (await isarInit.tokenModels.where().findAll())
+              .map((t) => t.username)
+              .toList();
+
+    if (usernames.length <= 1) {
+      await LocalNotificationService.show(
+        id: _notificationId(0, kind),
+        title: content.titleSingle,
+        body: content.body,
+      );
+      return;
+    }
+
+    for (var i = 0; i < usernames.length; i++) {
+      await LocalNotificationService.show(
+        id: _notificationId(i + 1, kind),
+        title: '${content.titleMulti} (${usernames[i]})',
+        body: content.body,
+      );
+    }
+  }
 }

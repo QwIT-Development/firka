@@ -157,6 +157,10 @@ class SettingsUiLogs extends SettingsUiNode {
   const SettingsUiLogs(super.visible);
 }
 
+class SettingsUiFcmStatus extends SettingsUiNode {
+  const SettingsUiFcmStatus(super.visible);
+}
+
 class SettingsUiLicensePage extends SettingsUiNode {
   const SettingsUiLicensePage(super.visible);
 }

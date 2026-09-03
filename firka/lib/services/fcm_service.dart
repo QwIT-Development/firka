@@ -12,11 +12,18 @@ import 'package:firka/app/app_state.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/firebase_options.dart';
+import 'package:firka/services/fcm_headless_bootstrap.dart';
+import 'package:firka/services/local_notification_service.dart';
 import 'package:firka/services/notification_diff_service.dart';
 
 const _wakeupDataType = 'wakeup';
 const _hourlyTopic = 'wakeup-hourly';
 const _twoHourlyTopic = 'wakeup-2hourly';
+const _topicPrefix = '/topics/';
+
+// Fixed id (outside the hash-derived range used by NotificationDiffService)
+// so the debug "message received" notification always updates in place.
+const _debugMessageNotificationId = 900001;
 
 /// Must be a top-level function: FirebaseMessaging invokes it in its own
 /// background isolate, where none of firka's normal app state is set up.
@@ -26,7 +33,13 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
   if (message.data['type'] == _wakeupDataType) {
     await NotificationDiffService.checkAll();
+  } else {
+    // checkAll() bootstraps Settings itself; other message types need it
+    // bootstrapped explicitly before FcmService can read the debug toggle.
+    await bootstrapHeadless();
   }
+
+  await FcmService._maybeShowDebugMessageNotification(message);
 }
 
 /// Coordinates FCM push notification registration with firka's backend.
@@ -44,6 +57,27 @@ class FcmService {
 
   static bool _isInitialized = false;
   static String? _cachedToken;
+  static DateTime? _lastTokenRefreshAt;
+
+  /// Debug/status accessors for the developer settings screen.
+  static bool get isInitialized => _isInitialized;
+  static String? get cachedToken => _cachedToken;
+  static DateTime? get lastTokenRefreshAt => _lastTokenRefreshAt;
+  static String get subscribedTopic =>
+      _topicFor(Settings.notifyWakeupInterval.value);
+
+  /// Current notification permission status, without prompting for it.
+  /// Returns null if Firebase hasn't been initialized yet.
+  static Future<AuthorizationStatus?> permissionStatus() async {
+    if (!_isInitialized) return null;
+    try {
+      final settings = await FirebaseMessaging.instance.getNotificationSettings();
+      return settings.authorizationStatus;
+    } catch (e) {
+      _logger.warning('Error reading notification permission status: $e');
+      return null;
+    }
+  }
 
   /// Sets up Firebase + the background handler and starts listening for
   /// token refreshes. Safe to call once at app startup, before login.
@@ -68,6 +102,7 @@ class FcmService {
 
       FirebaseMessaging.instance.onTokenRefresh.listen((token) {
         _cachedToken = token;
+        _lastTokenRefreshAt = DateTime.now();
         _logger.info('FCM token refreshed');
         unawaited(_registerIfLoggedIn());
       });
@@ -79,12 +114,42 @@ class FcmService {
         if (message.data['type'] == _wakeupDataType) {
           unawaited(NotificationDiffService.checkAll());
         }
+        unawaited(_maybeShowDebugMessageNotification(message));
       });
 
       _isInitialized = true;
       _logger.info('FcmService initialized');
     } catch (e, st) {
       _logger.severe('Failed to initialize FcmService: $e', e, st);
+    }
+  }
+
+  /// Best-effort label for which channel a message arrived on: the topic
+  /// name for topic-targeted messages (FCM sets `from` to
+  /// `/topics/<name>`), the `type` data field otherwise, or the raw
+  /// sender id as a last resort.
+  static String _channelLabel(RemoteMessage message) {
+    final from = message.from;
+    if (from != null && from.startsWith(_topicPrefix)) {
+      return from.substring(_topicPrefix.length);
+    }
+    final type = message.data['type'];
+    if (type != null) return type.toString();
+    return from ?? 'unknown';
+  }
+
+  static Future<void> _maybeShowDebugMessageNotification(
+    RemoteMessage message,
+  ) async {
+    if (!Settings.fcmDebugNotifyOnMessage.value) return;
+    try {
+      await LocalNotificationService.show(
+        id: _debugMessageNotificationId,
+        title: 'FCM message received',
+        body: '${DateTime.now().toIso8601String()} - ${_channelLabel(message)}',
+      );
+    } catch (e, st) {
+      _logger.warning('Failed to show debug FCM message notification: $e', e, st);
     }
   }
 

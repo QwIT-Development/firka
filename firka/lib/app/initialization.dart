@@ -202,6 +202,13 @@ Future<void> _initData(AppInitialization init) async {
   logger.fine("Initializing kréta client as: ${token.username}");
   init.client = KretaClient(token);
 
+  // A resumed session (app reopened with an already-logged-in account)
+  // never goes through login_finish.dart's onUserLogin call, so without
+  // this the FCM token would only ever get (re-)registered for a user who
+  // explicitly logs out and back in. Safe to call on every startup:
+  // onUserLogin() itself no-ops if notifyAll is off or permission is denied.
+  unawaited(FcmService.onUserLogin(client: init.client!));
+
   // Don't block first paint on the network: render whatever is already
   // cached, then stream in student/timetable/grades/etc. as they arrive.
   unawaited(() async {

@@ -47,9 +47,10 @@ class SettingsRegistry {
   static const notifyMessages = BoolSetting(id: 1043, defaultValue: true);
   static const notifyMutedSubjects = StringSetting(id: 1044, defaultValue: "[]");
   static const notifyWakeupInterval = EnumSetting(id: 1045, defaultValue: NotifyWakeupInterval.hourly, values: NotifyWakeupInterval.values);
+  static const fcmDebugNotifyOnMessage = BoolSetting(id: 1046, defaultValue: false);
 
   static const all = <Setting>[
-    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, liveActivityEnabled, liveActivityPrivacyEverDeclined, morningNotificationEnabled, morningNotificationTime, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl, lastSeen, surpriseGrades, seasonalAppIcons, uwuMode, notifyAll, notifyGrades, notifyHomeworkTests, notifyAbsences, notifyLessons, notifyMessages, notifyMutedSubjects, notifyWakeupInterval,
+    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, liveActivityEnabled, liveActivityPrivacyEverDeclined, morningNotificationEnabled, morningNotificationTime, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl, lastSeen, surpriseGrades, seasonalAppIcons, uwuMode, notifyAll, notifyGrades, notifyHomeworkTests, notifyAbsences, notifyLessons, notifyMessages, notifyMutedSubjects, notifyWakeupInterval, fcmDebugNotifyOnMessage,
   ];
 }
 
@@ -98,4 +99,5 @@ extension SettingsAccessors on SettingsRepository {
   SilentlySettable<bool> get notifyMessages => SilentlySettable(this, SettingsRegistry.notifyMessages);
   SilentlySettable<String> get notifyMutedSubjects => SilentlySettable(this, SettingsRegistry.notifyMutedSubjects);
   SilentlySettable<NotifyWakeupInterval> get notifyWakeupInterval => SilentlySettable(this, SettingsRegistry.notifyWakeupInterval);
+  SilentlySettable<bool> get fcmDebugNotifyOnMessage => SilentlySettable(this, SettingsRegistry.fcmDebugNotifyOnMessage);
 }

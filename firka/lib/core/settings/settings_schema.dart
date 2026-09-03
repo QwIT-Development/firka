@@ -193,4 +193,7 @@ abstract class SettingsSchema {
     values: NotifyWakeupInterval.values,
   )
   NotifyWakeupInterval get notifyWakeupInterval;
+
+  @BoolSetting(id: 1046, defaultValue: false)
+  bool get fcmDebugNotifyOnMessage;
 }

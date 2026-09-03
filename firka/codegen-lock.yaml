@@ -8,9 +8,9 @@ icons:
 l10n:
   "l10n.yml": "a57bc304cac4a2b0235593586f17f400a5165d67fc9aadeaa11893cfa36ee082"
   "lib/l10n/app_pl.arb": "a8426455757e587c7635c3a62c650a4aae2a0cac1de1175e8ab7fb0d3b387537"
-  "lib/l10n/app_en.arb": "233a0d5f7a318437e89d1dfab69b84ac94d124c33bcafc23101c89a44e0e0247"
-  "lib/l10n/app_hu.arb": "73de4e8834ed8b85336ed8b562e6725128d770229c62910df4a982ba69140ad7"
   "lib/l10n/app_de.arb": "c498950bbc917e35b1910451ad9fbd4e625db89151f07558e846a7c119a583af"
+  "lib/l10n/app_en.arb": "159405752b5e73eedbe546a59567550091926a37cf9cf6ce78dd58f1a0dd1d4b"
+  "lib/l10n/app_hu.arb": "c7fba2a8f91217433698d766e9451d8fad86ae71021adf714639fc3907a34891"
 isar:
   "lib/data/models/app_settings_model.dart": "5eb5af345f1347f104257f0999763650fe2673f9da1754bd12d3f756fe5c9723"
   "lib/data/models/token_model.dart": "8c957cd07e473827d78fd8fd4fb6c1336b636a69c25c93618e1e7f94b7cf0683"
