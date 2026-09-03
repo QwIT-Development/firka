@@ -19,20 +19,27 @@ steps:
       - echo "$UPLOAD_KEYSTORE_B64" | base64 -d > secrets/upload-keystore.jks
       - echo "$KEYSTORE_PROPERTIES_B64" | base64 -d > secrets/keystore.properties
 
+  # Each step runs in a fresh container from the builder image -- only the
+  # workspace volume is shared between them. Pointing PUB_CACHE at a
+  # workspace-local dir (instead of the image's default /root/.pub-cache)
+  # is what lets `flutter pub get`'s downloads survive into later steps.
   - name: dependencies
     image: git.firka.app/firka/firka-builder:latest
     commands:
+      - export PUB_CACHE="$CI_WORKSPACE/.pub-cache"
       - cd firka
       - flutter pub get
 
   - name: codegen
     image: git.firka.app/firka/firka-builder:latest
     commands:
+      - export PUB_CACHE="$CI_WORKSPACE/.pub-cache"
       - cd firka
       - dart run scripts/codegen.dart
 
   - name: build
     image: git.firka.app/firka/firka-builder:latest
     commands:
+      - export PUB_CACHE="$CI_WORKSPACE/.pub-cache"
       - cd firka
       - flutter build apk --release
