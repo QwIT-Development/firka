@@ -1,0 +1,38 @@
+when:
+  - event: [push, pull_request]
+  - event: manual
+
+steps:
+  - name: submodules
+    image: git.firka.app/firka/firka-builder:latest
+    commands:
+      - git submodule update --init --recursive
+
+  - name: secrets
+    image: git.firka.app/firka/firka-builder:latest
+    environment:
+      UPLOAD_KEYSTORE_B64:
+        from_secret: upload_keystore_b64
+      KEYSTORE_PROPERTIES_B64:
+        from_secret: keystore_properties_b64
+    commands:
+      - echo "$UPLOAD_KEYSTORE_B64" | base64 -d > secrets/upload-keystore.jks
+      - echo "$KEYSTORE_PROPERTIES_B64" | base64 -d > secrets/keystore.properties
+
+  - name: dependencies
+    image: git.firka.app/firka/firka-builder:latest
+    commands:
+      - cd firka
+      - flutter pub get
+
+  - name: codegen
+    image: git.firka.app/firka/firka-builder:latest
+    commands:
+      - cd firka
+      - dart run scripts/codegen.dart
+
+  - name: build
+    image: git.firka.app/firka/firka-builder:latest
+    commands:
+      - cd firka
+      - flutter build apk --release
