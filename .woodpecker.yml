@@ -55,3 +55,74 @@ steps:
       - export PUB_CACHE="$CI_WORKSPACE/.pub-cache"
       - cd firka
       - flutter build apk --debug --split-per-abi
+
+  - name: publish-release
+    image: woodpeckercommunity/plugin-gitea-package:latest
+    pull: true
+    when:
+      - branch: main
+    settings:
+      user:
+        from_secret: gitea_username
+      password:
+        from_secret: gitea_token
+      owner: firka
+      package_name: firka
+      package_version: ${CI_COMMIT_SHA}
+      file_source: ./firka/build/app/outputs/bundle/release/app-release.aab
+      file_name: app-release.aab
+      update: 'true'
+
+  - name: publish-debug-arm64-v8a
+    image: woodpeckercommunity/plugin-gitea-package:latest
+    pull: true
+    when:
+      - branch:
+          exclude: main
+    settings:
+      user:
+        from_secret: gitea_username
+      password:
+        from_secret: gitea_token
+      owner: firka
+      package_name: firka
+      package_version: ${CI_COMMIT_SHA}
+      file_source: ./firka/build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk
+      file_name: app-arm64-v8a-debug.apk
+      update: 'true'
+
+  - name: publish-debug-armeabi-v7a
+    image: woodpeckercommunity/plugin-gitea-package:latest
+    pull: true
+    when:
+      - branch:
+          exclude: main
+    settings:
+      user:
+        from_secret: gitea_username
+      password:
+        from_secret: gitea_token
+      owner: firka
+      package_name: firka
+      package_version: ${CI_COMMIT_SHA}
+      file_source: ./firka/build/app/outputs/flutter-apk/app-armeabi-v7a-debug.apk
+      file_name: app-armeabi-v7a-debug.apk
+      update: 'true'
+
+  - name: publish-debug-x86_64
+    image: woodpeckercommunity/plugin-gitea-package:latest
+    pull: true
+    when:
+      - branch:
+          exclude: main
+    settings:
+      user:
+        from_secret: gitea_username
+      password:
+        from_secret: gitea_token
+      owner: firka
+      package_name: firka
+      package_version: ${CI_COMMIT_SHA}
+      file_source: ./firka/build/app/outputs/flutter-apk/app-x86_64-debug.apk
+      file_name: app-x86_64-debug.apk
+      update: 'true'
