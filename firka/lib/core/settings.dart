@@ -4,7 +4,6 @@ import "package:firka/core/settings/settings_repository.dart";
 import "package:firka/core/settings/settings_schema.dart";
 import "package:firka/core/settings/settings_ui.dart";
 import "package:firka/l10n/app_localizations.dart";
-import "package:firka/services/live_activity_service.dart";
 import "package:firka/ui/shared/firka_icon.dart";
 import "package:flutter/foundation.dart";
 import "package:majesticons_flutter/majesticons_flutter.dart";
@@ -17,22 +16,12 @@ bool isDeveloper() => isDebug() || Settings.developerOptsEnabled.value;
 
 bool isAndroid() => Platform.isAndroid;
 
-bool isIOS() => Platform.isIOS;
-
-bool isLiveActivityEnabled() =>
-    Platform.isIOS && Settings.liveActivityEnabled.value;
-
-bool isMorningNotificationEnabled() =>
-    Platform.isIOS && Settings.morningNotificationEnabled.value;
-
 bool isWearOsSupportEnabled() =>
     Platform.isAndroid && Settings.wearOsSupport.value;
 
 bool isPushNotificationsEnabled() => Settings.notifyAll.value;
 
 bool isDebug() => kDebugMode;
-
-bool isDebugIOS() => kDebugMode && Platform.isIOS;
 
 Map<String, String> appIconLabels(AppLocalizations l10n) => {
   "ace": l10n.ic_ace,
@@ -266,13 +255,6 @@ SettingsUiGroup buildSettingsTree(AppLocalizations l10n) {
           SettingsRegistry.leftHandedMode,
           never,
         ),
-        SettingsUiBoolean(
-          null,
-          null,
-          l10n.s_ag_privacy_ever_declined,
-          SettingsRegistry.liveActivityPrivacyEverDeclined,
-          never,
-        ),
         SettingsUiHeaderSmall(l10n.s_ag_language_header, always),
         SettingsUiEnum(SettingsRegistry.language, [
           l10n.s_ag_language_auto,
@@ -374,45 +356,6 @@ SettingsUiGroup buildSettingsTree(AppLocalizations l10n) {
         ),
       ],
       isAndroid,
-    ),
-    SettingsUiSubGroup(
-      FirkaIconType.majesticons,
-      Majesticon.bellSolid,
-      l10n.s_n,
-      [
-        SettingsUiBackHeader(l10n.s_settings, always),
-        SettingsUiHeader(l10n.s_n, always),
-        SettingsUiPadding(23, always),
-        SettingsUiBoolean(
-          FirkaIconType.majesticons,
-          Majesticon.bellSolid,
-          l10n.s_n_morning,
-          SettingsRegistry.morningNotificationEnabled,
-          always,
-        ),
-        SettingsUiDouble(
-          FirkaIconType.majesticons,
-          Majesticon.clockSolid,
-          l10n.s_n_morning_time,
-          SettingsRegistry.morningNotificationTime,
-          isMorningNotificationEnabled,
-        ),
-        SettingsUiBoolean(
-          FirkaIconType.majesticons,
-          Majesticon.clockSolid,
-          l10n.s_n_live_activity,
-          SettingsRegistry.liveActivityEnabled,
-          always,
-        ),
-        SettingsUiButton(
-          FirkaIconType.majesticons,
-          Majesticon.bellSolid,
-          l10n.s_n_test,
-          isDebugIOS,
-          () async => LiveActivityService.sendTestNotification(),
-        ),
-      ],
-      isIOS,
     ),
     SettingsUiSubGroup(
       FirkaIconType.majesticons,

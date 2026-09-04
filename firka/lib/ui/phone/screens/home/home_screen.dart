@@ -1,11 +1,7 @@
-import 'dart:async';
 import 'dart:io';
 import 'package:firka/core/bloc/toast_cubit.dart';
 import 'package:firka/core/firka_bundle.dart';
-import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/core/settings.dart';
-import 'package:firka/core/settings/settings_repository.dart';
-import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +29,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends FirkaState<HomeScreen>
     with WidgetsBindingObserver {
   bool _disposed = false;
-  bool _didRunLiveActivityLogin = false;
   bool _hasCompletedFirstPrefetch = false;
 
   void _setupNotificationListener() {
@@ -52,42 +47,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
         }
       }
     });
-  }
-
-  void _setupWidgetDeepLinkListener() {
-    if (!Platform.isIOS) return;
-
-    final widgetChannel = MethodChannel('firka.app/widget_deep_link');
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      widgetChannel.invokeMethod<String>('getPendingDeepLink').then((link) {
-        if (link != null) _handleWidgetDeepLink(link);
-      });
-    });
-
-    widgetChannel.setMethodCallHandler((call) async {
-      if (call.method == 'onWidgetDeepLink') {
-        final link = call.arguments as String?;
-        if (link != null) _handleWidgetDeepLink(link);
-      }
-    });
-  }
-
-  void _handleWidgetDeepLink(String link) {
-    logger.info('Widget deep link received: $link');
-    switch (link) {
-      case 'home':
-        appRouter?.go('/home');
-        break;
-      case 'timetable':
-        appRouter?.go('/timetable');
-        break;
-      case 'grades':
-        appRouter?.go('/grades');
-        break;
-      default:
-        logger.warning('Unknown widget deep link: $link');
-    }
   }
 
   void prefetch() async {
@@ -113,21 +72,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
               "app.firka.naplo.glance.TimetableWidgetReceiver",
         );
       }
-
-      if (Platform.isIOS) {
-        if (!_didRunLiveActivityLogin) {
-          _didRunLiveActivityLogin = true;
-          final token = initData.client!.cache.token;
-          final studentName = token.username;
-          LiveActivityService.onUserLogin(
-            client: initData.client!,
-            studentName: studentName,
-            settingsStore: initData.settings,
-          ).catchError((e, st) {
-            logger.severe('LiveActivity registration failed: $e', e, st);
-          });
-        }
-      }
     } catch (e) {
       if (_disposed) return;
       (context);
@@ -149,21 +93,9 @@ class _HomeScreenState extends FirkaState<HomeScreen>
     WidgetsBinding.instance.addObserver(this);
 
     _setupNotificationListener();
-    _setupWidgetDeepLinkListener();
 
     prefetch();
     _preloadImages();
-
-    if (Platform.isIOS && Settings.betaWarning.value) {
-      Future.delayed(Duration(seconds: 3), () async {
-        await LiveActivityService.showConsentScreenIfNeeded();
-      });
-    }
-    if (Platform.isIOS) {
-      Future.delayed(const Duration(seconds: 4), () {
-        if (!_disposed) _runLiveActivityLoginIfNeeded();
-      });
-    }
   }
 
   void _preloadImages() async {
@@ -232,46 +164,6 @@ class _HomeScreenState extends FirkaState<HomeScreen>
       _prefetched = false;
       prefetch();
       setState(() {});
-
-      if (Platform.isIOS) {
-        _refreshLiveActivityOnResume();
-        _runLiveActivityLoginIfNeeded();
-      }
-    }
-  }
-
-  /// Fallback: if Live Activity login never ran (e.g. prefetch bailed on lifecycle
-  /// or fetchData didn't complete), run it once when app is resumed.
-  void _runLiveActivityLoginIfNeeded() {
-    if (_didRunLiveActivityLogin || _disposed) return;
-    Future.delayed(const Duration(milliseconds: 500), () async {
-      if (_disposed || _didRunLiveActivityLogin) return;
-      _didRunLiveActivityLogin = true;
-      final studentName = initData.client!.cache.token.username;
-      LiveActivityService.onUserLogin(
-        client: initData.client!,
-        studentName: studentName,
-        settingsStore: initData.settings,
-      ).catchError((e, st) {
-        _didRunLiveActivityLogin = false;
-        logger.severe('LiveActivity registration failed: $e', e, st);
-      });
-    });
-  }
-
-  void _refreshLiveActivityOnResume() async {
-    if (!_hasCompletedFirstPrefetch) return;
-    try {
-      final studentName = initData.client!.cache.token.username;
-      await LiveActivityService.checkAndUpdateTimetable(
-        client: initData.client!,
-        studentName: studentName,
-        settingsStore: initData.settings,
-      );
-    } catch (e) {
-      logger.warning(
-        '[Home] LiveActivity timetable update on resume failed: $e',
-      );
     }
   }
 

@@ -14,11 +14,11 @@ import 'package:firka_common/data/database.dart';
 /// the global `initData` (for `userAgent`/`toastCubit`) unconditionally, so
 /// something has to populate it before a background wakeup can fetch data.
 ///
-/// Deliberately skips everything UI/theming/watch-sync/live-activity
-/// related: those either don't apply headlessly or actively assume a
-/// running app (native platform channels registered on the main
-/// FlutterEngine, iCloud sync, etc). Idempotent per isolate — a warm
-/// background isolate handling multiple wakeups only bootstraps once.
+/// Deliberately skips everything UI/theming/watch-sync related: those
+/// either don't apply headlessly or actively assume a running app (native
+/// platform channels registered on the main FlutterEngine, etc). Idempotent
+/// per isolate — a warm background isolate handling multiple wakeups only
+/// bootstraps once.
 Future<void> bootstrapHeadless() async {
   if (initDone) return;
 

@@ -1,16 +1,10 @@
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:firka/api/client/kreta_client.dart';
-import 'package:firka/data/ios_widget_helper.dart';
 import 'package:firka_common/data/models/lesson_cache_model.dart';
 import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/debug_helper.dart';
-import 'package:firka/core/settings/settings_repository.dart';
-import 'package:firka/core/settings/settings_schema.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -108,145 +102,5 @@ class WidgetCacheHelper {
 
     final widgetFile = File(p.join(dataDir.path, "widget_state.json"));
     await widgetFile.writeAsString(jsonEncode(json));
-  }
-
-  /// Comprehensive iOS widget refresh that collects all necessary data
-  /// Call this on: app open, user switch, data refresh
-  static Future<void> refreshIOSWidgets(
-    KretaClient client,
-    SettingsRepository settings,
-  ) async {
-    if (!Platform.isIOS) return;
-
-    try {
-      final language = settings.get(SettingsRegistry.language);
-      String locale;
-      switch (language) {
-        case AppLanguage.hu:
-          locale = 'hu';
-          break;
-        case AppLanguage.en:
-          locale = 'en';
-          break;
-        case AppLanguage.de:
-          locale = 'de';
-          break;
-        case AppLanguage.auto:
-          locale = 'hu';
-      }
-
-      final themeBrightness = settings.get(SettingsRegistry.themeBrightness);
-      String theme;
-      switch (themeBrightness) {
-        case ThemeBrightness.light:
-          theme = 'light';
-          break;
-        case ThemeBrightness.dark:
-          theme = 'dark';
-          break;
-        case ThemeBrightness.auto:
-          theme =
-              SchedulerBinding.instance.platformDispatcher.platformBrightness ==
-                  Brightness.light
-              ? 'light'
-              : 'dark';
-      }
-
-      final now = timeNow();
-      final todayMidnight = DateTime(now.year, now.month, now.day);
-      final tomorrowMidnight = todayMidnight.add(Duration(days: 1));
-
-      await client.getLessons(
-        todayMidnight,
-        todayMidnight.add(Duration(hours: 23, minutes: 59)),
-      );
-      await client.getLessons(
-        tomorrowMidnight,
-        tomorrowMidnight.add(Duration(hours: 23, minutes: 59)),
-      );
-
-      final todayLessons = [];
-      final tomorrowLessons = [];
-
-      debugPrint(
-        'iOS widget refresh: ${todayLessons.length} today lessons, ${tomorrowLessons.length} tomorrow lessons',
-      );
-
-      List<Lesson> nextSchoolDayLessons = [];
-      DateTime? nextSchoolDayDate;
-      if (tomorrowLessons.isEmpty) {
-        for (int i = 2; i <= 7; i++) {
-          final dayMidnight = todayMidnight.add(Duration(days: i));
-          await client.getLessons(
-            dayMidnight,
-            dayMidnight.add(Duration(hours: 23, minutes: 59)),
-          );
-          final dayLessons = <Lesson>[];
-          if (dayLessons.isNotEmpty) {
-            nextSchoolDayLessons = dayLessons;
-            nextSchoolDayDate = dayMidnight;
-            debugPrint(
-              'iOS widget: Next school day found $i days ahead with ${dayLessons.length} lessons',
-            );
-            break;
-          }
-        }
-      }
-
-      final gradesResponse = await client.getGrades();
-      final grades = [];
-
-      debugPrint(
-        'iOS widget refresh: ${grades.length} grades fetched (cached: $gradesResponse)',
-      );
-
-      final Map<String, double> subjectAverages = {};
-      final HashSet<Subject> subjects = HashSet(
-        hashCode: (s) => s.uid.hashCode,
-        equals: (s, s2) => s.uid == s2.uid,
-      );
-
-      subjects.addAll(grades.map((g) => g.subject));
-
-      WidgetBreakInfo? currentBreak;
-
-      await IOSWidgetHelper.updateWidgetData(
-        locale: locale,
-        theme: theme,
-        todayLessons: [],
-        tomorrowLessons: [],
-        nextSchoolDayLessons: nextSchoolDayLessons,
-        nextSchoolDayDate: nextSchoolDayDate,
-        grades: [],
-        subjectAverages: subjectAverages,
-        overallAverage: 0.0,
-        currentBreak: currentBreak,
-      );
-
-      debugPrint('iOS widgets refreshed successfully');
-    } catch (e) {
-      debugPrint('Error refreshing iOS widgets: $e');
-    }
-  }
-
-  /// Clear iOS widget data (call on logout)
-  static Future<void> clearIOSWidgets() async {
-    if (!Platform.isIOS) return;
-
-    try {
-      await IOSWidgetHelper.updateWidgetData(
-        locale: 'hu',
-        theme: 'light',
-        todayLessons: [],
-        tomorrowLessons: [],
-        grades: [],
-        subjectAverages: {},
-        overallAverage: null,
-        currentBreak: null,
-      );
-      debugPrint('iOS widgets cleared');
-    } catch (e) {
-      debugPrint('Error clearing iOS widgets: $e');
-    }
   }
 }

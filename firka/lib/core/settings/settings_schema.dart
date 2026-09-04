@@ -89,25 +89,6 @@ abstract class SettingsSchema {
   @BoolSetting(id: 1018, defaultValue: true)
   bool get ttToastSubstitution;
 
-  @BoolSetting(id: 1019, defaultValue: false)
-  bool get liveActivityEnabled;
-
-  @BoolSetting(id: 1020, defaultValue: false)
-  bool get liveActivityPrivacyEverDeclined;
-
-  @BoolSetting(id: 1021, defaultValue: true)
-  bool get morningNotificationEnabled;
-
-  @DoubleSetting(
-    id: 1022,
-    defaultValue: 120,
-    min: 30,
-    max: 240,
-    precision: 0,
-    step: 15,
-  )
-  double get morningNotificationTime;
-
   @BoolSetting(id: 1023, defaultValue: true)
   bool get ttToastABTimetable;
 

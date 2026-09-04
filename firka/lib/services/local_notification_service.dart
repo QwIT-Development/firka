@@ -19,9 +19,8 @@ class LocalNotificationService {
     if (_initialized) return;
 
     const androidInit = AndroidInitializationSettings('ic_notification');
-    const iosInit = DarwinInitializationSettings();
     await _plugin.initialize(
-      const InitializationSettings(android: androidInit, iOS: iosInit),
+      const InitializationSettings(android: androidInit),
     );
 
     const channel = AndroidNotificationChannel(
@@ -60,7 +59,6 @@ class LocalNotificationService {
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
         ),
-        iOS: DarwinNotificationDetails(),
       ),
     );
   }

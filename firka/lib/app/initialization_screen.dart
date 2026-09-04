@@ -84,20 +84,8 @@ class _InitializationScreenState extends State<InitializationScreen> {
 
           FlutterNativeSplash.remove();
 
-          WatchSyncHelper.initialize();
           if (Platform.isAndroid) {
             WatchSyncHelper.setWearSyncMethodCallHandler();
-          }
-          if (Platform.isIOS) {
-            unawaited(() async {
-              try {
-                await WatchSyncHelper.sendLanguageToWatch();
-              } catch (e) {
-                logger.warning(
-                  '[Init] Failed to publish language to Watch after sync init: $e',
-                );
-              }
-            }());
           }
 
           if (!initData.hasWatchListener) {
@@ -115,11 +103,7 @@ class _InitializationScreenState extends State<InitializationScreen> {
                     final ctx = navigatorKey.currentContext;
                     if (ctx != null && ctx.mounted) {
                       logger.info('Watch init_data: ${jsonEncode(msg)}');
-                      showWearBottomSheet(
-                        ctx,
-                        initData,
-                        Platform.isAndroid ? msg['model'] : 'Apple Watch',
-                      );
+                      showWearBottomSheet(ctx, initData, msg['model']);
                     }
                   });
                   break;

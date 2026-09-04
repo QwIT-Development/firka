@@ -25,14 +25,9 @@ import 'package:firka/core/dev/mock_backend.dart';
 import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/core/debug_helper.dart';
 import 'package:firka_common/data/util.dart';
-import 'package:firka/services/watch_sync_helper.dart';
 import '../token_grant.dart';
 
-import 'dart:io';
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
-
-const _watchChannel = MethodChannel('app.firka/watch_sync');
 
 const backoffCount = 4;
 const backoffMin = 100;
@@ -244,13 +239,6 @@ class KretaClient {
   }
 
   Future<void> _setReauthFlag() async {
-    if (Platform.isIOS) {
-      try {
-        _watchChannel.invokeMethod('notifyReauthRequired');
-      } catch (e) {
-        debugPrint('[KretaClient] Watch reauth notification skipped: $e');
-      }
-    }
     _toastCubit.setActiveToast(ActiveToastType.reauth);
     debugPrint('[KretaClient] Reauth flag set');
   }
@@ -258,62 +246,8 @@ class KretaClient {
   Future<TokenModel> _refreshModelWithCrossDeviceLease(
     TokenModel sourceToken,
   ) async {
-    final studentIdNorm = sourceToken.key;
-    String? leaseOperationId;
-
-    try {
-      if (Platform.isIOS) {
-        final watchInstalled = await WatchSyncHelper.isWatchAppInstalled();
-        if (watchInstalled) {
-          final leaseReady = await WatchSyncHelper.waitForWatchRefreshLease(
-            studentIdNorm: studentIdNorm,
-          );
-          if (!leaseReady) {
-            throw Exception('watch_refresh_lease_timeout');
-          }
-          leaseOperationId = await WatchSyncHelper.acquireIPhoneRefreshLease(
-            studentIdNorm: studentIdNorm,
-          );
-          if (leaseOperationId == null) {
-            throw Exception('iphone_refresh_lease_acquire_failed');
-          }
-        }
-      }
-
-      final extended = await extendToken(sourceToken);
-      return TokenModel.fromResp(extended);
-    } finally {
-      if (Platform.isIOS && leaseOperationId != null) {
-        await WatchSyncHelper.releaseIPhoneRefreshLease(
-          studentIdNorm: studentIdNorm,
-          operationId: leaseOperationId,
-        );
-      }
-    }
-  }
-
-  Future<void> _syncTokenToAppleTargets(TokenModel token) async {
-    if (!Platform.isIOS) return;
-
-    final watchInstalled = await WatchSyncHelper.isWatchAppInstalled();
-    if (!watchInstalled) {
-      debugPrint(
-        '[KretaClient] Skipping Apple token sync because no paired Watch app is installed',
-      );
-      return;
-    }
-
-    try {
-      await WatchSyncHelper.saveTokenToiCloud(token);
-    } catch (e) {
-      debugPrint('[KretaClient] iCloud token sync skipped: $e');
-    }
-
-    try {
-      await WatchSyncHelper.sendTokenToWatch();
-    } catch (e) {
-      debugPrint('[KretaClient] Watch token sync skipped: $e');
-    }
+    final extended = await extendToken(sourceToken);
+    return TokenModel.fromResp(extended);
   }
 
   Future<bool> recoverToken() async {
@@ -333,90 +267,10 @@ class KretaClient {
       });
 
       cache.token = tokenModel;
-      await _syncTokenToAppleTargets(cache.token);
       logger.info("[Recovery] Step 1 SUCCESS: Local refresh succeeded");
       return true;
     } catch (e) {
       logger.warning("[Recovery] Step 1 FAILED: Local refresh failed: $e");
-    }
-
-    if (!Platform.isIOS || !initDone) {
-      logger.warning(
-        "[Recovery] Not iOS or not initialized, cannot try iCloud",
-      );
-      await _setReauthFlag();
-      return false;
-    }
-
-    logger.info("[Recovery] Step 2: Trying iCloud recovery with retries...");
-    const retryDelays = [0, 5, 10, 5, 10]; // instant, 5s, 10s, 5s, 10s
-    bool iCloudHasToken =
-        false; // Track if iCloud has any token (to avoid useless retries)
-
-    for (var attempt = 0; attempt < retryDelays.length; attempt++) {
-      final delay = retryDelays[attempt];
-      if (delay > 0) {
-        if (!iCloudHasToken && attempt > 0) {
-          logger.info("[Recovery] Skipping retries - iCloud has no token");
-          break;
-        }
-        logger.info(
-          "[Recovery] Waiting ${delay}s before attempt ${attempt + 1}...",
-        );
-        await Future.delayed(Duration(seconds: delay));
-      }
-
-      logger.info(
-        "[Recovery] iCloud attempt ${attempt + 1}/${retryDelays.length}...",
-      );
-
-      final recovered = await WatchSyncHelper.checkAndRecoverFromiCloud(
-        isar: isarInit,
-        client: this,
-        allowExpiredAccessToken: true,
-      );
-
-      if (recovered) {
-        iCloudHasToken = true;
-
-        final recoveredExpiry = cache.token.expiryDate;
-        if (recoveredExpiry.isAfter(
-          timeNow().add(const Duration(seconds: 60)),
-        )) {
-          logger.info(
-            "[Recovery] Step 2 SUCCESS on attempt ${attempt + 1}: usable iCloud token applied without immediate refresh",
-          );
-          return true;
-        }
-
-        logger.info(
-          "[Recovery] Found iCloud token close to expiry, trying refresh...",
-        );
-        try {
-          var tokenModel = await _refreshModelWithCrossDeviceLease(cache.token);
-
-          await isarInit.writeTxn(() async {
-            await isarInit.tokenModels.put(tokenModel);
-          });
-
-          cache.token = tokenModel;
-          await _syncTokenToAppleTargets(cache.token);
-          logger.info("[Recovery] Step 2 SUCCESS on attempt ${attempt + 1}");
-          return true;
-        } catch (e) {
-          logger.warning(
-            "[Recovery] iCloud token refresh failed on attempt ${attempt + 1}: $e",
-          );
-          iCloudHasToken = true;
-        }
-      } else {
-        logger.info(
-          "[Recovery] No fresh token in iCloud on attempt ${attempt + 1}",
-        );
-        if (attempt == 0) {
-          iCloudHasToken = false;
-        }
-      }
     }
 
     logger.warning("[Recovery] All recovery attempts failed");
@@ -440,13 +294,6 @@ class KretaClient {
 
       logger.warning("[Proactive] Token recovery failed");
       await _setReauthFlag();
-      if (Platform.isIOS && needsReauth) {
-        try {
-          _watchChannel.invokeMethod('notifyReauthRequired');
-        } catch (e) {
-          debugPrint('[KretaClient] Watch reauth notification skipped: $e');
-        }
-      }
       return false;
     }
 

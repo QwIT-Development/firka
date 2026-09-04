@@ -38,7 +38,7 @@ The settings screen has options you didn't know you needed. Adjust the bell offs
 
 ## What do you support?
 
-Currently, we support **Android** and **iOS**.
+Currently, we support **Android** (with a Wear OS smartwatch companion app).
 <br />
 We're planning on supporting your browser also!
 

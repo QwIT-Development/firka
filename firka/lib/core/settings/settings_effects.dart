@@ -5,7 +5,6 @@ import "package:permission_handler/permission_handler.dart";
 import "package:firka/app/app_state.dart";
 import "package:firka/app/initialization.dart";
 import "package:firka/services/fcm_service.dart";
-import "package:firka/services/live_activity_service.dart";
 import "package:firka/services/watch_sync_helper.dart";
 
 import "settings_repository.dart";
@@ -54,15 +53,6 @@ void registerSettingsEffects(
     }
   });
 
-  repo.onChange(SettingsRegistry.morningNotificationEnabled, (enabled) async {
-    LiveActivityService.onMorningNotificationEnabledChanged(enabled);
-  });
-
-  repo.onChange(SettingsRegistry.liveActivityEnabled, (enabled) async {
-    await LiveActivityService.handleEnabledChange(enabled, isManual: true);
-    await LiveActivityService.syncGlobalSettingWithCurrentUser();
-  });
-
   repo.onChange(SettingsRegistry.notifyAll, (enabled) async {
     await FcmService.handleEnabledChange(enabled);
   });
@@ -80,18 +70,6 @@ void registerSettingsEffects(
   ]) {
     repo.onChange(setting, (_) async {
       await FcmService.updatePreferences();
-    });
-  }
-
-  // These two mirror LiveActivity widgets on iOS only, matching the original
-  // postUpdate wiring that was only attached inside an `if (Platform.isIOS)` block.
-  if (Platform.isIOS) {
-    repo.onChange(SettingsRegistry.bellDelay, (value) async {
-      LiveActivityService.onBellDelayChanged(value);
-    });
-
-    repo.onChange(SettingsRegistry.morningNotificationTime, (value) async {
-      LiveActivityService.onMorningNotificationTimeChanged(value);
     });
   }
 }

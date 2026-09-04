@@ -38,7 +38,7 @@ Der Einstellungsbildschirm bietet Optionen, von denen du nicht wusstest, dass du
 
 ## Was wird unterstützt?
 
-Derzeit unterstützen wir **Android** und **iOS**.
+Derzeit unterstützen wir **Android** (mit einer Wear OS Smartwatch-Begleit-App).
 <br />
 Wir planen, auch deinen Browser zu unterstützen!
 

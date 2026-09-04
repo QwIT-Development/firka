@@ -1,11 +1,7 @@
-import "dart:io";
-
 import "package:dart_jsonwebtoken/dart_jsonwebtoken.dart";
 import "package:firka/app/app_state.dart";
 import "package:firka/app/initialization.dart";
 import "package:firka/services/fcm_service.dart";
-import "package:firka/services/live_activity_service.dart";
-import "package:firka/services/watch_sync_helper.dart";
 import "package:firka/ui/shared/firka_icon.dart";
 import "package:firka/ui/theme/style.dart";
 import "package:firka/ui/phone/widgets/login_webview.dart";
@@ -141,25 +137,7 @@ class SettingsAccountPickerView extends StatelessWidget {
       return;
     }
 
-    final previousAccountId = data.client!.cache.token.key;
     await FcmService.onUserLogout();
-    if (Platform.isIOS) {
-      await LiveActivityService.onUserLogout();
-      try {
-        await WatchSyncHelper.clearSharedLanguageState();
-      } catch (e) {
-        logger.warning(
-          '[Settings] Failed to clear shared language state on account switch: $e',
-        );
-      }
-      try {
-        await WatchSyncHelper.clearRefreshLeaseForAccount(previousAccountId);
-      } catch (e) {
-        logger.warning(
-          '[Settings] Failed to clear refresh lease on account switch: $e',
-        );
-      }
-    }
 
     await data.settings.setSelectedAccountKey(token.key);
     await initializeApp();
@@ -171,43 +149,6 @@ class SettingsAccountPickerView extends StatelessWidget {
       );
     }
 
-    if (Platform.isIOS) {
-      var watchReachable = false;
-      try {
-        watchReachable = await WatchSyncHelper.isWatchReachable(
-          forceRefreshInstall: true,
-        );
-      } catch (e) {
-        logger.warning(
-          '[Settings] Failed to query Watch reachability on account switch: $e',
-        );
-      }
-
-      if (watchReachable) {
-        try {
-          await WatchSyncHelper.sendTokenModelToWatch(
-            token,
-            allowExpiredAccessToken: true,
-          );
-        } catch (e) {
-          logger.warning(
-            '[Settings] Failed to send switched account token to reachable Watch: $e',
-          );
-        }
-      } else {
-        try {
-          await WatchSyncHelper.saveTokenToiCloud(
-            token,
-            forceAccountSwitch: true,
-          );
-        } catch (e) {
-          logger.warning(
-            '[Settings] Failed to sync switched account token to iCloud: $e',
-          );
-        }
-      }
-    }
-
     if (!context.mounted) return;
     final nav = Navigator.of(context);
     if (nav.canPop()) nav.pop();
@@ -217,27 +158,8 @@ class SettingsAccountPickerView extends StatelessWidget {
   Future<void> _logout(BuildContext context) async {
     try {
       await FcmService.onUserLogout();
-      if (Platform.isIOS) {
-        await LiveActivityService.onUserLogout();
-      }
 
       final active = data.client!.cache.token.key;
-      if (Platform.isIOS) {
-        try {
-          await WatchSyncHelper.clearRefreshLeaseForAccount(active);
-        } catch (e) {
-          logger.warning(
-            '[Settings] Failed to clear refresh lease for active account: $e',
-          );
-        }
-        try {
-          await WatchSyncHelper.clearSharedLanguageState();
-        } catch (e) {
-          logger.warning(
-            '[Settings] Failed to clear shared language state on logout: $e',
-          );
-        }
-      }
 
       try {
         await data.client!.cache.clearAccountData();
@@ -251,55 +173,6 @@ class SettingsAccountPickerView extends StatelessWidget {
       await data.settings.setSelectedAccountKey(0);
 
       final accounts = await data.isar.tokenModels.where().findAll();
-
-      if (accounts.isEmpty) {
-        if (Platform.isIOS) {
-          try {
-            await WatchSyncHelper.clearICloudToken(notifyWatch: true);
-            await WatchSyncHelper.clearAllRefreshLeases();
-          } catch (e) {
-            logger.warning('[Settings] Failed to clear iCloud token: $e');
-          }
-        }
-      } else {
-        if (Platform.isIOS) {
-          final nextToken = accounts.first;
-          var watchReachable = false;
-          try {
-            watchReachable = await WatchSyncHelper.isWatchReachable(
-              forceRefreshInstall: true,
-            );
-          } catch (e) {
-            logger.warning(
-              '[Settings] Failed to query Watch reachability after logout: $e',
-            );
-          }
-
-          if (watchReachable) {
-            try {
-              await WatchSyncHelper.sendTokenModelToWatch(
-                nextToken,
-                allowExpiredAccessToken: true,
-              );
-            } catch (e) {
-              logger.warning(
-                '[Settings] Failed to send next account token to reachable Watch after logout: $e',
-              );
-            }
-          } else {
-            try {
-              await WatchSyncHelper.saveTokenToiCloud(
-                nextToken,
-                forceAccountSwitch: true,
-              );
-            } catch (e) {
-              logger.warning(
-                '[Settings] Failed to sync next account token to iCloud after logout: $e',
-              );
-            }
-          }
-        }
-      }
 
       await initializeApp();
 

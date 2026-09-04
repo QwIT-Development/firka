@@ -2,8 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-/// Client for registering FCM push tokens with firka's backend, mirroring
-/// LiveActivityBackendClient's conventions (same backend, same auth scheme).
+/// Client for registering FCM push tokens with firka's backend.
 /// Requires the backend to expose the `/notifications/*` routes below.
 class NotificationBackendClient {
   static final Logger _logger = Logger('NotificationBackendClient');

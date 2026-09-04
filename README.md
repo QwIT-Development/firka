@@ -37,7 +37,7 @@ Balkezes mód is van, mert úgy tűnik, van, aki nem volt szerencsés az életbe
 
 ## Mit támogattok?
 
-Jelenleg **Androidot** és **iOS-t** támogatunk.
+Jelenleg **Androidot** támogatunk (Wear OS-es okosóra-kísérőalkalmazással).
 <br />
 Tervezzük a böngészős támogatást is!
 

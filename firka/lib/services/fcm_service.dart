@@ -43,11 +43,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 /// Coordinates FCM push notification registration with firka's backend.
-/// Android-only for now: `flutterfire configure` has only been run for
-/// Android, so `DefaultFirebaseOptions.currentPlatform` throws on iOS. Once
-/// iOS is configured (re-run `flutterfire configure` with both platforms
-/// selected), drop the `Platform.isAndroid` guard in [initialize] to make
-/// this cross-platform like the rest of the service already assumes.
+/// Android-only: `flutterfire configure` has only been run for Android, so
+/// `DefaultFirebaseOptions.currentPlatform` throws on other platforms. The
+/// `Platform.isAndroid` guard in [initialize] reflects that.
 /// Push is enabled by default; the master switch is SettingsRegistry.notifyAll,
 /// toggleable from the notifications settings page.
 class FcmService {
@@ -154,16 +152,6 @@ class FcmService {
   }
 
   static Future<bool> _requestPermission() async {
-    if (Platform.isIOS) {
-      final settings = await FirebaseMessaging.instance.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-      return settings.authorizationStatus == AuthorizationStatus.authorized ||
-          settings.authorizationStatus == AuthorizationStatus.provisional;
-    }
-
     final status = await Permission.notification.status;
     if (status.isGranted) return true;
     final result = await Permission.notification.request();

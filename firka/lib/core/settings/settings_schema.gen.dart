@@ -21,10 +21,6 @@ class SettingsRegistry {
   static const developerOptsEnabled = BoolSetting(id: 1016, defaultValue: false);
   static const themeBrightness = EnumSetting(id: 1017, defaultValue: ThemeBrightness.auto, values: ThemeBrightness.values);
   static const ttToastSubstitution = BoolSetting(id: 1018, defaultValue: true);
-  static const liveActivityEnabled = BoolSetting(id: 1019, defaultValue: false);
-  static const liveActivityPrivacyEverDeclined = BoolSetting(id: 1020, defaultValue: false);
-  static const morningNotificationEnabled = BoolSetting(id: 1021, defaultValue: true);
-  static const morningNotificationTime = DoubleSetting(id: 1022, defaultValue: 120, min: 30, max: 240, precision: 0, step: 15);
   static const ttToastABTimetable = BoolSetting(id: 1023, defaultValue: true);
   static const wearOsSupport = BoolSetting(id: 1024, defaultValue: false);
   static const titleFont = EnumSetting(id: 1026, defaultValue: TitleFont.montserrat, values: TitleFont.values);
@@ -50,7 +46,7 @@ class SettingsRegistry {
   static const fcmDebugNotifyOnMessage = BoolSetting(id: 1046, defaultValue: false);
 
   static const all = <Setting>[
-    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, liveActivityEnabled, liveActivityPrivacyEverDeclined, morningNotificationEnabled, morningNotificationTime, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl, lastSeen, surpriseGrades, seasonalAppIcons, uwuMode, notifyAll, notifyGrades, notifyHomeworkTests, notifyAbsences, notifyLessons, notifyMessages, notifyMutedSubjects, notifyWakeupInterval, fcmDebugNotifyOnMessage,
+    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl, lastSeen, surpriseGrades, seasonalAppIcons, uwuMode, notifyAll, notifyGrades, notifyHomeworkTests, notifyAbsences, notifyLessons, notifyMessages, notifyMutedSubjects, notifyWakeupInterval, fcmDebugNotifyOnMessage,
   ];
 }
 
@@ -73,10 +69,6 @@ extension SettingsAccessors on SettingsRepository {
   SilentlySettable<bool> get developerOptsEnabled => SilentlySettable(this, SettingsRegistry.developerOptsEnabled);
   SilentlySettable<ThemeBrightness> get themeBrightness => SilentlySettable(this, SettingsRegistry.themeBrightness);
   SilentlySettable<bool> get ttToastSubstitution => SilentlySettable(this, SettingsRegistry.ttToastSubstitution);
-  SilentlySettable<bool> get liveActivityEnabled => SilentlySettable(this, SettingsRegistry.liveActivityEnabled);
-  SilentlySettable<bool> get liveActivityPrivacyEverDeclined => SilentlySettable(this, SettingsRegistry.liveActivityPrivacyEverDeclined);
-  SilentlySettable<bool> get morningNotificationEnabled => SilentlySettable(this, SettingsRegistry.morningNotificationEnabled);
-  SilentlySettable<double> get morningNotificationTime => SilentlySettable(this, SettingsRegistry.morningNotificationTime);
   SilentlySettable<bool> get ttToastABTimetable => SilentlySettable(this, SettingsRegistry.ttToastABTimetable);
   SilentlySettable<bool> get wearOsSupport => SilentlySettable(this, SettingsRegistry.wearOsSupport);
   SilentlySettable<TitleFont> get titleFont => SilentlySettable(this, SettingsRegistry.titleFont);

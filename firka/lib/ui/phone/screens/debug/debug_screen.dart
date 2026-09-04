@@ -394,15 +394,12 @@ class _DebugScreen extends FirkaState<DebugScreen> {
                     await isar.teacherModels.clear();
                     await isar.homeworkCacheModels.clear();
                   });
-                  if (Platform.isIOS) {
-                  } else {
-                    final dataDir = await getApplicationDocumentsDirectory();
-                    final widgetFile = File(
-                      p.join(dataDir.path, 'widget_state.json'),
-                    );
-                    if (await widgetFile.exists()) {
-                      await widgetFile.delete();
-                    }
+                  final dataDir = await getApplicationDocumentsDirectory();
+                  final widgetFile = File(
+                    p.join(dataDir.path, 'widget_state.json'),
+                  );
+                  if (await widgetFile.exists()) {
+                    await widgetFile.delete();
                   }
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(

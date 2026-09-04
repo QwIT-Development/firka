@@ -9,12 +9,10 @@ import 'package:firka/app/app_state.dart';
 import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/services/fcm_service.dart';
-import 'package:firka/services/live_activity_service.dart';
 import 'package:firka/core/settings/settings_effects.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/core/settings/title_font.dart';
-import 'package:firka/services/watch_sync_helper.dart';
 import 'package:firka/l10n/app_localizations_de.dart';
 import 'package:firka/l10n/app_localizations_en.dart';
 import 'package:firka/l10n/app_localizations_hu.dart';
@@ -29,51 +27,29 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
 Future<void> initLang(AppInitialization data) async {
-  String? languageCode;
-
   switch (Settings.language.value) {
     case AppLanguage.hu:
       data.l10n = AppLocalizationsHu();
-      languageCode = 'hu';
       break;
     case AppLanguage.en:
       data.l10n = AppLocalizationsEn();
-      languageCode = 'en';
       break;
     case AppLanguage.de:
       data.l10n = AppLocalizationsDe();
-      languageCode = 'de';
       break;
     case AppLanguage.auto:
       switch (ui.PlatformDispatcher.instance.locale.languageCode) {
         case 'hu':
           data.l10n = AppLocalizationsHu();
-          languageCode = 'hu';
           break;
         case 'en':
           data.l10n = AppLocalizationsEn();
-          languageCode = 'en';
           break;
         case 'de':
           data.l10n = AppLocalizationsDe();
-          languageCode = 'de';
           break;
       }
       break;
-  }
-
-  if (languageCode != null && Platform.isIOS) {
-    try {
-      await LiveActivityService.updateLanguagePreference(languageCode);
-    } catch (e) {
-      logger.warning('Failed to update language preference on backend: $e');
-    }
-
-    try {
-      await WatchSyncHelper.sendLanguageToWatch();
-    } catch (e) {
-      logger.warning('Failed to send language to Watch: $e');
-    }
   }
 }
 
@@ -176,23 +152,6 @@ Future<void> _initData(AppInitialization init) async {
     }());
   };
 
-  var didRunFreshInstallCleanup = false;
-  if (Platform.isIOS) {
-    try {
-      didRunFreshInstallCleanup =
-          await WatchSyncHelper.runFreshInstallCleanupIfNeeded(isar: init.isar);
-      if (didRunFreshInstallCleanup) {
-        logger.info(
-          '[Init] Fresh-install cleanup completed; skipping startup iCloud recovery on this launch',
-        );
-      } else {
-        await WatchSyncHelper.checkAndRecoverFromiCloud(isar: init.isar);
-      }
-    } catch (e) {
-      logger.warning('[Init] iCloud bootstrap/recovery failed: $e');
-    }
-  }
-
   final token = init.settings.getSelectedToken();
   if (token == null) {
     logger.warning("[Init] No token available!");
@@ -225,27 +184,6 @@ Future<void> _initData(AppInitialization init) async {
     await init.client!.renewCache(reInit: false);
     init.homeRefreshCubit.requestRefresh();
   }());
-
-  if (Platform.isIOS) {
-    final expiryDate = token.expiryDate;
-    if (expiryDate.isAfter(DateTime.now())) {
-      init.toastCubit.clear();
-    }
-
-    unawaited(() async {
-      try {
-        await WatchSyncHelper.saveTokenToiCloud(token);
-      } catch (e) {
-        logger.warning('[Init] Failed to sync active token to iCloud: $e');
-      }
-
-      try {
-        await WatchSyncHelper.sendTokenModelToWatch(token);
-      } catch (e) {
-        logger.warning('[Init] Failed to sync active token to Watch: $e');
-      }
-    }());
-  }
 
   final dataDir = await getApplicationDocumentsDirectory();
   var pfpFile = File(p.join(dataDir.path, "profile.webp"));
@@ -302,18 +240,6 @@ Future<void> initializeApp() async {
   initData.settings.cubit = initData.settingsCubit;
   Settings = initData.settings;
   registerSettingsEffects(initData.settings, initData);
-
-  if (Platform.isIOS) {
-    try {
-      await LiveActivityService.initialize().timeout(
-        const Duration(seconds: 8),
-      );
-    } on TimeoutException catch (e, st) {
-      logger.warning('LiveActivity init timed out: $e', e, st);
-    } catch (e, st) {
-      logger.severe('Failed to initialize LiveActivity: $e', e, st);
-    }
-  }
 
   try {
     await FcmService.initialize().timeout(const Duration(seconds: 8));
