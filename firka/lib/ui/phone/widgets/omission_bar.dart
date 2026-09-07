@@ -62,6 +62,10 @@ class OmissionBar extends StatelessWidget {
           .toList();
     }
 
+    if (segmentColors.isEmpty) {
+      segmentColors.add(stateColor(null));
+    }
+
     final bar = ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Row(
