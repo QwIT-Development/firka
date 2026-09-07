@@ -37,6 +37,46 @@ steps:
       - cd firka
       - dart run scripts/codegen.dart
 
+  - name: clone-mock-kreta-server
+    image: git.firka.app/firka/firka-builder:latest
+    environment:
+      GITEA_USERNAME:
+        from_secret: gitea_username
+      GITEA_TOKEN:
+        from_secret: gitea_token
+    commands:
+      - pwd
+      # The heredoc uses a quoted delimiter so $GITEA_USERNAME/$GITEA_TOKEN
+      # are written to the script literally, not expanded here -- keeps the
+      # secret values out of this (traced) command's expanded output.
+      - |
+        cat > /tmp/write_netrc.sh <<'NETRC_SCRIPT'
+        printf 'machine git.firka.app\nlogin %s\npassword %s\n' "$GITEA_USERNAME" "$GITEA_TOKEN" > "$HOME/.netrc"
+        chmod 600 "$HOME/.netrc"
+        NETRC_SCRIPT
+      # Runs as an untraced child shell, so the expansion above never hits the log.
+      - sh /tmp/write_netrc.sh
+      - git clone --depth 1 https://git.firka.app/firka/mock_kreta_server.git mock_kreta_server
+      - rm -f /tmp/write_netrc.sh "$HOME/.netrc"
+
+  - name: build-mock-kreta-server
+    image: golang:1.26
+    commands:
+      - cd mock_kreta_server
+      - go build -o ../mock_kreta_server_bin .
+
+  # Runs the mock server in the background and exercises kreta_api's DTOs
+  # against its real wire format, catching drift between the two repos.
+  - name: kreta-api-mock-server-tests
+    image: git.firka.app/firka/firka-builder:latest
+    commands:
+      - export PUB_CACHE="$CI_WORKSPACE/.pub-cache"
+      - ./mock_kreta_server_bin -addr :8090 -data mock_kreta_server/data.json &
+      - sleep 1
+      - cd kreta_api
+      - dart pub get
+      - MOCK_KRETA_SERVER_URL=http://127.0.0.1:8090 dart test
+
   - name: build-release
     image: git.firka.app/firka/firka-builder:latest
     when:

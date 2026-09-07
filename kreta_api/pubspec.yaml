@@ -8,3 +8,6 @@ environment:
 
 dependencies:
   intl: any
+
+dev_dependencies:
+  test: ^1.25.0
