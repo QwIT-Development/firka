@@ -163,17 +163,10 @@ class MainActivity : FlutterActivity() {
                     CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
                         try {
                             val appContext = context.applicationContext
-                            val appWidgetManager = AppWidgetManager.getInstance(appContext)
-                            val componentName = ComponentName(appContext, TimetableWidgetReceiver::class.java)
-                            val ids = appWidgetManager.getAppWidgetIds(componentName)
-                            if (ids.isNotEmpty()) {
-                                val intent = Intent(appContext, TimetableWidgetReceiver::class.java).apply {
-                                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-                                    addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
-                                }
-                                appContext.sendBroadcast(intent)
+                            val intent = Intent(appContext, TimetableWidgetReceiver::class.java).apply {
+                                action = TimetableWidgetReceiver.ACTION_REFRESH_WIDGET
                             }
+                            appContext.sendBroadcast(intent)
                             TimetableWidget().updateAll(appContext)
                             result.success(true)
                         } catch (e: Exception) {
@@ -190,6 +183,29 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        handleIntent(intent)
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        val action = intent?.getStringExtra("action")
+        if (action == "pin_widget") {
+            val appWidgetManager = AppWidgetManager.getInstance(this)
+            val myProvider = ComponentName(this, TimetableWidgetReceiver::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && appWidgetManager.isRequestPinAppWidgetSupported) {
+                appWidgetManager.requestPinAppWidget(myProvider, null, null)
+            }
+        } else if (action == "refresh_widget") {
+            val appContext = applicationContext
+            val refreshIntent = Intent(appContext, TimetableWidgetReceiver::class.java).apply {
+                this.action = TimetableWidgetReceiver.ACTION_REFRESH_WIDGET
+            }
+            appContext.sendBroadcast(refreshIntent)
+        }
+    }
 }

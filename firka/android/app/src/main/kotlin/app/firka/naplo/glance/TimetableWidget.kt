@@ -54,31 +54,35 @@ class TimetableWidget : GlanceAppWidget() {
     }
 
     private fun loadWidgetData(context: Context): WidgetData? {
-        val appFlutter = File(context.applicationContext.dataDir, "app_flutter")
-        val widgetStateFile = File(appFlutter, "widget_state.json")
-        if (!widgetStateFile.exists()) return null
-        val widgetState = JSONObject(widgetStateFile.readText(Charsets.UTF_8))
-        val colors = Colors(widgetState)
-        val tt = widgetState.getJSONArray("timetable")
-        val lessons = mutableListOf<WidgetLesson>()
-        for (i in 0..<tt.length()) {
-            lessons.add(WidgetLesson(tt.getJSONObject(i)))
-        }
-        val displayDateStr = widgetState.optString("displayDate", "")
-        val targetDate = if (displayDateStr.isNotEmpty()) {
-            try {
-                LocalDate.parse(displayDateStr)
-            } catch (_: Exception) {
+        try {
+            val appFlutter = File(context.applicationContext.dataDir, "app_flutter")
+            val widgetStateFile = File(appFlutter, "widget_state.json")
+            if (!widgetStateFile.exists()) return null
+            val text = widgetStateFile.readText(Charsets.UTF_8)
+            val widgetState = JSONObject(text)
+            val colors = Colors(widgetState)
+            val tt = widgetState.getJSONArray("timetable")
+            val lessons = mutableListOf<WidgetLesson>()
+            for (i in 0..<tt.length()) {
+                lessons.add(WidgetLesson(tt.getJSONObject(i)))
+            }
+            val displayDateStr = widgetState.optString("displayDate", "")
+            val targetDate = if (displayDateStr.isNotEmpty()) {
+                try {
+                    LocalDate.parse(displayDateStr)
+                } catch (_: Exception) {
+                    LocalDate.now()
+                }
+            } else {
                 LocalDate.now()
             }
-        } else {
-            LocalDate.now()
+            val filtered = lessons.filter { it.start.toLocalDate() == targetDate }
+            val headerText = if (displayDateStr.isNotEmpty()) displayDateStr else "Mai órarend"
+            return WidgetData(colors, headerText, filtered)
+        } catch (e: Throwable) {
+            android.util.Log.e("TimetableWidget", "Error in loadWidgetData", e)
+            return null
         }
-        val start = LocalDateTime.of(targetDate.year, targetDate.month, targetDate.dayOfMonth, 0, 0)
-        val end = start.plusHours(23)
-        val filtered = lessons.filter { it.start.isAfter(start) && it.end.isBefore(end) }
-        val headerText = if (displayDateStr.isNotEmpty()) displayDateStr else "Mai órarend"
-        return WidgetData(colors, headerText, filtered)
     }
 
     @Composable

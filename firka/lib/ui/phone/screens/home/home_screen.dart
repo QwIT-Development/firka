@@ -7,7 +7,7 @@ import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart';
-import 'package:home_widget/home_widget.dart';
+import 'package:firka/data/widget.dart';
 
 import 'package:firka/core/bloc/profile_picture_cubit.dart';
 import 'package:firka/core/bloc/settings_cubit.dart';
@@ -67,10 +67,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
       await initData.client!.renewCache(reInit: true);
 
       if (Platform.isAndroid) {
-        await HomeWidget.updateWidget(
-          qualifiedAndroidName:
-              "app.firka.naplo.glance.TimetableWidgetReceiver",
-        );
+        await WidgetCacheHelper.updateWidgetCacheFromIsar();
       }
     } catch (e) {
       if (_disposed) return;

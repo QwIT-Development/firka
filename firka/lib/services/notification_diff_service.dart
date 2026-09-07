@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:isar_community/isar.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import 'package:firka_common/data/database.dart';
 import 'package:firka_common/data/last_seen.dart';
@@ -13,6 +16,7 @@ import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/core/last_seen_helper.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
+import 'package:firka/data/widget.dart';
 import 'package:firka/services/fcm_headless_bootstrap.dart';
 import 'package:firka/services/local_notification_service.dart';
 
@@ -96,10 +100,16 @@ class NotificationDiffService {
       );
     }
 
-    if (Settings.notifyLessons.value) {
-      final now = DateTime.now();
-      final lessons = await client.getLessons(now, now.add(const Duration(days: 7)));
+    final now = DateTime.now();
+    final lessons = await client.getLessons(now, now.add(const Duration(days: 7)));
 
+    final selectedToken = Settings.getSelectedToken();
+    final isActiveAccount = selectedToken == null || selectedToken.key == accountKey;
+    if (isActiveAccount) {
+      await _checkAndUpdateWidget(lessons);
+    }
+
+    if (Settings.notifyLessons.value) {
       final cancelled = lessons.where(_isCancelledLesson).toList();
       final substituted = lessons
           .where((l) => !_isCancelledLesson(l) && l.substituteTeacher != null)
@@ -229,6 +239,45 @@ class NotificationDiffService {
 
   static int _notificationId(int accountKey, String kind) =>
       Object.hash(accountKey, kind) & 0x7fffffff;
+
+  static Future<void> _checkAndUpdateWidget(List<LessonCacheModel> lessons) async {
+    try {
+      final dataDir = await getApplicationDocumentsDirectory();
+      final widgetFile = File(p.join(dataDir.path, "widget_state.json"));
+      if (_hasTimetableChanged(lessons, widgetFile)) {
+        _logger.info('Timetable changed during FCM sync, updating widget');
+        await WidgetCacheHelper.updateWidgetCacheFromLessons(lessons);
+      }
+    } catch (e, st) {
+      _logger.warning('Failed to update widget during FCM sync: $e', e, st);
+    }
+  }
+
+  static bool _hasTimetableChanged(List<LessonCacheModel> lessons, File widgetFile) {
+    if (!widgetFile.existsSync()) return true;
+    try {
+      final content = jsonDecode(widgetFile.readAsStringSync());
+      final cachedTt = content['timetable'] as List?;
+      if (cachedTt == null) return true;
+      if (cachedTt.length != lessons.length) return true;
+      for (int i = 0; i < lessons.length; i++) {
+        final l = lessons[i];
+        final c = cachedTt[i] as Map?;
+        if (c == null) return true;
+        if (c['name'] != l.name ||
+            c['start'] != l.start.toIso8601String() ||
+            c['end'] != l.end.toIso8601String() ||
+            c['dailyNth'] != l.dailyNth ||
+            c['roomName'] != l.roomName ||
+            c['substituteTeacher'] != l.substituteTeacher) {
+          return true;
+        }
+      }
+      return false;
+    } catch (_) {
+      return true;
+    }
+  }
 
   /// Matches the "isCancelled" convention already used across the app's
   /// live-activity/widget code (state names aren't a stable enum, just a

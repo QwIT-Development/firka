@@ -9,6 +9,7 @@ import 'package:firka/app/app_state.dart';
 import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/services/fcm_service.dart';
+import 'package:firka/data/widget.dart';
 import 'package:firka/core/settings/settings_effects.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
@@ -168,6 +169,9 @@ Future<void> _initData(AppInitialization init) async {
   // onUserLogin() itself no-ops if notifyAll is off or permission is denied.
   unawaited(FcmService.onUserLogin(client: init.client!));
 
+  // Immediately refresh widget state from cached Isar lessons so widget is up to date
+  unawaited(WidgetCacheHelper.updateWidgetCacheFromIsar());
+
   // Don't block first paint on the network: render whatever is already
   // cached, then stream in student/timetable/grades/etc. as they arrive.
   unawaited(() async {
@@ -182,6 +186,7 @@ Future<void> _initData(AppInitialization init) async {
     init.homeRefreshCubit.requestRefresh();
 
     await init.client!.renewCache(reInit: false);
+    await WidgetCacheHelper.updateWidgetCacheFromIsar();
     init.homeRefreshCubit.requestRefresh();
   }());
 

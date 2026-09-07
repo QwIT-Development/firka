@@ -18,6 +18,9 @@ import 'package:path_provider/path_provider.dart';
 late Isar isarInit;
 
 Future<Isar> initDB() async {
+  if (Isar.getInstance() != null) {
+    return isarInit = Isar.getInstance()!;
+  }
   final dir = await getApplicationDocumentsDirectory();
 
   isarInit = await Isar.open(
