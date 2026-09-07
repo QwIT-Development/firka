@@ -1,3 +1,4 @@
+import 'package:firka_common/core/extensions.dart';
 import 'package:firka_common/data/models/subject_cache_model.dart';
 import 'package:flutter/material.dart';
 
@@ -34,7 +35,7 @@ class GradeSmallCard extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              subject.name,
+              subject.name.firstUpper(),
               style: appStyle.fonts.B_16SB.apply(
                 color: appStyle.colors.textPrimary,
               ),

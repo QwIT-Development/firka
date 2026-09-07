@@ -18,6 +18,14 @@ extension IterableExtension<T> on Iterable<T> {
   }
 }
 
+extension FirstUpperExtension on String {
+  String firstUpper() {
+    if (isEmpty) return this;
+    if (length == 1) this[0].toUpperCase();
+    return this[0].toUpperCase() + substring(1, length);
+  }
+}
+
 extension MidnightExtension on DateTime {
   DateTime getMidnight() {
     return subtract(
