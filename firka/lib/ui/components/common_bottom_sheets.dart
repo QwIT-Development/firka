@@ -244,7 +244,7 @@ Future<void> showLessonBottomSheet(
         color: appStyle.colors.buttonSecondaryFill,
       ),
       onTap: () {
-        context.go('/timetable/subject', extra: lesson.subject);
+        context.go('/timetable/subject', extra: lesson.subject.loadAndGet()!);
       },
     ),
   ]);
