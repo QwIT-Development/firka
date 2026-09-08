@@ -1,8 +1,8 @@
 icons:
-  "flutter_launcher_icons.yaml": "c600507ca0df7cebd0f708124842512a14ed3d597b779176200d6ba25b1335b1"
-  "pubspec.yaml": "5d40f014d654e257bc58e8ebfb2468a5ed7f75d913a67fb89314b9fda1c257a6"
+  "flutter_launcher_icons.yaml": "5686b5de26010925e393210c241415c6b04ef1ac6737255dc62d97da891fe39e"
+  "pubspec.yaml": "198608775541fab3b6ff8cc21545e12a3413455f6ed87355cfdb576a97efab2d"
   "assets/images/logos/colored_logo.webp": "4b4fa99d144fe6694aa4487ba1b26aeecafae41e3c877836cd7da28d61a77983"
-  "assets/images/logos/monochrome_logo.png": "188d2b0a64c70323b09bcee721663d6698fb557066f20ddaec97bba6869c1c6c"
+  "assets/images/logos/monochrome_logo.png": "c269a5e689622484d800a4fda5927591a0bf99d34790a4f146b93cf6edabd455"
   "assets/images/logos/colored_logo_without_mustache.png": "d11cff9f38985885873bfdd2d84e61f8fab03803eada94d4caac1545ef3685f3"
   "assets/images/logos/colored_logo_only_mustache.png": "bad6220c11bdfb1dfe04e5173bd2ebedd3999689d4b3a68fc63dc520c96dd33b"
 l10n:
