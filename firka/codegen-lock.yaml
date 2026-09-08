@@ -1,22 +1,10 @@
 icons:
-  "flutter_launcher_icons.yaml": "c600507ca0df7cebd0f708124842512a14ed3d597b779176200d6ba25b1335b1"
-  "pubspec.yaml": "5d40f014d654e257bc58e8ebfb2468a5ed7f75d913a67fb89314b9fda1c257a6"
+  "flutter_launcher_icons.yaml": "993c1cd3a99db70747299601e556d19ec959b0a16fd9ff2dbf2386cb6f2a640d"
+  "pubspec.yaml": "198608775541fab3b6ff8cc21545e12a3413455f6ed87355cfdb576a97efab2d"
   "assets/images/logos/colored_logo.webp": "4b4fa99d144fe6694aa4487ba1b26aeecafae41e3c877836cd7da28d61a77983"
-  "assets/images/logos/monochrome_logo.png": "188d2b0a64c70323b09bcee721663d6698fb557066f20ddaec97bba6869c1c6c"
+  "assets/images/logos/monochrome_logo.png": "c269a5e689622484d800a4fda5927591a0bf99d34790a4f146b93cf6edabd455"
   "assets/images/logos/colored_logo_without_mustache.png": "d11cff9f38985885873bfdd2d84e61f8fab03803eada94d4caac1545ef3685f3"
   "assets/images/logos/colored_logo_only_mustache.png": "bad6220c11bdfb1dfe04e5173bd2ebedd3999689d4b3a68fc63dc520c96dd33b"
-l10n:
-  "l10n.yml": "a57bc304cac4a2b0235593586f17f400a5165d67fc9aadeaa11893cfa36ee082"
-  "lib/l10n/app_pl.arb": "a8426455757e587c7635c3a62c650a4aae2a0cac1de1175e8ab7fb0d3b387537"
-  "lib/l10n/app_de.arb": "c498950bbc917e35b1910451ad9fbd4e625db89151f07558e846a7c119a583af"
-  "lib/l10n/app_en.arb": "159405752b5e73eedbe546a59567550091926a37cf9cf6ce78dd58f1a0dd1d4b"
-  "lib/l10n/app_hu.arb": "c7fba2a8f91217433698d766e9451d8fad86ae71021adf714639fc3907a34891"
-isar:
-  "lib/data/models/app_settings_model.dart": "5eb5af345f1347f104257f0999763650fe2673f9da1754bd12d3f756fe5c9723"
-  "lib/data/models/token_model.dart": "8c957cd07e473827d78fd8fd4fb6c1336b636a69c25c93618e1e7f94b7cf0683"
-  "lib/data/models/homework_cache_model.dart": "45789970b27d5790cdc54c292ef2f5feaa5f4e293b8a8862fd676d5eb3e25d29"
-  "lib/data/models/generic_cache_model.dart": "62003ec1fd73a0fa6786d337acdef42b9a6eb9efaa78d17eaf4fe091504b8490"
-  "lib/data/models/timetable_cache_model.dart": "b972bf51e399f8d20d4f9ad660082d4cc4a9798df9ac9d6ec9ef6ac640205572"
 splash:
-  "flutter_native_splash.yaml": "0fd4a85d6f950d97298e99916927649940ffcfdadfc136ceee126fed0dbaa9f2"
+  "flutter_native_splash.yaml": "f1bddb74798b1539c4e9213ca9ae305d625ebb0ac5bcbe079b523437e0abc2c4"
   "assets/images/logos/splash.png": "88fbebc3d686cb9095bcce362029b69978b1b14270e465e91d962b1425db1152"

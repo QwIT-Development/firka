@@ -6,10 +6,12 @@ import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart' as yaml;
 
 const _lockFileName = 'codegen-lock.yaml';
+const _cacheFileName = '.codegen-cache.yaml';
 
 void main() async {
   final root = _projectRoot();
   stdout.writeln(root);
+  _cleanIos(root);
   var ran = false;
 
   if (_iconsOutOfDate(root)) {
@@ -31,6 +33,7 @@ void main() async {
         runInShell: true,
       );
       if (iconResult.exitCode == 0) {
+        _cleanIos(root);
         _updateLockWithHashes(root, 'icons', _computeHashes(root, inputs));
         ran = true;
       }
@@ -53,19 +56,23 @@ void main() async {
       '--template-arb-file',
       'app_hu.arb',
     ], root);
-    _updateLockWithHashes(root, 'l10n', _computeHashes(root, inputs));
+    _updateCacheWithHashes(root, 'l10n', _computeHashes(root, inputs));
     ran = true;
   }
 
-  var common = p.join(p.dirname(root), "firka_common");
-  if (_isarOutOfDate(common) || _isarGeneratedFilesMissing(common)) {
+  final common = p.join(p.dirname(root), 'firka_common');
+  if (_isarOutOfDate(common)) {
     final inputs = _isarInputs(common);
     final hashes = _computeHashes(common, inputs);
     stdout.writeln(
       'Isar generated dart files out of date or missing, running build_runner...',
     );
-    await _run('dart', ['run', 'build_runner', 'build'], common);
-    _updateLockWithHashes(common, 'isar', hashes);
+    await _run(
+      'dart',
+      ['run', 'build_runner', 'build', '--delete-conflicting-outputs'],
+      common,
+    );
+    _updateCacheWithHashes(common, 'isar', hashes);
     ran = true;
   }
 
@@ -76,9 +83,12 @@ void main() async {
       'Splash out of date, running flutter_native_splash:create...',
     );
     await _run('dart', ['run', 'flutter_native_splash:create'], root);
+    _cleanIos(root);
     _updateLockWithHashes(root, 'splash', _computeHashes(root, inputs));
     ran = true;
   }
+
+  _cleanIos(root);
 
   if (!ran) {
     stdout.writeln('All generated files are up to date.');
@@ -91,9 +101,10 @@ String _projectRoot() {
 }
 
 String _lockPath(String root) => p.join(root, _lockFileName);
+String _cachePath(String root) => p.join(root, _cacheFileName);
 
-Map<String, Map<String, String>>? _readLock(String root) {
-  final file = File(_lockPath(root));
+Map<String, Map<String, String>>? _readYamlFile(String filePath) {
+  final file = File(filePath);
   if (!file.existsSync()) return null;
   try {
     final content = file.readAsStringSync();
@@ -116,9 +127,9 @@ Map<String, Map<String, String>>? _readLock(String root) {
   }
 }
 
-void _writeLock(String root, Map<String, Map<String, String>> lock) {
+void _writeYamlFile(String filePath, Map<String, Map<String, String>> data) {
   final buf = StringBuffer();
-  for (final stepEntry in lock.entries) {
+  for (final stepEntry in data.entries) {
     buf.writeln('${stepEntry.key}:');
     for (final fileEntry in stepEntry.value.entries) {
       buf.writeln(
@@ -126,8 +137,14 @@ void _writeLock(String root, Map<String, Map<String, String>> lock) {
       );
     }
   }
-  File(_lockPath(root)).writeAsStringSync(buf.toString());
+  File(filePath).writeAsStringSync(buf.toString());
 }
+
+Map<String, Map<String, String>>? _readLock(String root) =>
+    _readYamlFile(_lockPath(root));
+
+Map<String, Map<String, String>>? _readCache(String root) =>
+    _readYamlFile(_cachePath(root));
 
 String _escapeYaml(String s) =>
     s.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
@@ -148,10 +165,10 @@ bool _hashesMatch(
   String root,
   String stepName,
   List<File> inputs,
-  Map<String, Map<String, String>>? lock,
+  Map<String, Map<String, String>>? lockOrCache,
 ) {
-  if (lock == null || !lock.containsKey(stepName)) return false;
-  final stepHashes = lock[stepName]!;
+  if (lockOrCache == null || !lockOrCache.containsKey(stepName)) return false;
+  final stepHashes = lockOrCache[stepName]!;
   for (final f in inputs) {
     final rel = _relativePath(root, f);
     final stored = stepHashes[rel];
@@ -172,22 +189,24 @@ void _updateLockWithHashes(
 ) {
   final lock = _readLock(root) ?? <String, Map<String, String>>{};
   lock[stepName] = Map.from(hashes);
-  _writeLock(root, lock);
+  _writeYamlFile(_lockPath(root), lock);
 }
 
-DateTime? _modified(File file) {
-  if (!file.existsSync()) return null;
-  return file.lastModifiedSync();
+void _updateCacheWithHashes(
+  String root,
+  String stepName,
+  Map<String, String> hashes,
+) {
+  final cache = _readCache(root) ?? <String, Map<String, String>>{};
+  cache[stepName] = Map.from(hashes);
+  _writeYamlFile(_cachePath(root), cache);
 }
 
-bool _anyNewerThan(Iterable<File> inputs, File output) {
-  final outTime = _modified(output);
-  if (outTime == null) return true;
-  for (final f in inputs) {
-    final t = _modified(f);
-    if (t != null && t.isAfter(outTime)) return true;
+void _cleanIos(String root) {
+  final iosDir = Directory(p.join(root, 'ios'));
+  if (iosDir.existsSync()) {
+    iosDir.deleteSync(recursive: true);
   }
-  return false;
 }
 
 List<File> _iconsInputs(String root) {
@@ -217,7 +236,7 @@ bool _iconsOutOfDate(String root) {
       'android/app/src/main/res/mipmap-anydpi-v26/launcher_icon.xml',
     ),
   );
-  if (!_anyNewerThan(inputs, output)) return false;
+  if (!output.existsSync()) return true;
   return !_hashesMatch(root, 'icons', inputs, _readLock(root));
 }
 
@@ -233,11 +252,28 @@ List<File> _l10nInputs(String root) {
   return [l10nYml, ...arbs].where((f) => f.existsSync()).cast<File>().toList();
 }
 
+bool _l10nGeneratedFilesMissing(String root) {
+  final l10nDir = p.join(root, 'lib/l10n');
+  final mainOutput = File(p.join(l10nDir, 'app_localizations.dart'));
+  if (!mainOutput.existsSync()) return true;
+  final dir = Directory(l10nDir);
+  if (!dir.existsSync()) return true;
+  for (final file in dir.listSync().whereType<File>()) {
+    if (file.path.endsWith('.arb')) {
+      final base = p.basenameWithoutExtension(file.path);
+      final genFile = File(
+        p.join(l10nDir, '${base.replaceFirst("app_", "app_localizations_")}.dart'),
+      );
+      if (!genFile.existsSync()) return true;
+    }
+  }
+  return false;
+}
+
 bool _l10nOutOfDate(String root) {
   final inputs = _l10nInputs(root);
-  final output = File(p.join(root, 'lib/l10n/app_localizations.dart'));
-  if (!_anyNewerThan(inputs, output)) return false;
-  return !_hashesMatch(root, 'l10n', inputs, _readLock(root));
+  if (_l10nGeneratedFilesMissing(root)) return true;
+  return !_hashesMatch(root, 'l10n', inputs, _readCache(root));
 }
 
 List<File> _isarInputs(String root) {
@@ -253,20 +289,6 @@ List<File> _isarInputs(String root) {
   return list;
 }
 
-bool _isarOutOfDate(String root) {
-  final inputs = _isarInputs(root);
-  if (inputs.isEmpty) return false;
-  final modelsDir = p.join(root, 'lib/data/models');
-  for (final dartFile in inputs) {
-    final baseName = p.basenameWithoutExtension(dartFile.path);
-    final gFile = File(p.join(modelsDir, '$baseName.g.dart'));
-    if (_anyNewerThan([dartFile], gFile)) {
-      return !_hashesMatch(root, 'isar', inputs, _readLock(root));
-    }
-  }
-  return false;
-}
-
 bool _isarGeneratedFilesMissing(String root) {
   final inputs = _isarInputs(root);
   if (inputs.isEmpty) return false;
@@ -277,6 +299,13 @@ bool _isarGeneratedFilesMissing(String root) {
     if (!gFile.existsSync()) return true;
   }
   return false;
+}
+
+bool _isarOutOfDate(String root) {
+  final inputs = _isarInputs(root);
+  if (inputs.isEmpty) return false;
+  if (_isarGeneratedFilesMissing(root)) return true;
+  return !_hashesMatch(root, 'isar', inputs, _readCache(root));
 }
 
 List<File> _splashInputs(String root) {
@@ -294,7 +323,11 @@ bool _splashOutOfDate(String root) {
   final output = File(
     p.join(root, 'android/app/src/main/res/drawable/launch_background.xml'),
   );
-  if (!_anyNewerThan(inputs, output)) return false;
+  if (!output.existsSync()) return true;
+  final splash12 = File(
+    p.join(root, 'assets/images/logos/splash_android12.png'),
+  );
+  if (!splash12.existsSync()) return true;
   return !_hashesMatch(root, 'splash', inputs, _readLock(root));
 }
 

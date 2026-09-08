@@ -1,6 +1,7 @@
 flutter_launcher_icons:
   generate: true
   android: "launcher_icon"
+  ios: false
   image_path: "assets/images/logos/colored_logo.webp"
   adaptive_icon_monochrome: "assets/images/logos/monochrome_logo.png"
   adaptive_icon_background: "assets/images/logos/colored_logo_without_mustache.png"
