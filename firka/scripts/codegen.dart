@@ -9,7 +9,7 @@ const _lockFileName = 'codegen-lock.yaml';
 
 void main() async {
   final root = _projectRoot();
-  print(root);
+  stdout.writeln(root);
   var ran = false;
 
   if (_iconsOutOfDate(root)) {

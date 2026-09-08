@@ -28,6 +28,7 @@ steps:
     commands:
       - export PUB_CACHE="$CI_WORKSPACE/.pub-cache"
       - cd firka
+      - '[ -f .env ] || cp .env.example .env 2>/dev/null || touch .env'
       - flutter pub get
 
   - name: codegen
@@ -76,6 +77,36 @@ steps:
       - cd kreta_api
       - dart pub get
       - MOCK_KRETA_SERVER_URL=http://127.0.0.1:8090 dart test
+
+  - name: firka-e2e-tests
+    image: git.firka.app/firka/firka-builder:latest
+    commands:
+      - export PUB_CACHE="$CI_WORKSPACE/.pub-cache"
+      - ./mock_kreta_server_bin -addr :8090 -data mock_kreta_server/data.json &
+      - sleep 1
+      - cd firka
+      - '[ -f .env ] || cp .env.example .env 2>/dev/null || touch .env'
+      - cp $(find "$PUB_CACHE" -name libisar.so | grep linux | head -n 1) libisar.so 2>/dev/null || true
+      - flutter test test/data/widget_test.dart test/e2e/screenshot_widget_test.dart test/e2e/notification_diff_test.dart
+
+  - name: firka-integration-tests
+    image: git.firka.app/firka/firka-builder:latest
+    privileged: true
+    volumes:
+      - /dev/kvm:/dev/kvm
+    commands:
+      - export PUB_CACHE="$CI_WORKSPACE/.pub-cache"
+      - 'grep -q "::1" /etc/hosts || echo "::1 localhost ip6-localhost ip6-loopback" >> /etc/hosts 2>/dev/null || true'
+      - sysctl -w net.ipv6.conf.all.disable_ipv6=0 2>/dev/null || true
+      - sed -i 's/TIMEOUT=60/TIMEOUT=300/' /opt/bin/start-emulator.sh
+      - sed -i 's/-snapshot default_boot/-no-snapshot-load/' /opt/bin/start-emulator.sh
+      - ./mock_kreta_server_bin -addr :8090 -data mock_kreta_server/data.json &
+      - sleep 1
+      - /opt/bin/start-emulator.sh
+      - adb reverse tcp:8090 tcp:8090
+      - cd firka
+      - '[ -f .env ] || cp .env.example .env 2>/dev/null || touch .env'
+      - flutter test integration_test/widget_e2e_test.dart
 
   - name: build-release
     image: git.firka.app/firka/firka-builder:latest

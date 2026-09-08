@@ -15,6 +15,8 @@ class LocalNotificationService {
       FlutterLocalNotificationsPlugin();
   static bool _initialized = false;
 
+  static final List<({int id, String title, String body})> postedNotifications = [];
+
   static Future<void> init() async {
     if (_initialized) return;
 
@@ -38,6 +40,12 @@ class LocalNotificationService {
     _initialized = true;
   }
 
+  /// Returns active notifications currently shown in the system status bar (Android 6.0+).
+  static Future<List<ActiveNotification>> getActiveNotifications() async {
+    await init();
+    return await _plugin.getActiveNotifications();
+  }
+
   /// Shows a single notification. [id] should be stable per logical
   /// notification (e.g. derived from account key + category) so a repeat
   /// wakeup that finds the same new items updates rather than duplicates it.
@@ -46,6 +54,8 @@ class LocalNotificationService {
     required String title,
     required String body,
   }) async {
+    postedNotifications.add((id: id, title: title, body: body));
+
     await init();
     await _plugin.show(
       id,

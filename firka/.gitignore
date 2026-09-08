@@ -53,3 +53,4 @@ coverage
 
 # Generated files
 *.g.dart
+libisar.so
