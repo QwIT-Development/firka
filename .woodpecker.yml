@@ -111,27 +111,40 @@ steps:
   - name: build-release
     image: git.firka.app/firka/firka-builder:latest
     when:
-      - branch: main
+      - branch: [main, staging]
     commands:
       - export PUB_CACHE="$CI_WORKSPACE/.pub-cache"
       - cd firka
-      - flutter build appbundle --release
+      - '[ -f "$(git rev-parse --git-dir)/shallow" ] && git fetch --unshallow 2>/dev/null || true'
+      - SHA=$(git rev-parse --short HEAD)
+      - COMMIT_COUNT=$(git rev-list --count HEAD)
+      - 'BASE_VERSION=$(grep "^version:" pubspec.yaml | cut -d: -f2 | cut -d+ -f1 | tr -d " ")'
+      - BUILD_NAME="$BASE_VERSION-$SHA"
+      - VERSION_CODE=$((2000 + COMMIT_COUNT))
+      - flutter build appbundle --release --build-name="$BUILD_NAME" --build-number="$VERSION_CODE"
 
   - name: build-debug
     image: git.firka.app/firka/firka-builder:latest
     when:
       - branch:
-          exclude: main
+          exclude: [main, staging]
     commands:
       - export PUB_CACHE="$CI_WORKSPACE/.pub-cache"
       - cd firka
-      - flutter build apk --debug --split-per-abi
+      - '[ -f "$(git rev-parse --git-dir)/shallow" ] && git fetch --unshallow 2>/dev/null || true'
+      - SHA=$(git rev-parse --short HEAD)
+      - COMMIT_COUNT=$(git rev-list --count HEAD)
+      - 'BASE_VERSION=$(grep "^version:" pubspec.yaml | cut -d: -f2 | cut -d+ -f1 | tr -d " ")'
+      - BUILD_NAME="$BASE_VERSION-$SHA"
+      - VERSION_CODE=$((2000 + COMMIT_COUNT))
+      - flutter build apk --debug --split-per-abi --build-name="$BUILD_NAME" --build-number="$VERSION_CODE"
+
 
   - name: publish-release
     image: woodpeckercommunity/plugin-gitea-package:latest
     pull: true
     when:
-      - branch: main
+      - branch: [main, staging]
     settings:
       user:
         from_secret: gitea_username
@@ -149,7 +162,7 @@ steps:
     pull: true
     when:
       - branch:
-          exclude: main
+          exclude: [main, staging]
     settings:
       user:
         from_secret: gitea_username
@@ -167,7 +180,7 @@ steps:
     pull: true
     when:
       - branch:
-          exclude: main
+          exclude: [main, staging]
     settings:
       user:
         from_secret: gitea_username
@@ -185,7 +198,7 @@ steps:
     pull: true
     when:
       - branch:
-          exclude: main
+          exclude: [main, staging]
     settings:
       user:
         from_secret: gitea_username
@@ -197,3 +210,4 @@ steps:
       file_source: ./firka/build/app/outputs/flutter-apk/app-x86_64-debug.apk
       file_name: app-x86_64-debug.apk
       update: 'true'
+
