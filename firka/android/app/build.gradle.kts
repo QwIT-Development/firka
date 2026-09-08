@@ -59,7 +59,7 @@ android {
             if (config != null) {
                 signingConfig = config
             }
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles("proguard-rules.pro")
         }
     }
 }
@@ -94,6 +94,26 @@ tasks.register("ensureEnv") {
 tasks.matching { it.name.startsWith("compileFlutterBuild") }.configureEach {
     dependsOn("ensureEnv")
 }
+
+// Ensure default ProGuard files exist at the projectDir location expected by AGP/R8 when build directory is relocated
+val defaultProguardDir = file("${project.projectDir}/build/intermediates/default_proguard_files/global")
+defaultProguardDir.mkdirs()
+val defaultProguardOptimize = File(defaultProguardDir, "proguard-android-optimize.txt-9.2.0")
+if (!defaultProguardOptimize.exists()) {
+    defaultProguardOptimize.writeText("-allowaccessmodification\n")
+}
+tasks.register("ensureProguardFiles") {
+    doLast {
+        defaultProguardDir.mkdirs()
+        if (!defaultProguardOptimize.exists()) {
+            defaultProguardOptimize.writeText("-allowaccessmodification\n")
+        }
+    }
+}
+tasks.matching { it.name.startsWith("compile") || it.name.contains("minify", ignoreCase = true) || it.name.contains("r8", ignoreCase = true) }.configureEach {
+    dependsOn("ensureProguardFiles")
+}
+
 flutter {
     source = "../.."
 }
