@@ -151,11 +151,29 @@ class FcmService {
     }
   }
 
+  static Future<bool>? _pendingPermissionRequest;
+
   static Future<bool> _requestPermission() async {
+    if (_pendingPermissionRequest != null) {
+      return await _pendingPermissionRequest!;
+    }
     final status = await Permission.notification.status;
     if (status.isGranted) return true;
-    final result = await Permission.notification.request();
-    return result.isGranted;
+
+    final future = () async {
+      try {
+        final result = await Permission.notification.request();
+        return result.isGranted;
+      } catch (e) {
+        _logger.warning('Failed to request notification permission: $e');
+        return false;
+      } finally {
+        _pendingPermissionRequest = null;
+      }
+    }();
+
+    _pendingPermissionRequest = future;
+    return await future;
   }
 
   static String? _currentStudentId(KretaClient? client) {

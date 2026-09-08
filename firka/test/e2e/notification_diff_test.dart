@@ -6,6 +6,7 @@ import 'package:firka/app/app_state.dart';
 import 'package:firka/app/initialization.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
+import 'package:firka/services/alarm_notification_service.dart';
 import 'package:firka/services/local_notification_service.dart';
 import 'package:firka/services/notification_diff_service.dart';
 import 'package:firka_common/data/database.dart';
@@ -312,6 +313,38 @@ void main() {
             .where((n) => n.body.contains('Fizika') || n.body.contains('Newton'))
             .toList();
         expect(fizikaNotifs, isEmpty);
+
+        LocalNotificationService.postedNotifications.clear();
+        final alarmGradeUid = 'test-grade-alarm-${DateTime.now().millisecondsSinceEpoch}';
+        final alarmGradeTime = DateTime.now().toUtc().toIso8601String();
+        await _postItem(httpClient, '/admin/api/grades', {
+          'Uid': alarmGradeUid,
+          'RogzitesDatuma': alarmGradeTime,
+          'KeszitesDatuma': alarmGradeTime,
+          'Tantargy': {
+            'Uid': '14,TOR',
+            'Nev': 'Történelem',
+            'Kategoria': {'Uid': '1', 'Nev': 'Kötelező'},
+            'SortIndex': 14,
+          },
+          'Tema': 'Középkor',
+          'Tipus': {'Uid': '1', 'Nev': 'Szóbeli'},
+          'ErtekFajta': {'Uid': '1', 'Nev': 'Osztályzat'},
+          'ErtekeloTanarNeve': 'Hérodotosz',
+          'Jelleg': 'Ertekeles',
+          'SzamErtek': 5,
+          'SzovegesErtek': 'Jeles',
+          'SulySzazalekErteke': 100,
+          'OsztalyCsoport': {'Uid': '10,11.A'},
+        });
+
+        await alarmNotificationWakeupCallback();
+
+        final alarmNotif = LocalNotificationService.postedNotifications.firstWhere(
+          (n) => n.title.contains('jegy') && n.body.contains('Történelem'),
+        );
+        expect(alarmNotif.title, contains('jegy'));
+        expect(alarmNotif.body, contains('Történelem'));
       });
     });
   });

@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka_common/data/models/token_model.dart';
-import 'package:firka/services/fcm_service.dart';
+import 'package:firka/services/notification_delivery_service.dart';
 import 'package:firka/data/widget.dart';
 import 'package:firka/core/settings/settings_effects.dart';
 import 'package:firka/core/settings/settings_repository.dart';
@@ -167,7 +167,7 @@ Future<void> _initData(AppInitialization init) async {
   // this the FCM token would only ever get (re-)registered for a user who
   // explicitly logs out and back in. Safe to call on every startup:
   // onUserLogin() itself no-ops if notifyAll is off or permission is denied.
-  unawaited(FcmService.onUserLogin(client: init.client!));
+  unawaited(NotificationDeliveryService.onUserLogin(client: init.client!));
 
   // Immediately refresh widget state from cached Isar lessons so widget is up to date
   unawaited(WidgetCacheHelper.updateWidgetCacheFromIsar());
@@ -248,11 +248,11 @@ Future<void> initializeApp() async {
   registerSettingsEffects(initData.settings, initData);
 
   try {
-    await FcmService.initialize().timeout(const Duration(seconds: 8));
+    await NotificationDeliveryService.initialize().timeout(const Duration(seconds: 8));
   } on TimeoutException catch (e, st) {
-    logger.warning('FcmService init timed out: $e', e, st);
+    logger.warning('NotificationDeliveryService init timed out: $e', e, st);
   } catch (e, st) {
-    logger.severe('Failed to initialize FcmService: $e', e, st);
+    logger.severe('Failed to initialize NotificationDeliveryService: $e', e, st);
   }
 
   await _initData(initData);

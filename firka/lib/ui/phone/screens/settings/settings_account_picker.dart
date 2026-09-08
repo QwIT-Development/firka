@@ -1,7 +1,7 @@
 import "package:dart_jsonwebtoken/dart_jsonwebtoken.dart";
 import "package:firka/app/app_state.dart";
 import "package:firka/app/initialization.dart";
-import "package:firka/services/fcm_service.dart";
+import "package:firka/services/notification_delivery_service.dart";
 import "package:firka/ui/shared/firka_icon.dart";
 import "package:firka/ui/theme/style.dart";
 import "package:firka/ui/phone/widgets/login_webview.dart";
@@ -137,15 +137,14 @@ class SettingsAccountPickerView extends StatelessWidget {
       return;
     }
 
-    await FcmService.onUserLogout();
+    await NotificationDeliveryService.onUserLogout();
 
     await data.settings.setSelectedAccountKey(token.key);
     await initializeApp();
 
     if (data.client != null) {
-      await FcmService.onUserLogin(
+      await NotificationDeliveryService.onUserLogin(
         client: data.client!,
-        settingsStore: data.settings,
       );
     }
 
@@ -157,7 +156,7 @@ class SettingsAccountPickerView extends StatelessWidget {
 
   Future<void> _logout(BuildContext context) async {
     try {
-      await FcmService.onUserLogout();
+      await NotificationDeliveryService.onUserLogout();
 
       final active = data.client!.cache.token.key;
 

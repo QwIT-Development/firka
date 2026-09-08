@@ -12,7 +12,7 @@ plugins {
 }
 android {
     namespace = "app.firka.naplo"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -77,6 +77,7 @@ configurations.all {
 dependencies {
     implementation("androidx.glance:glance-appwidget:1.1.1")
     implementation("com.google.android.gms:play-services-wearable:18.1.0")
+    implementation("com.google.android.gms:play-services-base:18.5.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 // Ensure .env exists before Flutter bundles assets (copy from .env.example if missing)

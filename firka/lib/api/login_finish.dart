@@ -1,6 +1,6 @@
 import "package:firka/app/app_state.dart";
 import "package:firka/app/initialization.dart";
-import "package:firka/services/fcm_service.dart";
+import "package:firka/services/notification_delivery_service.dart";
 import "package:firka_common/data/models/token_model.dart";
 import "package:kreta_api/kreta_api.dart";
 
@@ -18,9 +18,8 @@ Future<void> completeLogin(
   await initializeApp();
 
   if (data.client != null) {
-    await FcmService.onUserLogin(
+    await NotificationDeliveryService.onUserLogin(
       client: data.client!,
-      settingsStore: data.settings,
     );
   }
 }

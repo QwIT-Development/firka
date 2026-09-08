@@ -5,6 +5,7 @@ import "package:permission_handler/permission_handler.dart";
 import "package:firka/app/app_state.dart";
 import "package:firka/app/initialization.dart";
 import "package:firka/services/fcm_service.dart";
+import "package:firka/services/notification_delivery_service.dart";
 import "package:firka/services/watch_sync_helper.dart";
 
 import "settings_repository.dart";
@@ -53,12 +54,16 @@ void registerSettingsEffects(
     }
   });
 
-  repo.onChange(SettingsRegistry.notifyAll, (enabled) async {
-    await FcmService.handleEnabledChange(enabled);
+  repo.onChange(SettingsRegistry.notifyAll, (_) async {
+    await NotificationDeliveryService.syncDeliveryBackend();
+  });
+
+  repo.onChange(SettingsRegistry.notificationDeliveryMethod, (_) async {
+    await NotificationDeliveryService.syncDeliveryBackend();
   });
 
   repo.onChange(SettingsRegistry.notifyWakeupInterval, (_) async {
-    await FcmService.handleWakeupIntervalChange();
+    await NotificationDeliveryService.handleWakeupIntervalChange();
   });
 
   for (final setting in [

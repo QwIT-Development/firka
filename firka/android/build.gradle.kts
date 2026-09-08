@@ -13,25 +13,19 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
+    project.layout.buildDirectory.value(newSubprojectBuildDir)
 
-    afterEvaluate {
-        if (plugins.hasPlugin("com.android.application")) {
-            extensions.configure<ApplicationExtension> {
-                compileSdk = 37
-                defaultConfig {
-                    // buildToolsVersion can be set here if needed
+    if (project.name != "app") {
+        project.evaluationDependsOn(":app")
+
+        afterEvaluate {
+            if (plugins.hasPlugin("com.android.library")) {
+                extensions.configure<LibraryExtension> {
+                    compileSdk = 37
                 }
             }
         }
-
-        if (plugins.hasPlugin("com.android.library")) {
-            extensions.configure<LibraryExtension> {
-                compileSdk = 37
-            }
-        }
     }
-
-    project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
 
 tasks.register<Delete>("clean") {

@@ -10,6 +10,8 @@ import android.util.Log
 import androidx.glance.appwidget.updateAll
 import app.firka.naplo.glance.TimetableWidget
 import app.firka.naplo.glance.TimetableWidgetReceiver
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -172,6 +174,15 @@ class MainActivity : FlutterActivity() {
                         } catch (e: Exception) {
                             result.error("refresh_failed", e.message, null)
                         }
+                    }
+                }
+                "isGmsAvailable" -> {
+                    try {
+                        val availability = GoogleApiAvailability.getInstance()
+                        val resultCode = availability.isGooglePlayServicesAvailable(context)
+                        result.success(resultCode == ConnectionResult.SUCCESS)
+                    } catch (e: Exception) {
+                        result.success(false)
                     }
                 }
                 else -> {

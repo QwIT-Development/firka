@@ -20,6 +20,7 @@ dependencies:
   firebase_core: ^4.1.1
   firebase_messaging: ^16.0.2
   flutter_local_notifications: ^18.0.1
+  android_alarm_manager_plus: ^5.1.1
   dio: ^5.8.0+1
   isar_community: 3.3.0
   isar_community_flutter_libs: 3.3.0

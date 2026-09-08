@@ -24,6 +24,8 @@ enum TitleCapitalization { lower, normal, upper }
 /// `wakeup-2hourly` sent by the `fcm-notifier` backend service.
 enum NotifyWakeupInterval { hourly, twoHourly }
 
+enum NotificationDeliveryMethod { auto, fcm, alarm }
+
 abstract class SettingsSchema {
   @DoubleSetting(id: 1001, defaultValue: 0, min: 0, max: 120)
   double get bellDelay;
@@ -177,4 +179,11 @@ abstract class SettingsSchema {
 
   @BoolSetting(id: 1046, defaultValue: false)
   bool get fcmDebugNotifyOnMessage;
+
+  @EnumSetting(
+    id: 1047,
+    defaultValue: NotificationDeliveryMethod.auto,
+    values: NotificationDeliveryMethod.values,
+  )
+  NotificationDeliveryMethod get notificationDeliveryMethod;
 }

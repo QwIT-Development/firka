@@ -293,6 +293,12 @@ SettingsUiGroup buildSettingsTree(AppLocalizations l10n) {
           SettingsRegistry.notifyAll,
           always,
         ),
+        SettingsUiHeaderSmall(l10n.s_notif_delivery_method_header, isPushNotificationsEnabled),
+        SettingsUiEnum(SettingsRegistry.notificationDeliveryMethod, [
+          l10n.s_notif_delivery_auto,
+          l10n.s_notif_delivery_fcm,
+          l10n.s_notif_delivery_alarm,
+        ], isPushNotificationsEnabled),
         SettingsUiHeaderSmall(l10n.s_notif_wakeup_interval_header, isPushNotificationsEnabled),
         SettingsUiEnum(SettingsRegistry.notifyWakeupInterval, [
           l10n.s_notif_wakeup_hourly,
