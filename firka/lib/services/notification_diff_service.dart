@@ -208,6 +208,12 @@ class NotificationDiffService {
           body: body(newItems),
         );
       }
+    } else {
+      // First run: seed baseline silently without spamming backlog.
+      // If there are no items yet, record current time so subsequent items notify.
+      final baseline = LastSeen.newestOf(items) ?? LastSeen(DateTime.now(), 0);
+      await LastSeenHelper.set(accountKey, kind, baseline);
+      return;
     }
 
     final newest = LastSeen.newestOf(items);

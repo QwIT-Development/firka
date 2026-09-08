@@ -32,7 +32,7 @@ class TimetableWidgetReceiver : HomeWidgetGlanceWidgetReceiver<TimetableWidget>(
                 } catch (e: Exception) {
                     Log.e("TimetableWidget", "Failed glanceAppWidget.updateAll from onReceive", e)
                 } finally {
-                    pendingResult.finish()
+                    pendingResult?.finish()
                 }
             }
         }
@@ -51,7 +51,7 @@ class TimetableWidgetReceiver : HomeWidgetGlanceWidgetReceiver<TimetableWidget>(
                 val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(appWidgetId)
                 glanceAppWidget.update(context, glanceId)
             } finally {
-                pendingResult.finish()
+                pendingResult?.finish()
             }
         }
     }

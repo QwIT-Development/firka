@@ -244,6 +244,7 @@ Future<void> initializeApp() async {
   );
   initData.settings.cubit = initData.settingsCubit;
   Settings = initData.settings;
+  await Settings.loadAll();
   registerSettingsEffects(initData.settings, initData);
 
   try {

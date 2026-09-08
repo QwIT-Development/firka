@@ -50,6 +50,7 @@ class LessonCacheModel extends GenericCacheModel<Lesson> {
       ..topic = ctx.data.theme
       ..roomName = ctx.data.roomName
       ..type = ctx.data.type.name
+      ..createdAt = ctx.data.lastModifiedAt
       ..classGroup.init(ctx.cacheManager, ctx.data.classGroup)
       ..subject.init(ctx.cacheManager, ctx.data.subject);
 
