@@ -1,3 +1,4 @@
+import 'package:firka_common/data/models/class_group_cache_model.dart';
 import 'package:firka_common/data/models/generic_cache_model.dart';
 import 'package:firka_common/data/models/lesson_cache_model.dart';
 import 'package:firka_common/data/util.dart';
@@ -15,6 +16,7 @@ class OmissionCacheModel extends GenericCacheModel<Omission> {
   String? proofType;
 
   final lesson = IsarLink<LessonCacheModel>();
+  final classGroup = IsarLink<ClassGroupCacheModel>();
 
   @override
   void apply(CacheContext<Omission> ctx) {
@@ -23,7 +25,8 @@ class OmissionCacheModel extends GenericCacheModel<Omission> {
       ..state = ctx.data.state
       ..teacherName = ctx.data.teacher
       ..proofType = ctx.data.proofType?.description
-      ..createdAt = ctx.data.createdAt;
+      ..createdAt = ctx.data.createdAt
+      ..classGroup.unsafeInit(ctx.cacheManager, ctx.data.classGroup);
     lesson.value = ctx.cacheManager
         .getTimeTable()
         .startEqualTo(ctx.data.lesson!.start)

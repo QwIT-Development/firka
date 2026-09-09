@@ -456,10 +456,21 @@ class KretaClient {
     }
   }
 
+  /// Upserts [caches]. Deletes stale rows in [staleScope].
   Future<List<C>> _save<C extends GenericCacheModel<I>, I extends Identifiable>(
-    List<C> caches,
-  ) async {
+    List<C> caches, [
+    QueryBuilder<C, C, QAfterFilterCondition>? staleScope,
+  ]) async {
     isarInit.writeTxnSync(() {
+      if (staleScope != null) {
+        final freshKeys = caches.map((c) => c.cacheKey).toSet();
+        final staleIds = staleScope
+            .findAllSync()
+            .map((c) => c.cacheKey)
+            .where((key) => !freshKeys.contains(key))
+            .toList();
+        isarInit.collection<C>().deleteAllSync(staleIds);
+      }
       isarInit.collection<C>().putAllSync(caches);
     });
     initData.homeRefreshCubit.requestRefresh();
@@ -520,7 +531,7 @@ class KretaClient {
       KretaEndpoints.getGrades(cache.token.iss),
       GradeCacheModel.new,
       (json) => Grade.fromJson(json),
-    ).then(_save);
+    ).then((caches) => _save(caches, cache.getGrades()));
   }
 
   Future<List<HomeworkCacheModel>> getHomework({
@@ -534,17 +545,22 @@ class KretaClient {
       KretaEndpoints.getHomework(cache.token.iss, from, to),
       HomeworkCacheModel.new,
       (item) => Homework.fromJson(item),
-    ).then(_save);
+    ).then((caches) => _save(caches, cache.getHomeworks()));
   }
 
   /// Automatically aligns requests to start at Monday and end at Sunday
   Future<List<LessonCacheModel>> getLessons(DateTime from, DateTime to) async {
     assert(from.difference(to).inDays < 30);
     return (await _renewCache(
-        KretaEndpoints.getTimeTable(cache.token.iss, from, to),
-        LessonCacheModel.new,
-        (json) => Lesson.fromJson(json),
-      ).then(resolveDailyNth).then(_save))
+            KretaEndpoints.getTimeTable(cache.token.iss, from, to),
+            LessonCacheModel.new,
+            (json) => Lesson.fromJson(json),
+          )
+          .then(resolveDailyNth)
+          .then(
+            (caches) =>
+                _save(caches, cache.getTimeTable().and().between(from, to)),
+          ))
       ..sort((a, b) => a.start.compareTo(b.start));
   }
 
@@ -553,15 +569,28 @@ class KretaClient {
       KretaEndpoints.getTests(cache.token.iss, from, to),
       TestCacheModel.new,
       (item) => Test.fromJson(item),
-    ).then(_save);
+    ).then(
+      (caches) => _save(
+        caches,
+        isarInit.testCacheModels.filter().classGroup(cache.isCurrentClassGroup),
+      ),
+    );
   }
 
   Future<List<OmissionCacheModel>> getOmissions() async {
     return (await _renewCache(
-      KretaEndpoints.getOmissions(cache.token.iss),
-      OmissionCacheModel.new,
-      (item) => Omission.fromJson(item),
-    ).then(_save))..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        KretaEndpoints.getOmissions(cache.token.iss),
+        OmissionCacheModel.new,
+        (item) => Omission.fromJson(item),
+      ).then(
+        (caches) => _save(
+          caches,
+          isarInit.omissionCacheModels.filter().classGroup(
+            cache.isCurrentClassGroup,
+          ),
+        ),
+      ))
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
   }
 
   Future<List<SubjectCacheModel>> getSubjects() async {

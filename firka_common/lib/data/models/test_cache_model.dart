@@ -1,3 +1,4 @@
+import 'package:firka_common/data/models/class_group_cache_model.dart';
 import 'package:firka_common/data/models/generic_cache_model.dart';
 import 'package:firka_common/data/models/lesson_cache_model.dart';
 import 'package:firka_common/data/util.dart';
@@ -14,6 +15,7 @@ class TestCacheModel extends GenericCacheModel<Test> {
 
   @Backlink(to: "test")
   final lesson = IsarLink<LessonCacheModel>();
+  final classGroup = IsarLink<ClassGroupCacheModel>();
 
   @override
   void apply(CacheContext<Test> ctx) {
@@ -21,6 +23,7 @@ class TestCacheModel extends GenericCacheModel<Test> {
       ..topic = ctx.data.theme
       ..method = ctx.data.method.description
       ..teacherName = ctx.data.teacherName
-      ..createdAt = ctx.data.reportDate;
+      ..createdAt = ctx.data.reportDate
+      ..classGroup.unsafeInit(ctx.cacheManager, ctx.data.classGroup);
   }
 }
