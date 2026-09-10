@@ -146,6 +146,7 @@ class _HomeMainScreen extends FirkaState<HomeMainScreen> {
     final todayLesson = widget.data.client!.cache
         .getClassLessons()
         .on(now)
+        .sortByStart()
         .findAllSync();
 
     for (final item in infoItems) {
