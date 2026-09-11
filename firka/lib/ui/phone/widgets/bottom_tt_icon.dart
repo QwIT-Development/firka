@@ -54,7 +54,7 @@ class BottomTimeTableNavIconWidget extends StatelessWidget {
                       style: appStyle.fonts.H_16px.apply(
                         color: active
                             ? appStyle.colors.textPrimary
-                            : appStyle.colors.textTeritary,
+                            : appStyle.colors.textTertiary,
                       ),
                     ),
                     Text(
@@ -62,7 +62,7 @@ class BottomTimeTableNavIconWidget extends StatelessWidget {
                       style: appStyle.fonts.B_16R.apply(
                         color: active
                             ? appStyle.colors.textSecondary
-                            : appStyle.colors.textTeritary,
+                            : appStyle.colors.textTertiary,
                       ),
                     ),
                   ]

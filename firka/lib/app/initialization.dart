@@ -10,6 +10,7 @@ import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/services/notification_delivery_service.dart';
 import 'package:firka/data/widget.dart';
+import 'package:firka/core/extensions.dart';
 import 'package:firka/core/settings/settings_effects.dart';
 import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
@@ -54,12 +55,15 @@ Future<void> initLang(AppInitialization data) async {
   }
 }
 
-void initTheme(AppInitialization data) {
-  final themeCubit = data.themeCubit;
-
-  final brightness =
-      SchedulerBinding.instance.platformDispatcher.platformBrightness;
-
+/// Builds a full style for an explicit brightness, applying all custom color
+/// overrides — independent of the device's/app's actual current brightness.
+/// Used by [initTheme] itself, and by screens (like the theme editor) that
+/// need to preview a brightness other than the one currently on screen.
+FirkaStyle buildStyleForBrightness(
+  bool isLight, {
+  bool? isCustomTheme,
+  bool forceCustomColors = false,
+}) {
   final titleFont = Settings.titleFont.value;
   final titleWeight = Settings.titleWeight.value;
   final fonts = buildAppFonts(
@@ -67,6 +71,28 @@ void initTheme(AppInitialization data) {
     headingWeight: titleWeight,
     supportsWeight: titleFont.supportsWeight,
   );
+  final coreId = Settings.selectedCoreThemeId.value;
+  final gradeId = Settings.selectedGradeThemeId.value;
+
+  final style = styleFor(
+    coreId: coreId,
+    gradeId: gradeId,
+    isLight: isLight,
+    fonts: fonts,
+  );
+  _applyCustomColors(
+    style,
+    isCustomTheme: isCustomTheme,
+    force: forceCustomColors,
+  );
+  return style;
+}
+
+void initTheme(AppInitialization data) {
+  final themeCubit = data.themeCubit;
+
+  final brightness =
+      SchedulerBinding.instance.platformDispatcher.platformBrightness;
 
   appHeadingTextCase = switch (Settings.titleCapitalization.value) {
     TitleCapitalization.lower => HeadingTextCase.lower,
@@ -74,50 +100,197 @@ void initTheme(AppInitialization data) {
     TitleCapitalization.normal => HeadingTextCase.normal,
   };
 
-  FirkaStyle baseStyle;
-  final coreId = Settings.selectedCoreThemeId.value;
-  final gradeId = Settings.selectedGradeThemeId.value;
-  switch (Settings.themeBrightness.value) {
-    case ThemeBrightness.light:
-      baseStyle = styleFor(
-        coreId: coreId,
-        gradeId: gradeId,
-        isLight: true,
-        fonts: fonts,
-      );
-      themeCubit.setLightMode(true);
-      break;
-    case ThemeBrightness.dark:
-      baseStyle = styleFor(
-        coreId: coreId,
-        gradeId: gradeId,
-        isLight: false,
-        fonts: fonts,
-      );
-      themeCubit.setLightMode(false);
-      break;
-    case ThemeBrightness.auto:
-      if (brightness == Brightness.dark) {
-        baseStyle = styleFor(
-          coreId: coreId,
-          gradeId: gradeId,
-          isLight: false,
-          fonts: fonts,
-        );
-        themeCubit.setLightMode(false);
-      } else {
-        baseStyle = styleFor(
-          coreId: coreId,
-          gradeId: gradeId,
-          isLight: true,
-          fonts: fonts,
-        );
-        themeCubit.setLightMode(true);
-      }
+  final isLight = switch (Settings.themeBrightness.value) {
+    ThemeBrightness.light => true,
+    ThemeBrightness.dark => false,
+    ThemeBrightness.auto => brightness != Brightness.dark,
+  };
+  themeCubit.setLightMode(isLight);
+  appStyle = buildStyleForBrightness(isLight);
+}
+
+void _applyCustomColors(
+  FirkaStyle style, {
+  bool? isCustomTheme,
+  bool force = false,
+}) {
+  final colors = style.colors;
+
+  colors.grade5 = Settings.customGradeColor5.value.toColorFromHexSetting();
+  colors.grade4 = Settings.customGradeColor4.value.toColorFromHexSetting();
+  colors.grade3 = Settings.customGradeColor3.value.toColorFromHexSetting();
+  colors.grade2 = Settings.customGradeColor2.value.toColorFromHexSetting();
+  colors.grade1 = Settings.customGradeColor1.value.toColorFromHexSetting();
+
+  final customActive =
+      isCustomTheme ?? !isBuiltinThemeId(Settings.selectedThemeId.value);
+  if (!force && !customActive) {
+    return;
   }
 
-  appStyle = baseStyle;
+  final isLight = style.isLight;
+
+  colors.accent =
+      (isLight
+              ? Settings.customAccentColorLight
+              : Settings.customAccentColorDark)
+          .value
+          .toColorFromHexSetting();
+  colors.a10p = colors.accent.withAlpha(0x1a);
+  colors.a15p = colors.accent.withAlpha(0x26);
+
+  colors.background =
+      (isLight
+              ? Settings.customBackgroundColorLight
+              : Settings.customBackgroundColorDark)
+          .value
+          .toColorFromHexSetting();
+  colors.background0p = colors.background.withAlpha(0);
+
+  colors.card =
+      (isLight
+              ? Settings.customCardColorLight
+              : Settings.customCardColorDark)
+          .value
+          .toColorFromHexSetting();
+  colors.cardTranslucent = colors.card.withAlpha(0x80);
+
+  colors.buttonSecondaryFill =
+      (isLight
+              ? Settings.customButtonColorLight
+              : Settings.customButtonColorDark)
+          .value
+          .toColorFromHexSetting();
+
+  colors.secondary =
+      (isLight
+              ? Settings.customSecondaryColorLight
+              : Settings.customSecondaryColorDark)
+          .value
+          .toColorFromHexSetting();
+  colors.buttonDisabledIcon = colors.secondary.withAlpha(0x80);
+
+  final customTextLight = Settings.customTextColorLight.value;
+  final customTextDark = Settings.customTextColorDark.value;
+  final isCustomTextLight =
+      customTextLight != SettingsRegistry.customTextColorLight.defaultValue;
+  final isCustomTextDark =
+      customTextDark != SettingsRegistry.customTextColorDark.defaultValue;
+
+  final textLight = customTextLight.toColorFromHexSetting();
+  final textDark = customTextDark.toColorFromHexSetting();
+  colors.textPrimary = isLight ? textLight : textDark;
+
+  final customSecLight = Settings.customTextSecondaryColorLight.value;
+  final customSecDark = Settings.customTextSecondaryColorDark.value;
+  final isCustomSecLight = customSecLight !=
+      SettingsRegistry.customTextSecondaryColorLight.defaultValue;
+  final isCustomSecDark = customSecDark !=
+      SettingsRegistry.customTextSecondaryColorDark.defaultValue;
+
+  colors.textSecondary = isLight
+      ? (isCustomSecLight
+          ? customSecLight.toColorFromHexSetting()
+          : (isCustomTextLight
+              ? textLight.withAlpha(0xCC)
+              : customSecLight.toColorFromHexSetting()))
+      : (isCustomSecDark
+          ? customSecDark.toColorFromHexSetting()
+          : (isCustomTextDark
+              ? textDark.withAlpha(0xB3)
+              : customSecDark.toColorFromHexSetting()));
+
+  final customTertLight = Settings.customTextTertiaryColorLight.value;
+  final customTertDark = Settings.customTextTertiaryColorDark.value;
+  final isCustomTertLight = customTertLight !=
+      SettingsRegistry.customTextTertiaryColorLight.defaultValue;
+  final isCustomTertDark = customTertDark !=
+      SettingsRegistry.customTextTertiaryColorDark.defaultValue;
+
+  colors.textTertiary = isLight
+      ? (isCustomTertLight
+          ? customTertLight.toColorFromHexSetting()
+          : (isCustomTextLight
+              ? textLight.withAlpha(0x80)
+              : customTertLight.toColorFromHexSetting()))
+      : (isCustomTertDark
+          ? customTertDark.toColorFromHexSetting()
+          : (isCustomTextDark
+              ? textDark.withAlpha(0x80)
+              : customTertDark.toColorFromHexSetting()));
+  colors.textTeritary = colors.textTertiary;
+
+  colors.textPrimaryLight = textLight;
+  colors.textSecondaryLight = isCustomSecLight
+      ? customSecLight.toColorFromHexSetting()
+      : (isCustomTextLight
+          ? textLight.withAlpha(0xCC)
+          : customSecLight.toColorFromHexSetting());
+  colors.textTertiaryLight = isCustomTertLight
+      ? customTertLight.toColorFromHexSetting()
+      : (isCustomTextLight
+          ? textLight.withAlpha(0x80)
+          : customTertLight.toColorFromHexSetting());
+
+  colors.shadowColor =
+      (isLight
+              ? Settings.customShadowColorLight
+              : Settings.customShadowColorDark)
+          .value
+          .toColorFromHexSetting();
+
+  colors.success =
+      (isLight
+              ? Settings.customSuccessColorLight
+              : Settings.customSuccessColorDark)
+          .value
+          .toColorFromHexSetting();
+
+  colors.warningAccent =
+      (isLight
+              ? Settings.customWarningAccentColorLight
+              : Settings.customWarningAccentColorDark)
+          .value
+          .toColorFromHexSetting();
+  colors.warning15p = colors.warningAccent.withAlpha(0x26);
+
+  colors.warningText =
+      (isLight
+              ? Settings.customWarningTextColorLight
+              : Settings.customWarningTextColorDark)
+          .value
+          .toColorFromHexSetting();
+
+  colors.warningCard =
+      (isLight
+              ? Settings.customWarningCardColorLight
+              : Settings.customWarningCardColorDark)
+          .value
+          .toColorFromHexSetting();
+
+  colors.errorAccent =
+      (isLight
+              ? Settings.customErrorAccentColorLight
+              : Settings.customErrorAccentColorDark)
+          .value
+          .toColorFromHexSetting();
+  colors.error15p = colors.errorAccent.withAlpha(0x26);
+
+  colors.errorText =
+      (isLight
+              ? Settings.customErrorTextColorLight
+              : Settings.customErrorTextColorDark)
+          .value
+          .toColorFromHexSetting();
+
+  colors.errorCard =
+      (isLight
+              ? Settings.customErrorCardColorLight
+              : Settings.customErrorCardColorDark)
+          .value
+          .toColorFromHexSetting();
 }
+
 Future<void> _initData(AppInitialization init) async {
   await init.settings.loadAll();
   final selectedThemeId = Settings.selectedThemeId.value;
@@ -248,11 +421,17 @@ Future<void> initializeApp() async {
   registerSettingsEffects(initData.settings, initData);
 
   try {
-    await NotificationDeliveryService.initialize().timeout(const Duration(seconds: 8));
+    await NotificationDeliveryService.initialize().timeout(
+      const Duration(seconds: 8),
+    );
   } on TimeoutException catch (e, st) {
     logger.warning('NotificationDeliveryService init timed out: $e', e, st);
   } catch (e, st) {
-    logger.severe('Failed to initialize NotificationDeliveryService: $e', e, st);
+    logger.severe(
+      'Failed to initialize NotificationDeliveryService: $e',
+      e,
+      st,
+    );
   }
 
   await _initData(initData);

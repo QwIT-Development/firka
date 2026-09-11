@@ -7,6 +7,7 @@ import "package:firka/core/settings/settings_schema.dart";
 import "package:firka/core/settings/settings_ui.dart";
 import "package:firka/core/settings/title_font.dart";
 import "package:firka/l10n/app_localizations.dart";
+import "package:firka/ui/phone/screens/themes/builtin_theme_id.dart";
 import "package:firka/ui/shared/firka_icon.dart";
 import "package:firka/ui/theme/style.dart";
 import "package:firka_common/ui/components/firka_card.dart";
@@ -50,9 +51,7 @@ class _SettingsPersonalizationViewState
       padding: const EdgeInsets.only(left: 4, bottom: 8, top: 16),
       child: Text(
         text,
-        style: appStyle.fonts.B_16R.apply(
-          color: appStyle.colors.textPrimary,
-        ),
+        style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
       ),
     );
   }
@@ -78,29 +77,20 @@ class _SettingsPersonalizationViewState
     final left = <Widget>[];
     if (iconType != null && iconData != null) {
       left.add(
-        FirkaIconWidget(
-          iconType,
-          iconData,
-          color: appStyle.colors.accent,
-        ),
+        FirkaIconWidget(iconType, iconData, color: appStyle.colors.accent),
       );
       left.add(const SizedBox(width: 8));
     }
     left.add(
       Text(
         title,
-        style: appStyle.fonts.B_16SB.apply(
-          color: appStyle.colors.textPrimary,
-        ),
+        style: appStyle.fonts.B_16SB.apply(color: appStyle.colors.textPrimary),
       ),
     );
 
     return GestureDetector(
       onTap: onTap,
-      child: FirkaCard(
-        left: left,
-        right: [_externalArrow()],
-      ),
+      child: FirkaCard(left: left, right: [_externalArrow()]),
     );
   }
 
@@ -128,12 +118,7 @@ class _SettingsPersonalizationViewState
   }
 
   List<Color> _coreSwatch(CoreThemeColors colors) {
-    return [
-      colors.secondary,
-      colors.accent,
-      colors.background,
-      colors.card,
-    ];
+    return [colors.secondary, colors.accent, colors.background, colors.card];
   }
 
   List<Color> _gradeSwatch(GradeThemeColors colors) {
@@ -147,6 +132,27 @@ class _SettingsPersonalizationViewState
   }
 
   Widget _coreThemePager() {
+    final isCustomTheme =
+        !isBuiltinThemeId(_settings.get(SettingsRegistry.selectedThemeId));
+
+    if (isCustomTheme) {
+      return IgnorePointer(
+        child: _PresetSwatchPager(
+          key: const ValueKey("core-themes-custom"),
+          swatches: [
+            [
+              appStyle.colors.secondary,
+              appStyle.colors.accent,
+              appStyle.colors.background,
+              appStyle.colors.card,
+            ],
+          ],
+          selectedIndex: 0,
+          onSelected: (_) {},
+        ),
+      );
+    }
+
     final cores = coreThemes.values.toList(growable: false);
     final selectedId = _settings.get(SettingsRegistry.selectedCoreThemeId);
     var selectedIndex = cores.indexWhere((theme) => theme.id == selectedId);
@@ -190,19 +196,6 @@ class _SettingsPersonalizationViewState
     );
   }
 
-  Widget _stubCustomizeButton() {
-    return FirkaCard(
-      left: [
-        Text(
-          _l10n.s_c_customize,
-          style: appStyle.fonts.B_16SB.apply(
-            color: appStyle.colors.textPrimary,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _customizeButton({required String route}) {
     return GestureDetector(
       onTap: () => context.push(route),
@@ -241,9 +234,7 @@ class _SettingsPersonalizationViewState
       left: [
         Text(
           label,
-          style: appStyle.fonts.B_16R.apply(
-            color: appStyle.colors.textPrimary,
-          ),
+          style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
         ),
       ],
       right: selected
@@ -281,12 +272,8 @@ class _SettingsPersonalizationViewState
             },
       child: FirkaCard(
         color: selected ? _selectedSurface : _mutedCardColor,
-        left: [
-          Text(font.displayName, style: style),
-        ],
-        right: selected
-            ? [_checkMark(), const SizedBox(width: 8)]
-            : const [],
+        left: [Text(font.displayName, style: style)],
+        right: selected ? [_checkMark(), const SizedBox(width: 8)] : const [],
       ),
     );
   }
@@ -322,10 +309,7 @@ class _SettingsPersonalizationViewState
   Widget _fontPicker(TitleFont selected) {
     if (!_fontPickerExpanded) {
       return Column(
-        children: [
-          _fontCard(selected, selected: true),
-          _changeRow(),
-        ],
+        children: [_fontCard(selected, selected: true), _changeRow()],
       );
     }
 
@@ -447,7 +431,8 @@ class _SettingsPersonalizationViewState
               final thickLeft = thickRight - thickWidth;
 
               final showThin = thumbRight < thinLeft || thumbLeft > thinRight;
-              final showThick = thumbRight < thickLeft || thumbLeft > thickRight;
+              final showThick =
+                  thumbRight < thickLeft || thumbLeft > thickRight;
 
               return GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -621,15 +606,18 @@ class _SettingsPersonalizationViewState
                 _shortcutRow(
                   title: _l10n.s_c_change_app_icon,
                   onTap: () {
-                    context.push("/settings", extra: [
-                      SettingsUiBackHeader(_l10n.s_customization, () => true),
-                      ...widget.item.appIconPickerChildren,
-                    ]);
+                    context.push(
+                      "/settings",
+                      extra: [
+                        SettingsUiBackHeader(_l10n.s_customization, () => true),
+                        ...widget.item.appIconPickerChildren,
+                      ],
+                    );
                   },
                 ),
               _sectionLabel(_l10n.s_c_colors_header),
               _coreThemePager(),
-              _stubCustomizeButton(),
+              _customizeButton(route: "/theme-editor"),
               _sectionLabel(_l10n.s_c_theme_header),
               _themeOption(_l10n.s_c_theme_auto, ThemeBrightness.auto),
               _themeOption(_l10n.s_c_theme_light, ThemeBrightness.light),
@@ -802,11 +790,7 @@ class _SwatchPageDots extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Color.lerp(
-          accent.withValues(alpha: 0.28),
-          accent,
-          t,
-        ),
+        color: Color.lerp(accent.withValues(alpha: 0.28), accent, t),
       ),
     );
   }

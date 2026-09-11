@@ -56,6 +56,55 @@ void registerSettingsEffects(
 
   repo.onChange(SettingsRegistry.selectedCoreThemeId, refreshPresetTheme);
   repo.onChange(SettingsRegistry.selectedGradeThemeId, refreshPresetTheme);
+  repo.onChange(SettingsRegistry.selectedThemeId, refreshPresetTheme);
+
+  Future<void> refreshCustomColors(_) async {
+    initTheme(initData);
+    initData.themeCubit.refresh();
+    initData.homeRefreshCubit.requestRefresh();
+  }
+
+  for (final setting in [
+    SettingsRegistry.customGradeColor5,
+    SettingsRegistry.customGradeColor4,
+    SettingsRegistry.customGradeColor3,
+    SettingsRegistry.customGradeColor2,
+    SettingsRegistry.customGradeColor1,
+    SettingsRegistry.customAccentColorLight,
+    SettingsRegistry.customAccentColorDark,
+    SettingsRegistry.customBackgroundColorLight,
+    SettingsRegistry.customBackgroundColorDark,
+    SettingsRegistry.customCardColorLight,
+    SettingsRegistry.customCardColorDark,
+    SettingsRegistry.customButtonColorLight,
+    SettingsRegistry.customButtonColorDark,
+    SettingsRegistry.customSecondaryColorLight,
+    SettingsRegistry.customSecondaryColorDark,
+    SettingsRegistry.customTextColorLight,
+    SettingsRegistry.customTextColorDark,
+    SettingsRegistry.customTextSecondaryColorLight,
+    SettingsRegistry.customTextSecondaryColorDark,
+    SettingsRegistry.customTextTertiaryColorLight,
+    SettingsRegistry.customTextTertiaryColorDark,
+    SettingsRegistry.customShadowColorLight,
+    SettingsRegistry.customShadowColorDark,
+    SettingsRegistry.customSuccessColorLight,
+    SettingsRegistry.customSuccessColorDark,
+    SettingsRegistry.customWarningAccentColorLight,
+    SettingsRegistry.customWarningAccentColorDark,
+    SettingsRegistry.customWarningTextColorLight,
+    SettingsRegistry.customWarningTextColorDark,
+    SettingsRegistry.customWarningCardColorLight,
+    SettingsRegistry.customWarningCardColorDark,
+    SettingsRegistry.customErrorAccentColorLight,
+    SettingsRegistry.customErrorAccentColorDark,
+    SettingsRegistry.customErrorTextColorLight,
+    SettingsRegistry.customErrorTextColorDark,
+    SettingsRegistry.customErrorCardColorLight,
+    SettingsRegistry.customErrorCardColorDark,
+  ]) {
+    repo.onChange(setting, refreshCustomColors);
+  }
 
   repo.onChange(SettingsRegistry.wearOsSupport, (enabled) async {
     if (!Platform.isAndroid) return;

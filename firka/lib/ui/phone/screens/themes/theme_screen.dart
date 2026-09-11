@@ -1,9 +1,12 @@
 import "package:carousel_slider/carousel_slider.dart";
 import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:go_router/go_router.dart";
 import "package:majesticons_flutter/majesticons_flutter.dart";
 
 import "package:firka/app/app_state.dart";
+import "package:firka/app/initialization.dart";
+import "package:firka/core/bloc/theme_cubit.dart";
 import "package:firka/ui/components/firka_icon_button.dart";
 import "package:firka/ui/phone/screens/themes/preview/theme_preview_data.dart";
 import "package:firka/ui/phone/screens/themes/preview/theme_preview_pages.dart";
@@ -34,6 +37,16 @@ class _ThemeScreenState extends State<ThemeScreen> {
   void initState() {
     super.initState();
     _preview = ThemePreviewData.build();
+    appStyle = buildStyleForBrightness(
+      appStyle.isLight,
+      isCustomTheme: !_theme.isBuiltin,
+    );
+  }
+
+  @override
+  void dispose() {
+    initTheme(widget.data);
+    super.dispose();
   }
 
   String get _originLabel {
@@ -60,92 +73,107 @@ class _ThemeScreenState extends State<ThemeScreen> {
   Widget build(BuildContext context) {
     final l10n = widget.data.l10n;
 
-    return Scaffold(
-      backgroundColor: appStyle.colors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Transform.translate(
-                    offset: const Offset(-4, 0),
-                    child: GestureDetector(
-                      onTap: () => context.pop(),
-                      child: FirkaIconWidget(
-                        FirkaIconType.majesticons,
-                        Majesticon.chevronLeftLine,
-                        color: appStyle.colors.textSecondary,
-                      ),
-                    ),
-                  ),
-                  Transform.translate(
-                    offset: const Offset(-4, 1),
-                    child: Text(
-                      l10n.s_c_theme_header,
-                      style: appStyle.fonts.B_16R.apply(
-                        color: appStyle.colors.textPrimary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
+    return BlocBuilder<ThemeCubit, ThemeState>(
+      bloc: widget.data.themeCubit,
+      builder: (context, _) {
+        return Scaffold(
+          backgroundColor: appStyle.colors.background,
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ThemeSwatchIcon(swatch: _theme.swatch, size: 48),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ThemeNameLabel(
-                          name: _theme.name,
-                          editable: _theme.canRename,
-                          style: appStyle.fonts.H_H2.apply(
-                            color: appStyle.colors.textPrimary,
-                          ),
-                          onChanged: (value) {
-                            setState(() => _theme.name = value);
-                            widget.args.onChanged();
-                          },
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          _originLabel,
-                          style: appStyle.fonts.B_14R.apply(
+                  Row(
+                    children: [
+                      Transform.translate(
+                        offset: const Offset(-4, 0),
+                        child: GestureDetector(
+                          onTap: () => context.pop(),
+                          child: FirkaIconWidget(
+                            FirkaIconType.majesticons,
+                            Majesticon.chevronLeftLine,
                             color: appStyle.colors.textSecondary,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      Transform.translate(
+                        offset: const Offset(-4, 1),
+                        child: Text(
+                          l10n.s_c_theme_header,
+                          style: appStyle.fonts.B_16R.apply(
+                            color: appStyle.colors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 20),
                   Row(
-                    spacing: 8,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (_theme.isOwn) ...[
-                        FirkaIconButton(
-                          onTap: () {},
-                          child: FirkaIconWidget(
-                            FirkaIconType.majesticons,
-                            Majesticon.editPen4Line,
-                            size: 18,
-                            color: appStyle.colors.textPrimary,
-                          ),
+                      ThemeSwatchIcon(swatch: _theme.swatch, size: 48),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ThemeNameLabel(
+                              name: _theme.name,
+                              editable: _theme.canRename,
+                              style: appStyle.fonts.H_H2.apply(
+                                color: appStyle.colors.textPrimary,
+                              ),
+                              onChanged: (value) {
+                                setState(() => _theme.name = value);
+                                widget.args.onChanged();
+                              },
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _originLabel,
+                              style: appStyle.fonts.B_14R.apply(
+                                color: appStyle.colors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
-                        FirkaIconButton(
-                          onTap: () {},
-                          child: FirkaIconWidget(
-                            FirkaIconType.majesticons,
-                            Majesticon.shareLine,
-                            size: 18,
-                            color: appStyle.colors.textPrimary,
-                          ),
-                        ),
-                      ],
+                      ),
+                      Row(
+                        spacing: 8,
+                        children: [
+                          if (_theme.isOwn) ...[
+                            FirkaIconButton(
+                              onTap: () async {
+                                await context.push("/theme-editor");
+                                if (!mounted) return;
+                                setState(() {
+                                  _theme.swatch =
+                                      UserTheme.swatchFromAppStyle();
+                                  appStyle = buildStyleForBrightness(
+                                    appStyle.isLight,
+                                    isCustomTheme: true,
+                                  );
+                                });
+                                widget.args.onChanged();
+                              },
+                              child: FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.editPen4Line,
+                                size: 18,
+                                color: appStyle.colors.textPrimary,
+                              ),
+                            ),
+                            FirkaIconButton(
+                              onTap: () {},
+                              child: FirkaIconWidget(
+                                FirkaIconType.majesticons,
+                                Majesticon.shareLine,
+                                size: 18,
+                                color: appStyle.colors.textPrimary,
+                              ),
+                            ),
+                          ],
                       if (_theme.canDelete)
                         FirkaIconButton(
                           onTap: _delete,
@@ -202,6 +230,8 @@ class _ThemeScreenState extends State<ThemeScreen> {
           ),
         ),
       ),
+    );
+      },
     );
   }
 }

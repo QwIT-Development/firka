@@ -21,6 +21,7 @@ import 'package:firka/ui/phone/screens/message/message_screen.dart';
 import 'package:firka/ui/phone/screens/home/home_screen.dart';
 import 'package:firka/ui/phone/screens/settings/settings_screen.dart';
 import 'package:firka/ui/phone/screens/grade_colors/grade_colors_screen.dart';
+import 'package:firka/ui/phone/screens/theme_editor/theme_editor_screen.dart';
 import 'package:firka/ui/phone/screens/themes/theme_screen.dart';
 import 'package:firka/ui/phone/screens/themes/themes_screen.dart';
 import 'package:firka/ui/phone/screens/themes/user_theme.dart';
@@ -121,6 +122,13 @@ GoRouter createAppRouter() {
         builder: (context, state) => DefaultAssetBundle(
           bundle: FirkaBundle(),
           child: GradeColorsScreen(initData, key: state.pageKey),
+        ),
+      ),
+      GoRoute(
+        path: '/theme-editor',
+        builder: (context, state) => DefaultAssetBundle(
+          bundle: FirkaBundle(),
+          child: ThemeEditorScreen(initData, key: state.pageKey),
         ),
       ),
       GoRoute(

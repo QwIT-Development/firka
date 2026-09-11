@@ -50,9 +50,41 @@ class SettingsRegistry {
   static const customGradeColor3 = StringSetting(id: 1050, defaultValue: "0xFFF9CF00");
   static const customGradeColor2 = StringSetting(id: 1051, defaultValue: "0xFFFFA046");
   static const customGradeColor1 = StringSetting(id: 1052, defaultValue: "0xFFFF54A1");
+  static const customAccentColorLight = StringSetting(id: 1053, defaultValue: "0xFFA7DC22");
+  static const customAccentColorDark = StringSetting(id: 1054, defaultValue: "0xFFA7DC22");
+  static const customBackgroundColorLight = StringSetting(id: 1055, defaultValue: "0xFFFAFFF0");
+  static const customBackgroundColorDark = StringSetting(id: 1056, defaultValue: "0xFF0D1202");
+  static const customCardColorLight = StringSetting(id: 1057, defaultValue: "0xFFF3FBDE");
+  static const customCardColorDark = StringSetting(id: 1058, defaultValue: "0xFF141905");
+  static const customButtonColorLight = StringSetting(id: 1059, defaultValue: "0xFFFEFFFD");
+  static const customButtonColorDark = StringSetting(id: 1060, defaultValue: "0xFF20290B");
+  static const customSecondaryColorLight = StringSetting(id: 1061, defaultValue: "0xFF6E8F1B");
+  static const customSecondaryColorDark = StringSetting(id: 1062, defaultValue: "0xFFCBEE71");
+  static const customTextColorLight = StringSetting(id: 1063, defaultValue: "0xFF394C0A");
+  static const customTextColorDark = StringSetting(id: 1064, defaultValue: "0xFFEAF7CC");
+  static const customTextSecondaryColorLight = StringSetting(id: 1065, defaultValue: "0xCC394C0A");
+  static const customTextSecondaryColorDark = StringSetting(id: 1066, defaultValue: "0xB3EAF7CC");
+  static const customTextTertiaryColorLight = StringSetting(id: 1067, defaultValue: "0x80394C0A");
+  static const customTextTertiaryColorDark = StringSetting(id: 1068, defaultValue: "0x80EAF7CC");
+  static const customShadowColorLight = StringSetting(id: 1069, defaultValue: "0x33647E22");
+  static const customShadowColorDark = StringSetting(id: 1070, defaultValue: "0x26CBEE71");
+  static const customSuccessColorLight = StringSetting(id: 1071, defaultValue: "0xFF92EA3B");
+  static const customSuccessColorDark = StringSetting(id: 1072, defaultValue: "0xFF92EA3B");
+  static const customWarningAccentColorLight = StringSetting(id: 1073, defaultValue: "0xFFFFA046");
+  static const customWarningAccentColorDark = StringSetting(id: 1074, defaultValue: "0xFFFFA046");
+  static const customWarningTextColorLight = StringSetting(id: 1075, defaultValue: "0xFF8F531B");
+  static const customWarningTextColorDark = StringSetting(id: 1076, defaultValue: "0xFFF0B37A");
+  static const customWarningCardColorLight = StringSetting(id: 1077, defaultValue: "0xFFFAEBDC");
+  static const customWarningCardColorDark = StringSetting(id: 1078, defaultValue: "0xFF201203");
+  static const customErrorAccentColorLight = StringSetting(id: 1079, defaultValue: "0xFFFF54A1");
+  static const customErrorAccentColorDark = StringSetting(id: 1080, defaultValue: "0xFFFF54A1");
+  static const customErrorTextColorLight = StringSetting(id: 1081, defaultValue: "0xFF8F1B4F");
+  static const customErrorTextColorDark = StringSetting(id: 1082, defaultValue: "0xFFF59EC5");
+  static const customErrorCardColorLight = StringSetting(id: 1083, defaultValue: "0xFFFADCE9");
+  static const customErrorCardColorDark = StringSetting(id: 1084, defaultValue: "0xFF1E030F");
 
   static const all = <Setting>[
-    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl, lastSeen, surpriseGrades, seasonalAppIcons, uwuMode, notifyAll, notifyGrades, notifyHomeworkTests, notifyAbsences, notifyLessons, notifyMessages, notifyMutedSubjects, notifyWakeupInterval, fcmDebugNotifyOnMessage, notificationDeliveryMethod, customGradeColor5, customGradeColor4, customGradeColor3, customGradeColor2, customGradeColor1,
+    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl, lastSeen, surpriseGrades, seasonalAppIcons, uwuMode, notifyAll, notifyGrades, notifyHomeworkTests, notifyAbsences, notifyLessons, notifyMessages, notifyMutedSubjects, notifyWakeupInterval, fcmDebugNotifyOnMessage, notificationDeliveryMethod, customGradeColor5, customGradeColor4, customGradeColor3, customGradeColor2, customGradeColor1, customAccentColorLight, customAccentColorDark, customBackgroundColorLight, customBackgroundColorDark, customCardColorLight, customCardColorDark, customButtonColorLight, customButtonColorDark, customSecondaryColorLight, customSecondaryColorDark, customTextColorLight, customTextColorDark, customTextSecondaryColorLight, customTextSecondaryColorDark, customTextTertiaryColorLight, customTextTertiaryColorDark, customShadowColorLight, customShadowColorDark, customSuccessColorLight, customSuccessColorDark, customWarningAccentColorLight, customWarningAccentColorDark, customWarningTextColorLight, customWarningTextColorDark, customWarningCardColorLight, customWarningCardColorDark, customErrorAccentColorLight, customErrorAccentColorDark, customErrorTextColorLight, customErrorTextColorDark, customErrorCardColorLight, customErrorCardColorDark,
   ];
 }
 
@@ -104,4 +136,36 @@ extension SettingsAccessors on SettingsRepository {
   SilentlySettable<String> get customGradeColor3 => SilentlySettable(this, SettingsRegistry.customGradeColor3);
   SilentlySettable<String> get customGradeColor2 => SilentlySettable(this, SettingsRegistry.customGradeColor2);
   SilentlySettable<String> get customGradeColor1 => SilentlySettable(this, SettingsRegistry.customGradeColor1);
+  SilentlySettable<String> get customAccentColorLight => SilentlySettable(this, SettingsRegistry.customAccentColorLight);
+  SilentlySettable<String> get customAccentColorDark => SilentlySettable(this, SettingsRegistry.customAccentColorDark);
+  SilentlySettable<String> get customBackgroundColorLight => SilentlySettable(this, SettingsRegistry.customBackgroundColorLight);
+  SilentlySettable<String> get customBackgroundColorDark => SilentlySettable(this, SettingsRegistry.customBackgroundColorDark);
+  SilentlySettable<String> get customCardColorLight => SilentlySettable(this, SettingsRegistry.customCardColorLight);
+  SilentlySettable<String> get customCardColorDark => SilentlySettable(this, SettingsRegistry.customCardColorDark);
+  SilentlySettable<String> get customButtonColorLight => SilentlySettable(this, SettingsRegistry.customButtonColorLight);
+  SilentlySettable<String> get customButtonColorDark => SilentlySettable(this, SettingsRegistry.customButtonColorDark);
+  SilentlySettable<String> get customSecondaryColorLight => SilentlySettable(this, SettingsRegistry.customSecondaryColorLight);
+  SilentlySettable<String> get customSecondaryColorDark => SilentlySettable(this, SettingsRegistry.customSecondaryColorDark);
+  SilentlySettable<String> get customTextColorLight => SilentlySettable(this, SettingsRegistry.customTextColorLight);
+  SilentlySettable<String> get customTextColorDark => SilentlySettable(this, SettingsRegistry.customTextColorDark);
+  SilentlySettable<String> get customTextSecondaryColorLight => SilentlySettable(this, SettingsRegistry.customTextSecondaryColorLight);
+  SilentlySettable<String> get customTextSecondaryColorDark => SilentlySettable(this, SettingsRegistry.customTextSecondaryColorDark);
+  SilentlySettable<String> get customTextTertiaryColorLight => SilentlySettable(this, SettingsRegistry.customTextTertiaryColorLight);
+  SilentlySettable<String> get customTextTertiaryColorDark => SilentlySettable(this, SettingsRegistry.customTextTertiaryColorDark);
+  SilentlySettable<String> get customShadowColorLight => SilentlySettable(this, SettingsRegistry.customShadowColorLight);
+  SilentlySettable<String> get customShadowColorDark => SilentlySettable(this, SettingsRegistry.customShadowColorDark);
+  SilentlySettable<String> get customSuccessColorLight => SilentlySettable(this, SettingsRegistry.customSuccessColorLight);
+  SilentlySettable<String> get customSuccessColorDark => SilentlySettable(this, SettingsRegistry.customSuccessColorDark);
+  SilentlySettable<String> get customWarningAccentColorLight => SilentlySettable(this, SettingsRegistry.customWarningAccentColorLight);
+  SilentlySettable<String> get customWarningAccentColorDark => SilentlySettable(this, SettingsRegistry.customWarningAccentColorDark);
+  SilentlySettable<String> get customWarningTextColorLight => SilentlySettable(this, SettingsRegistry.customWarningTextColorLight);
+  SilentlySettable<String> get customWarningTextColorDark => SilentlySettable(this, SettingsRegistry.customWarningTextColorDark);
+  SilentlySettable<String> get customWarningCardColorLight => SilentlySettable(this, SettingsRegistry.customWarningCardColorLight);
+  SilentlySettable<String> get customWarningCardColorDark => SilentlySettable(this, SettingsRegistry.customWarningCardColorDark);
+  SilentlySettable<String> get customErrorAccentColorLight => SilentlySettable(this, SettingsRegistry.customErrorAccentColorLight);
+  SilentlySettable<String> get customErrorAccentColorDark => SilentlySettable(this, SettingsRegistry.customErrorAccentColorDark);
+  SilentlySettable<String> get customErrorTextColorLight => SilentlySettable(this, SettingsRegistry.customErrorTextColorLight);
+  SilentlySettable<String> get customErrorTextColorDark => SilentlySettable(this, SettingsRegistry.customErrorTextColorDark);
+  SilentlySettable<String> get customErrorCardColorLight => SilentlySettable(this, SettingsRegistry.customErrorCardColorLight);
+  SilentlySettable<String> get customErrorCardColorDark => SilentlySettable(this, SettingsRegistry.customErrorCardColorDark);
 }

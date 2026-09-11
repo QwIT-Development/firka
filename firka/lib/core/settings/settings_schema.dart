@@ -203,4 +203,102 @@ abstract class SettingsSchema {
 
   @StringSetting(id: 1052, defaultValue: "0xFFFF54A1")
   String get customGradeColor1;
+
+  // Custom theme colors stored as 0xAARRGGBB hex strings.
+  // Defaults match the firka core theme.
+  @StringSetting(id: 1053, defaultValue: "0xFFA7DC22")
+  String get customAccentColorLight;
+
+  @StringSetting(id: 1054, defaultValue: "0xFFA7DC22")
+  String get customAccentColorDark;
+
+  @StringSetting(id: 1055, defaultValue: "0xFFFAFFF0")
+  String get customBackgroundColorLight;
+
+  @StringSetting(id: 1056, defaultValue: "0xFF0D1202")
+  String get customBackgroundColorDark;
+
+  @StringSetting(id: 1057, defaultValue: "0xFFF3FBDE")
+  String get customCardColorLight;
+
+  @StringSetting(id: 1058, defaultValue: "0xFF141905")
+  String get customCardColorDark;
+
+  @StringSetting(id: 1059, defaultValue: "0xFFFEFFFD")
+  String get customButtonColorLight;
+
+  @StringSetting(id: 1060, defaultValue: "0xFF20290B")
+  String get customButtonColorDark;
+
+  @StringSetting(id: 1061, defaultValue: "0xFF6E8F1B")
+  String get customSecondaryColorLight;
+
+  @StringSetting(id: 1062, defaultValue: "0xFFCBEE71")
+  String get customSecondaryColorDark;
+
+  @StringSetting(id: 1063, defaultValue: "0xFF394C0A")
+  String get customTextColorLight;
+
+  @StringSetting(id: 1064, defaultValue: "0xFFEAF7CC")
+  String get customTextColorDark;
+
+  @StringSetting(id: 1065, defaultValue: "0xCC394C0A")
+  String get customTextSecondaryColorLight;
+
+  @StringSetting(id: 1066, defaultValue: "0xB3EAF7CC")
+  String get customTextSecondaryColorDark;
+
+  @StringSetting(id: 1067, defaultValue: "0x80394C0A")
+  String get customTextTertiaryColorLight;
+
+  @StringSetting(id: 1068, defaultValue: "0x80EAF7CC")
+  String get customTextTertiaryColorDark;
+
+  @StringSetting(id: 1069, defaultValue: "0x33647E22")
+  String get customShadowColorLight;
+
+  @StringSetting(id: 1070, defaultValue: "0x26CBEE71")
+  String get customShadowColorDark;
+
+  @StringSetting(id: 1071, defaultValue: "0xFF92EA3B")
+  String get customSuccessColorLight;
+
+  @StringSetting(id: 1072, defaultValue: "0xFF92EA3B")
+  String get customSuccessColorDark;
+
+  @StringSetting(id: 1073, defaultValue: "0xFFFFA046")
+  String get customWarningAccentColorLight;
+
+  @StringSetting(id: 1074, defaultValue: "0xFFFFA046")
+  String get customWarningAccentColorDark;
+
+  @StringSetting(id: 1075, defaultValue: "0xFF8F531B")
+  String get customWarningTextColorLight;
+
+  @StringSetting(id: 1076, defaultValue: "0xFFF0B37A")
+  String get customWarningTextColorDark;
+
+  @StringSetting(id: 1077, defaultValue: "0xFFFAEBDC")
+  String get customWarningCardColorLight;
+
+  @StringSetting(id: 1078, defaultValue: "0xFF201203")
+  String get customWarningCardColorDark;
+
+  @StringSetting(id: 1079, defaultValue: "0xFFFF54A1")
+  String get customErrorAccentColorLight;
+
+  @StringSetting(id: 1080, defaultValue: "0xFFFF54A1")
+  String get customErrorAccentColorDark;
+
+  @StringSetting(id: 1081, defaultValue: "0xFF8F1B4F")
+  String get customErrorTextColorLight;
+
+  @StringSetting(id: 1082, defaultValue: "0xFFF59EC5")
+  String get customErrorTextColorDark;
+
+  @StringSetting(id: 1083, defaultValue: "0xFFFADCE9")
+  String get customErrorCardColorLight;
+
+  @StringSetting(id: 1084, defaultValue: "0xFF1E030F")
+  String get customErrorCardColorDark;
 }

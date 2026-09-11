@@ -296,6 +296,15 @@ extension RandomColorExtension on Random {
   }
 }
 
+extension ColorHexExtension on Color {
+  String toHexSetting() =>
+      "0x${toARGB32().toRadixString(16).toUpperCase().padLeft(8, '0')}";
+}
+
+extension HexSettingExtension on String {
+  Color toColorFromHexSetting() => Color(int.tryParse(this) ?? 0xFFFFFFFF);
+}
+
 extension StringExtension on String {
   bool isNumeric() {
     final regex = RegExp(r'^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$');
