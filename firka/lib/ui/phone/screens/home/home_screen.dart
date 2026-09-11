@@ -127,15 +127,23 @@ class _HomeScreenState extends FirkaState<HomeScreen>
             }
           },
           child: Scaffold(
-            backgroundColor: appStyle.colors.background,
-            body: SafeArea(
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height,
-                child: Stack(
-                  children: [
-                    widget.child,
-                    ?(_toastOverlay(context)),
-                  ],
+            backgroundColor: Colors.transparent,
+            body: Container(
+              decoration: BoxDecoration(
+                color: appStyle.colors.backgroundLinearGradient == null
+                    ? appStyle.colors.background
+                    : null,
+                gradient: appStyle.colors.backgroundLinearGradient,
+              ),
+              child: SafeArea(
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height,
+                  child: Stack(
+                    children: [
+                      widget.child,
+                      ?(_toastOverlay(context)),
+                    ],
+                  ),
                 ),
               ),
             ),

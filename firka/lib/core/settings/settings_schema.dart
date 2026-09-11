@@ -301,4 +301,16 @@ abstract class SettingsSchema {
 
   @StringSetting(id: 1084, defaultValue: "0xFF1E030F")
   String get customErrorCardColorDark;
+
+  @StringSetting(
+    id: 1085,
+    defaultValue: "[\"0xFFFAFFF0\",\"0xFFE8F7C8\"]",
+  )
+  String get customBackgroundGradientLight;
+
+  @StringSetting(
+    id: 1086,
+    defaultValue: "[\"0xFF0D1202\",\"0xFF1A2405\"]",
+  )
+  String get customBackgroundGradientDark;
 }

@@ -139,12 +139,24 @@ void _applyCustomColors(
   colors.a10p = colors.accent.withAlpha(0x1a);
   colors.a15p = colors.accent.withAlpha(0x26);
 
-  colors.background =
-      (isLight
-              ? Settings.customBackgroundColorLight
-              : Settings.customBackgroundColorDark)
-          .value
-          .toColorFromHexSetting();
+  final bgGrad = (isLight
+          ? Settings.customBackgroundGradientLight
+          : Settings.customBackgroundGradientDark)
+      .value
+      .toColorListFromHexSetting();
+
+  if (bgGrad.isNotEmpty) {
+    colors.backgroundGradient = bgGrad;
+    colors.background = bgGrad.first;
+  } else {
+    colors.background =
+        (isLight
+                ? Settings.customBackgroundColorLight
+                : Settings.customBackgroundColorDark)
+            .value
+            .toColorFromHexSetting();
+    colors.backgroundGradient = null;
+  }
   colors.background0p = colors.background.withAlpha(0);
 
   colors.card =

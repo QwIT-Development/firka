@@ -50,10 +50,20 @@ class FirkaFonts {
 
 class FirkaColors {
   Color background;
+  List<Color>? backgroundGradient;
   Color backgroundAmoled;
   Color background0p;
   Color success;
   int shadowBlur;
+
+  LinearGradient? get backgroundLinearGradient =>
+      backgroundGradient != null && backgroundGradient!.length >= 2
+          ? LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: backgroundGradient!,
+            )
+          : null;
 
   Color textPrimary;
   Color textSecondary;
@@ -94,6 +104,7 @@ class FirkaColors {
 
   FirkaColors({
     required this.background,
+    this.backgroundGradient,
     required this.backgroundAmoled,
     required this.background0p,
     required this.success,
@@ -269,6 +280,7 @@ final _defaultFonts = buildAppFonts();
 FirkaColors mergeColors(CoreThemeColors core, GradeThemeColors grades) {
   return FirkaColors(
     background: core.background,
+    backgroundGradient: core.backgroundGradient,
     backgroundAmoled: core.backgroundAmoled,
     background0p: core.background0p,
     success: core.success,

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -303,6 +304,24 @@ extension ColorHexExtension on Color {
 
 extension HexSettingExtension on String {
   Color toColorFromHexSetting() => Color(int.tryParse(this) ?? 0xFFFFFFFF);
+
+  List<Color> toColorListFromHexSetting() {
+    try {
+      final decoded = jsonDecode(this);
+      if (decoded is List) {
+        return decoded
+            .map((e) => e.toString().toColorFromHexSetting())
+            .toList();
+      }
+    } catch (_) {}
+    return [];
+  }
+}
+
+extension ColorListHexExtension on List<Color> {
+  String toHexSettingJson() {
+    return jsonEncode(map((c) => c.toHexSetting()).toList());
+  }
 }
 
 extension StringExtension on String {

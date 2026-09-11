@@ -13,6 +13,7 @@ const Map<String, CoreTheme> coreThemes = {
 /// App chrome colors (everything except grade colors)
 class CoreThemeColors {
   final Color background;
+  final List<Color>? backgroundGradient;
   final Color backgroundAmoled;
   final Color background0p;
   final Color success;
@@ -51,6 +52,7 @@ class CoreThemeColors {
 
   const CoreThemeColors({
     required this.background,
+    this.backgroundGradient,
     required this.backgroundAmoled,
     required this.background0p,
     required this.success,
