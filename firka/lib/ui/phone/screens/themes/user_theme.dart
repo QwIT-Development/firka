@@ -13,7 +13,7 @@ class UserTheme {
   final String id;
   String name;
   final ThemeOrigin origin;
-  final List<Color> swatch;
+  List<Color> swatch;
 
   UserTheme({
     required this.id,

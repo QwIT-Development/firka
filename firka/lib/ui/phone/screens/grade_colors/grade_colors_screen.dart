@@ -57,14 +57,6 @@ Color _defaultFor(int grade) {
   }
 }
 
-Color _parseColor(String hex) {
-  final value = int.tryParse(hex) ?? 0xFFFFFFFF;
-  return Color(value);
-}
-
-String _encodeColor(Color color) =>
-    "0x${color.toARGB32().toRadixString(16).toUpperCase().padLeft(8, '0')}";
-
 class _GradeColorsScreenState extends State<GradeColorsScreen>
     with SingleTickerProviderStateMixin {
   late int _selectedGrade;
@@ -104,12 +96,12 @@ class _GradeColorsScreenState extends State<GradeColorsScreen>
 
   Color _currentColor(int grade) {
     final raw = _settings.get(_settingFor(grade));
-    return _parseColor(raw);
+    return raw.toColorFromHexSetting();
   }
 
   void _syncHexField() {
     if (!_hexFocused) {
-      final hex = _encodeColor(_hsv.toColor()).substring(4);
+      final hex = _hsv.toColor().toHexSetting().substring(4);
       _hexController.text = hex.toUpperCase();
     }
   }
@@ -119,7 +111,7 @@ class _GradeColorsScreenState extends State<GradeColorsScreen>
     _syncHexField();
     await _settings.set(
       _settingFor(_selectedGrade),
-      _encodeColor(hsv.toColor()),
+      hsv.toColor().toHexSetting(),
     );
     if (!mounted) return;
     context.read<ThemeCubit>().refresh();

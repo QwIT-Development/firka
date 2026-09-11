@@ -338,6 +338,10 @@ class _ThemesScreenState extends State<ThemesScreen> {
                               onTap: () {},
                             ),
                           _sectionLabel(l10n.s_c_themes_own),
+                          _themeRow(
+                            _builtin,
+                            selected: isBuiltinThemeId(_selectedId),
+                          ),
                           for (final theme in _ownThemes)
                             _themeRow(
                               theme,
