@@ -45,9 +45,14 @@ class SettingsRegistry {
   static const notifyWakeupInterval = EnumSetting(id: 1045, defaultValue: NotifyWakeupInterval.hourly, values: NotifyWakeupInterval.values);
   static const fcmDebugNotifyOnMessage = BoolSetting(id: 1046, defaultValue: false);
   static const notificationDeliveryMethod = EnumSetting(id: 1047, defaultValue: NotificationDeliveryMethod.auto, values: NotificationDeliveryMethod.values);
+  static const customGradeColor5 = StringSetting(id: 1048, defaultValue: "0xFF22CCAD");
+  static const customGradeColor4 = StringSetting(id: 1049, defaultValue: "0xFF92EA3B");
+  static const customGradeColor3 = StringSetting(id: 1050, defaultValue: "0xFFF9CF00");
+  static const customGradeColor2 = StringSetting(id: 1051, defaultValue: "0xFFFFA046");
+  static const customGradeColor1 = StringSetting(id: 1052, defaultValue: "0xFFFF54A1");
 
   static const all = <Setting>[
-    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl, lastSeen, surpriseGrades, seasonalAppIcons, uwuMode, notifyAll, notifyGrades, notifyHomeworkTests, notifyAbsences, notifyLessons, notifyMessages, notifyMutedSubjects, notifyWakeupInterval, fcmDebugNotifyOnMessage, notificationDeliveryMethod,
+    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl, lastSeen, surpriseGrades, seasonalAppIcons, uwuMode, notifyAll, notifyGrades, notifyHomeworkTests, notifyAbsences, notifyLessons, notifyMessages, notifyMutedSubjects, notifyWakeupInterval, fcmDebugNotifyOnMessage, notificationDeliveryMethod, customGradeColor5, customGradeColor4, customGradeColor3, customGradeColor2, customGradeColor1,
   ];
 }
 
@@ -94,4 +99,9 @@ extension SettingsAccessors on SettingsRepository {
   SilentlySettable<NotifyWakeupInterval> get notifyWakeupInterval => SilentlySettable(this, SettingsRegistry.notifyWakeupInterval);
   SilentlySettable<bool> get fcmDebugNotifyOnMessage => SilentlySettable(this, SettingsRegistry.fcmDebugNotifyOnMessage);
   SilentlySettable<NotificationDeliveryMethod> get notificationDeliveryMethod => SilentlySettable(this, SettingsRegistry.notificationDeliveryMethod);
+  SilentlySettable<String> get customGradeColor5 => SilentlySettable(this, SettingsRegistry.customGradeColor5);
+  SilentlySettable<String> get customGradeColor4 => SilentlySettable(this, SettingsRegistry.customGradeColor4);
+  SilentlySettable<String> get customGradeColor3 => SilentlySettable(this, SettingsRegistry.customGradeColor3);
+  SilentlySettable<String> get customGradeColor2 => SilentlySettable(this, SettingsRegistry.customGradeColor2);
+  SilentlySettable<String> get customGradeColor1 => SilentlySettable(this, SettingsRegistry.customGradeColor1);
 }

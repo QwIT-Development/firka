@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:firka/l10n/app_localizations.dart';
@@ -281,6 +284,15 @@ extension LessonExtension on List<Lesson> {
     return firstWhereOrNull(
       (lesson) => lesson.start.isAfter(now.add(Duration(milliseconds: 1))),
     );
+  }
+}
+
+extension RandomColorExtension on Random {
+  HSVColor nextVividHSVColor() {
+    final hue = nextDouble() * 360;
+    final saturation = 0.55 + nextDouble() * 0.45;
+    final value = 0.7 + nextDouble() * 0.3;
+    return HSVColor.fromAHSV(1.0, hue, saturation, value);
   }
 }
 
