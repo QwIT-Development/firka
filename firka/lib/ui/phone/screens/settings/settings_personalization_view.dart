@@ -203,6 +203,22 @@ class _SettingsPersonalizationViewState
     );
   }
 
+  Widget _customizeButton({required String route}) {
+    return GestureDetector(
+      onTap: () => context.push(route),
+      child: FirkaCard(
+        left: [
+          Text(
+            _l10n.s_c_customize,
+            style: appStyle.fonts.B_16SB.apply(
+              color: appStyle.colors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _checkMark() {
     return SizedBox(
       width: 16,
@@ -620,7 +636,7 @@ class _SettingsPersonalizationViewState
               _themeOption(_l10n.s_c_theme_dark, ThemeBrightness.dark),
               _sectionLabel(_l10n.s_c_grade_colors_header),
               _gradeThemePager(),
-              _stubCustomizeButton(),
+              _customizeButton(route: "/grade-colors"),
               _sectionLabel(_l10n.s_c_title_style_header),
               _fontPicker(selectedFont),
               _weightSlider(),

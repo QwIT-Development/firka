@@ -194,4 +194,21 @@ abstract class SettingsSchema {
 
   @BoolSetting(id: 1049, defaultValue: false)
   bool get progressNotificationEnabled;
+
+  // Custom grade colors stored as 0xAARRGGBB hex strings.
+  // Defaults match the firka grade theme.
+  @StringSetting(id: 1050, defaultValue: "0xFF22CCAD")
+  String get customGradeColor5;
+
+  @StringSetting(id: 1051, defaultValue: "0xFF92EA3B")
+  String get customGradeColor4;
+
+  @StringSetting(id: 1052, defaultValue: "0xFFF9CF00")
+  String get customGradeColor3;
+
+  @StringSetting(id: 1053, defaultValue: "0xFFFFA046")
+  String get customGradeColor2;
+
+  @StringSetting(id: 1054, defaultValue: "0xFFFF54A1")
+  String get customGradeColor1;
 }
