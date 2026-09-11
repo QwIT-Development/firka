@@ -1,11 +1,16 @@
+// ignore_for_file: deprecated_member_use
+import "package:dynamic_color/dynamic_color.dart";
 import "package:flutter/material.dart";
+import "package:material_color_utilities/material_color_utilities.dart";
 
 part "core/butcher_vanity.dart";
 part "core/firka.dart";
+part "core/m3e.dart";
 part "core/refilc.dart";
 
-const Map<String, CoreTheme> coreThemes = {
+final Map<String, CoreTheme> coreThemes = {
   "firka": firkaCore,
+  "m3e": m3eCore,
   "refilc": refilcCore,
   "butcher_vanity": butcherVanityCore,
 };

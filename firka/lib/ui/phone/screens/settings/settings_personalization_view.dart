@@ -46,6 +46,14 @@ class _SettingsPersonalizationViewState
 
   Color get _selectedSurface => appStyle.colors.buttonSecondaryFill;
 
+  @override
+  void initState() {
+    super.initState();
+    regenerateM3eTheme().then((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
   Widget _sectionLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8, top: 16),

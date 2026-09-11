@@ -19,6 +19,7 @@ dependencies:
   isar_community: 3.3.0
   isar_community_flutter_libs: 3.3.0
   build_runner: any
+  dynamic_color: ^2.1.0
 
 dev_dependencies:
   flutter_test:
