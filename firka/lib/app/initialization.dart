@@ -21,6 +21,7 @@ import 'package:firka/l10n/app_localizations_hu.dart';
 import 'package:firka/core/swear_generator.dart';
 import 'package:firka/ui/phone/screens/themes/builtin_theme_id.dart';
 import 'package:firka/ui/theme/style.dart';
+import 'package:firka_common/ui/theme/core_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -311,11 +312,13 @@ Future<void> _initData(AppInitialization init) async {
     await Settings.selectedThemeId.set(normalized);
   }
   await initLang(init);
+  await regenerateM3eTheme();
   initTheme(init);
 
   var dispatcher = SchedulerBinding.instance.platformDispatcher;
 
-  dispatcher.onPlatformBrightnessChanged = () {
+  dispatcher.onPlatformBrightnessChanged = () async {
+    await regenerateM3eTheme();
     initTheme(init);
   };
 

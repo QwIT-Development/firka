@@ -8,6 +8,7 @@ import "package:firka/services/fcm_service.dart";
 import "package:firka/services/notification_delivery_service.dart";
 import "package:firka/services/watch_sync_helper.dart";
 import "package:firka/ui/phone/screens/themes/builtin_theme_id.dart";
+import "package:firka_common/ui/theme/core_theme.dart";
 
 import "settings_repository.dart";
 import "settings_schema.dart";
@@ -24,6 +25,9 @@ void registerSettingsEffects(
   });
 
   repo.onChange(SettingsRegistry.themeBrightness, (_) async {
+    if (Settings.selectedCoreThemeId.value == "m3e") {
+      await regenerateM3eTheme();
+    }
     initTheme(initData);
     initData.themeCubit.refresh();
     initData.homeRefreshCubit.requestRefresh();
@@ -40,6 +44,9 @@ void registerSettingsEffects(
   repo.onChange(SettingsRegistry.titleCapitalization, refreshTitleStyle);
 
   Future<void> refreshPresetTheme(_) async {
+    if (Settings.selectedCoreThemeId.value == "m3e") {
+      await regenerateM3eTheme();
+    }
     if (isBuiltinThemeId(Settings.selectedThemeId.value)) {
       final next = composeBuiltinThemeId(
         Settings.selectedCoreThemeId.value,
