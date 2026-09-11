@@ -77,11 +77,18 @@ class _ThemeScreenState extends State<ThemeScreen> {
       bloc: widget.data.themeCubit,
       builder: (context, _) {
         return Scaffold(
-          backgroundColor: appStyle.colors.background,
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
+          backgroundColor: Colors.transparent,
+          body: Container(
+            decoration: BoxDecoration(
+              color: appStyle.colors.backgroundLinearGradient == null
+                  ? appStyle.colors.background
+                  : null,
+              gradient: appStyle.colors.backgroundLinearGradient,
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
@@ -230,7 +237,8 @@ class _ThemeScreenState extends State<ThemeScreen> {
           ),
         ),
       ),
-    );
+    ),
+  );
       },
     );
   }

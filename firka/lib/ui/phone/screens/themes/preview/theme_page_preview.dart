@@ -30,7 +30,10 @@ class ThemePagePreview extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 6),
       decoration: BoxDecoration(
-        color: appStyle.colors.background,
+        color: appStyle.colors.backgroundLinearGradient == null
+            ? appStyle.colors.background
+            : null,
+        gradient: appStyle.colors.backgroundLinearGradient,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -59,8 +62,13 @@ class ThemePagePreview extends StatelessWidget {
                 child: IgnorePointer(
                   child: DefaultAssetBundle(
                     bundle: FirkaBundle(),
-                    child: ColoredBox(
-                      color: appStyle.colors.background,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: appStyle.colors.backgroundLinearGradient == null
+                            ? appStyle.colors.background
+                            : null,
+                        gradient: appStyle.colors.backgroundLinearGradient,
+                      ),
                       child: Column(
                         children: [
                           _PreviewStatusBar(),
@@ -169,8 +177,11 @@ class _PreviewBottomNav extends StatelessWidget {
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
           colors: [
-            appStyle.colors.background,
-            appStyle.colors.background.withValues(alpha: 0.0),
+            appStyle.colors.backgroundGradient?.last ??
+                appStyle.colors.background,
+            (appStyle.colors.backgroundGradient?.last ??
+                    appStyle.colors.background)
+                .withValues(alpha: 0.0),
           ],
           stops: const [0.0, 1.0],
         ),

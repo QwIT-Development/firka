@@ -22,17 +22,28 @@ class ShellWithNavBar extends StatelessWidget {
     final data = initData;
     final currentIndex = navigationShell.currentIndex;
 
+    final bottomBg =
+        appStyle.colors.backgroundGradient?.last ?? appStyle.colors.background;
+
     return Scaffold(
-      backgroundColor: appStyle.colors.background,
-      body: child,
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(
+          color: appStyle.colors.backgroundLinearGradient == null
+              ? appStyle.colors.background
+              : null,
+          gradient: appStyle.colors.backgroundLinearGradient,
+        ),
+        child: child,
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
             colors: [
-              appStyle.colors.background,
-              appStyle.colors.background.withValues(alpha: 0.0),
+              bottomBg,
+              bottomBg.withValues(alpha: 0.0),
             ],
             stops: const [0.0, 1.0],
           ),

@@ -106,6 +106,8 @@ void registerSettingsEffects(
     SettingsRegistry.customErrorTextColorDark,
     SettingsRegistry.customErrorCardColorLight,
     SettingsRegistry.customErrorCardColorDark,
+    SettingsRegistry.customBackgroundGradientLight,
+    SettingsRegistry.customBackgroundGradientDark,
   ]) {
     repo.onChange(setting, refreshCustomColors);
   }

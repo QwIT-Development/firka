@@ -75,6 +75,11 @@ const _defaults = <_ThemeSlot, (Color light, Color dark)>{
   _ThemeSlot.errorCard: (Color(0xFFFADCE9), Color(0xFF1E030F)),
 };
 
+const _defaultGradients = (
+  light: [Color(0xFFFAFFF0), Color(0xFFE8F7C8)],
+  dark: [Color(0xFF0D1202), Color(0xFF1A2405)],
+);
+
 (StringSetting, StringSetting) _settingsFor(_ThemeSlot slot) {
   switch (slot) {
     case _ThemeSlot.accent:
@@ -208,6 +213,7 @@ void _applySlotColor(FirkaColors colors, _ThemeSlot slot, Color color) {
 class _ThemeEditorScreenState extends State<ThemeEditorScreen> {
   _ThemeSlot? _slot = _ThemeSlot.accent;
   _BrightnessMode _mode = _BrightnessMode.both;
+  int _bgStopIndex = 0;
   late HSVColor _hsv;
   late final ThemePreviewData _preview;
 
@@ -246,6 +252,30 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen> {
     _BrightnessMode.both => _originalIsLight,
   };
 
+  List<Color> _currentGradient({required bool isLightSource}) {
+    final raw = _settings.get(
+      isLightSource
+          ? SettingsRegistry.customBackgroundGradientLight
+          : SettingsRegistry.customBackgroundGradientDark,
+    );
+    final list = raw.toColorListFromHexSetting();
+    if (list.isNotEmpty) return list;
+    return isLightSource
+        ? List<Color>.from(_defaultGradients.light)
+        : List<Color>.from(_defaultGradients.dark);
+  }
+
+  List<Color> _gradientForMode(_BrightnessMode mode) {
+    switch (mode) {
+      case _BrightnessMode.light:
+        return _currentGradient(isLightSource: true);
+      case _BrightnessMode.dark:
+        return _currentGradient(isLightSource: false);
+      case _BrightnessMode.both:
+        return _currentGradient(isLightSource: _originalIsLight);
+    }
+  }
+
   // Rebuilds the global `appStyle` for whichever brightness is currently
   // being previewed, patching in the *live* (possibly not-yet-persisted)
   // slot color so the preview always reflects what's on screen, not just
@@ -257,7 +287,22 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen> {
     if (slot != null) {
       final editingLight = _mode != _BrightnessMode.dark;
       if (_mode == _BrightnessMode.both || editingLight == isLight) {
-        _applySlotColor(style.colors, slot, _hsv.toColor());
+        if (slot == _ThemeSlot.background) {
+          final stops =
+              List<Color>.from(_currentGradient(isLightSource: isLight));
+          if (_bgStopIndex < stops.length) {
+            stops[_bgStopIndex] = _hsv.toColor();
+          } else {
+            stops.add(_hsv.toColor());
+          }
+          style.colors.backgroundGradient = stops;
+          if (stops.isNotEmpty) {
+            style.colors.background = stops.first;
+            style.colors.background0p = stops.first.withAlpha(0);
+          }
+        } else {
+          _applySlotColor(style.colors, slot, _hsv.toColor());
+        }
       }
     }
     appStyle = style;
@@ -275,6 +320,13 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen> {
   }
 
   Color _colorForSlotAndMode(_ThemeSlot slot, _BrightnessMode mode) {
+    if (slot == _ThemeSlot.background) {
+      final stops = _gradientForMode(mode);
+      final idx = _bgStopIndex.clamp(0, math.max(0, stops.length - 1)).toInt();
+      return stops.isNotEmpty
+          ? stops[idx]
+          : _defaults[_ThemeSlot.background]!.$1;
+    }
     final light = _currentColor(slot, isLightSource: true);
     final dark = _currentColor(slot, isLightSource: false);
     switch (mode) {
@@ -312,16 +364,50 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen> {
 
     final color = hsv.toColor();
     final hex = color.toHexSetting();
-    final (light, dark) = _settingsFor(slot);
 
-    switch (_mode) {
-      case _BrightnessMode.both:
-        await _settings.set(light, hex);
-        await _settings.set(dark, hex);
-      case _BrightnessMode.light:
-        await _settings.set(light, hex);
-      case _BrightnessMode.dark:
-        await _settings.set(dark, hex);
+    if (slot == _ThemeSlot.background) {
+      Future<void> updateForSource(bool isLightSource) async {
+        final setting = isLightSource
+            ? SettingsRegistry.customBackgroundGradientLight
+            : SettingsRegistry.customBackgroundGradientDark;
+        final stops =
+            List<Color>.from(_currentGradient(isLightSource: isLightSource));
+        final idx =
+            _bgStopIndex.clamp(0, math.max(0, stops.length - 1)).toInt();
+        if (stops.isNotEmpty) {
+          stops[idx] = color;
+        } else {
+          stops.add(color);
+        }
+        await _settings.set(setting, stops.toHexSettingJson());
+        if (idx == 0) {
+          final colorSetting = isLightSource
+              ? SettingsRegistry.customBackgroundColorLight
+              : SettingsRegistry.customBackgroundColorDark;
+          await _settings.set(colorSetting, hex);
+        }
+      }
+
+      switch (_mode) {
+        case _BrightnessMode.both:
+          await updateForSource(true);
+          await updateForSource(false);
+        case _BrightnessMode.light:
+          await updateForSource(true);
+        case _BrightnessMode.dark:
+          await updateForSource(false);
+      }
+    } else {
+      final (light, dark) = _settingsFor(slot);
+      switch (_mode) {
+        case _BrightnessMode.both:
+          await _settings.set(light, hex);
+          await _settings.set(dark, hex);
+        case _BrightnessMode.light:
+          await _settings.set(light, hex);
+        case _BrightnessMode.dark:
+          await _settings.set(dark, hex);
+      }
     }
 
     if (isBuiltinThemeId(Settings.selectedThemeId.value)) {
@@ -354,6 +440,11 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen> {
         return;
       }
       _slot = slot;
+      if (slot == _ThemeSlot.background) {
+        final stops = _gradientForMode(_mode);
+        _bgStopIndex =
+            _bgStopIndex.clamp(0, math.max(0, stops.length - 1)).toInt();
+      }
       _hsv = HSVColor.fromColor(_colorForSlotAndMode(slot, _mode));
       _refreshPreviewStyle();
     });
@@ -365,6 +456,11 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen> {
       _mode = mode;
       final slot = _slot;
       if (slot != null) {
+        if (slot == _ThemeSlot.background) {
+          final stops = _gradientForMode(mode);
+          _bgStopIndex =
+              _bgStopIndex.clamp(0, math.max(0, stops.length - 1)).toInt();
+        }
         _hsv = HSVColor.fromColor(_colorForSlotAndMode(slot, mode));
       }
       _refreshPreviewStyle();
@@ -372,9 +468,147 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen> {
     _syncHexField();
   }
 
+  Future<void> _addGradientStop() async {
+    Future<void> addForSource(bool isLightSource) async {
+      final setting = isLightSource
+          ? SettingsRegistry.customBackgroundGradientLight
+          : SettingsRegistry.customBackgroundGradientDark;
+      final stops =
+          List<Color>.from(_currentGradient(isLightSource: isLightSource));
+      final lastColor = stops.isNotEmpty
+          ? stops.last
+          : (isLightSource
+              ? _defaultGradients.light.last
+              : _defaultGradients.dark.last);
+      stops.add(lastColor);
+      await _settings.set(setting, stops.toHexSettingJson());
+    }
+
+    switch (_mode) {
+      case _BrightnessMode.both:
+        await addForSource(true);
+        await addForSource(false);
+      case _BrightnessMode.light:
+        await addForSource(true);
+      case _BrightnessMode.dark:
+        await addForSource(false);
+    }
+
+    if (!mounted) return;
+    final stops = _gradientForMode(_mode);
+    setState(() {
+      _bgStopIndex = stops.length - 1;
+      _hsv = HSVColor.fromColor(stops[_bgStopIndex]);
+      _refreshPreviewStyle();
+    });
+    _syncHexField();
+    context.read<ThemeCubit>().refresh();
+  }
+
+  Future<void> _removeGradientStop(int index) async {
+    final currentStops = _gradientForMode(_mode);
+    if (currentStops.length <= 1) return;
+
+    Future<void> removeForSource(bool isLightSource) async {
+      final setting = isLightSource
+          ? SettingsRegistry.customBackgroundGradientLight
+          : SettingsRegistry.customBackgroundGradientDark;
+      final stops =
+          List<Color>.from(_currentGradient(isLightSource: isLightSource));
+      if (stops.length > 1 && index < stops.length) {
+        stops.removeAt(index);
+        await _settings.set(setting, stops.toHexSettingJson());
+        if (index == 0 && stops.isNotEmpty) {
+          final colorSetting = isLightSource
+              ? SettingsRegistry.customBackgroundColorLight
+              : SettingsRegistry.customBackgroundColorDark;
+          await _settings.set(colorSetting, stops.first.toHexSetting());
+        }
+      }
+    }
+
+    switch (_mode) {
+      case _BrightnessMode.both:
+        await removeForSource(true);
+        await removeForSource(false);
+      case _BrightnessMode.light:
+        await removeForSource(true);
+      case _BrightnessMode.dark:
+        await removeForSource(false);
+    }
+
+    if (!mounted) return;
+    final stops = _gradientForMode(_mode);
+    final newIndex = index.clamp(0, math.max(0, stops.length - 1)).toInt();
+    setState(() {
+      _bgStopIndex = newIndex;
+      _hsv = HSVColor.fromColor(stops[newIndex]);
+      _refreshPreviewStyle();
+    });
+    _syncHexField();
+    context.read<ThemeCubit>().refresh();
+  }
+
   Future<void> _reset() async {
     final slot = _slot;
     if (slot == null) return;
+
+    if (slot == _ThemeSlot.background) {
+      final lightList = _defaultGradients.light;
+      final darkList = _defaultGradients.dark;
+      switch (_mode) {
+        case _BrightnessMode.both:
+          await _settings.set(
+            SettingsRegistry.customBackgroundGradientLight,
+            lightList.toHexSettingJson(),
+          );
+          await _settings.set(
+            SettingsRegistry.customBackgroundGradientDark,
+            darkList.toHexSettingJson(),
+          );
+          await _settings.set(
+            SettingsRegistry.customBackgroundColorLight,
+            lightList.first.toHexSetting(),
+          );
+          await _settings.set(
+            SettingsRegistry.customBackgroundColorDark,
+            darkList.first.toHexSetting(),
+          );
+        case _BrightnessMode.light:
+          await _settings.set(
+            SettingsRegistry.customBackgroundGradientLight,
+            lightList.toHexSettingJson(),
+          );
+          await _settings.set(
+            SettingsRegistry.customBackgroundColorLight,
+            lightList.first.toHexSetting(),
+          );
+        case _BrightnessMode.dark:
+          await _settings.set(
+            SettingsRegistry.customBackgroundGradientDark,
+            darkList.toHexSettingJson(),
+          );
+          await _settings.set(
+            SettingsRegistry.customBackgroundColorDark,
+            darkList.first.toHexSetting(),
+          );
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _bgStopIndex = 0;
+        final defStops = switch (_mode) {
+          _BrightnessMode.light => lightList,
+          _BrightnessMode.dark => darkList,
+          _BrightnessMode.both => _originalIsLight ? lightList : darkList,
+        };
+        _hsv = HSVColor.fromColor(defStops.first);
+        _refreshPreviewStyle();
+      });
+      _syncHexField();
+      context.read<ThemeCubit>().refresh();
+      return;
+    }
 
     final (lightSetting, darkSetting) = _settingsFor(slot);
     final (lightDefault, darkDefault) = _defaults[slot]!;
@@ -440,17 +674,25 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen> {
         child: BlocBuilder<ThemeCubit, ThemeState>(
           builder: (context, _) {
             return Scaffold(
-              backgroundColor: appStyle.colors.background,
-              body: SafeArea(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: _header(context),
-                    ),
-                    Expanded(child: _previewCarousel()),
-                    _bottomEditor(),
-                  ],
+              backgroundColor: Colors.transparent,
+              body: Container(
+                decoration: BoxDecoration(
+                  color: appStyle.colors.backgroundLinearGradient == null
+                      ? appStyle.colors.background
+                      : null,
+                  gradient: appStyle.colors.backgroundLinearGradient,
+                ),
+                child: SafeArea(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: _header(context),
+                      ),
+                      Expanded(child: _previewCarousel()),
+                      _bottomEditor(),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -530,6 +772,10 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (_slot != null) ...[
+            if (_slot == _ThemeSlot.background) ...[
+              _backgroundGradientBar(),
+              const SizedBox(height: 12),
+            ],
             _hueSlider(),
             const SizedBox(height: 8),
             _saturationSlider(),
@@ -776,6 +1022,70 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen> {
     );
   }
 
+  Widget _backgroundGradientBar() {
+    final stops = _gradientForMode(_mode);
+    final l10n = widget.data.l10n;
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (var i = 0; i < stops.length; i++) ...[
+            _pill(
+              "${l10n.s_c_slot_background} ${i + 1}",
+              selected: i == _bgStopIndex,
+              onTap: () {
+                setState(() {
+                  _bgStopIndex = i;
+                  _hsv = HSVColor.fromColor(stops[i]);
+                  _refreshPreviewStyle();
+                });
+                _syncHexField();
+              },
+            ),
+            const SizedBox(width: 8),
+          ],
+          _gradientActionButton(
+            icon: Majesticon.plusLine,
+            onTap: _addGradientStop,
+          ),
+          if (stops.length > 1) ...[
+            const SizedBox(width: 8),
+            _gradientActionButton(
+              icon: Majesticon.minusLine,
+              onTap: () => _removeGradientStop(_bgStopIndex),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _gradientActionButton({
+    required Object icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 40,
+        width: 44,
+        decoration: BoxDecoration(
+          color: appStyle.colors.buttonSecondaryFill,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Center(
+          child: FirkaIconWidget(
+            FirkaIconType.majesticons,
+            icon,
+            size: 20,
+            color: appStyle.colors.secondary,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _pill(
     String label, {
     required bool selected,
@@ -788,7 +1098,9 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen> {
         curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? appStyle.colors.accent : appStyle.colors.card,
+          color: selected
+              ? appStyle.colors.accent
+              : appStyle.colors.buttonSecondaryFill,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
