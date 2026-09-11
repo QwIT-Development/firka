@@ -10,10 +10,10 @@ import 'package:firka/ui/components/firka_icon_button.dart';
 import 'package:firka/ui/phone/widgets/grade_chart.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka/ui/shared/firka_icon.dart';
+import 'package:firka/ui/shared/dave_mascot.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:isar_community/isar.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 
@@ -163,8 +163,7 @@ class _HomeGradesSubjectScreen extends FirkaState<HomeGradesSubjectScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          SvgPicture.asset(
-                            "assets/images/logos/dave.svg",
+                          const DaveMascot(
                             width: 48,
                             height: 48,
                           ),

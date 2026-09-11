@@ -5,9 +5,9 @@ import 'package:firka/app/app_state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:firka/ui/shared/dave_mascot.dart';
 
 import 'package:firka/api/login_finish.dart';
 import 'package:firka/api/token_grant.dart';
@@ -163,8 +163,7 @@ class _LoginWebviewWidgetState extends FirkaState<LoginWebviewWidget>
               children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 2),
-                  child: SvgPicture.asset(
-                    "assets/icons/dave.svg",
+                  child: const DaveMascot.icon(
                     width: 24,
                     height: 24,
                   ),

@@ -6,9 +6,9 @@ import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:majesticons_flutter/majesticons_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:firka/ui/shared/dave_mascot.dart';
 
 /// Lightweight in-app browser used outside the login flow (e.g. privacy policy).
 ///
@@ -119,8 +119,7 @@ class _DomainBrowserWebviewWidgetState
               children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 2),
-                  child: SvgPicture.asset(
-                    "assets/icons/dave.svg",
+                  child: const DaveMascot.icon(
                     width: 24,
                     height: 24,
                   ),

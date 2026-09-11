@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:firka/core/image_preloader.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/core/swear_generator.dart';
+import 'package:firka/ui/shared/dave_mascot.dart';
 
 class ErrorPage extends StatelessWidget {
   final String exception;
@@ -22,20 +23,9 @@ class ErrorPage extends StatelessWidget {
             Column(
               children: [
                 SizedBox(height: 48),
-                Container(
+                const DaveMascot.error(
                   width: 50,
                   height: 50,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: ShapeDecoration(
-                    image: DecorationImage(
-                      image: PreloadedImageProvider(
-                        FirkaBundle(),
-                        ('assets/images/logos/dave_error.png'),
-                      ),
-                      fit: BoxFit.cover,
-                    ),
-                    shape: ContinuousRectangleBorder(),
-                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(

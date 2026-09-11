@@ -7,7 +7,7 @@ import 'package:firka_common/ui/components/firka_card.dart';
 import 'package:firka/app/app_state.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:firka/ui/shared/dave_mascot.dart';
 
 import 'lesson.dart';
 
@@ -76,8 +76,7 @@ class TimeTableDayWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SvgPicture.asset(
-                    "assets/images/logos/dave.svg",
+                  const DaveMascot(
                     width: 48,
                     height: 48,
                   ),
