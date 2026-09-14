@@ -143,6 +143,19 @@ class _ThemesScreenState extends State<ThemesScreen> {
     await _openTheme(theme);
   }
 
+  Future<void> _importTheme() async {
+    await showThemeImportSheet(
+      context,
+      data: widget.data,
+      onImport: (theme) async {
+        await _persistTheme(theme);
+        if (!mounted) return;
+        setState(() => _storedThemes.add(theme));
+        await _openTheme(theme);
+      },
+    );
+  }
+
   Future<void> _renameTheme(UserTheme theme, String name) async {
     setState(() => theme.name = name);
     await _persistTheme(theme);
@@ -303,7 +316,11 @@ class _ThemesScreenState extends State<ThemesScreen> {
                         ),
                       ),
                       FirkaIconButton(
-                        onTap: () {},
+                        onTap: () => showThemeShareSheet(
+                          context,
+                          theme: _selected,
+                          data: widget.data,
+                        ),
                         child: FirkaIconWidget(
                           FirkaIconType.majesticons,
                           Majesticon.shareLine,
@@ -312,7 +329,7 @@ class _ThemesScreenState extends State<ThemesScreen> {
                         ),
                       ),
                       FirkaIconButton(
-                        onTap: () {},
+                        onTap: _importTheme,
                         child: FirkaIconWidget(
                           FirkaIconType.majesticons,
                           Majesticon.arrowDownCircleLine,
@@ -335,7 +352,11 @@ class _ThemesScreenState extends State<ThemesScreen> {
                             _actionRow(
                               icon: Majesticon.shareLine,
                               label: l10n.s_c_themes_share_current,
-                              onTap: () {},
+                              onTap: () => showThemeShareSheet(
+                                context,
+                                theme: _selected,
+                                data: widget.data,
+                              ),
                             ),
                           _sectionLabel(l10n.s_c_themes_own),
                           _themeRow(
@@ -361,7 +382,7 @@ class _ThemesScreenState extends State<ThemesScreen> {
                           _actionRow(
                             icon: Majesticon.arrowDownCircleLine,
                             label: l10n.s_c_themes_import,
-                            onTap: () {},
+                            onTap: _importTheme,
                           ),
                           const SizedBox(height: 24),
                         ],

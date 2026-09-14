@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:firka_common/data/models/user_theme_model.dart";
 import "package:firka_common/ui/theme/core_theme.dart";
 import "package:firka_common/ui/theme/grade_theme.dart";
+import "package:firka_common/ui/theme/theme_binary_format.dart";
 
 import "package:firka/ui/phone/screens/themes/builtin_theme_id.dart";
 import "package:firka/ui/theme/style.dart";
@@ -94,4 +95,51 @@ class ThemeScreenArgs {
     required this.onDelete,
     required this.onChanged,
   });
+}
+
+extension UserThemeShareExtension on UserTheme {
+  String get shareCode {
+    if (isBuiltin) {
+      final core = resolveCore(id);
+      return ThemeBinaryFormat.encodeToBase64(
+        ThemeBinaryFormat.decode(ThemeBinaryFormat.encodeCoreTheme(core)).colors,
+      );
+    } else if (swatch.isNotEmpty) {
+      return ThemeBinaryFormat.encodeToBase64(swatch);
+    } else {
+      return ThemeBinaryFormat.encodeToBase64([
+        appStyle.colors.accent,
+        appStyle.colors.textPrimary,
+        appStyle.colors.background,
+      ]);
+    }
+  }
+
+  String get shareUrl =>
+      "https://firka.app/?d=$shareCode&n=${Uri.encodeComponent(name)}";
+}
+
+extension ThemeShareCodeStringExtension on String {
+  ({String code, String? name}) parseThemeSharePayload() {
+    final trimmed = trim();
+    if (trimmed.startsWith('firka://') || trimmed.startsWith('http')) {
+      final uri = Uri.tryParse(trimmed);
+      if (uri != null) {
+        return (
+          code: uri.queryParameters['d'] ?? trimmed,
+          name: uri.queryParameters['n'],
+        );
+      }
+    }
+    return (code: trimmed, name: null);
+  }
+
+  ThemeBinaryData? tryDecodeThemeData() {
+    try {
+      final payload = parseThemeSharePayload();
+      return ThemeBinaryFormat.decodeFromBase64(payload.code);
+    } catch (_) {
+      return null;
+    }
+  }
 }
