@@ -172,7 +172,11 @@ class _ThemeScreenState extends State<ThemeScreen> {
                               ),
                             ),
                             FirkaIconButton(
-                              onTap: () {},
+                              onTap: () => showThemeShareSheet(
+                                context,
+                                theme: _theme,
+                                data: widget.data,
+                              ),
                               child: FirkaIconWidget(
                                 FirkaIconType.majesticons,
                                 Majesticon.shareLine,
