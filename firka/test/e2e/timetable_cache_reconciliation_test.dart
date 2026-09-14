@@ -346,9 +346,7 @@ void main() {
 
           expect(_lessonsToday(client.cache).length, 1);
 
-          // room changes and gets a new Uid. The old Uid is gone from this
-          // fetch, so this is the easy case (see the duplicate-Uid test
-          // below for the hard case).
+          // room change, new Uid, old Uid gone from this fetch
           await _putTimetable(httpClient, [
             _lesson(
               uid: '9001-v2',
@@ -389,9 +387,7 @@ void main() {
 
           expect(_lessonsToday(client.cache).length, 1);
 
-          // cancellation, new Uid, old Uid no longer present in the fetch:
-          // the clean-cutover case, distinct from the sibling test below
-          // where the old Uid lingers alongside the new one.
+          // cancellation, new Uid, old Uid gone from this fetch
           await _putTimetable(httpClient, [
             _lesson(
               uid: '9001-v2',
@@ -418,7 +414,7 @@ void main() {
     );
 
     testWidgets(
-      'when a cancellation mints a new Uid for the same period, it leaves two rows behind',
+      'a cancellation Uid-swap seen by two overlapping fetches still leaves one row',
       (tester) async {
         HttpOverrides.global = _RealHttpOverrides();
 
@@ -434,18 +430,9 @@ void main() {
 
           expect(_lessonsToday(client.cache).length, 1);
 
-          // Same root cause as the mid-substitution case: there is nothing
-          // guaranteeing a cancellation is reported against the original
-          // Uid rather than a freshly minted one. If it mints a new one
-          // and the old row is still present in the same fetch (or hasn't
-          // been reconciled away yet), both survive as distinct cacheKeys.
+          // simulates two overlapping fetch windows seeing a Uid swap
+          final today = DateTime.now();
           await _putTimetable(httpClient, [
-            _lesson(
-              uid: '9001',
-              start: '07:30',
-              end: '08:15',
-              name: 'Matematika',
-            ),
             _lesson(
               uid: '9001-cancelled',
               start: '07:30',
@@ -456,7 +443,10 @@ void main() {
               stateDesc: 'Elmaradt óra',
             ),
           ]);
-          await client.renewCache(reInit: false);
+          await client.getLessons(
+            today.subtract(const Duration(days: 3)),
+            today.add(const Duration(days: 4)),
+          );
 
           final after = _lessonsToday(client.cache);
           expect(
@@ -466,6 +456,7 @@ void main() {
                 'a cancellation for an existing period should replace the row, '
                 'not leave the pre-cancellation copy cached alongside it',
           );
+          expect(after.single.state, 'Elmaradt');
         });
       },
     );
@@ -519,7 +510,7 @@ void main() {
     );
 
     testWidgets(
-      'a mid-substitution duplicate Uid for the same period leaves two rows behind',
+      'a substitution Uid-swap seen by two overlapping fetches still leaves one row',
       (tester) async {
         HttpOverrides.global = _RealHttpOverrides();
 
@@ -536,19 +527,9 @@ void main() {
 
           expect(_lessonsToday(client.cache).length, 1);
 
-          // Kréta mints a new Uid for a substitution but the response still
-          // contains the pre-substitution row for the same slot too (see
-          // screenshot in the linked bug report: two "Munkav. idegennyelv"
-          // cards at 08:25-09:10). Reconciliation only drops rows missing
-          // from the fresh payload, so both survive as distinct cacheKeys.
+          // reproduces the screenshot bug: two overlapping fetches see a Uid swap
+          final today = DateTime.now();
           await _putTimetable(httpClient, [
-            _lesson(
-              uid: '9002',
-              start: '08:25',
-              end: '09:10',
-              name: 'Munkav. idegennyelv',
-              teacher: 'Eredeti Tanár',
-            ),
             _lesson(
               uid: '9002-subst',
               start: '08:25',
@@ -558,7 +539,10 @@ void main() {
               substituteTeacher: 'Helyettesítő Tanár',
             ),
           ]);
-          await client.renewCache(reInit: false);
+          await client.getLessons(
+            today.subtract(const Duration(days: 3)),
+            today.add(const Duration(days: 4)),
+          );
 
           final after = _lessonsToday(client.cache);
           expect(
@@ -567,6 +551,46 @@ void main() {
             reason:
                 'a substitution for an existing period should replace it, not '
                 'leave both the pre- and post-substitution rows cached',
+          );
+          expect(after.single.teacher, 'Helyettesítő Tanár');
+        });
+      },
+    );
+
+    testWidgets(
+      'a failed refetch falls back to the existing cache instead of losing it',
+      (tester) async {
+        HttpOverrides.global = _RealHttpOverrides();
+
+        await tester.runAsync(() async {
+          final client = await _initAndSync(httpClient, [
+            _lesson(
+              uid: '9001',
+              start: '07:30',
+              end: '08:15',
+              name: 'Matematika',
+            ),
+          ]);
+
+          expect(_lessonsToday(client.cache).length, 1);
+
+          // backend isn't listening, so the refetch fails
+          await Settings.mockBackendUrl.set('http://127.0.0.1:1');
+          final today = DateTime.now();
+          final result = await client.getLessons(
+            today.subtract(const Duration(days: 1)),
+            today.add(const Duration(days: 1)),
+          );
+
+          expect(
+            result.length,
+            1,
+            reason: 'a failed request should fall back to the cached lessons',
+          );
+          expect(
+            _lessonsToday(client.cache).length,
+            1,
+            reason: 'the existing cache must not be wiped by a failed fetch',
           );
         });
       },

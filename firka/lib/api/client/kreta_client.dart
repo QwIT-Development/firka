@@ -548,19 +548,43 @@ class KretaClient {
     ).then((caches) => _save(caches, cache.getHomeworks()));
   }
 
+  /// Wipes and replaces every cached lesson in [from]..[to], no Uid diffing.
+  Future<List<LessonCacheModel>> _replaceTimetableRange(
+    DateTime from,
+    DateTime to,
+    List<LessonCacheModel> caches,
+  ) async {
+    isarInit.writeTxnSync(() {
+      cache.getTimeTable().and().between(from, to).deleteAllSync();
+      isarInit.lessonCacheModels.putAllSync(caches);
+    });
+    initData.homeRefreshCubit.requestRefresh();
+    return caches;
+  }
+
   /// Automatically aligns requests to start at Monday and end at Sunday
   Future<List<LessonCacheModel>> getLessons(DateTime from, DateTime to) async {
     assert(from.difference(to).inDays < 30);
-    return (await _renewCache(
-            KretaEndpoints.getTimeTable(cache.token.iss, from, to),
-            LessonCacheModel.new,
-            (json) => Lesson.fromJson(json),
-          )
-          .then(resolveDailyNth)
-          .then(
-            (caches) =>
-                _save(caches, cache.getTimeTable().and().between(from, to)),
-          ))
+    List<LessonCacheModel> caches;
+    try {
+      caches = await _renewCache(
+        KretaEndpoints.getTimeTable(cache.token.iss, from, to),
+        LessonCacheModel.new,
+        (json) => Lesson.fromJson(json),
+      ).then(resolveDailyNth);
+    } catch (ex) {
+      if (isTokenExpired(ex)) {
+        rethrow;
+      }
+      // fall back to cache instead of losing the range
+      logger.warning(
+        "[Timetable] failed to refresh $from..$to, falling back to cache: $ex",
+      );
+      return cache.getTimeTable().and().between(from, to).findAllSync()
+        ..sort((a, b) => a.start.compareTo(b.start));
+    }
+
+    return (await _replaceTimetableRange(from, to, caches))
       ..sort((a, b) => a.start.compareTo(b.start));
   }
 
