@@ -119,6 +119,9 @@ void initTheme(AppInitialization data) {
 
   appStyle = baseStyle;
 }
+DateTime? _lastInitDataAt;
+String? _lastInitDataUsername;
+
 Future<void> _initData(AppInitialization init) async {
   await init.settings.loadAll();
 
@@ -174,6 +177,26 @@ Future<void> _initData(AppInitialization init) async {
     init.client = null;
     return;
   }
+
+  // _initData reruns on ordinary resumes too (Android can recreate the
+  // Activity/engine without a real config change), and used to always
+  // build a fresh KretaClient — discarding its in-flight guards and
+  // letting two resumes race. Reuse the client within a short cooldown.
+  const initCooldown = Duration(minutes: 2);
+  final lastInit = _lastInitDataAt;
+  if (init.client != null &&
+      _lastInitDataUsername == token.username &&
+      lastInit != null &&
+      DateTime.now().difference(lastInit) < initCooldown) {
+    logger.info(
+      "[Init] Reusing existing kréta client for ${token.username} "
+      "(resynced within the last ${initCooldown.inMinutes}m)",
+    );
+    return;
+  }
+  _lastInitDataAt = DateTime.now();
+  _lastInitDataUsername = token.username;
+
   logger.fine("Initializing kréta client as: ${token.username}");
   init.client = KretaClient(token);
 
