@@ -637,10 +637,26 @@ class KretaClient {
     DateTime to,
     List<LessonCacheModel> caches,
   ) async {
+    late int existingCount;
+    late int deletedCount;
     isarInit.writeTxnSync(() {
-      cache.getTimeTable().and().between(from, to).deleteAllSync();
+      // NOT between(from, to): it's inclusive of `to`'s whole day, but
+      // `to` here is exclusive (matches what was actually fetched) — the
+      // inclusive version deleted a day beyond what `caches` covers.
+      final scope = cache.getTimeTable().and().startBetween(
+        from.getMidnight(),
+        to.getMidnight(),
+        includeUpper: false,
+      );
+      existingCount = scope.countSync();
+      deletedCount = scope.deleteAllSync();
       isarInit.lessonCacheModels.putAllSync(caches);
     });
+
+    logger.fine(
+      "[RenewCache] _replaceTimetableRange $from..$to: "
+      "existing=$existingCount deleted=$deletedCount inserting=${caches.length}",
+    );
     initData.homeRefreshCubit.requestRefresh();
     return caches;
   }
