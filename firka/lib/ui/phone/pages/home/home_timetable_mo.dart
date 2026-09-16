@@ -360,10 +360,14 @@ class _HomeTimetableMonthlyScreen
                 right: 20,
               ),
               child: RefreshIndicator(
+                // NOT currentMonthStart/End: End is built inclusive for
+                // display, but getLessonsCovering treats `to` as
+                // exclusive, so the last day of the month was never
+                // actually refreshed. Use the visible grid's own bounds.
                 onRefresh: () => widget.data.client!.pullRefresh(
                   () => widget.data.client!.getLessonsCovering(
-                    currentMonthStart,
-                    currentMonthEnd,
+                    dates.first,
+                    dates.last.add(const Duration(days: 1)),
                   ),
                 ),
                 child: GridView.count(
