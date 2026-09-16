@@ -56,6 +56,9 @@ Map<ClassIcon, RegExp> _descriptors = {
   ),
   ClassIcon.religion: RegExp(r'(hit|erkolcs)tan|vallas|etika|bibliaismeret'),
   ClassIcon.economics: RegExp(r'penzugy|gazdasag'),
+  ClassIcon.applications: RegExp(
+    r'asztali(?!\s*tenisz)|mob(il)?[\.\s]*(alk|fejl|app|prog)|szoftver\s*(fejl|teszt|alk)|software\s*dev',
+  ),
   ClassIcon.it: RegExp(r'informatika|szoftver|iroda|digitalis'),
   ClassIcon.code: RegExp(r'prog|alkalmazas'),
   ClassIcon.networking: RegExp(r'halozat'),
@@ -71,11 +74,10 @@ Map<ClassIcon, RegExp> _descriptors = {
   ClassIcon.diligence: RegExp(r'szorgalom'),
   ClassIcon.attitude: RegExp(r'magatartas'),
   ClassIcon.language: RegExp(
-    r'angol|nemet|francia|olasz|orosz|spanyol|latin|kinai|nyelv',
+    r'angol|nemet|francia|olasz|orosz|spanyol|latin|kinai|idegen|(ideg(en)?|id)[\.\s-]*ny|munkavallaloi?.*(ideg|id|nyelv)|szakmai.*ny|nyelv',
   ),
   ClassIcon.linux: RegExp(r'linux'),
   ClassIcon.database: RegExp(r'adatbazis.*'),
-  ClassIcon.applications: RegExp(r'asztali alkalmazasok'),
   ClassIcon.project: RegExp(r'projekt'),
 };
 
@@ -118,20 +120,20 @@ Map<ClassIcon, Uint8List> _iconMap = {
 ClassIcon? getIconType(SubjectCacheModel subject) {
   ClassIcon? icon;
 
+  final normalized = subject.name
+      .toLowerCase()
+      .replaceAll("ö", "o")
+      .replaceAll("ü", "u")
+      .replaceAll("ó", "o")
+      .replaceAll("ő", "o")
+      .replaceAll("ú", "u")
+      .replaceAll("é", "e")
+      .replaceAll("á", "a")
+      .replaceAll("ű", "u")
+      .replaceAll("í", "i");
+
   for (var desc in _descriptors.entries) {
-    if (desc.value.hasMatch(
-      subject.name
-          .replaceAll("ö", "o")
-          .replaceAll("ü", "u")
-          .replaceAll("ó", "o")
-          .replaceAll("ő", "o")
-          .replaceAll("ú", "u")
-          .replaceAll("é", "e")
-          .replaceAll("á", "a")
-          .replaceAll("ű", "u")
-          .replaceAll("í", "i")
-          .toLowerCase(),
-    )) {
+    if (desc.value.hasMatch(normalized)) {
       icon = desc.key;
 
       break;
