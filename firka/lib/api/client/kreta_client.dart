@@ -38,6 +38,22 @@ class KretaClient {
   final CacheManager cache;
   final ToastCubit _toastCubit = initData.toastCubit;
 
+  // Serializes writes from independent call sites (renewCache,
+  // refreshHomeFeed, etc.) so one can't clobber another's fresher data.
+  Future<void> _writeQueue = Future.value();
+
+  Future<T> _enqueueWrite<T>(Future<T> Function() action) {
+    final completer = Completer<T>();
+    _writeQueue = _writeQueue.then((_) async {
+      try {
+        completer.complete(await action());
+      } catch (ex, st) {
+        completer.completeError(ex, st);
+      }
+    });
+    return completer.future;
+  }
+
   KretaClient(TokenModel model) : cache = CacheManager(model);
 
   bool get needsReauth => _toastCubit.state.type == ActiveToastType.reauth;
@@ -456,11 +472,20 @@ class KretaClient {
     }
   }
 
-  /// Upserts [caches]. Deletes stale rows in [staleScope].
+  /// Upserts [caches]. Deletes stale rows in [staleScope]. Queued behind
+  /// [_writeQueue] — see its doc comment.
   Future<List<C>> _save<C extends GenericCacheModel<I>, I extends Identifiable>(
     List<C> caches, [
     QueryBuilder<C, C, QAfterFilterCondition>? staleScope,
-  ]) async {
+  ]) {
+    return _enqueueWrite(() => _saveImpl(caches, staleScope));
+  }
+
+  Future<List<C>>
+  _saveImpl<C extends GenericCacheModel<I>, I extends Identifiable>(
+    List<C> caches,
+    QueryBuilder<C, C, QAfterFilterCondition>? staleScope,
+  ) async {
     isarInit.writeTxnSync(() {
       if (staleScope != null) {
         final freshKeys = caches.map((c) => c.cacheKey).toSet();
@@ -562,8 +587,16 @@ class KretaClient {
     return caches;
   }
 
-  /// Automatically aligns requests to start at Monday and end at Sunday
-  Future<List<LessonCacheModel>> getLessons(DateTime from, DateTime to) async {
+  /// Automatically aligns requests to start at Monday and end at Sunday.
+  /// Queued behind [_writeQueue] so overlapping ranges can't race.
+  Future<List<LessonCacheModel>> getLessons(DateTime from, DateTime to) {
+    return _enqueueWrite(() => _getLessonsImpl(from, to));
+  }
+
+  Future<List<LessonCacheModel>> _getLessonsImpl(
+    DateTime from,
+    DateTime to,
+  ) async {
     assert(from.difference(to).inDays < 30);
     List<LessonCacheModel> caches;
     try {
