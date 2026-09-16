@@ -63,6 +63,13 @@ class Lesson extends NameUid {
     required this.lastModifiedAt,
   });
 
+  /// NameUid.id only keeps uid's leading comma-segment, which for lessons
+  /// is a recurring slot id shared across weeks — different dated lessons
+  /// in the same slot collided on the same cacheKey and overwrote each
+  /// other. Hash the full uid instead.
+  @override
+  int get id => uid.hashCode;
+
   factory Lesson.fromJson(Map<String, dynamic> json) {
     var attachments = List<NameUid>.empty(growable: true);
     var rawAttachments = json['Csatolmanyok'];
