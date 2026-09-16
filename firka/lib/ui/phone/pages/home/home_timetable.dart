@@ -338,6 +338,9 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
         listenWhen: (previous, current) =>
             current.refreshTrigger != previous.refreshTrigger,
         listener: (context, state) {
+          // Underlying writes are correct now (see kreta_client.dart), so
+          // a plain clear()+reread is reliable and needs no stale-value
+          // workaround.
           _lessonsCache.clear();
           setState(() {});
         },
