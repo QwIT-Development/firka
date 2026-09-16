@@ -177,12 +177,47 @@ class KretaClient {
     await getNoticeBoard(from: from);
   }
 
-  Future<void> init() async {
+  Future<void>? _initInFlight;
+
+  /// Two `init()` calls close together (initialization.dart + a
+  /// reInit-triggered renewCache()) used to run fully concurrently and
+  /// interleave writes. Coalesce to one in-flight future.
+  Future<void> init() {
+    final inFlight = _initInFlight;
+    if (inFlight != null) return inFlight;
+    final future = _initImpl();
+    _initInFlight = future;
+    // whenComplete() would return an unawaited derived future, so an
+    // error here would get reported as unhandled even though real
+    // callers already catch it via the returned `future`.
+    future.then((_) => _initInFlight = null, onError: (_) => _initInFlight = null);
+    return future;
+  }
+
+  Future<void> _initImpl() async {
     await getStudent();
     await getClassGroups();
   }
 
-  Future<void> renewCache({bool reInit = false}) async {
+  Future<void>? _renewCacheInFlight;
+
+  /// Multiple call sites trigger renewCache() close together on cold
+  /// start; without this a second call re-runs the whole sync concurrently
+  /// and can clobber the first's fresher writes.
+  Future<void> renewCache({bool reInit = false}) {
+    final inFlight = _renewCacheInFlight;
+    if (inFlight != null) return inFlight;
+    final future = _renewCacheImpl(reInit: reInit);
+    _renewCacheInFlight = future;
+    // See init()'s comment on why this isn't future.whenComplete(...).
+    future.then(
+      (_) => _renewCacheInFlight = null,
+      onError: (_) => _renewCacheInFlight = null,
+    );
+    return future;
+  }
+
+  Future<void> _renewCacheImpl({bool reInit = false}) async {
     _toastCubit.setActiveToast(.fetching);
     try {
       if (reInit) {
