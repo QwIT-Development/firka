@@ -45,9 +45,10 @@ class SettingsRegistry {
   static const notifyWakeupInterval = EnumSetting(id: 1045, defaultValue: NotifyWakeupInterval.hourly, values: NotifyWakeupInterval.values);
   static const fcmDebugNotifyOnMessage = BoolSetting(id: 1046, defaultValue: false);
   static const notificationDeliveryMethod = EnumSetting(id: 1047, defaultValue: NotificationDeliveryMethod.auto, values: NotificationDeliveryMethod.values);
+  static const lessonCacheKeyMigrationDone = BoolSetting(id: 1048, defaultValue: false);
 
   static const all = <Setting>[
-    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl, lastSeen, surpriseGrades, seasonalAppIcons, uwuMode, notifyAll, notifyGrades, notifyHomeworkTests, notifyAbsences, notifyLessons, notifyMessages, notifyMutedSubjects, notifyWakeupInterval, fcmDebugNotifyOnMessage, notificationDeliveryMethod,
+    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl, lastSeen, surpriseGrades, seasonalAppIcons, uwuMode, notifyAll, notifyGrades, notifyHomeworkTests, notifyAbsences, notifyLessons, notifyMessages, notifyMutedSubjects, notifyWakeupInterval, fcmDebugNotifyOnMessage, notificationDeliveryMethod, lessonCacheKeyMigrationDone,
   ];
 }
 
@@ -94,4 +95,5 @@ extension SettingsAccessors on SettingsRepository {
   SilentlySettable<NotifyWakeupInterval> get notifyWakeupInterval => SilentlySettable(this, SettingsRegistry.notifyWakeupInterval);
   SilentlySettable<bool> get fcmDebugNotifyOnMessage => SilentlySettable(this, SettingsRegistry.fcmDebugNotifyOnMessage);
   SilentlySettable<NotificationDeliveryMethod> get notificationDeliveryMethod => SilentlySettable(this, SettingsRegistry.notificationDeliveryMethod);
+  SilentlySettable<bool> get lessonCacheKeyMigrationDone => SilentlySettable(this, SettingsRegistry.lessonCacheKeyMigrationDone);
 }

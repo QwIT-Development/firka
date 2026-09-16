@@ -186,4 +186,9 @@ abstract class SettingsSchema {
     values: NotificationDeliveryMethod.values,
   )
   NotificationDeliveryMethod get notificationDeliveryMethod;
+
+  // Gates a one-time lesson cache wipe to drop rows keyed under the old,
+  // colliding cacheKey scheme (see LessonCacheModel.cacheKey history).
+  @BoolSetting(id: 1048, defaultValue: false)
+  bool get lessonCacheKeyMigrationDone;
 }

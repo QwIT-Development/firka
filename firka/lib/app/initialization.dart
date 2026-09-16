@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:firka_common/data/database.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -120,6 +121,20 @@ void initTheme(AppInitialization data) {
 }
 Future<void> _initData(AppInitialization init) async {
   await init.settings.loadAll();
+
+  // Old cacheKey scheme could collide across dates; wipe once so stale
+  // rows don't linger until their date range naturally resyncs.
+  if (!Settings.lessonCacheKeyMigrationDone.value) {
+    await isarInit.writeTxn(() async {
+      await isarInit.lessonCacheModels.clear();
+    });
+    await Settings.lessonCacheKeyMigrationDone.set(true);
+    logger.info(
+      "[Init] One-time migration: cleared the lesson cache to drop rows "
+      "keyed under the pre-fix cacheKey scheme",
+    );
+  }
+
   final selectedThemeId = Settings.selectedThemeId.value;
   final normalized = normalizeSelectedThemeId(selectedThemeId);
   if (normalized != selectedThemeId) {
