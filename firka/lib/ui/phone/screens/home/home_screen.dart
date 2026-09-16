@@ -16,6 +16,11 @@ import 'package:firka/core/image_preloader.dart';
 
 bool _fetching = false;
 bool _prefetched = false;
+DateTime? _lastPrefetchAt;
+
+// A brief resume->pause->resume blip (screenshot, notification shade, etc.)
+// used to re-trigger a full year-long resync every time. Cooldown avoids it.
+const _prefetchCooldown = Duration(minutes: 2);
 
 class HomeScreen extends StatefulWidget {
   final Widget child;
@@ -74,6 +79,7 @@ class _HomeScreenState extends FirkaState<HomeScreen>
       (context);
     } finally {
       _hasCompletedFirstPrefetch = true;
+      _lastPrefetchAt = DateTime.now();
       if (!_disposed) {
         setState(() {
           _prefetched = true;
@@ -156,12 +162,21 @@ class _HomeScreenState extends FirkaState<HomeScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed && !_disposed) {
-      logger.info('[Home] App resumed to foreground, re-running prefetch');
-      _prefetched = false;
-      prefetch();
-      setState(() {});
+    if (state != AppLifecycleState.resumed || _disposed) return;
+
+    final lastPrefetch = _lastPrefetchAt;
+    if (lastPrefetch != null &&
+        DateTime.now().difference(lastPrefetch) < _prefetchCooldown) {
+      logger.info(
+        '[Home] App resumed to foreground, skipping prefetch (within cooldown)',
+      );
+      return;
     }
+
+    logger.info('[Home] App resumed to foreground, re-running prefetch');
+    _prefetched = false;
+    prefetch();
+    setState(() {});
   }
 
   @override
