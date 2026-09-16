@@ -91,6 +91,27 @@ class KretaClient {
     return lessons;
   }
 
+  /// Splits [from, to) into the sub-range(s) that don't fall inside
+  /// [excludeFrom, excludeTo). Returns [(from, to)] unchanged if there's no
+  /// overlap (including when either exclude bound is null).
+  static List<(DateTime, DateTime)> _excludingRange(
+    DateTime from,
+    DateTime to,
+    DateTime? excludeFrom,
+    DateTime? excludeTo,
+  ) {
+    if (excludeFrom == null ||
+        excludeTo == null ||
+        !from.isBefore(excludeTo) ||
+        !to.isAfter(excludeFrom)) {
+      return [(from, to)];
+    }
+    final ranges = <(DateTime, DateTime)>[];
+    if (from.isBefore(excludeFrom)) ranges.add((from, excludeFrom));
+    if (to.isAfter(excludeTo)) ranges.add((excludeTo, to));
+    return ranges;
+  }
+
   Future<void> renewTimetable({
     bool wholeYear = false,
     DateTime? skipFrom,
@@ -145,13 +166,15 @@ class KretaClient {
     int waitAfter = 5;
     while (date.isBefore(to)) {
       DateTime tmpTo = date.add(Duration(days: 14));
-      final alreadyFetched =
-          skipFrom != null &&
-          skipTo != null &&
-          !date.isBefore(skipFrom) &&
-          !tmpTo.isAfter(skipTo);
-      if (!alreadyFetched) {
-        requests.add(getLessons(date, tmpTo));
+      // Chunk boundaries rarely align with skipFrom/skipTo. Trim the
+      // overlap instead of skipping only fully-contained chunks.
+      for (final (reqFrom, reqTo) in _excludingRange(
+        date,
+        tmpTo,
+        skipFrom,
+        skipTo,
+      )) {
+        requests.add(getLessons(reqFrom, reqTo));
         i++;
       }
       date = tmpTo;
