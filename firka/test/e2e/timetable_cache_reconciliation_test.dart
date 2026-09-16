@@ -1,4 +1,5 @@
 // ignore_for_file: depend_on_referenced_packages
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -84,6 +85,27 @@ Future<void> _resetMockServer(HttpClient httpClient) async {
   await resp.drain();
 }
 
+/// The [from, to) ranges of every OrarendElemek (timetable) request the mock
+/// server has received since the last reset, in `yyyy-MM-dd` form.
+Future<List<(DateTime, DateTime)>> _timetableRequestRanges(
+  HttpClient httpClient,
+) async {
+  final req = await httpClient.getUrl(
+    Uri.parse('$_mockServerUrl/admin/api/timetable-requests'),
+  );
+  final resp = await req.close();
+  final body = await resp.transform(utf8.decoder).join();
+  final list = jsonDecode(body) as List;
+  return list
+      .map(
+        (e) => (
+          DateTime.parse((e as Map<String, dynamic>)['from'] as String),
+          DateTime.parse(e['to'] as String),
+        ),
+      )
+      .toList();
+}
+
 Future<void> _putTimetable(
   HttpClient httpClient,
   List<Map<String, dynamic>> lessons,
@@ -111,8 +133,9 @@ Map<String, dynamic> _lesson({
   String stateDesc = 'Megtartott óra',
   String teacher = 'Teszt Tanár',
   String? substituteTeacher,
+  int daysFromToday = 0,
 }) {
-  final today = DateTime.now();
+  final today = DateTime.now().add(Duration(days: daysFromToday));
   final datePrefix =
       '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
   return {
@@ -591,6 +614,348 @@ void main() {
             _lessonsToday(client.cache).length,
             1,
             reason: 'the existing cache must not be wiped by a failed fetch',
+          );
+        });
+      },
+    );
+
+    testWidgets(
+      'renewCache never issues two overlapping timetable range requests',
+      (tester) async {
+        HttpOverrides.global = _RealHttpOverrides();
+
+        await tester.runAsync(() async {
+          // renewTimetable's chunks are anchored to Sept 1st, which rarely
+          // aligns with the current-window's Monday anchor, so chunks used
+          // to redundantly re-request an already-fresh range.
+          await _initAndSync(httpClient, [
+            _lesson(
+              uid: '9001',
+              start: '07:30',
+              end: '08:15',
+              name: 'Matematika',
+            ),
+          ]);
+
+          final ranges = await _timetableRequestRanges(httpClient);
+          expect(
+            ranges.length,
+            greaterThan(1),
+            reason:
+                'renewCache should fetch more than just the current window '
+                '(sanity check that renewTimetable actually ran)',
+          );
+
+          for (var i = 0; i < ranges.length; i++) {
+            for (var j = i + 1; j < ranges.length; j++) {
+              final (aFrom, aTo) = ranges[i];
+              final (bFrom, bTo) = ranges[j];
+              final overlaps = aFrom.isBefore(bTo) && bFrom.isBefore(aTo);
+              expect(
+                overlaps,
+                isFalse,
+                reason:
+                    'requests $i ($aFrom..$aTo) and $j ($bFrom..$bTo) overlap: '
+                    'a redundant fetch can clobber already-fresh data for '
+                    'the days in the overlap',
+              );
+            }
+          }
+        });
+      },
+    );
+
+    testWidgets(
+      'a manual full-range refresh overlapping an in-progress chunked sync '
+      'never loses a day that was already fetched',
+      (tester) async {
+        HttpOverrides.global = _RealHttpOverrides();
+
+        await tester.runAsync(() async {
+          // Two overlapping, differently-boundaried getLessonsCovering()
+          // calls (e.g. two refreshes landing close together) shouldn't
+          // wipe an already-cached day via their scoped deletes.
+          await _resetMockServer(httpClient);
+          await _putTimetable(httpClient, [
+            _lesson(
+              uid: 'd0',
+              start: '07:30',
+              end: '08:15',
+              name: 'Matematika',
+              daysFromToday: 0,
+            ),
+            _lesson(
+              uid: 'd10',
+              start: '07:30',
+              end: '08:15',
+              name: 'Fizika',
+              daysFromToday: 10,
+            ),
+            _lesson(
+              uid: 'd20',
+              start: '07:30',
+              end: '08:15',
+              name: 'Kémia',
+              daysFromToday: 20,
+            ),
+          ]);
+
+          final isar = await initDB();
+          await isar.writeTxn(() async {
+            await isar.clear();
+          });
+          Settings = SettingsRepository(isar);
+          await Settings.loadAll();
+
+          await Settings.mockBackendEnabled.set(true);
+          await Settings.mockBackendUrl.set(_mockServerUrl);
+
+          final tokenResp = await _authenticateMockServer(httpClient);
+          final tokenModel = TokenModel.fromResp(tokenResp);
+
+          await isar.writeTxn(() async {
+            await isar.tokenModels.clear();
+            await isar.tokenModels.put(tokenModel);
+          });
+
+          await initializeApp();
+          expect(initDone, isTrue);
+
+          final client = initData.client!;
+          await client.init();
+
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          bool isOnDay(DateTime d, int offset) {
+            final target = today.add(Duration(days: offset));
+            return d.year == target.year &&
+                d.month == target.month &&
+                d.day == target.day;
+          }
+
+          int lessonsOn(int offset) => client.cache
+              .getTimeTable()
+              .findAllSync()
+              .where((l) => isOnDay(l.start, offset))
+              .length;
+
+          // Sync everything first so all 3 days are already cached.
+          await client.getLessonsCovering(
+            today,
+            today.add(const Duration(days: 23)),
+          );
+          expect(lessonsOn(0), 1);
+          expect(lessonsOn(10), 1);
+          expect(lessonsOn(20), 1);
+
+          // Poll during the overlapping re-fetches to catch a transient
+          // dip, not just the end state.
+          var polling = true;
+          var day10DroppedToZero = false;
+          var day20DroppedToZero = false;
+          unawaited(() async {
+            while (polling) {
+              if (lessonsOn(10) == 0) day10DroppedToZero = true;
+              if (lessonsOn(20) == 0) day20DroppedToZero = true;
+              await Future.delayed(Duration.zero);
+            }
+          }());
+
+          // Two shifted, overlapping ranges fired concurrently.
+          await Future.wait([
+            client.getLessonsCovering(
+              today,
+              today.add(const Duration(days: 20)),
+            ),
+            client.getLessonsCovering(
+              today.add(const Duration(days: 3)),
+              today.add(const Duration(days: 23)),
+            ),
+          ]);
+          polling = false;
+
+          expect(
+            day10DroppedToZero,
+            isFalse,
+            reason:
+                'day 10 was already cached and should never transiently '
+                'read as empty during the overlapping re-fetch',
+          );
+          expect(
+            day20DroppedToZero,
+            isFalse,
+            reason:
+                'day 20 was already cached and should never transiently '
+                'read as empty during the overlapping re-fetch',
+          );
+
+          expect(
+            lessonsOn(0),
+            1,
+            reason: 'day 0 lesson should survive both overlapping fetches',
+          );
+          expect(
+            lessonsOn(10),
+            1,
+            reason: 'day 10 lesson should survive both overlapping fetches',
+          );
+          expect(
+            lessonsOn(20),
+            1,
+            reason: 'day 20 lesson should survive both overlapping fetches',
+          );
+        });
+      },
+    );
+
+    testWidgets(
+      "a chunk's own boundary day survives being fetched by a narrower, "
+      'earlier-ending request first',
+      (tester) async {
+        HttpOverrides.global = _RealHttpOverrides();
+
+        await tester.runAsync(() async {
+          // `to` is meant as exclusive everywhere in kreta_client.dart, but
+          // the delete scope used to treat it as inclusive, wiping one day
+          // beyond what was actually fetched.
+          await _resetMockServer(httpClient);
+          await _putTimetable(httpClient, [
+            _lesson(
+              uid: 'boundary',
+              start: '07:30',
+              end: '08:15',
+              name: 'Matematika',
+              daysFromToday: 3,
+            ),
+          ]);
+
+          final isar = await initDB();
+          await isar.writeTxn(() async {
+            await isar.clear();
+          });
+          Settings = SettingsRepository(isar);
+          await Settings.loadAll();
+          await Settings.mockBackendEnabled.set(true);
+          await Settings.mockBackendUrl.set(_mockServerUrl);
+
+          final tokenResp = await _authenticateMockServer(httpClient);
+          final tokenModel = TokenModel.fromResp(tokenResp);
+          await isar.writeTxn(() async {
+            await isar.tokenModels.clear();
+            await isar.tokenModels.put(tokenModel);
+          });
+
+          await initializeApp();
+          expect(initDone, isTrue);
+
+          final client = initData.client!;
+          await client.init();
+
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          final boundary = today.add(const Duration(days: 3));
+
+          int lessonsOnBoundaryDay() => client.cache
+              .getTimeTable()
+              .findAllSync()
+              .where(
+                (l) =>
+                    l.start.year == boundary.year &&
+                    l.start.month == boundary.month &&
+                    l.start.day == boundary.day,
+              )
+              .length;
+
+          await client.getLessons(
+            today,
+            today.add(const Duration(days: 7)),
+          );
+          expect(lessonsOnBoundaryDay(), 1);
+
+          // `to` lands exactly on the boundary day (exclusive) — must not
+          // touch that day's already-cached lesson.
+          await client.getLessons(today, boundary);
+
+          expect(
+            lessonsOnBoundaryDay(),
+            1,
+            reason:
+                "a fetch whose exclusive `to` is the boundary day must not "
+                'delete that day\'s already-cached lessons — it never '
+                'asked the server for that day in the first place',
+          );
+        });
+      },
+    );
+
+    testWidgets(
+      'two occurrences of the same recurring weekly slot on different '
+      'dates both survive being cached',
+      (tester) async {
+        HttpOverrides.global = _RealHttpOverrides();
+
+        await tester.runAsync(() async {
+          // Comma-prefixed Uids share a leading "recurring slot" segment
+          // across weeks — cacheKey used to be derived from only that
+          // segment, so different weeks' lessons overwrote each other.
+          await _resetMockServer(httpClient);
+          await _putTimetable(httpClient, [
+            _lesson(
+              uid: '53721555,slotA-week1',
+              start: '11:00',
+              end: '11:45',
+              name: 'Adatbázis-kezelés II',
+              daysFromToday: 0,
+            ),
+            _lesson(
+              uid: '53721555,slotA-week2',
+              start: '11:00',
+              end: '11:45',
+              name: 'Adatbázis-kezelés II',
+              daysFromToday: 7,
+            ),
+          ]);
+
+          final isar = await initDB();
+          await isar.writeTxn(() async {
+            await isar.clear();
+          });
+          Settings = SettingsRepository(isar);
+          await Settings.loadAll();
+          await Settings.mockBackendEnabled.set(true);
+          await Settings.mockBackendUrl.set(_mockServerUrl);
+
+          final tokenResp = await _authenticateMockServer(httpClient);
+          final tokenModel = TokenModel.fromResp(tokenResp);
+          await isar.writeTxn(() async {
+            await isar.tokenModels.clear();
+            await isar.tokenModels.put(tokenModel);
+          });
+
+          await initializeApp();
+          expect(initDone, isTrue);
+
+          final client = initData.client!;
+          await client.init();
+          await client.getLessons(
+            DateTime.now(),
+            DateTime.now().add(const Duration(days: 10)),
+          );
+
+          final cachedStarts = client.cache
+              .getTimeTable()
+              .findAllSync()
+              .map((l) => l.start)
+              .toSet();
+
+          expect(
+            cachedStarts.length,
+            2,
+            reason:
+                'both occurrences of the recurring slot should be cached as '
+                'distinct rows on their own dates — a cacheKey collision '
+                'would leave only one row, dated whichever occurrence was '
+                'written last',
           );
         });
       },
