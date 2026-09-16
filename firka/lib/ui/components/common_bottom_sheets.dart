@@ -167,10 +167,13 @@ Future<void> showLessonBottomSheet(
     SizedBox(height: 20),
     Row(
       children: [
-        Text(
-          "${lesson.name} ${statsForNerdsEnabled ? "(${lesson.subject.loadAndGet()!.name})" : ""}",
-          style: appStyle.fonts.H_18px.apply(
-            color: appStyle.colors.textPrimary,
+        Expanded(
+          child: Text(
+            "${lesson.name} ${statsForNerdsEnabled ? "(${lesson.subject.loadAndGet()!.name})" : ""}",
+            style: appStyle.fonts.H_18px.apply(
+              color: appStyle.colors.textPrimary,
+            ),
+            softWrap: true,
           ),
         ),
       ],
