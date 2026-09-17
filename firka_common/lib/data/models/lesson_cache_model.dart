@@ -15,6 +15,7 @@ part 'lesson_cache_model.g.dart';
 
 @collection
 class LessonCacheModel extends GenericCacheModel<Lesson> {
+  String? uid;
   @Index()
   late DateTime start;
   late DateTime end;
@@ -39,6 +40,7 @@ class LessonCacheModel extends GenericCacheModel<Lesson> {
   @override
   void apply(CacheContext<Lesson> ctx) {
     this
+      ..uid = ctx.data.uid
       ..start = ctx.data.start
       ..end = ctx.data.end
       ..dailyNth = ctx.data.lessonNumber

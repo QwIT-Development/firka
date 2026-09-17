@@ -28,6 +28,7 @@ import 'package:firka/ui/phone/widgets/lesson.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firka/ui/shared/class_icon.dart';
 import 'package:firka_common/ui/components/firka_card.dart';
+import 'package:firka/ui/components/stats_table.dart';
 import 'package:firka_common/ui/components/grade.dart';
 
 Future<void> showFirkaBottomSheet(
@@ -47,34 +48,40 @@ Future<void> showFirkaBottomSheet(
         Align(
           alignment: AlignmentGeometry.bottomCenter,
           child: Container(
+            width: double.infinity,
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+            ),
             padding: const EdgeInsets.all(20) - EdgeInsets.only(top: 20),
             decoration: BoxDecoration(
               color: appStyle.colors.background,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: SelectionArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Align(
-                    heightFactor: 0,
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      margin: EdgeInsets.only(top: 18),
-                      width: 40,
-                      height: 4,
-                      foregroundDecoration: ShapeDecoration(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadiusGeometry.circular(2),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Align(
+                      heightFactor: 0,
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        margin: EdgeInsets.only(top: 18),
+                        width: 40,
+                        height: 4,
+                        foregroundDecoration: ShapeDecoration(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadiusGeometry.circular(2),
+                          ),
+                          color: appStyle.colors.shadowColor,
                         ),
-                        color: appStyle.colors.shadowColor,
                       ),
                     ),
-                  ),
-                  SizedBox(height: 40),
-                  ...children,
-                ],
+                    SizedBox(height: 40),
+                    ...children,
+                  ],
+                ),
               ),
             ),
           ),
@@ -83,6 +90,7 @@ Future<void> showFirkaBottomSheet(
     ),
   );
 }
+
 
 Future<void> showLessonBottomSheet(
   BuildContext context,
@@ -100,15 +108,43 @@ Future<void> showLessonBottomSheet(
 
   final y2k = DateTime(2000, 1);
 
+  String fmt(DateTime? dt) =>
+      (dt != null && dt.isAfter(y2k))
+          ? dt.format(data.l10n, FormatMode.yyyymmddhhmmss)
+          : 'N/A';
+
   if (statsForNerdsEnabled) {
-    final stats =
-        "${data.l10n.stats_date}: ${lesson.start.isAfter(y2k) ? lesson.start.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n"
-        "${data.l10n.stats_created_at}: ${lesson.createdAt.isAfter(y2k) ? lesson.createdAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}\n";
-    //"${data.l10n.stats_last_mod}: ${lesson.lastModifiedAt.isAfter(y2k) ? lesson.lastModifiedAt.format(data.l10n, FormatMode.yyyymmddhhmmss) : "N/A"}";
-    statsForNerds = Text(
-      stats,
-      style: appStyle.fonts.B_16R.apply(color: appStyle.colors.textPrimary),
-    );
+    final cg = lesson.classGroup.loadAndGet();
+    final subj = lesson.subject.loadAndGet();
+    final hw = lesson.homework.loadAndGet();
+    final tst = lesson.test.loadAndGet();
+    final omission = lesson.omission.loadAndGet();
+
+    final rows = <(String, String)>[
+      ('id (cache key)', lesson.cacheKey.toString()),
+      ('uid (kréta)', lesson.uid ?? 'N/A'),
+      ('name', lesson.name),
+      ('state', lesson.state),
+      ('type', lesson.type),
+      ('start', fmt(lesson.start)),
+      ('end', fmt(lesson.end)),
+      ('last modified (kréta)', fmt(lesson.createdAt)),
+      ('room', lesson.roomName ?? 'N/A'),
+      ('teacher', lesson.teacher ?? 'N/A'),
+      ('sub. teacher', lesson.substituteTeacher ?? '-'),
+      ('lesson # (daily)', lesson.dailyNth?.toString() ?? 'N/A'),
+      ('lesson # (yearly)', lesson.yearlyNth?.toString() ?? 'N/A'),
+      ('topic', lesson.topic ?? 'N/A'),
+      ('subject', subj?.name ?? 'N/A'),
+      ('subject uid', subj?.cacheKey.toString() ?? 'N/A'),
+      ('class group', cg?.name ?? 'N/A'),
+      ('class group type', cg?.type ?? 'N/A'),
+      ('edu. order', cg?.educationalOrderName ?? 'N/A'),
+      ('homework', hw != null ? 'Yes (id: ${hw.cacheKey})' : 'None'),
+      ('test', tst != null ? '${tst.method}: ${tst.topic ?? "N/A"}' : 'None'),
+      ('omission', omission != null ? '${omission.state.name}${omission.lateMins != null ? " (${omission.lateMins}m)" : ""}' : 'None'),
+    ];
+    statsForNerds = StatsForNerdsTable(rows: rows);
   }
   showFirkaBottomSheet(context, [
     Row(
@@ -142,26 +178,28 @@ Future<void> showLessonBottomSheet(
             size: 26,
           ),
         ),
-        SizedBox(width: 6),
-        Card(
-          shadowColor: Colors.transparent,
-          color: appStyle.colors.a15p,
-          margin: EdgeInsets.all(0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 6),
-            child: Text(
-              lesson.roomName!,
-              style: appStyle.fonts.B_14R.apply(
-                color: appStyle.colors.secondary,
+        if (lesson.roomName != null && lesson.roomName!.isNotEmpty) ...[
+          SizedBox(width: 6),
+          Card(
+            shadowColor: Colors.transparent,
+            color: appStyle.colors.a15p,
+            margin: EdgeInsets.all(0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 6),
+              child: Text(
+                lesson.roomName!,
+                style: appStyle.fonts.B_14R.apply(
+                  color: appStyle.colors.secondary,
+                ),
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
               ),
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
             ),
           ),
-        ),
+        ],
       ],
     ),
     SizedBox(height: 20),
@@ -179,15 +217,16 @@ Future<void> showLessonBottomSheet(
       ],
     ),
     SizedBox(height: 2),
-    Text(
-      lesson.teacher!,
-      style: appStyle.fonts.B_14R.apply(
-        color: appStyle.colors.textSecondary,
-        decoration: lesson.substituteTeacher != null
-            ? TextDecoration.lineThrough
-            : TextDecoration.none,
+    if (lesson.teacher != null && lesson.teacher!.isNotEmpty)
+      Text(
+        lesson.teacher!,
+        style: appStyle.fonts.B_14R.apply(
+          color: appStyle.colors.textSecondary,
+          decoration: lesson.substituteTeacher != null
+              ? TextDecoration.lineThrough
+              : TextDecoration.none,
+        ),
       ),
-    ),
     if (lesson.substituteTeacher != null)
       Text(
         lesson.substituteTeacher!,
@@ -223,11 +262,29 @@ Future<void> showLessonBottomSheet(
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            ?statsForNerds,
           ],
         ),
       ],
     ),
+    if (statsForNerds != null) SizedBox(height: 6),
+    if (statsForNerds != null)
+      FirkaCard.single(
+        margin: EdgeInsets.all(0),
+        padding: EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Debug info',
+              style: appStyle.fonts.H_14px.apply(
+                color: appStyle.colors.textPrimary,
+              ),
+            ),
+            SizedBox(height: 10),
+            statsForNerds,
+          ],
+        ),
+      ),
     SizedBox(height: 6),
     if (lesson.test.loadAndGet() != null)
       InfoCard.testDesc(lesson.test.loadAndGet()!),
@@ -252,6 +309,8 @@ Future<void> showLessonBottomSheet(
     ),
   ]);
 }
+
+
 
 Future<void> showOmissionBottomSheet(
   BuildContext context,
