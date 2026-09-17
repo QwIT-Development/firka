@@ -19,6 +19,7 @@ import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/data/widget.dart';
 import 'package:firka/services/fcm_headless_bootstrap.dart';
 import 'package:firka/services/local_notification_service.dart';
+import 'package:firka/services/progress_notification_service.dart';
 
 /// Runs on a silent FCM wakeup: for every locally logged-in account, fetches
 /// grades/homework/tests/absences/lessons/messages, diffs each against what
@@ -46,6 +47,8 @@ class NotificationDiffService {
         _logger.warning('checkAll: account ${token.username} failed: $e', e, st);
       }
     }
+
+    await ProgressNotificationService.checkAndStartIfActive();
   }
 
   static Future<void> _checkAccount(

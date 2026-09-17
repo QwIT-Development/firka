@@ -293,6 +293,13 @@ SettingsUiGroup buildSettingsTree(AppLocalizations l10n) {
           SettingsRegistry.notifyAll,
           always,
         ),
+        SettingsUiBoolean(
+          FirkaIconType.majesticons,
+          Majesticon.clockSolid,
+          l10n.s_progress_notification,
+          SettingsRegistry.progressNotificationEnabled,
+          isPushNotificationsEnabled,
+        ),
         SettingsUiHeaderSmall(l10n.s_notif_delivery_method_header, isPushNotificationsEnabled),
         SettingsUiEnum(SettingsRegistry.notificationDeliveryMethod, [
           l10n.s_notif_delivery_auto,

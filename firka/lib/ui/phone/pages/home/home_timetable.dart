@@ -167,12 +167,16 @@ class _HomeTimetableScreen extends FirkaState<HomeTimetableScreen>
     return TimeTableDayWidget(
       lessons,
       events,
-      onRefresh: () => widget.data.client!.pullRefresh(
-        () => widget.data.client!.getLessonsCovering(
-          _currentTabWeekMonday,
-          _currentTabWeekMonday.add(const Duration(days: 7)),
-        ),
-      ),
+      onRefresh: () async {
+        await widget.data.client!.pullRefresh(
+          () => widget.data.client!.getLessonsCovering(
+            _currentTabWeekMonday,
+            _currentTabWeekMonday.add(const Duration(days: 7)),
+          ),
+        );
+        _lessonsCache.clear();
+        if (mounted) setState(() {});
+      },
     );
   }
 

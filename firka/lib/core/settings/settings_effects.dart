@@ -6,8 +6,10 @@ import "package:firka/app/app_state.dart";
 import "package:firka/app/initialization.dart";
 import "package:firka/services/fcm_service.dart";
 import "package:firka/services/notification_delivery_service.dart";
+import "package:firka/services/progress_notification_service.dart";
 import "package:firka/services/watch_sync_helper.dart";
 
+import "package:firka/data/widget.dart";
 import "settings_repository.dart";
 import "settings_schema.dart";
 
@@ -20,6 +22,8 @@ void registerSettingsEffects(
   repo.onChange(SettingsRegistry.language, (_) async {
     await initLang(initData);
     initData.homeRefreshCubit.requestRefresh();
+    await WidgetCacheHelper.updateWidgetCacheFromIsar();
+    await ProgressNotificationService.syncStrings(initData.l10n);
   });
 
   repo.onChange(SettingsRegistry.themeBrightness, (_) async {
@@ -56,10 +60,15 @@ void registerSettingsEffects(
 
   repo.onChange(SettingsRegistry.notifyAll, (_) async {
     await NotificationDeliveryService.syncDeliveryBackend();
+    await ProgressNotificationService.sync();
   });
 
   repo.onChange(SettingsRegistry.notificationDeliveryMethod, (_) async {
     await NotificationDeliveryService.syncDeliveryBackend();
+  });
+
+  repo.onChange(SettingsRegistry.progressNotificationEnabled, (_) async {
+    await ProgressNotificationService.sync();
   });
 
   repo.onChange(SettingsRegistry.notifyWakeupInterval, (_) async {

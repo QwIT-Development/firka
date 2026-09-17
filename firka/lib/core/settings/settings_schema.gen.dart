@@ -46,9 +46,10 @@ class SettingsRegistry {
   static const fcmDebugNotifyOnMessage = BoolSetting(id: 1046, defaultValue: false);
   static const notificationDeliveryMethod = EnumSetting(id: 1047, defaultValue: NotificationDeliveryMethod.auto, values: NotificationDeliveryMethod.values);
   static const lessonCacheKeyMigrationDone = BoolSetting(id: 1048, defaultValue: false);
+  static const progressNotificationEnabled = BoolSetting(id: 1049, defaultValue: false);
 
   static const all = <Setting>[
-    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl, lastSeen, surpriseGrades, seasonalAppIcons, uwuMode, notifyAll, notifyGrades, notifyHomeworkTests, notifyAbsences, notifyLessons, notifyMessages, notifyMutedSubjects, notifyWakeupInterval, fcmDebugNotifyOnMessage, notificationDeliveryMethod, lessonCacheKeyMigrationDone,
+    bellDelay, rounding1, rounding2, rounding3, rounding4, classAvgOnGraph, leftHandedMode, language, appIcon, childProtection, betaWarning, ttToastLessonNo, ttToastTestsAndHw, ttToastBreaks, statsForNerds, developerOptsEnabled, themeBrightness, ttToastSubstitution, ttToastABTimetable, wearOsSupport, titleFont, titleWeight, titleCapitalization, selectedThemeId, selectedCoreThemeId, selectedGradeThemeId, mockBackendEnabled, mockBackendUrl, lastSeen, surpriseGrades, seasonalAppIcons, uwuMode, notifyAll, notifyGrades, notifyHomeworkTests, notifyAbsences, notifyLessons, notifyMessages, notifyMutedSubjects, notifyWakeupInterval, fcmDebugNotifyOnMessage, notificationDeliveryMethod, lessonCacheKeyMigrationDone, progressNotificationEnabled,
   ];
 }
 
@@ -96,4 +97,5 @@ extension SettingsAccessors on SettingsRepository {
   SilentlySettable<bool> get fcmDebugNotifyOnMessage => SilentlySettable(this, SettingsRegistry.fcmDebugNotifyOnMessage);
   SilentlySettable<NotificationDeliveryMethod> get notificationDeliveryMethod => SilentlySettable(this, SettingsRegistry.notificationDeliveryMethod);
   SilentlySettable<bool> get lessonCacheKeyMigrationDone => SilentlySettable(this, SettingsRegistry.lessonCacheKeyMigrationDone);
+  SilentlySettable<bool> get progressNotificationEnabled => SilentlySettable(this, SettingsRegistry.progressNotificationEnabled);
 }

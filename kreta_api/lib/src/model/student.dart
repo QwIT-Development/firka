@@ -39,25 +39,48 @@ class Student extends NameUid {
   factory Student.fromJson(Map<String, dynamic> json) {
     var guardianList = List<Guardian>.empty(growable: true);
 
-    for (var item in json['Gondviselok']) {
-      guardianList.add(Guardian.fromJson(item));
+    if (json['Gondviselok'] is List) {
+      for (var item in json['Gondviselok']) {
+        guardianList.add(Guardian.fromJson(item));
+      }
     }
 
     return Student(
-      addressDataList: List<String>.from(json['Cimek'] as List),
-      bankAccount: BankAccount.fromJson(json['Bankszamla']),
+      addressDataList: json['Cimek'] is List
+          ? List<String>.from(json['Cimek'] as List)
+          : const [],
+      bankAccount: json['Bankszamla'] is Map<String, dynamic>
+          ? BankAccount.fromJson(json['Bankszamla'])
+          : const BankAccount(
+              accountNumber: null,
+              isReadOnly: null,
+              ownerName: null,
+              ownerType: null,
+            ),
       birthdate: DateFormat('yyyy-M-d').parse(
         "${json['SzuletesiEv']}-${json['SzuletesiHonap']}-${json['SzuletesiNap']}",
       ),
       emailAddress: json['EmailCim'],
-      name: json['Nev'],
+      name: json['Nev']?.toString() ?? '',
       phoneNumber: json['Telefonszam'],
-      schoolYearUID: json['TanevUid'],
-      uid: json['Uid'],
+      schoolYearUID: json['TanevUid']?.toString() ?? '',
+      uid: json['Uid'].toString(),
       guardianList: guardianList,
-      instituteCode: json['IntezmenyAzonosito'],
-      instituteName: json['IntezmenyNev'],
-      institution: Institution.fromJson(json['Intezmeny']),
+      instituteCode: json['IntezmenyAzonosito']?.toString() ?? '',
+      instituteName: json['IntezmenyNev']?.toString() ?? '',
+      institution: json['Intezmeny'] is Map<String, dynamic>
+          ? Institution.fromJson(json['Intezmeny'])
+          : Institution(
+              customizationSettings: const CustomizationSettings(
+                delayForNotifications: 0,
+                isClassAverageVisible: true,
+                isLessonsThemeVisible: true,
+                nextServerDeployAsString: '',
+              ),
+              shortName: '',
+              systemModuleList: const [],
+              uid: '',
+            ),
     );
   }
 

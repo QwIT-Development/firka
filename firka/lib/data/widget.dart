@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 
+import 'package:firka/core/settings/settings_repository.dart';
+import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka_common/data/database.dart';
 import 'package:firka_common/data/models/lesson_cache_model.dart';
@@ -13,6 +16,7 @@ import 'package:firka/core/debug_helper.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'package:firka_common/core/icon_helper.dart';
 import 'package:firka/ui/theme/style.dart';
 
 class WidgetCacheHelper {
@@ -29,6 +33,7 @@ class WidgetCacheHelper {
       'topic': lesson.topic,
       'state': lesson.state,
       'type': lesson.type,
+      'icon': getIconTypeByName(lesson.name)?.name,
       // Backward-compatibility aliases for legacy receivers
       'Nev': lesson.name,
       'KezdetIdopont': lesson.start.toIso8601String(),
@@ -48,7 +53,18 @@ class WidgetCacheHelper {
     final colors = style != null
         ? _colorsMap(style)
         : (existingColors ?? _defaultColors());
-    return {'colors': colors, 'timetable': timetableJson};
+    String? languageCode;
+    try {
+      final lang = Settings.language.value;
+      languageCode = lang == AppLanguage.auto
+          ? ui.PlatformDispatcher.instance.locale.languageCode
+          : lang.name;
+    } catch (_) {}
+    return {
+      'colors': colors,
+      'timetable': timetableJson,
+      if (languageCode != null) 'language': languageCode,
+    };
   }
 
   static Map<String, dynamic> toAndroidWidgetJson(

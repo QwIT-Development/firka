@@ -41,6 +41,9 @@ class WidgetLesson(data: JSONObject) {
     val start: LocalDateTime = parseDateTime(data.optString("start", data.optString("KezdetIdopont", "")))
     val end: LocalDateTime = parseDateTime(data.optString("end", data.optString("VegIdopont", "")))
     val lessonNumber: Int? = data.getIntOrNull("dailyNth") ?: data.getIntOrNull("Oraszam")
-    val roomName: String? = data.getStringOrNull("roomName") ?: data.getStringOrNull("TeremNeve")
-    val substituteTeacher: String? = data.getStringOrNull("substituteTeacher") ?: data.getStringOrNull("HelyettesTanarNeve")
+    val roomName: String? = (data.getStringOrNull("roomName") ?: data.getStringOrNull("TeremNeve"))
+        ?.takeIf { it != "null" && it != "-" && it.isNotBlank() }
+    val substituteTeacher: String? = (data.getStringOrNull("substituteTeacher") ?: data.getStringOrNull("HelyettesTanarNeve"))
+        ?.takeIf { it != "null" && it != "-" && it.isNotBlank() }
+    val icon: String? = data.getStringOrNull("icon")
 }

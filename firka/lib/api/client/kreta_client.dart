@@ -572,19 +572,40 @@ class KretaClient {
   }
 
   Future<StudentCacheModel> getStudent() async {
-    return (await _renewCache<StudentCacheModel, Student>(
+    final list = await _renewCache<StudentCacheModel, Student>(
       KretaEndpoints.getStudent(cache.token.iss),
       StudentCacheModel.new,
       (cache) => Student.fromJson(cache),
-    ).then(_save)).first;
+    ).then(_save);
+    if (list.isNotEmpty) {
+      return list.first;
+    }
+    final existing = cache.findStudentOrNull();
+    if (existing != null) {
+      logger.warning("getStudent returned empty, falling back to cached student");
+      return existing;
+    }
+    throw StateError("No student data returned from Kreta and no cached student found");
   }
 
   Future<List<ClassGroupCacheModel>> getClassGroups() async {
-    return await _renewCache(
+    final list = await _renewCache(
       KretaEndpoints.getClassGroups(cache.token.iss),
       ClassGroupCacheModel.new,
       (item) => ClassGroup.fromJson(item),
     ).then(_save);
+    if (list.isNotEmpty) {
+      return list;
+    }
+    final existing = isarInit.classGroupCacheModels
+        .filter()
+        .group(cache.isCurrentClassGroup)
+        .findAllSync();
+    if (existing.isNotEmpty) {
+      logger.warning("getClassGroups returned empty, falling back to cached class groups");
+      return existing;
+    }
+    return list;
   }
 
   Future<List<MessageCacheModel>> getNoticeBoard({

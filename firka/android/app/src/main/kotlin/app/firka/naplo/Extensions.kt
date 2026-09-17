@@ -7,8 +7,9 @@ import org.json.JSONObject
 
 fun JSONObject.getStringOrNull(key: String): String? {
     return try {
-        if (has(key)) {
-            getString(key)
+        if (has(key) && !isNull(key)) {
+            val v = getString(key)
+            if (v == "null" || v.isBlank()) null else v
         } else {
             null
         }

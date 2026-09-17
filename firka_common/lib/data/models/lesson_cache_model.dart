@@ -76,11 +76,15 @@ class LessonCacheModel extends GenericCacheModel<Lesson> {
 
     if (classGroup.value == null) {
       classGroup.value = isarInit.classGroupCacheModels
-          .filter()
-          .group(ctx.cacheManager.isCurrentClassGroup)
-          .and()
-          .typeEqualTo("Osztaly")
-          .findFirstSync()!;
+              .filter()
+              .group(ctx.cacheManager.isCurrentClassGroup)
+              .and()
+              .typeEqualTo("Osztaly")
+              .findFirstSync() ??
+          isarInit.classGroupCacheModels
+              .filter()
+              .group(ctx.cacheManager.isCurrentClassGroup)
+              .findFirstSync();
     }
   }
 

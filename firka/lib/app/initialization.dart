@@ -10,6 +10,7 @@ import 'package:firka/app/app_state.dart';
 import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka_common/data/models/token_model.dart';
 import 'package:firka/services/notification_delivery_service.dart';
+import 'package:firka/services/progress_notification_service.dart';
 import 'package:firka/data/widget.dart';
 import 'package:firka/core/settings/settings_effects.dart';
 import 'package:firka/core/settings/settings_repository.dart';
@@ -27,6 +28,7 @@ import 'package:path/path.dart' as p;
 import 'package:isar_community/isar.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
+
 
 Future<void> initLang(AppInitialization data) async {
   switch (Settings.language.value) {
@@ -166,6 +168,7 @@ Future<void> _initData(AppInitialization init) async {
         logger.info(
           "[Init] System locale changed in auto mode: $previousLocale -> $nextLocale",
         );
+        await ProgressNotificationService.syncStrings(init.l10n);
       }
       init.themeCubit.refresh();
     }());
@@ -209,6 +212,7 @@ Future<void> _initData(AppInitialization init) async {
 
   // Immediately refresh widget state from cached Isar lessons so widget is up to date
   unawaited(WidgetCacheHelper.updateWidgetCacheFromIsar());
+  unawaited(ProgressNotificationService.checkAndStartOnMorning());
 
   // Don't block first paint on the network: render whatever is already
   // cached, then stream in student/timetable/grades/etc. as they arrive.
@@ -225,6 +229,7 @@ Future<void> _initData(AppInitialization init) async {
 
     await init.client!.renewCache(reInit: false);
     await WidgetCacheHelper.updateWidgetCacheFromIsar();
+    unawaited(ProgressNotificationService.checkAndStartIfActive());
     init.homeRefreshCubit.requestRefresh();
   }());
 

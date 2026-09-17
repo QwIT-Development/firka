@@ -191,4 +191,7 @@ abstract class SettingsSchema {
   // colliding cacheKey scheme (see LessonCacheModel.cacheKey history).
   @BoolSetting(id: 1048, defaultValue: false)
   bool get lessonCacheKeyMigrationDone;
+
+  @BoolSetting(id: 1049, defaultValue: false)
+  bool get progressNotificationEnabled;
 }

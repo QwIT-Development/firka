@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:firka/core/bloc/toast_cubit.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/core/settings.dart';
 import 'package:firka/app/app_state.dart';
+import 'package:firka/services/progress_notification_service.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -163,6 +165,8 @@ class _HomeScreenState extends FirkaState<HomeScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state != AppLifecycleState.resumed || _disposed) return;
+
+    unawaited(ProgressNotificationService.checkAndStartOnAppOpen());
 
     final lastPrefetch = _lastPrefetchAt;
     if (lastPrefetch != null &&

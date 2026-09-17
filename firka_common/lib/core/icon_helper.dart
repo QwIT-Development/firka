@@ -117,10 +117,10 @@ Map<ClassIcon, Uint8List> _iconMap = {
   ClassIcon.project: Majesticon.presentationSolid,
 };
 
-ClassIcon? getIconType(SubjectCacheModel subject) {
+ClassIcon? getIconTypeByName(String subjectName) {
   ClassIcon? icon;
 
-  final normalized = subject.name
+  final normalized = subjectName
       .toLowerCase()
       .replaceAll("ö", "o")
       .replaceAll("ü", "u")
@@ -141,6 +141,10 @@ ClassIcon? getIconType(SubjectCacheModel subject) {
   }
 
   return icon;
+}
+
+ClassIcon? getIconType(SubjectCacheModel subject) {
+  return getIconTypeByName(subject.name);
 }
 
 Uint8List getIconData(ClassIcon? icon) {

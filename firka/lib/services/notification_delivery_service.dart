@@ -12,6 +12,7 @@ import 'package:firka/core/settings/settings_repository.dart';
 import 'package:firka/core/settings/settings_schema.dart';
 import 'package:firka/services/alarm_notification_service.dart';
 import 'package:firka/services/fcm_service.dart';
+import 'package:firka/services/progress_notification_service.dart';
 
 class NotificationDeliveryService {
   static final Logger _logger = Logger('NotificationDeliveryService');
@@ -103,6 +104,8 @@ class NotificationDeliveryService {
         case NotificationDeliveryMethod.auto:
           break;
       }
+
+      await ProgressNotificationService.sync();
     } catch (e, st) {
       _logger.warning('Failed to sync delivery backend: $e', e, st);
     }

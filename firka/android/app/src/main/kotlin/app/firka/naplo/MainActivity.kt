@@ -1,5 +1,6 @@
 package app.firka.naplo
 
+import android.app.NotificationManager
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Intent
@@ -25,6 +26,7 @@ class MainActivity : FlutterActivity() {
 
     private val channel = "firka.app/main"
     private val wearSyncChannel = "app.firka/wear_sync"
+    private val progressNotificationChannel = "app.firka/progress_notification"
 
     private fun forceIconUpdate() {
         try {
@@ -87,6 +89,67 @@ class MainActivity : FlutterActivity() {
                     }
                     startService(intent)
                     result.success(null)
+                }
+                else -> result.notImplemented()
+            }
+        }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, progressNotificationChannel).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "startProgressService" -> {
+                    val intent = Intent(this, ProgressNotificationForegroundService::class.java).apply {
+                        action = ProgressNotificationForegroundService.ACTION_START
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(intent)
+                    } else {
+                        startService(intent)
+                    }
+                    result.success(true)
+                }
+                "stopProgressService" -> {
+                    val intent = Intent(this, ProgressNotificationForegroundService::class.java).apply {
+                        action = ProgressNotificationForegroundService.ACTION_STOP
+                    }
+                    startService(intent)
+                    result.success(true)
+                }
+                "isProgressServiceRunning" -> {
+                    val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                    val isNotifActive = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        try {
+                            nm.activeNotifications?.any { it.id == 4002 } ?: false
+                        } catch (e: Exception) {
+                            ProgressNotificationForegroundService.isRunning
+                        }
+                    } else {
+                        ProgressNotificationForegroundService.isRunning
+                    }
+                    result.success(ProgressNotificationForegroundService.isRunning && isNotifActive)
+                }
+                "updateProgressStrings" -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val strings = call.arguments as? Map<String, String>
+                    if (strings != null) {
+                        ProgressNotificationForegroundService.saveStrings(this, strings)
+                        if (ProgressNotificationForegroundService.isRunning) {
+                            val intent = Intent(this, ProgressNotificationForegroundService::class.java).apply {
+                                action = ProgressNotificationForegroundService.ACTION_UPDATE
+                            }
+                            startService(intent)
+                        }
+                        result.success(true)
+                    } else {
+                        result.error("INVALID_ARGS", "strings map required", null)
+                    }
+                }
+                "schedule6AmAlarm" -> {
+                    ProgressAlarmReceiver.scheduleNext6AmAlarm(this)
+                    result.success(true)
+                }
+                "cancel6AmAlarm" -> {
+                    ProgressAlarmReceiver.cancel6AmAlarm(this)
+                    result.success(true)
                 }
                 else -> result.notImplemented()
             }
