@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -5,30 +6,33 @@ import 'package:flutter/services.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 
 import 'package:firka/app/app_state.dart';
-import 'package:firka/api/client/kreta_client.dart';
 import 'package:firka/services/wear_sync_cache.dart';
+import 'package:firka/api/client/kreta_client.dart';
 
-/// Helper for Wear OS ↔ phone communication (Android only).
-/// Handles sync service, watch_connectivity messages, and sending data to the watch.
-class WearSyncHelper {
-  WearSyncHelper._();
-
+/// Helper class for Wear OS sync (Android).
+class WatchSyncHelper {
   static const _wearSyncChannel = MethodChannel('app.firka/wear_sync');
-  static WatchConnectivity? _watchConnectivity;
-  static WatchConnectivity get _watchConnectivityInstance {
-    _watchConnectivity ??= WatchConnectivity();
-    return _watchConnectivity!;
+  static WatchConnectivity? _androidWatchConnectivity;
+  static WatchConnectivity get _watchConnectivityAndroid {
+    _androidWatchConnectivity ??= WatchConnectivity();
+    return _androidWatchConnectivity!;
   }
 
-  /// Sends a fire-and-forget message to the Wear OS watch (payload sent as JSON string).
+  /// Callback for Watch pairing message events (Android Wear OS pairing flow).
+  /// Set by initialization_screen.dart to handle "ping" messages for Watch pairing.
+  static void Function(Map<String, dynamic> message)? onWatchMessage;
+
+  /// Send a fire-and-forget message to Watch via watch_connectivity (Android).
+  /// The payload is sent as a JSON string for reliable transport.
   static Future<void> sendMessageToWatch(Map<String, dynamic> message) async {
     if (!Platform.isAndroid) return;
-    await _watchConnectivityInstance.sendMessage(<String, dynamic>{
+    await _watchConnectivityAndroid.sendMessage(<String, dynamic>{
       'data': jsonEncode(message),
     });
   }
 
-  /// Starts the Wear sync foreground service (Android only).
+  /// Starts the Wear sync foreground service (Android only). Call after writing initial cache.
+  /// [appDirPath] is the application documents directory path (for the background isolate).
   static Future<void> startWearSyncService(
     String cachePath,
     String appDirPath,
@@ -41,6 +45,7 @@ class WearSyncHelper {
   }
 
   /// Builds fresh sync payload, writes cache, and starts the Wear sync service (Android only).
+  /// Use when enabling Wear OS support or on app launch when support is already enabled.
   static Future<void> startWearSyncServiceWithFreshCache(
     KretaClient client,
     String appDirPath,
@@ -85,8 +90,8 @@ class WearSyncHelper {
   }
 
   /// Runs sync in foreground: fetches timetable + grades, writes cache, sends sync_data to watch.
+  /// Used when app is in foreground and watch sends request_sync (Android) or equivalent.
   static Future<void> runWearSyncInForeground(KretaClient client) async {
-    if (!Platform.isAndroid) return;
     final payload = await buildWearSyncPayload(client);
     if (payload == null) return;
     final path = await getWearSyncCachePath();
@@ -94,10 +99,10 @@ class WearSyncHelper {
     await sendMessageToWatch(<String, dynamic>{'id': 'sync_data', ...payload});
   }
 
-  /// Stream of messages from the Wear OS watch. Empty when not on Android.
+  /// Stream of messages from the watch (Android: watch_connectivity). Use for request_sync etc.
   static Stream<Map<String, dynamic>> get watchMessageStream {
     if (!Platform.isAndroid) return const Stream.empty();
-    return _watchConnectivityInstance.messageStream.map((m) {
+    return _watchConnectivityAndroid.messageStream.map((m) {
       final map = Map<String, dynamic>.from(m);
       final data = map['data'];
       if (data is String) {

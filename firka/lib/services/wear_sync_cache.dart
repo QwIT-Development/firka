@@ -5,7 +5,6 @@ import 'package:path_provider/path_provider.dart'
     show getApplicationDocumentsDirectory;
 
 import 'package:firka/api/client/kreta_client.dart';
-import 'package:kreta_api/kreta_api.dart';
 import 'package:firka/core/debug_helper.dart';
 
 /// File name for the Wear OS sync cache written by the phone (Dart isolate or main).
@@ -28,15 +27,15 @@ const String wearSyncCacheFileName = 'wear_sync_cache.json';
 /// Builds the sync payload (same shape as init_data / sync_data): timetable (2 weeks), grades, lastSyncAt.
 Future<Map<String, dynamic>?> buildWearSyncPayload(KretaClient client) async {
   final (start, end) = getWearSyncTimetableRange();
-  await client.getLessons(start, end);
-  await client.getGrades();
+  final lessons = await client.getLessons(start, end);
+  final grades = await client.getGrades();
   final now = timeNow();
-  final timetable = (<Lesson>[]).map((l) => l.toJson()).toList();
-  final grades = (<Grade>[]).map((g) => g.toJson()).toList();
+  final timetable = lessons.map((l) => l.toJson()).toList();
+  final gradesJson = grades.map((g) => g.toJson()).toList();
   return {
     'lastSyncAt': now.toUtc().toIso8601String(),
     'timetable': timetable,
-    'grades': grades,
+    'grades': gradesJson,
   };
 }
 

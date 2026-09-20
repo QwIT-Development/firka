@@ -7,7 +7,7 @@ import "package:firka/app/initialization.dart";
 import "package:firka/services/fcm_service.dart";
 import "package:firka/services/notification_delivery_service.dart";
 import "package:firka/services/progress_notification_service.dart";
-import "package:firka/services/watch_sync_helper.dart";
+import "package:firka/services/wear_sync_helper.dart";
 import "package:firka/ui/phone/screens/themes/builtin_theme_id.dart";
 import "package:firka_common/ui/theme/core_theme.dart";
 

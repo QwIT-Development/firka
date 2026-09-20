@@ -27,7 +27,7 @@ class _HomeScreenBodyPage extends StatelessWidget {
 }
 
 class _LessonCardPage extends StatelessWidget {
-  final Lesson? lesson;
+  final LessonCacheModel? lesson;
   final double viewportHeight;
 
   const _LessonCardPage({

@@ -10,6 +10,8 @@ part 'grade_cache_model.g.dart';
 
 @collection
 class GradeCacheModel extends GenericCacheModel<Grade> {
+  GradeCacheModel();
+
   String? mode;
   String? topic;
   late String type;
@@ -48,5 +50,33 @@ class GradeCacheModel extends GenericCacheModel<Grade> {
         isarInit.subjectCacheModels.putSync(subject.value!);
       });
     }
+  }
+
+  /// Plain-field JSON representation (no Isar links) for cross-process sync, e.g. Wear OS.
+  Map<String, dynamic> toJson() {
+    return {
+      'mode': mode,
+      'topic': topic,
+      'type': type,
+      'valueType': valueType,
+      'writtenAt': writtenAt.toIso8601String(),
+      'numericValue': numericValue,
+      'weightPercentage': weightPercentage,
+      'textValue': textValue,
+      'teacherName': teacherName,
+    };
+  }
+
+  factory GradeCacheModel.fromJson(Map<String, dynamic> json) {
+    return GradeCacheModel()
+      ..mode = json['mode'] as String?
+      ..topic = json['topic'] as String?
+      ..type = json['type'] as String
+      ..valueType = json['valueType'] as String
+      ..writtenAt = DateTime.parse(json['writtenAt'] as String)
+      ..numericValue = json['numericValue'] as int?
+      ..weightPercentage = json['weightPercentage'] as int?
+      ..textValue = json['textValue'] as String
+      ..teacherName = json['teacherName'] as String;
   }
 }

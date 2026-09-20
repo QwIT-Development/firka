@@ -1,5 +1,5 @@
 import 'package:firka/app/app_state.dart';
-import 'package:firka/services/watch_sync_helper.dart';
+import 'package:firka/services/wear_sync_helper.dart';
 import 'package:firka/services/wear_sync_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';

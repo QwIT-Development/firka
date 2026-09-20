@@ -15,6 +15,8 @@ part 'lesson_cache_model.g.dart';
 
 @collection
 class LessonCacheModel extends GenericCacheModel<Lesson> {
+  LessonCacheModel();
+
   String? uid;
   @Index()
   late DateTime start;
@@ -90,6 +92,40 @@ class LessonCacheModel extends GenericCacheModel<Lesson> {
 
   bool isEvent() {
     return type == TimetableConsts.event;
+  }
+
+  /// Plain-field JSON representation (no Isar links) for cross-process sync, e.g. Wear OS.
+  Map<String, dynamic> toJson() {
+    return {
+      'uid': uid,
+      'start': start.toIso8601String(),
+      'end': end.toIso8601String(),
+      'dailyNth': dailyNth,
+      'yearlyNth': yearlyNth,
+      'name': name,
+      'topic': topic,
+      'roomName': roomName,
+      'state': state,
+      'type': type,
+      'teacher': teacher,
+      'substituteTeacher': substituteTeacher,
+    };
+  }
+
+  factory LessonCacheModel.fromJson(Map<String, dynamic> json) {
+    return LessonCacheModel()
+      ..uid = json['uid'] as String?
+      ..start = DateTime.parse(json['start'] as String)
+      ..end = DateTime.parse(json['end'] as String)
+      ..dailyNth = json['dailyNth'] as int?
+      ..yearlyNth = json['yearlyNth'] as int?
+      ..name = json['name'] as String
+      ..topic = json['topic'] as String?
+      ..roomName = json['roomName'] as String?
+      ..state = json['state'] as String
+      ..type = json['type'] as String
+      ..teacher = json['teacher'] as String?
+      ..substituteTeacher = json['substituteTeacher'] as String?;
   }
 }
 

@@ -15,7 +15,7 @@ import 'package:firka/core/bloc/settings_cubit.dart';
 import 'package:firka/core/bloc/theme_cubit.dart';
 import 'package:firka/core/firka_bundle.dart';
 import 'package:firka/routing/app_router.dart';
-import 'package:firka/services/watch_sync_helper.dart';
+import 'package:firka/services/wear_sync_helper.dart';
 import 'package:firka/ui/theme/style.dart';
 import 'package:firka/ui/phone/pages/extras/main_wear_pair.dart';
 import 'package:firka/l10n/app_localizations.dart';

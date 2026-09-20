@@ -1,6 +1,6 @@
 import 'package:firka_common/data/models/subject_cache_model.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
 import 'package:flutter/material.dart';
-import 'package:kreta_api/kreta_api.dart';
 
 import 'package:firka_wear/ui/components/firka_shadow.dart';
 import 'package:firka_wear/ui/shared/class_icon.dart';
@@ -27,16 +27,16 @@ class LessonCardSmall extends StatelessWidget {
   });
 
   factory LessonCardSmall.fromLesson(
-    Lesson lesson, {
+    LessonCacheModel lesson, {
     VoidCallback? onTap,
     Color? iconColor,
     bool shadow = true,
     Key? key,
   }) {
     return LessonCardSmall(
-      uid: lesson.uid,
+      uid: lesson.uid ?? lesson.name,
       subjectName: lesson.name,
-      category: lesson.subject?.name ?? '',
+      category: '',
       roomName: lesson.roomName,
       onTap: onTap,
       iconColor: iconColor,

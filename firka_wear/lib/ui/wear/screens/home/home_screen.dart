@@ -3,12 +3,13 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:firka_common/data/models/subject_cache_model.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:firka_common/data/models/grade_cache_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_arc_text/flutter_arc_text.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:kreta_api/kreta_api.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:wearable_rotary/wearable_rotary.dart';
 import 'package:wear_plus/wear_plus.dart';
@@ -38,7 +39,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   WearAppInitialization get data => widget.data;
 
   int? currentLessonNo;
-  List<Lesson> today = List.empty(growable: true);
+  List<LessonCacheModel> today = List.empty(growable: true);
   String apiError = "";
   DateTime now = timeNow();
   Timer? timer;
@@ -113,11 +114,15 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
           : null;
       final rawTimetable = msg['timetable'] as List<dynamic>? ?? [];
       final timetable = rawTimetable
-          .map((e) => Lesson.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map(
+            (e) => LessonCacheModel.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
           .toList();
       final rawGrades = msg['grades'] as List<dynamic>? ?? [];
       final grades = rawGrades
-          .map((e) => Grade.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map(
+            (e) => GradeCacheModel.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
           .toList();
       await data.syncStore.save(
         lastSyncAt: lastSyncAt,
@@ -222,9 +227,9 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
     }
     currentLessonNo = null;
     if (now.isAfter(today.first.start) && now.isBefore(today.last.end)) {
-      Lesson? currentLesson = today.getCurrentLesson(now);
-      Lesson? lastLesson = today.getPrevLesson(now);
-      Lesson? nextLesson = today.getNextLesson(now);
+      LessonCacheModel? currentLesson = today.getCurrentLesson(now);
+      LessonCacheModel? lastLesson = today.getPrevLesson(now);
+      LessonCacheModel? nextLesson = today.getNextLesson(now);
 
       if (currentLesson != null) {
         currentLessonNo = today.getLessonNo(currentLesson);

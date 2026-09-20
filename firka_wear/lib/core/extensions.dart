@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:firka_wear/core/debug_helper.dart';
 import 'package:firka_wear/l10n/app_localizations.dart';
 import 'package:firka_common/core/extensions.dart';
-import 'package:kreta_api/kreta_api.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
 
 export 'package:firka_common/core/extensions.dart';
 
@@ -166,24 +166,24 @@ extension DateGrouper<T> on Iterable<T> {
   }
 }
 
-extension LessonExtension on List<Lesson> {
-  int getLessonNo(Lesson lesson) {
-    return lesson.lessonNumber ?? indexOf(lesson);
+extension LessonExtension on List<LessonCacheModel> {
+  int getLessonNo(LessonCacheModel lesson) {
+    return lesson.dailyNth ?? indexOf(lesson);
   }
 
-  Lesson? getCurrentLesson(DateTime now) {
+  LessonCacheModel? getCurrentLesson(DateTime now) {
     return firstWhereOrNull(
       (lesson) => now.isAfter(lesson.start) && now.isBefore(lesson.end),
     );
   }
 
-  Lesson? getPrevLesson(DateTime now) {
+  LessonCacheModel? getPrevLesson(DateTime now) {
     return firstWhereOrNull(
       (lesson) => lesson.end.isBefore(now.add(Duration(milliseconds: 1))),
     );
   }
 
-  Lesson? getNextLesson(DateTime now) {
+  LessonCacheModel? getNextLesson(DateTime now) {
     return firstWhereOrNull(
       (lesson) => lesson.start.isAfter(now.add(Duration(milliseconds: 1))),
     );

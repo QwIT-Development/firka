@@ -3,7 +3,8 @@ import 'dart:math';
 
 import 'package:isar_community/isar.dart';
 
-import 'package:kreta_api/kreta_api.dart';
+import 'package:firka_common/data/models/lesson_cache_model.dart';
+import 'package:firka_common/data/models/grade_cache_model.dart';
 
 import 'package:firka_wear/data/models/generic_cache_model.dart';
 import 'package:firka_wear/data/models/token_model.dart';
@@ -15,12 +16,12 @@ class WearSyncStore {
 
   final Isar isar;
 
-  List<Lesson> _timetable = [];
-  List<Grade> _grades = [];
+  List<LessonCacheModel> _timetable = [];
+  List<GradeCacheModel> _grades = [];
   DateTime? _lastSyncAt;
 
-  List<Lesson> get timetable => List.unmodifiable(_timetable);
-  List<Grade> get grades => List.unmodifiable(_grades);
+  List<LessonCacheModel> get timetable => List.unmodifiable(_timetable);
+  List<GradeCacheModel> get grades => List.unmodifiable(_grades);
   DateTime? get lastSyncAt => _lastSyncAt;
 
   /// True if we have no data or data is older than 1 hour.
@@ -64,7 +65,9 @@ class WearSyncStore {
       if (timetableCache?.cacheData != null) {
         final raw = jsonDecode(timetableCache!.cacheData!) as List<dynamic>;
         _timetable = raw
-            .map((e) => Lesson.fromJson(Map<String, dynamic>.from(e as Map)))
+            .map(
+              (e) => LessonCacheModel.fromJson(Map<String, dynamic>.from(e as Map)),
+            )
             .toList();
       }
 
@@ -73,7 +76,9 @@ class WearSyncStore {
       if (gradesCache?.cacheData != null) {
         final raw = jsonDecode(gradesCache!.cacheData!) as List<dynamic>;
         _grades = raw
-            .map((e) => Grade.fromJson(Map<String, dynamic>.from(e as Map)))
+            .map(
+              (e) => GradeCacheModel.fromJson(Map<String, dynamic>.from(e as Map)),
+            )
             .toList();
       }
     } catch (_) {}
@@ -81,8 +86,8 @@ class WearSyncStore {
 
   Future<void> save({
     required DateTime? lastSyncAt,
-    required List<Lesson> timetable,
-    required List<Grade> grades,
+    required List<LessonCacheModel> timetable,
+    required List<GradeCacheModel> grades,
   }) async {
     final studentIdNorm = await _getStudentIdNorm();
     if (studentIdNorm == null) return;
@@ -124,7 +129,7 @@ class WearSyncStore {
   }
 
   /// Returns lessons that fall on [date] (compare by calendar day via lesson start).
-  List<Lesson> getLessonsForDate(DateTime date) {
+  List<LessonCacheModel> getLessonsForDate(DateTime date) {
     final y = date.year;
     final m = date.month;
     final d = date.day;
