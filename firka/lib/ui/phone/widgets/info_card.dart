@@ -199,7 +199,9 @@ class InfoCard extends StatelessWidget {
     GradeCacheModel grade, {
     void Function(BuildContext)? onTap,
   }) {
-    String? value = grade.numericValue == null ? grade.textValue : null;
+    String? value = grade.numericValue == null
+        ? (grade.isNotTaken() ? initData.l10n.grade_not_taken : grade.textValue)
+        : null;
     return InfoCard(
       icon: GradeWidget(grade),
       texts: [
