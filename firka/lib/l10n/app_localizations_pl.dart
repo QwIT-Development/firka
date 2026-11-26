@@ -917,15 +917,6 @@ class AppLocalizationsPl extends AppLocalizations {
   String get s_ag_privacy_ever_declined => 'Wcześniej odrzucono politykę prywatności';
 
   @override
-  String get s_c_tab_appearance => 'Wygląd aplikacji';
-
-  @override
-  String get s_c_tab_subjects => 'Przedmioty';
-
-  @override
-  String get s_c_tab_fonts => 'Czcionki';
-
-  @override
   String get s_c_my_themes => 'Moje motywy';
 
   @override

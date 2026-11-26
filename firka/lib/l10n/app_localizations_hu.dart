@@ -917,15 +917,6 @@ class AppLocalizationsHu extends AppLocalizations {
   String get s_ag_privacy_ever_declined => 'Adatvédelem korábban elutasítva';
 
   @override
-  String get s_c_tab_appearance => 'App kinézete';
-
-  @override
-  String get s_c_tab_subjects => 'Tantárgyak';
-
-  @override
-  String get s_c_tab_fonts => 'Betűk';
-
-  @override
   String get s_c_my_themes => 'Témáim';
 
   @override

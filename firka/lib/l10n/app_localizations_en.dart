@@ -923,15 +923,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get s_ag_privacy_ever_declined => 'Privacy previously declined';
 
   @override
-  String get s_c_tab_appearance => 'Appearance';
-
-  @override
-  String get s_c_tab_subjects => 'Subjects';
-
-  @override
-  String get s_c_tab_fonts => 'Fonts';
-
-  @override
   String get s_c_my_themes => 'My themes';
 
   @override

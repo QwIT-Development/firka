@@ -1839,24 +1839,6 @@ abstract class AppLocalizations {
   /// **'Privacy previously declined'**
   String get s_ag_privacy_ever_declined;
 
-  /// No description provided for @s_c_tab_appearance.
-  ///
-  /// In en, this message translates to:
-  /// **'Appearance'**
-  String get s_c_tab_appearance;
-
-  /// No description provided for @s_c_tab_subjects.
-  ///
-  /// In en, this message translates to:
-  /// **'Subjects'**
-  String get s_c_tab_subjects;
-
-  /// No description provided for @s_c_tab_fonts.
-  ///
-  /// In en, this message translates to:
-  /// **'Fonts'**
-  String get s_c_tab_fonts;
-
   /// No description provided for @s_c_my_themes.
   ///
   /// In en, this message translates to:

@@ -102,29 +102,6 @@ class _SettingsPersonalizationViewState
     );
   }
 
-  Widget _chip(String label, {required bool selected}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: selected ? _selectedSurface : appStyle.colors.card,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: appStyle.colors.shadowColor,
-            offset: const Offset(0, 1),
-            blurRadius: appStyle.isLight ? 2 : 0,
-          ),
-        ],
-      ),
-      child: Text(
-        label,
-        style: (selected ? appStyle.fonts.B_16SB : appStyle.fonts.B_16R).apply(
-          color: appStyle.colors.textPrimary,
-        ),
-      ),
-    );
-  }
-
   List<Color> _coreSwatch(CoreThemeColors colors) {
     return [colors.secondary, colors.accent, colors.background, colors.card];
   }
@@ -584,19 +561,6 @@ class _SettingsPersonalizationViewState
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 16),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _chip(_l10n.s_c_tab_appearance, selected: true),
-                    const SizedBox(width: 8),
-                    _chip(_l10n.s_c_tab_subjects, selected: false),
-                    const SizedBox(width: 8),
-                    _chip(_l10n.s_c_tab_fonts, selected: false),
-                  ],
-                ),
               ),
               const SizedBox(height: 16),
               _shortcutRow(

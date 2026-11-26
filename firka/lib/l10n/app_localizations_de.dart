@@ -917,15 +917,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get s_ag_privacy_ever_declined => 'Datenschutz zuvor abgelehnt';
 
   @override
-  String get s_c_tab_appearance => 'App-Design';
-
-  @override
-  String get s_c_tab_subjects => 'Fächer';
-
-  @override
-  String get s_c_tab_fonts => 'Schriftarten';
-
-  @override
   String get s_c_my_themes => 'Meine Themes';
 
   @override
