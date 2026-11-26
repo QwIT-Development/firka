@@ -32,7 +32,7 @@ class LessonBigWidget extends StatelessWidget {
     // we dont like events
     assert(lesson.type != TimetableConsts.event);
     final isSubstituted = lesson.substituteTeacher != null;
-    final isDismissed = lesson.type == "UresOra";
+    final isDismissed = lesson.type == "UresOra" || lesson.isCancelled;
     final test = lesson.test.loadAndGet();
 
     var accent = appStyle.colors.accent;
@@ -54,7 +54,24 @@ class LessonBigWidget extends StatelessWidget {
 
     var roomName = lesson.roomName;
 
-    Widget extra = test == null
+    Widget extra = isDismissed
+        ? Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                data.l10n.class_dismissed,
+                style: appStyle.fonts.B_14R.apply(color: secondary),
+              ),
+              Text(
+                "${lesson.start.format(data.l10n, FormatMode.hmm)}"
+                " - ${lesson.end.format(data.l10n, FormatMode.hmm)}",
+                style: appStyle.fonts.B_14R.apply(
+                  color: appStyle.colors.textSecondary,
+                ),
+              ),
+            ],
+          )
+        : test == null
         ? Column(
             spacing: 4,
             children: [

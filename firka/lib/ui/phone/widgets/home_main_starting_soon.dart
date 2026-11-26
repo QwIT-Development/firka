@@ -17,7 +17,10 @@ class StartingSoonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var diff = lessons.first.start.difference(now.min(lessons.first.start));
+    // Count down to the first lesson that actually takes place.
+    final first =
+        lessons.firstWhereOrNull((l) => !l.isCancelled) ?? lessons.first;
+    var diff = first.start.difference(now.min(first.start));
     var hour = diff.inHours % 60;
     var min = diff.inMinutes % 60;
     var sec = diff.inSeconds % 60;

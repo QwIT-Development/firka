@@ -178,7 +178,7 @@ class ProgressNotificationService {
 
       // Cancelled lessons don't happen; ignore them (matches the native service).
       lessons = lessons
-          .where((l) => !l.state.toLowerCase().contains('elmarad'))
+          .where((l) => !l.isCancelled)
           .toList();
 
       if (lessons.isEmpty) {

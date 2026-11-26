@@ -124,7 +124,7 @@ class _WelcomeWidgetState extends State<WelcomeWidget> {
         return now.format(l10n, FormatMode.welcome);
       }
       var lessonsLeft = lessons
-          .where((lesson) => lesson.end.isAfter(now))
+          .where((lesson) => !lesson.isCancelled && lesson.end.isAfter(now))
           .length;
       if (lessonsLeft < 1) {
         return l10n.tomorrow_subtitle;

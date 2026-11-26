@@ -58,15 +58,23 @@ class _LessonSliderState extends State<LessonSlider> {
 
     final offset = hasNewGrades ? 1 : 0;
 
+    // Cancelled lessons don't happen, so they never become the active card.
+    final firstRealLesson = widget.lessons.firstWhereOrNull(
+      (l) => !l.isCancelled,
+    );
+
     LessonCacheModel? currentLesson;
     int tmpIndex;
     if (!hasLessons) {
       tmpIndex = 0;
-    } else if (now.isBefore(widget.lessons.first.start)) {
+    } else if (firstRealLesson != null &&
+        now.isBefore(firstRealLesson.start)) {
       tmpIndex = 0;
     } else {
       (int, LessonCacheModel)? currentIndex = widget.lessons.indexed
-          .firstWhereOrNull((e) => now.isBefore(e.$2.end));
+          .firstWhereOrNull(
+            (e) => !e.$2.isCancelled && now.isBefore(e.$2.end),
+          );
 
       tmpIndex = (currentIndex?.$1 ?? widget.lessons.length) + 1;
       if (currentIndex != null) {

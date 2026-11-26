@@ -129,6 +129,12 @@ class LessonCacheModel extends GenericCacheModel<Lesson> {
   }
 }
 
+extension LessonCancellation on LessonCacheModel {
+  /// Kréta state labels aren't a stable enum; "elmarad" is the substring that
+  /// consistently marks cancelled lessons.
+  bool get isCancelled => state.toLowerCase().contains('elmarad');
+}
+
 typedef AfterQBFilter<OBJ> = QueryBuilder<OBJ, OBJ, QAfterFilterCondition>;
 typedef QBFilter<OBJ> = QueryBuilder<OBJ, OBJ, QFilterCondition>;
 
