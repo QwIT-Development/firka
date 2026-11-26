@@ -1,0 +1,447 @@
+{
+    "restart_title": "App neu starten",
+    "restart_body": "Klicke hier, um die App zu öffnen.",
+    "loginBtn": "Login mit E-Kréta",
+    "privacyLabel": "Datenschutzerklärung",
+    "title1": "Alles auf einen Blick",
+    "subtitle1": "Oben auf der Startseite findest du nützliche Informationen zu deinem Tag.",
+    "title2": "Hier finden deine Fächer Platz",
+    "subtitle2": "Hier findest du Statistiken, bevorstehende Prüfungen und sogar deine Noten aus früheren Schuljahren.",
+    "title3": "Individuell anpassbarer Stundenplan",
+    "subtitle3": "Wähle auf der Stundenplanseite aus, was du sehen möchtest, und schalte Tests, Hausaufgaben, Pausen und Freistunden ein oder aus.",
+    "title4": "Viele Extras, die du in Kreta niemals finden wirst",
+    "subtitle4": "",
+    "yesterday": "Gestern",
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "debug_screen": "Entwicklermenü",
+    "settings_screen": "Einstellungen",
+    "home": "Startseite",
+    "grades": "Noten",
+    "timetable": "Stundenplan",
+    "other": "Andere",
+    "refreshing": "Daten werden aktualisiert...",
+    "reauth": "Login notwendig",
+    "api_error": "Kréta API Fehler",
+    "pairing": "Koppel deine Uhr",
+    "pairing_description": "Möchtest du diese Uhr mit der Firka App koppeln?\nNach der Kopplung kannst du deinen Stundenplan, neue Noten, Tests und Aufgaben einsehen.",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "okay": "Okay",
+    "pair": "Kopplung",
+    "beta_title": "Firka - öffentliche Beta",
+    "beta_body": "Die Anwendung befindet sich noch in der Entwicklung; einige Funktionen sind möglicherweise noch nicht fertiggestellt, funktionieren nicht richtig oder weisen Fehler auf.",
+    "good_morning": "Guten Morgen, {p}!",
+    "@good_morning": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "good_day": "Guten Tag, {p}!",
+    "@good_day": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "n_left_subtitle": "Halte durch, es sind nur noch {n} Stunden übrig!",
+    "@n_left_subtitle": {
+        "placeholders": {
+            "n": {
+                "type": "num"
+            }
+        }
+    },
+    "suffering_almost_over_subtitle": "Du hast es fast geschafft. Pass weiterhin bei deinem Lehrer gut auf.",
+    "school_ending": "Bist du nervös, {p}?",
+    "@school_ending": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "tomorrow_subtitle": "So sieht dein morgiger Tag aus.",
+    "good_afternoon": "Guten Nachmittag, {p}!",
+    "@good_afternoon": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "good_night": "Guten Abend, {p}!",
+    "@good_night": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "starting_soon": "Deine erste Unterrichtstunde beginnt gleich!",
+    "starting_hour": "Stunde",
+    "starting_hour_plural": "Stunden",
+    "starting_min": "Minute",
+    "starting_min_plural": "Minuten",
+    "starting_sec": "Sekunde",
+    "starting_sec_plural": "Sekunden",
+    "subjects": "Fächer",
+    "your_subjects": "Deine Fächer",
+    "data": "Details",
+    "subject_avg": "Notendurchschnitt",
+    "subject_avg_rounded": "Notendurchschnitt nach Rundung",
+    "class_avg": "Klassendurchschnitt",
+    "class_n": "Wöchentliche Stundenzahl",
+    "tt_no_classes_l1": "Diese Woche hast du keinen Unterricht!",
+    "tt_no_classes_l2": "Yippee!",
+    "class_dismissed": "Abgesagte Unterrichtsstunde",
+    "class_substitution": "Vertretung",
+    "lesson_subject": "Thema der Stunde",
+    "tt_settings_toast": "Stundenplan Einstellungen",
+    "tt_settings_toast_lesson_nos": "Anzahl von Stunden",
+    "tt_settings_toast_lesson_tests": "Tests & Sonstiges",
+    "tt_settings_toast_lesson_breaks": "Pausen",
+    "a_week": "A Woche",
+    "b_week": "B Woche",
+    "stats_date": "Datum",
+    "stats_created_at": "Erstellt am",
+    "stats_last_mod": "Zuletzt bearbeitet",
+    "s_developer": "Entwicklereinstellungen",
+    "s_stats_for_nerds": "Statistiken für Nerds",
+    "s_settings": "Einstellungen",
+    "s_a": "Applikation",
+    "s_ag": "Allgemein",
+    "s_ag_bell_delay": "Glockenverzögerung",
+    "s_ag_rounding": "Standardmäßige Rundung",
+    "s_customization": "Personalisierung",
+    "s_ag_r1": "1 → 2",
+    "s_ag_r2": "2 → 3",
+    "s_ag_r3": "3 → 4",
+    "s_ag_r4": "4 → 5",
+    "s_ag_class_avg_on_graph": "Klassendurchschnitt in der Grafik",
+    "s_ag_navbar": "Navigationsleiste",
+    "s_ag_left_handed_mode": "Linkshänder Modus",
+    "s_ag_language_header": "Sprache",
+    "s_ag_language_auto": "Automatisch",
+    "s_ag_language_hu": "Ungarisch",
+    "s_ag_language_en": "Englisch",
+    "s_ag_language_de": "Deutsch",
+    "s_c": "Personalisierung",
+    "s_c_icon_header": "App Symbole",
+    "s_c_replace_icon": "Symbol ersetzen",
+    "s_ci_icon_header": "App Symbol",
+    "s_ci_warning_header": "[!] Im Debug-Modus funktioniert das Ändern des Symbols nicht",
+    "s_ci_icon_subtitle": "Such dir ein hübsches App-Symbol aus, wenn du das grüne satt hast.",
+    "s_ci_icon_g1": "Catboy domain",
+    "s_ci_icon_g2": "Filc-Stift",
+    "s_ci_icon_g3": "Nostalgie",
+    "s_ci_icon_g4": "Neu gedacht",
+    "s_ci_icon_g5": "Referenz",
+    "s_ci_icon_g6": "Weihnachtslogo-Wettbewerb 2024",
+    "s_ci_icon_g6_desc": "Von @emilia6_6",
+    "s_ci_icon_g7": "Pride",
+    "s_ci_icon_g8": "Pride ",
+    "s_c_theme_header": "Thema",
+    "s_c_theme_auto": "Automatisch",
+    "s_c_theme_light": "Hell",
+    "s_c_theme_dark": "Dunkel",
+    "s_ci_child_protection": "Kinderschutz",
+    "ic_ace": "Asexuell",
+    "ic_ace_f": "Asexuell",
+    "ic_bi": "Bisexuell",
+    "ic_bi_f": "Bisexuell",
+    "ic_cactus": "Kaktusgarten",
+    "ic_cc": "Kreative Wolke",
+    "ic_enby": "Nicht-binär",
+    "ic_enby_f": "Nicht-binär",
+    "ic_fidesz": "Orange",
+    "ic_filc": "Filc Tagebuch",
+    "ic_filco": "Filc . O",
+    "ic_galaxy": "Galaxie",
+    "ic_gay": "Schwul",
+    "ic_gay_f": "Schwul",
+    "ic_half_firka_2": "Revolution",
+    "ic_kreta": "eFirka",
+    "ic_lesb": "Lesbisch",
+    "ic_lesb_f": "Lesbisch",
+    "ic_lgbtq": "LGBTQ+",
+    "ic_lgbtq_f": "LGBTQ+",
+    "ic_lgbtqp": "Progression",
+    "ic_lgbtqp_f": "Progression",
+    "ic_lidl": "Einkaufen",
+    "ic_mkkp": "Freikarten",
+    "ic_nuke": "Nuklear",
+    "ic_modern": "Modern",
+    "ic_o1g": "Orbán ist ein Arschloch",
+    "ic_old": "Domain David",
+    "ic_original": "Original",
+    "ic_paper": "Papier",
+    "ic_pear": "Birne",
+    "ic_pixel": "Pixel",
+    "ic_pixelized": "Verpixelt",
+    "ic_pride": "Weltraumregenbogen",
+    "ic_proto": "Prototyp",
+    "ic_refilc": "reFilc",
+    "ic_refulc": "firk’a",
+    "ic_repont": "Fünfzig Forint",
+    "ic_szivacs": "Schwamm",
+    "ic_tisza": "Árad a firka",
+    "ic_trans": "Trans",
+    "ic_trans_f": "Trans",
+    "ic_void_icon": "Leere",
+    "ic_xmas1": "Liste der Bösen",
+    "ic_xmas2": "Geschenk",
+    "ic_xmas3": "FirWeihnachten",
+    "wear_phone_unpaired": "Deine Uhr ist nicht mit deinem Handy gekoppelt!",
+    "wear_phone_disconnected": "Deine Uhr ist nicht mit deinem Handy verbunden!",
+    "wear_pairing_request_sent": "Die Kopplung läuft, öffne die App auf deinem Smartphone",
+    "wear_pairing_check_phone": "Setze die Kopplung auf deinem Smartphone fort",
+    "wear_try_again": "Erneut versuchen",
+    "breakTxt": "Pause",
+    "empty_class": "Freistunde",
+    "timeLeft": "{mins} Minuten übrig",
+    "@timeLeft": {
+        "placeholders": {
+            "mins": {
+                "type": "num"
+            }
+        }
+    },
+    "noClasses": "Heute ist Schulfrei, ruh dich aus!",
+    "noMoreClasses": "Du hast heute keinen Unterricht mehr",
+    "firstIn": "Deine erste Stunde: {t}",
+    "@firstIn": {
+        "placeholders": {
+            "t": {
+                "type": "String"
+            }
+        }
+    },
+    "wearTitle": "{n}. Stunde",
+    "@wearTitle": {
+        "placeholders": {
+            "n": {
+                "type": "num"
+            }
+        }
+    },
+    "view_subject_btn": "Fach anzeigen",
+    "view_lesson_btn": "Stunde anzeigen",
+    "date": "Datum",
+    "tt_settings_toast_lesson_substitution": "Vertretungen",
+    "tt_settings_toast_lesson_ab_timetable": "Zweiwöchiger Stundenplan",
+    "s_ag_navbar_desc": "Wähle aus, was in der Navigationsleiste angezeigt werden soll, und ordne die Elemente an. Die übrigen Seiten sind über die Schaltfläche „Mehr“ erreichbar. Du kannst maximal 4 Seiten festlegen.",
+    "s_ag_navbar_home": "Startseite",
+    "s_ag_navbar_visible": "Erscheint",
+    "s_ag_navbar_hidden": "Versteckt",
+    "tests_tomorrow": "Du hast {tests} Prüfungen",
+    "@tests_tomorrow": {
+        "placeholders": {
+            "tests": {
+                "type": "String"
+            }
+        }
+    },
+    "no_tests_tomorrow": "Du hast morgen keine Prüfungen",
+    "get_ready": "Entspann dich und mach dich bereit für morgen",
+    "mark_as_done": "Als erledigt markieren",
+    "mark_as_not_done": "Als unvollständig markieren",
+    "grade_teacherName": "Name des Lehrers: ",
+    "grade_strValue": "Textbasierte Bewertung: ",
+    "no_grades": "Du hast noch keine Noten für dieses Fach.",
+    "unknown_teacher": "Unbekannter Lehrer",
+    "s_your_account": "Dein Konto",
+    "s_acc_kreta": "eKRÉTA Konto",
+    "s_acc_add": "Neues Konto hinzufügen",
+    "s_acc_logout": "Abmelden",
+    "close": "Schließen",
+    "licensesLabel": "Lizenzen",
+    "tt_added": "Eingetragen: ",
+    "happy_birthday": "Alles Gute zum Geburtstag, {p}!",
+    "@happy_birthday": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "licenseDescription": "Lizenzen für die von der Applikation verwendeten externen Bibliotheken",
+    "homework": "Hausaufgaben",
+    "tt_non_instructional_day": "Unterrichtsfreier Schultag",
+    "tt_public_holiday": "Feiertag",
+    "tt_spring_break": "Frühlingsferien",
+    "tt_winter_break": "Winterferien",
+    "tt_autumn_break": "Herbstferien",
+    "tt_instructional_day": "Unterrichtstag",
+    "tt_first_semester_end": "Ende des ersten Semesters",
+    "tt_holiday": "Ferien",
+    "tt_rest_day": "Ruhetag",
+    "tt_first_instructional_day": "Erster Schultag",
+    "tt_last_instructional_day": "Letzter Schultag",
+    "tt_last_instructional_day_graduates": "Letzter Schultag für die Absolventen",
+    "tt_full_day_trip": "Ganztägiger Ausflug",
+    "tt_quarter_end": "Quartalsende",
+    "lessons_tomorrow": "{lessons} Stunden morgen",
+    "@lessons_tomorrow": {
+        "placeholders": {
+            "lessons": {
+                "type": "String"
+            }
+        }
+    },
+    "subject": "Fach",
+    "grade_calculator": "Notenrechner",
+    "grade_calculator_add": "Hinzufügen",
+    "ghost_grade": "Geist-Note",
+    "ghost_grades": "Geist-Noten",
+    "gradesCount": "{count} Note(n)",
+    "@gradesCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "overall_avg": "Gesamtdurchschnitt",
+    "now": "Jetzt",
+    "s_n": "Benachrichtigungen",
+    "s_n_morning": "Morgendliche Benachrichtigung",
+    "s_n_morning_time": "Zeitpunkt der Benachrichtigung vor Schulbeginn",
+    "s_n_live_activity": "Live Aktivität",
+    "s_n_test": "Testbenachrichtigung senden",
+    "s_wear": "Wear OS",
+    "s_wear_os_support": "Wear OS Unterstützung",
+    "wearSyncNotificationTitle": "Mit Uhr synchronisieren",
+    "wearSyncNotificationText": "Daten mit Uhr synchronisieren",
+    "wear_sync_with_phone": "Öffne die Smartphone App, um die Synchronisierung durchzuführen",
+    "wear_syncing": "Synchronisieren...",
+    "la_privacy_header": "Datenschutzerklärung für Live Aktivität",
+    "la_privacy_intro": "Um die Funktion „Live Aktivität“ nutzen zu können, müssen wir bestimmte Daten speichern und verarbeiten. Bitte lies dir die folgenden Informationen sorgfältig durch.",
+    "la_privacy_section1_title": "Welche Daten speichern wir?",
+    "la_privacy_section1_body": "Für den Betrieb von Live Aktivität speichern wir die folgenden Daten zusammen mit deiner Gerätekennung:\n\n• Gerätekennung (UUID)\n• Gerätetoken\n• Live-Aktivität-Push-Token\n• APNs-Push-Token\n• Geräte-Hash\n• Spracheinstellung\n• Glockenverzögerung\n\nDeine Stundenplandaten (Tabelle „lessons“) enthalten Folgendes:\n• Fach und Uhrzeit der Unterrichtsstunde\n• Name des Lehrers\n• Name des Raums\n• Nummer der Unterrichtsstunde\n• Thema der Unterrichtsstunde\n• Daten zur Vertretung\n• Kennzeichnung einer ausgefallenen Unterrichtsstunde\n\nDie zeitgesteuerten Benachrichtigungen (Tabelle „scheduled_notifications“) enthalten Folgendes:\n• ID\n• Geräte-ID\n• Zeitpunkt der Benachrichtigung\n• Status und Zeitpunkt der Übermittlung\n• Erstellungs- und Aktualisierungszeitpunkt",
+    "la_privacy_section2_title": "Wie schützen wir deine Daten?",
+    "la_privacy_section2_body": "Wir nehmen die Sicherheit deiner Daten ernst:\n\n• Alle Daten in den Tabellen „Geräte“ und „Stunden“ sind verschlüsselt\n• Die Daten werden auf einem sicheren Server gespeichert\n• Wir speichern die Daten nur so lange, wie es erforderlich ist",
+    "la_privacy_section3_title": "Wie lange speichern wir die Daten?",
+    "la_privacy_section3_body": "Die Speicherung der Daten ist auf einen minimalen Zeitraum beschränkt:\n\n• Live-Aktivität-Push-Token: Wird so lange gespeichert, wie du an diesem Tag Stunden hast (einschließlich des Zeitraums von zwei Stunden vor der ersten Stunde). Wenn du keine Stunden mehr hast, wird der Wert auf Null gesetzt.\n\n• Stundenplan-Daten: Sie werden nur für die Dauer der Stunden gespeichert und anschließend automatisch gelöscht. Am Freitag nach der letzten Stunde ist die Tabelle mit dem Stundenplan vollständig leer.\n\n• Gerätedaten (Token, Identifikatoren): Sie werden so lange gespeichert, wie die Live-Aktivität-Funktion aktiviert ist. Beim Deaktivieren der Funktion werden diese Daten sofort gelöscht.",
+    "la_privacy_section4_title": "Wofür verwenden wir die Daten?",
+    "la_privacy_section4_body": "Wir verwenden die Daten ausschließlich für den Betrieb der Live-Aktivität-Funktion:\n\n• Anzeige des Live-Stundenplans auf dem Sperrbildschirm\n• Versand von Push-Benachrichtigungen bei Stundenwechseln\n• Synchronisierung des Stundenplans auf deinem Gerät\n• Sicherstellung der Zustellung der Benachrichtigungen am Montagmorgen auch nach der wöchentlichen Datenbankbereinigung\n\nWir geben deine Daten nicht an Dritte weiter und verwenden sie nicht für Marketingzwecke.",
+    "la_privacy_section5_title": "Deine Rechte",
+    "la_privacy_section5_body": "Gemäß der DSGVO stehen dir folgende Rechte zu:\n\n• Recht auf Auskunft: Die Art der gespeicherten Daten kannst du in dieser Datenschutzerklärung einsehen.\n• Recht auf Löschung: Durch das Deaktivieren der Live-Aktivität-Funktion werden alle mit dieser Funktion verbundenen Daten (Geräte-IDs, Stundenplan) sofort und endgültig von unseren Servern gelöscht.\n• Recht auf Berichtigung: Die Änderung der Stundenplandaten erfolgt im Kréta-System durch die dazu berechtigten Personen (z. B. Lehrkräfte).\n• Widerspruchsrecht: Du kannst der Datenverarbeitung jederzeit widersprechen, indem du die Live-Aktivität-Funktion deaktivierst.",
+    "la_privacy_footer": "Letzte Aktualisierung der Datenschutzerklärung: November 2025",
+    "la_privacy_contact": "Hast du eine Frage? Schreib uns an support@firka.app.",
+    "la_privacy_summary1": "Gerätetoken, Live-Aktivität-Token, Stundenplandaten",
+    "la_privacy_summary2": "Verschlüsselte Speicherung, sichere Server",
+    "la_privacy_summary3": "Die Daten werden automatisch gelöscht, sobald sie nicht mehr benötigt werden",
+    "la_title": "Live Aktivität",
+    "la_subtitle": "Live-Anzeige des Stundenplans auf dem Sperrbildschirm des Geräts",
+    "la_privacy_title": "Datenschutzerklärung",
+    "la_privacy_required": "Um Live Aktivität nutzen zu können, musst du der Datenschutzerklärung zustimmen",
+    "la_learn_more": "Mehr dazu",
+    "la_accept": "Ich stimme zu",
+    "la_decline": "Ich lehne ab",
+    "runningInDomainBrowser": "Domain-Browser",
+    "copied": "Kopiert",
+    "view_day_btn": "Tag anzeigen",
+    "omission": "Abwesenheit",
+    "omissions": "Abwesenheiten",
+    "omission_state_excused": "Entschuldigt",
+    "omission_state_unexcused": "Unentschuldigt",
+    "omission_state_pending": "Ausstehend",
+    "omissions_count": "{state, select, unexcused{{count} unentschuldigt} pending{{count} zu entschuldigen} other{{count}}} Fehlzeiten",
+    "@omissions_count": {
+        "placeholders": {
+            "state": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "s_beta_warning": "Beta-Warnung",
+    "s_ag_privacy_ever_declined": "Datenschutz zuvor abgelehnt",
+    "s_c_tab_appearance": "App-Design",
+    "s_c_tab_subjects": "Fächer",
+    "s_c_tab_fonts": "Schriftarten",
+    "s_c_my_themes": "Meine Themes",
+    "s_c_manage_subjects": "Fächer verwalten",
+    "s_c_change_app_icon": "App-Icon ändern",
+    "s_c_colors_header": "Farben",
+    "s_c_grade_colors_header": "Notenfarben",
+    "s_c_title_style_header": "Titelstil",
+    "s_c_title_weight_header": "Titelstärke",
+    "s_c_title_weight_subtitle": "Wird nicht von allen Schriftarten unterstützt",
+    "s_c_title_weight_thin": "Dünn",
+    "s_c_title_weight_thick": "Fett",
+    "s_c_capitalization_header": "Groß-/Kleinschreibung",
+    "s_c_capitalization_lower": "kleinbuchstaben",
+    "s_c_capitalization_normal": "Normal",
+    "s_c_capitalization_upper": "GROSSBUCHSTABEN",
+    "s_c_change": "Ändern",
+    "s_c_customize": "Anpassen",
+    "s_c_themes_current": "Aktuell",
+    "s_c_themes_own": "Eigene",
+    "s_c_themes_downloaded": "Heruntergeladen",
+    "s_c_themes_share_current": "Aktuelles Theme teilen",
+    "s_c_themes_create_new": "Neues Theme erstellen",
+    "s_c_themes_import": "Theme importieren",
+    "s_c_themes_use": "Verwenden",
+    "s_c_themes_continue": "Weiter",
+    "s_c_themes_own_label": "Eigenes Theme",
+    "s_c_themes_imported_label": "Importiertes Theme",
+    "s_c_themes_builtin_label": "Integriertes Theme",
+    "s_c_themes_builtin_name": "Standard",
+    "s_c_themes_create_title": "Neues Theme erstellen",
+    "s_c_themes_create_subtitle": "Gib einen Namen für das Theme ein",
+    "s_c_themes_create_placeholder": "Themename",
+    "s_c_themes_delete_title": "Theme löschen",
+    "s_c_themes_delete_subtitle": "Möchtest du dieses Theme wirklich löschen? Diese Aktion kann rückgängig gemacht werden.",
+    "s_c_themes_delete_confirm": "Löschen",
+    "s_about": "Über die App",
+    "s_extras": "Extras",
+    "s_other": "Sonstiges",
+    "grade_weight_x1": "einfache Gewichtung",
+    "grade_weight_x2": "doppelte Gewichtung",
+    "grade_weight_x3": "dreifache Gewichtung",
+    "grade_weight_x4": "vierfache Gewichtung",
+    "grade_weight_x5": "fünffache Gewichtung",
+    "grade_weight_percent": "{percent}%ige Gewichtung",
+    "@grade_weight_percent": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "surprise_grade_rank_5": "LEGENDÄR",
+    "surprise_grade_rank_4": "AUSGEZEICHNET",
+    "surprise_grade_rank_3": "OKAY",
+    "surprise_grade_rank_2": "SCHWACH",
+    "surprise_grade_rank_1": "KATASTROPHE",
+    "new_grades_card": "Du hast neue Noten",
+    "s_notifications": "Benachrichtigungen",
+    "s_sticker_map": "Stickerkarte",
+    "s_qr_reader": "QR-Code-Scanner",
+    "s_feedback": "Feedback",
+    "s_a_desc": "Navigation, Sprache, Glocke, Rundung",
+    "s_c_desc": "Notenfarben, Thema, App-Symbol",
+    "s_todo": "túdú: program this",
+    "s_surprise_grades": "Überraschungsnoten",
+    "s_seasonal_icons": "Saisonale App-Symbole",
+    "s_uwu_mode": "UwU-Modus",
+    "s_calendar_sync": "Kalendersynchronisierung",
+    "s_save_grades": "Noten speichern",
+    "s_welcome_msg": "Begrüßungsnachricht",
+    "s_extras_desc": "Überraschungsnoten, Kalendersynchronisierung",
+    "s_notifications_desc": "Noten, Stundenplanänderungen, Fehlzeiten",
+    "s_n_all": "Alle",
+    "s_n_grades": "Neue Noten",
+    "s_n_homework_tests": "Hausaufgaben & Prüfungen",
+    "s_n_absences": "Fehlzeiten",
+    "s_n_lessons": "Stunden",
+    "s_n_messages": "Nachrichten",
+    "s_n_by_subject": "Nach Fach"
+}

@@ -1,0 +1,585 @@
+{
+    "restart_title": "Restart application",
+    "restart_body": "Click here to open the app again.",
+    "loginBtn": "Login with E-Kréta",
+    "privacyLabel": "Privacy policy",
+    "title1": "Know everything at a glance",
+    "subtitle1": "You can see useful info about your day on the top of your home screen.",
+    "title2": "Your classes fit here comfortably",
+    "subtitle2": "See statistics, upcoming tests, and even your grades from previous school years.",
+    "title3": "Customizable timetable",
+    "subtitle3": "Decide what you want to see on your timetable page. Turn tests, assignments, breaks, and even free periods on or off.",
+    "title4": "Many extras you will never find in Kréta",
+    "subtitle4": "",
+    "yesterday": "Yesterday",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "debug_screen": "Developer options",
+    "settings_screen": "Settings",
+    "home": "Home",
+    "grades": "Grades",
+    "timetable": "Timetable",
+    "other": "Other",
+    "refreshing": "Refreshing...",
+    "reauth": "Reauthentication required",
+    "api_error": "Kréta API error",
+    "pairing": "Pair your watch",
+    "pairing_description": "Would you like to pair this watch with the Firka app?\nAfter pairing, you will be able to see your timetable, new grades, tests and tasks.",
+    "cancel": "Cancel",
+    "save": "Save",
+    "okay": "Okay",
+    "pair": "Pair",
+    "beta_title": "Firka - Public Beta",
+    "beta_body": "The application is still in development; some features may be unfinished, not work correctly, or be buggy.",
+    "good_morning": "Good morning, {p}!",
+    "@good_morning": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "good_day": "Good day, {p}!",
+    "@good_day": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "n_left_subtitle": "Hang in there, there's only {n} lessons left!",
+    "@n_left_subtitle": {
+        "placeholders": {
+            "n": {
+                "type": "num"
+            }
+        }
+    },
+    "suffering_almost_over_subtitle": "You're almost free. Keep paying attention to your teacher.",
+    "school_ending": "Are you anxious, {p}?",
+    "@school_ending": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "tomorrow_subtitle": "Your next day",
+    "good_afternoon": "Good afternoon, {p}!",
+    "@good_afternoon": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "good_night": "Good evening, {p}!",
+    "@good_night": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "starting_soon": "Your first lesson will start soon!",
+    "starting_hour": "hour",
+    "starting_hour_plural": "hours",
+    "starting_min": "min",
+    "starting_min_plural": "mins",
+    "starting_sec": "sec",
+    "starting_sec_plural": "secs",
+    "subjects": "Subjects",
+    "your_subjects": "Your Subjects",
+    "data": "Info",
+    "subject_avg": "Subject average",
+    "subject_avg_rounded": "Subject average after rounding",
+    "class_avg": "Class average",
+    "class_n": "Weekly lesson number",
+    "tt_no_classes_l1": "You don't have any lessons on this day!",
+    "tt_no_classes_l2": "Yippee!",
+    "class_dismissed": "Dismissed lesson",
+    "catalog_lesson_btn": "Catalog lesson",
+    "catalog_lesson_title": "Catalog lesson",
+    "catalog_lesson_topic_hint": "Topic covered",
+    "catalog_lesson_submit_btn": "Save",
+    "class_substitution": "Substitution",
+    "lesson_subject": "Lesson subject",
+    "tt_settings_toast": "Timetable settings",
+    "tt_settings_toast_lesson_nos": "Number of lessons",
+    "tt_settings_toast_lesson_tests": "Tests & others",
+    "tt_settings_toast_lesson_breaks": "Breaks",
+    "a_week": "A week",
+    "b_week": "B week",
+    "stats_date": "Date",
+    "stats_created_at": "Created at",
+    "stats_last_mod": "Last modified",
+    "s_developer": "Developer settings",
+    "s_stats_for_nerds": "Stats for nerds",
+    "s_settings": "Settings",
+    "s_a": "Application",
+    "s_ag": "General",
+    "s_ag_bell_delay": "Bell delay",
+    "s_ag_rounding": "Default rounding",
+    "s_shortened_timetable": "Shortened timetable",
+    "s_shortened_timetable_enable": "Enable shortened timetable",
+    "s_shortened_timetable_start": "Starts",
+    "s_shortened_timetable_end": "Ends",
+    "s_shortened_timetable_no_lessons": "No lessons to show in the cache. Refresh the timetable and try again.",
+    "s_shortened_timetable_reset": "Reset to original times",
+    "s_shortened_timetable_invalid_time": "The end must be after the start",
+    "s_shortened_timetable_lesson": "Lesson {n}",
+    "@s_shortened_timetable_lesson": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
+    "s_customization": "Customization",
+    "s_ag_r1": "1 → 2",
+    "s_ag_r2": "2 → 3",
+    "s_ag_r3": "3 → 4",
+    "s_ag_r4": "4 → 5",
+    "s_ag_class_avg_on_graph": "Class's average on the graph",
+    "s_ag_navbar": "Navbar",
+    "s_ag_left_handed_mode": "Left-handed mode",
+    "s_ag_language_header": "Language",
+    "s_ag_language_auto": "Automatic",
+    "s_ag_language_hu": "Hungarian",
+    "s_ag_language_en": "English",
+    "s_ag_language_de": "German",
+    "s_c": "Customization",
+    "s_c_icon_header": "App icons",
+    "s_c_replace_icon": "Replace icon",
+    "s_ci_icon_header": "App icon",
+    "s_ci_warning_header": "[!] Changing the app's icon in debug mode won't work",
+    "s_ci_icon_subtitle": "Choose a pretty app icon if you're already tired of the green one.",
+    "s_ci_icon_g1": "Catboy domain",
+    "s_ci_icon_g2": "Felt pen",
+    "s_ci_icon_g3": "Nostalgia",
+    "s_ci_icon_g4": "Reimagined",
+    "s_ci_icon_g5": "Reference",
+    "s_ci_icon_g6": "Christmas logo competition 2024",
+    "s_ci_icon_g6_desc": "By @emilia6_6",
+    "s_ci_icon_g7": "Pride",
+    "s_ci_icon_g8": "Pride ",
+    "s_c_theme_header": "Theme",
+    "s_c_theme_auto": "Auto",
+    "s_c_theme_light": "Light",
+    "s_c_theme_dark": "Dark",
+    "s_ci_child_protection": "Child protection",
+    "ic_ace": "Asexual",
+    "ic_ace_f": "Asexual",
+    "ic_bi": "Bisexual",
+    "ic_bi_f": "Bisexual",
+    "ic_cactus": "Cactus grove",
+    "ic_cc": "Creative Cloud",
+    "ic_enby": "Non-binary",
+    "ic_enby_f": "Non-binary",
+    "ic_fidesz": "Fidesz",
+    "ic_filc": "Firka",
+    "ic_filco": "Filc . O",
+    "ic_galaxy": "Galaxy",
+    "ic_gay": "Gay",
+    "ic_gay_f": "Gay",
+    "ic_half_firka_2": "Revolution",
+    "ic_kreta": "eFirka",
+    "ic_lesb": "Lesbian",
+    "ic_lesb_f": "Lesbian",
+    "ic_lgbtq": "LGBTQ+",
+    "ic_lgbtq_f": "LGBTQ+",
+    "ic_lgbtqp": "Progression",
+    "ic_lgbtqp_f": "Progression",
+    "ic_lidl": "Shopping",
+    "ic_mkkp": "Free grades",
+    "ic_nuke": "Nuclear",
+    "ic_modern": "Modern",
+    "ic_o1g": "Orbán is a cunt",
+    "ic_old": "Domain Dave",
+    "ic_original": "Original",
+    "ic_paper": "Paper",
+    "ic_pear": "Pear",
+    "ic_pixel": "Pixel",
+    "ic_pixelized": "Pixelified",
+    "ic_pride": "Space rainbow",
+    "ic_proto": "Prototype",
+    "ic_refilc": "reFilc",
+    "ic_refulc": "firk'a",
+    "ic_repont": "Repont",
+    "ic_szivacs": "sponge",
+    "ic_tisza": "árad a firka",
+    "ic_trans": "Trans",
+    "ic_trans_f": "Trans",
+    "ic_void_icon": "Nothing",
+    "ic_xmas1": "naughty list",
+    "ic_xmas2": "gift",
+    "ic_xmas3": "FirCristmas",
+    "wear_phone_unpaired": "Your watch isn't paired with your phone!",
+    "wear_phone_disconnected": "Your watch isn't connected to your phone!",
+    "wear_pairing_request_sent": "Open the app on your phone",
+    "wear_pairing_check_phone": "Check your phone",
+    "wear_try_again": "Try again",
+    "breakTxt": "Break",
+    "empty_class": "Empty class",
+    "timeLeft": "{mins, plural, =1{1 min left} other{{mins} mins left}}",
+    "@timeLeft": {
+        "placeholders": {
+            "mins": {
+                "type": "num"
+            }
+        }
+    },
+    "noClasses": "School's out today, take it easy!",
+    "noMoreClasses": "No more classes for you today",
+    "firstIn": "First class in: {t}",
+    "@firstIn": {
+        "placeholders": {
+            "t": {
+                "type": "String"
+            }
+        }
+    },
+    "wearTitle": "{n}. class",
+    "@wearTitle": {
+        "placeholders": {
+            "n": {
+                "type": "num"
+            }
+        }
+    },
+    "licensesLabel": "Licenses",
+    "licenseDescription": "Licenses for external libraries used by the application",
+    "view_subject_btn": "View subject",
+    "date": "Time of the class",
+    "tt_settings_toast_lesson_substitution": "Substitutions",
+    "tt_settings_toast_lesson_ab_timetable": "Two-week class schedule",
+    "s_ag_navbar_desc": "Choose which items appear in the navigation bar and arrange them. The other pages are accessible via the “More” button. You can display up to 4 pages.",
+    "s_ag_navbar_home": "Home",
+    "s_ag_navbar_visible": "Appears",
+    "happy_birthday": "Happy birthday, {p}!",
+    "@happy_birthday": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "tests_tomorrow": "You'll have {tests} exams",
+    "@tests_tomorrow": {
+        "placeholders": {
+            "tests": {
+                "type": "String"
+            }
+        }
+    },
+    "no_tests_tomorrow": "You don't have any exams tomorrow",
+    "get_ready": "Relax, and prepare for tomorrow",
+    "homework": "Homework",
+    "mark_as_done": "Mark as finished",
+    "mark_as_not_done": "Mark as unfinished",
+    "grade_teacherName": "Teacher's name: ",
+    "grade_strValue": "Text-based rating: ",
+    "no_grades": "You don't have any grades for this subject yet.",
+    "unknown_teacher": "Unknown teacher",
+    "tt_added": "Created at: ",
+    "view_lesson_btn": "View lesson",
+    "s_ag_navbar_hidden": "Hidden",
+    "s_your_account": "Your account",
+    "s_acc_kreta": "eKRÉTA accounts",
+    "s_acc_accounts": "Accounts",
+    "s_neptun_title": "ELTE Neptun",
+    "s_neptun_user_hint": "ID (e.g. abc123)",
+    "s_neptun_password_hint": "Password",
+    "s_neptun_totp_code_hint": "Enter the 6-digit code",
+    "s_neptun_code_by_email": "code sent by e-mail",
+    "s_neptun_confirm_code": "Confirm code",
+    "s_neptun_login_btn": "Log in",
+    "s_neptun_seed_hint": "Authenticator key (optional)",
+    "s_neptun_seed_help": "Enter your 2FA authenticator's secret key. NOT the 6 digit code.",
+    "s_neptun_login_with_elte": "Log in with ELTE Neptun",
+    "s_neptun_seed_failed": "Automatic 2FA code generation failed — check your authenticator key.",
+    "s_neptun_2fa_rejected": "2FA code rejected — if the code is correct, restart the login and enter a fresh code.",
+    "s_neptun_login_failed": "Login failed",
+    "s_acc_accounts": "Accounts",
+    "s_acc_add": "Add new student account",
+    "s_acc_add_teacher": "Add new teacher account",
+    "s_acc_logout": "Log out",
+    "close": "Close",
+    "tt_non_instructional_day": "Non-instructional workday",
+    "tt_public_holiday": "Non-instructional day",
+    "tt_spring_break": "Spring break",
+    "tt_winter_break": "Winter break",
+    "tt_autumn_break": "Autumn break",
+    "tt_instructional_day": "Instructional day",
+    "tt_first_semester_end": "End of first semester",
+    "tt_holiday": "Holiday",
+    "tt_rest_day": "Rest day",
+    "tt_first_instructional_day": "First instructional day",
+    "tt_last_instructional_day": "Last instructional day",
+    "tt_last_instructional_day_graduates": "Last instructional day for graduates",
+    "tt_full_day_trip": "Full-day trip",
+    "tt_quarter_end": "end of quarter",
+    "lessons_tomorrow": "You'll have {lessons} lessons",
+    "@lessons_tomorrow": {
+        "placeholders": {
+            "lessons": {
+                "type": "String"
+            }
+        }
+    },
+    "subject": "Subject",
+    "grade_calculator": "Grade calculator",
+    "grade_calculator_add": "Add",
+    "ghost_grade": "Ghost grade",
+    "ghost_grades": "Ghost grades",
+    "gradesCount": "{count} grade(s)",
+    "@gradesCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "overall_avg": "Overall average",
+    "now": "Now",
+    "s_n": "Notifications",
+    "s_n_morning": "Morning notification",
+    "s_n_morning_time": "Time of notification before school",
+    "s_n_live_activity": "Live Activity",
+    "s_n_test": "Send test notification",
+    "s_wear": "Wear OS",
+    "s_wear_os_support": "Wear OS support",
+    "wearSyncNotificationTitle": "Synchronize with watch",
+    "wearSyncNotificationText": "Keep watch's data in sync",
+    "wear_sync_with_phone": "Open the mobile app to sync",
+    "wear_syncing": "Syncing...",
+    "la_privacy_header": "Live Activity privacy policy",
+    "la_privacy_intro": "We have to store and process certain data for use in the Live Activity function. Please, read the disclosure below.",
+    "la_privacy_section1_title": "What data do we store?",
+    "la_privacy_section1_body": "For the Live Activity to function, we store the below data with your device identifier:\n\n• Device Identifier (UUID)\n• Device token\n• Live Activity push token\n• APNs push token\n• Device hash\n• Language setting\n• Bell delay\n\nYour timetable data (lessons table) contains the following:\n• The subject and time of the lesson\n• The name of the teacher\n• The name of the classroom\n• Period number of the lesson\n• The topic of the lesson\n• Details of a substitution\n• Indication of dismissed lesson\n\nThe scheduled notifications (scheduled_notifications table) contains the following:\n• Identifier\n• Device identifier\n• Scheduled time\n• Status and time of notification\n• Time of creation and update",
+    "la_privacy_section2_title": "How do we protect your data?",
+    "la_privacy_section2_body": "We take the security of your data seriously:\n\n• The data in the \"devices\" and \"lessons\" tables are encrypted\n• We store the data on secure servers\n• We only store data for as long as we need it",
+    "la_privacy_section3_title": "How long do we store data for?",
+    "la_privacy_section3_body": "We store data for the least amount of time possible:\n\n• Live Activity push token: Only stored as long as you have lessons on the given day (including the 2-hour period before). If you don't have any lessons left, the value becomes zero.\n\n• Timetable data: Only stored for the length of the lessons and they're deleted automatically. On Fridays, the table containing the timetable will be completely empty after the last lesson.\n\n• Device data (token, identifiers): Stored for as long as the Live Activity function is enabled. This data gets deleted when disabling the function.",
+    "la_privacy_section4_title": "What do we use the data for?",
+    "la_privacy_section4_body": "We use the data exclusively for the Live Activity function:\n\n• Displaying a live timetable on your lockscreen\n• Sending push notifications when lessons change\n• Synchronizing the timetable on your device\n• Ensuring the Monday morning notifications get delivered even after the weekly database-clearing.\n\nWe don't share your data with third parties and we don't use them for marketing.",
+    "la_privacy_section5_title": "Your rights",
+    "la_privacy_section5_body": "Under the GDPR, you have the following rights:\n\n• Right of access: You can view the type of data stored in this privacy policy.\n• Right to erasure: By disabling the Live Activity function, all data related to the function (device identifiers, timetable) will be immediately and permanently deleted from our servers.\n• Right to modification: The timetable data is modified in the Kréta system by authorized persons (e.g. teachers).\n• Right to object: You can object to data processing at any time by disabling the Live Activity function.",
+    "la_privacy_footer": "This privacy policy was last updated on: November 2025",
+    "la_privacy_contact": "Do you have any questions? Contact us at support@firka.app.",
+    "la_privacy_summary1": "Device tokens, Live Activity tokens, timetable data",
+    "la_privacy_summary2": "Encrypted storage, secure servers",
+    "la_privacy_summary3": "Data is automatically deleted when it is no longer needed.",
+    "la_title": "Live Activity",
+    "la_subtitle": "Show your schedule live on your device's lock screen",
+    "la_privacy_title": "Privacy Policy",
+    "la_privacy_required": "To use Live Activity you must accept the privacy policy",
+    "la_learn_more": "Learn More",
+    "la_accept": "Accept",
+    "la_decline": "Decline",
+    "runningInDomainBrowser": "Domain Böngésző",
+    "copied": "Copied",
+    "view_day_btn": "View day",
+    "omission": "Absence",
+    "omissions": "Absences",
+    "omission_state_excused": "Verified",
+    "omission_state_unexcused": "Unverified",
+    "omission_state_pending": "Pending",
+    "omissions_count": "{state, select, unexcused{{count} igazolatlan} pending{{count} igazolandó} other{{count}}} hiányzás",
+    "@omissions_count": {
+        "placeholders": {
+            "state": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "s_beta_warning": "Beta warning",
+    "s_ag_privacy_ever_declined": "Privacy previously declined",
+    "s_c_tab_appearance": "Appearance",
+    "s_c_tab_subjects": "Subjects",
+    "s_c_tab_fonts": "Fonts",
+    "s_c_my_themes": "My themes",
+    "s_c_manage_subjects": "Manage subjects",
+    "s_c_change_app_icon": "Change app icon",
+    "s_c_colors_header": "Colors",
+    "s_c_grade_colors_header": "Grade colors",
+    "s_c_colors_theme_header": "Colors & Theme",
+    "s_c_slot_accent": "Accent",
+    "s_c_slot_background": "Background",
+    "s_c_slot_cards": "Cards",
+    "s_c_slot_buttons": "Buttons",
+    "s_c_mode_both": "Both",
+    "s_c_slot_secondary": "Secondary",
+    "s_c_slot_text": "Text",
+    "s_c_slot_text_secondary": "Secondary text",
+    "s_c_slot_text_tertiary": "Tertiary text",
+    "s_c_slot_shadow": "Shadow",
+    "s_c_slot_success": "Success",
+    "s_c_slot_warning": "Warning",
+    "s_c_slot_warning_text": "Warning text",
+    "s_c_slot_warning_card": "Warning card",
+    "s_c_slot_error": "Error",
+    "s_c_slot_error_text": "Error text",
+    "s_c_slot_error_card": "Error card",
+    "s_c_title_style_header": "Title style",
+    "s_c_title_weight_header": "Title weight",
+    "s_c_title_weight_subtitle": "Not all fonts support this",
+    "s_c_title_weight_thin": "Thin",
+    "s_c_title_weight_thick": "Bold",
+    "s_c_capitalization_header": "Capitalization",
+    "s_c_capitalization_lower": "lowercase",
+    "s_c_capitalization_normal": "Normal",
+    "s_c_capitalization_upper": "UPPERCASE",
+    "s_c_change": "Change",
+    "s_c_customize": "Customize",
+    "s_c_themes_current": "Current",
+    "s_c_themes_own": "Mine",
+    "s_c_themes_downloaded": "Downloaded",
+    "s_c_themes_share_current": "Share current theme",
+    "s_c_themes_create_new": "Create new theme",
+    "s_c_themes_import": "Import theme",
+    "s_c_themes_use": "Use",
+    "s_c_themes_continue": "Continue",
+    "s_c_themes_own_label": "My theme",
+    "s_c_themes_imported_label": "Imported theme",
+    "s_c_themes_builtin_label": "Built-in theme",
+    "s_c_themes_builtin_name": "Default",
+    "s_c_themes_create_title": "Create new theme",
+    "s_c_themes_create_subtitle": "Enter a name for the theme",
+    "s_c_themes_create_placeholder": "Theme name",
+    "s_c_themes_delete_title": "Delete theme",
+    "s_c_themes_delete_subtitle": "Are you sure you want to delete this theme? This action can be undone.",
+    "s_c_themes_delete_confirm": "Delete",
+    "s_about": "About",
+    "s_extras": "Extras",
+    "s_other": "Other",
+    "grade_weight_x1": "single weight",
+    "grade_weight_x2": "double weight",
+    "grade_weight_x3": "triple weight",
+    "grade_weight_x4": "quadruple weight",
+    "grade_weight_x5": "quintuple weight",
+    "grade_weight_percent": "{percent}% weight",
+    "@grade_weight_percent": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "surprise_grade_rank_5": "LEGENDARY",
+    "surprise_grade_rank_4": "EXCELLENT",
+    "surprise_grade_rank_3": "OKAY",
+    "surprise_grade_rank_2": "WEAK",
+    "surprise_grade_rank_1": "CATASTROPHE",
+    "new_grades_card": "You have new grades",
+    "s_notifications": "Notifications",
+    "s_sticker_map": "Sticker map",
+    "s_qr_reader": "QR code reader",
+    "s_feedback": "Feedback",
+    "s_a_desc": "Navigation, language, bell, rounding",
+    "s_c_desc": "Grade colors, theme, app icon",
+    "s_todo": "túdú: program this",
+    "s_surprise_grades": "Surprise grades",
+    "s_seasonal_icons": "Seasonal app icons",
+    "s_uwu_mode": "UwU mode",
+    "s_calendar_sync": "Calendar sync",
+    "s_save_grades": "Save grades",
+    "s_welcome_msg": "Welcome message",
+    "s_extras_desc": "Surprise grades, calendar sync",
+    "s_notifications_desc": "Grades, timetable changes, absences",
+    "s_notif_push_enabled": "Enable push notifications",
+    "s_notif_delivery_method_header": "Delivery method",
+    "s_notif_delivery_auto": "Automatic",
+    "s_notif_delivery_fcm": "Firebase Cloud Messaging (FCM)",
+    "s_notif_delivery_alarm": "Alarm (background check)",
+    "s_notif_wakeup_interval_header": "Check frequency",
+    "s_notif_wakeup_hourly": "Hourly",
+    "s_notif_wakeup_two_hourly": "Every 2 hours",
+    "s_notif_categories_header": "Categories",
+    "s_notif_grades": "Grades",
+    "s_notif_homework_tests": "Homework & tests",
+    "s_notif_absences": "Absences",
+    "s_notif_lessons": "Lesson changes",
+    "s_notif_lessons_cancelled": "Cancelled lessons",
+    "s_notif_lessons_substituted": "Substitutions",
+    "s_notif_messages": "Messages",
+    "s_progress_notification": "Progress-centric notification",
+    "s_progress_notification_desc": "Live progress notification for lessons and breaks throughout the school day",
+    "progress_notif_channel_name": "School day progress",
+    "progress_notif_channel_desc": "Live progress notification for today's lessons and breaks",
+    "progress_notif_lesson_title": "Lesson {number}: {name}",
+    "@progress_notif_lesson_title": {
+        "placeholders": {
+            "number": {"type": "String"},
+            "name": {"type": "String"}
+        }
+    },
+    "progress_notif_substitution": " (Substitution)",
+    "progress_notif_case1_text": "In {minutes} min ({timeRange}){room}{substitution}{remaining}",
+    "@progress_notif_case1_text": {
+        "placeholders": {
+            "minutes": {"type": "String"},
+            "timeRange": {"type": "String"},
+            "room": {"type": "String"},
+            "substitution": {"type": "String"},
+            "remaining": {"type": "String"}
+        }
+    },
+    "progress_notif_case2_lesson_text": "{minutes} min left ({timeRange}){room}{substitution}{remaining}",
+    "@progress_notif_case2_lesson_text": {
+        "placeholders": {
+            "minutes": {"type": "String"},
+            "timeRange": {"type": "String"},
+            "room": {"type": "String"},
+            "substitution": {"type": "String"},
+            "remaining": {"type": "String"}
+        }
+    },
+    "progress_notif_case2_break_title": "Break",
+    "progress_notif_case2_break_text": "{minutes} min left{remaining}",
+    "@progress_notif_case2_break_text": {
+        "placeholders": {
+            "minutes": {"type": "String"},
+            "remaining": {"type": "String"}
+        }
+    },
+    "progress_notif_critical_text": "{minutes}m",
+    "@progress_notif_critical_text": {
+        "placeholders": {
+            "minutes": {"type": "String"}
+        }
+    },
+    "progress_notif_remaining_lessons_one": " - 1 lesson remaining",
+    "progress_notif_remaining_lessons_other": " - {count} lessons remaining",
+    "@progress_notif_remaining_lessons_other": {
+        "placeholders": {
+            "count": {"type": "String"}
+        }
+    },
+    "s_fcm_status_title": "FCM status",
+    "s_fcm_status_initialized": "Initialized",
+    "s_fcm_status_not_initialized": "Not initialized",
+    "s_fcm_status_token_present": "Token present",
+    "s_fcm_status_token_missing": "No token",
+    "s_fcm_status_permission_label": "Notification permission",
+    "s_fcm_status_permission_granted": "Granted",
+    "s_fcm_status_permission_denied": "Denied",
+    "s_fcm_status_permission_unknown": "Unknown",
+    "s_fcm_status_topic_label": "Subscribed topic",
+    "s_fcm_status_last_refresh_label": "Last token refresh",
+    "s_fcm_status_last_refresh_never": "Never",
+    "s_fcm_status_refresh_button": "Refresh",
+    "s_fcm_notify_on_message": "Notify on FCM message",
+    "s_fcm_test_notifications_title": "Test notifications",
+    "s_fcm_test_notifications_multi_title": "Simulate multi-account",
+    "s_n_all": "All",
+    "s_n_grades": "New grades",
+    "s_n_homework_tests": "Homework & Tests",
+    "s_n_absences": "Absences",
+    "s_n_lessons": "Lessons",
+    "s_n_messages": "Messages",
+    "s_n_by_subject": "By subject"
+}

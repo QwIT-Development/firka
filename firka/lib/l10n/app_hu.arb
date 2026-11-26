@@ -1,0 +1,585 @@
+{
+    "restart_title": "Alkalmazás újraindítása",
+    "restart_body": "Kattints ide az alkalmazás megnyitásához.",
+    "loginBtn": "Bejelentkezés E-Kréta fiókkal",
+    "privacyLabel": "Adatvédelmi tájékoztató",
+    "title1": "Egy pillantásra tudhatsz mindent",
+    "subtitle1": "A főoldal tetején hasznos információkat láthatsz a napodról.",
+    "title2": "A tantárgyaid kényelmesen elférnek itt",
+    "subtitle2": "Láss statisztikákat, közelgő számonkéréseket, és akár a régebbi tanéves jegyeidet is.",
+    "title3": "Személyre szabható órarend",
+    "subtitle3": "Válaszd ki, mit szeretnél látni az órarend oldalon, kapcsold ki vagy be a számonkéréseket, házi feladatokat, szüneteket és lyukas órákat is.",
+    "title4": "Sok extra dolog, amit a Krétában sosem fogsz megtalálni",
+    "subtitle4": "",
+    "yesterday": "Tegnap",
+    "today": "Ma",
+    "runningInDomainBrowser": "Doméjn böngésző",
+    "tomorrow": "Holnap",
+    "debug_screen": "Fejlesztői menü",
+    "settings_screen": "Beállítások",
+    "home": "Kezdőlap",
+    "grades": "Jegyek",
+    "timetable": "Órarend",
+    "other": "Több",
+    "refreshing": "Adatok frissítése...",
+    "reauth": "Bejelentkezés szükséges",
+    "api_error": "Kréta API hiba",
+    "pairing": "Óra párosítása",
+    "pairing_description": "Szeretnéd ezt az órát párosítani a Firka appal?\nPárosítás láthatod az órarendet, és a legújabb jegyeidet, számonkéréseidet, és a feladataidat.",
+    "cancel": "Mégse",
+    "save": "Mentés",
+    "okay": "Rendben",
+    "pair": "Párosítás",
+    "beta_title": "Firka - Publikus béta",
+    "beta_body": "Az alkalmazás fejlesztés alatt áll; egyes funkciók hibásan működhetnek, nem működnek, vagy még nem készültek el.",
+    "good_morning": "Jó reggelt, {p}!",
+    "@good_morning": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "happy_birthday": "Boldog születésnapot, {p}!",
+    "@happy_birthday": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "good_day": "Szép napot, {p}!",
+    "@good_day": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "n_left_subtitle": "Tarts ki, már csak {n} óra!",
+    "@n_left_subtitle": {
+        "placeholders": {
+            "n": {
+                "type": "num"
+            }
+        }
+    },
+    "suffering_almost_over_subtitle": "Mindjárt szabad vagy. Figyelj oda a tanárra.",
+    "school_ending": "Izgulsz, {p}?",
+    "@school_ending": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "tomorrow_subtitle": "Itt a holnapi napod.",
+    "good_afternoon": "Szép délutánt, {p}!",
+    "@good_afternoon": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "good_night": "Szép estét, {p}!",
+    "@good_night": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "tests_tomorrow": "{tests} dolgozatod lesz",
+    "@tests_tomorrow": {
+        "placeholders": {
+            "tests": {
+                "type": "String"
+            }
+        }
+    },
+    "no_tests_tomorrow": "Holnap nincs dolgozatod",
+    "get_ready": "Pihend ki magad, és készülj fel",
+    "homework": "Házi feladat",
+    "mark_as_done": "Megjelölés befejezettként",
+    "mark_as_not_done": "Megjelölés befejezetlenként",
+    "starting_soon": "Hamarosan kezdődik az első órád!",
+    "starting_hour": "óra",
+    "starting_hour_plural": "óra",
+    "starting_min": "perc",
+    "starting_min_plural": "perc",
+    "starting_sec": "másodperc",
+    "starting_sec_plural": "másodperc",
+    "subjects": "Tantárgyak",
+    "your_subjects": "Tantárgyaid",
+    "data": "Adatok",
+    "subject_avg": "Tantárgyi átlag",
+    "subject_avg_rounded": "Tantárgyi átlag kerekítés után",
+    "class_avg": "Osztályátlag",
+    "class_n": "Heti óraszám",
+    "grade_teacherName": "Tanár neve: ",
+    "grade_strValue": "Szöveges értékelés: ",
+    "no_grades": "Ebből a tantárgyból még nincsen jegyed.",
+    "unknown_teacher": "Ismeretlen tanár",
+    "tt_no_classes_l1": "Ezen a napon nincsenek óráid!",
+    "tt_no_classes_l2": "Yippee!",
+    "tt_non_instructional_day": "Tanítás nélküli munkanap",
+    "tt_public_holiday": "Munkaszüneti nap",
+    "tt_spring_break": "Tavaszi szünet",
+    "tt_winter_break": "Téli szünet",
+    "tt_autumn_break": "Őszi szünet",
+    "tt_instructional_day": "Tanítási nap",
+    "tt_first_semester_end": "Első félév vége",
+    "tt_holiday": "Ünnepnap",
+    "tt_rest_day": "Pihenőnap",
+    "tt_first_instructional_day": "Első tanítási nap",
+    "tt_last_instructional_day": "Utolsó tanítási nap",
+    "tt_last_instructional_day_graduates": "Utolsó tanítási nap a végzős évfolyamokon",
+    "tt_full_day_trip": "Egész napos kirándulás",
+    "tt_quarter_end": "negyedév vége",
+    "tt_added": "Létrehozva: ",
+    "class_dismissed": "Elmaradt óra",
+    "catalog_lesson_btn": "Óra naplózása",
+    "catalog_lesson_title": "Óra naplózása",
+    "catalog_lesson_topic_hint": "Az óra témája",
+    "catalog_lesson_submit_btn": "Mentés",
+    "class_substitution": "Helyettesítés",
+    "lesson_subject": "Az óra tárgya",
+    "view_subject_btn": "Tantárgy megtekintése",
+    "view_lesson_btn": "Óra megtekintése",
+    "view_day_btn": "Nap megtekintése",
+    "date": "Időpont",
+    "tt_settings_toast": "Órarend beállításai",
+    "tt_settings_toast_lesson_nos": "Óraszámok",
+    "tt_settings_toast_lesson_tests": "Számonkérések & egyéb",
+    "tt_settings_toast_lesson_breaks": "Szünetek",
+    "tt_settings_toast_lesson_substitution": "Helyettesítések",
+    "tt_settings_toast_lesson_ab_timetable": "Kéthetes órarend",
+    "a_week": "A hét",
+    "b_week": "B hét",
+    "stats_date": "Dátum",
+    "stats_created_at": "Létrehozva",
+    "stats_last_mod": "Utoljára módosítva",
+    "s_developer": "Fejlesztői beállítások",
+    "s_stats_for_nerds": "Extra információ mutatása",
+    "s_beta_warning": "Béta figyelmeztetés",
+    "s_settings": "Beállítások",
+    "s_a": "Alkalmazás",
+    "s_ag": "Általános",
+    "s_ag_bell_delay": "Csengő eltolódása",
+    "s_ag_rounding": "Alapértelmezett kerekítés",
+    "s_shortened_timetable": "Rövidített órák",
+    "s_shortened_timetable_enable": "Rövidített órák engedélyezése",
+    "s_shortened_timetable_start": "Kezdete",
+    "s_shortened_timetable_end": "Vége",
+    "s_shortened_timetable_no_lessons": "Nincs megjeleníthető óra a gyorsítótárban. Frissítsd az órarendet, majd próbáld újra.",
+    "s_shortened_timetable_reset": "Eredeti időpontok visszaállítása",
+    "s_shortened_timetable_invalid_time": "A végének a kezdete után kell lennie",
+    "s_shortened_timetable_lesson": "{n}. óra",
+    "@s_shortened_timetable_lesson": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
+    "s_customization": "Személyre szabás",
+    "s_ag_r1": "1 → 2",
+    "s_ag_r2": "2 → 3",
+    "s_ag_r3": "3 → 4",
+    "s_ag_r4": "4 → 5",
+    "s_ag_class_avg_on_graph": "Osztályátlag a grafikonon",
+    "s_ag_navbar": "Navigációs sáv",
+    "s_ag_navbar_desc": "Válaszd ki, mik jelenjenek meg a navigációs sávon, és rendezd el őket. A többi oldal elérhető a “több” gombon keresztül. Maximum 4 oldalt tudsz kitűzni.",
+    "s_ag_navbar_home": "Kezdőlap",
+    "s_ag_navbar_visible": "Megjelenik",
+    "s_ag_navbar_hidden": "Elrejtve",
+    "s_ag_left_handed_mode": "Balkezes mód",
+    "s_ag_privacy_ever_declined": "Adatvédelem korábban elutasítva",
+    "s_ag_language_header": "Nyelv",
+    "s_ag_language_auto": "Automatikus",
+    "s_ag_language_hu": "Magyar",
+    "s_ag_language_en": "Angol",
+    "s_ag_language_de": "Német",
+    "s_c": "Személyre szabás",
+    "s_c_icon_header": "App ikonok",
+    "s_c_replace_icon": "Ikon cseréje",
+    "s_ci_icon_header": "App ikon",
+    "s_ci_warning_header": "[!] Debug módban nem fog működni az ikon megváltoztatása",
+    "s_ci_icon_subtitle": "Válassz egy csodaszép app ikont, ha már unod a zöldet.",
+    "s_ci_icon_g1": "Catboy domain",
+    "s_ci_icon_g2": "Filctoll",
+    "s_ci_icon_g3": "Nosztalgia",
+    "s_ci_icon_g4": "Újragondolt",
+    "s_ci_icon_g5": "Referencia",
+    "s_ci_icon_g6": "Karácsonyi logó verseny 2024",
+    "s_ci_icon_g6_desc": "@emilia6_6 által",
+    "s_ci_icon_g7": "Pride",
+    "s_ci_icon_g8": "Pride ",
+    "s_c_theme_header": "Téma",
+    "s_c_theme_auto": "Automatikus",
+    "s_c_theme_light": "Világos",
+    "s_c_theme_dark": "Sötét",
+    "s_c_tab_appearance": "App kinézete",
+    "s_c_tab_subjects": "Tantárgyak",
+    "s_c_tab_fonts": "Betűk",
+    "s_c_my_themes": "Témáim",
+    "s_c_manage_subjects": "Tantárgyak kezelése",
+    "s_c_change_app_icon": "App ikon cseréje",
+    "s_c_colors_header": "Színek",
+    "s_c_grade_colors_header": "Jegyek színei",
+    "s_c_colors_theme_header": "Színek & téma",
+    "s_c_slot_accent": "Accent",
+    "s_c_slot_background": "Háttér",
+    "s_c_slot_cards": "Kártyák",
+    "s_c_slot_buttons": "Gombok",
+    "s_c_mode_both": "Mindkettő",
+    "s_c_slot_secondary": "Másodlagos",
+    "s_c_slot_text": "Szöveg",
+    "s_c_slot_text_secondary": "Másodlagos szöveg",
+    "s_c_slot_text_tertiary": "Harmadlagos szöveg",
+    "s_c_slot_shadow": "Árnyék",
+    "s_c_slot_success": "Siker",
+    "s_c_slot_warning": "Figyelmeztetés",
+    "s_c_slot_warning_text": "Figyelmeztető szöveg",
+    "s_c_slot_warning_card": "Figyelmeztető kártya",
+    "s_c_slot_error": "Hiba",
+    "s_c_slot_error_text": "Hiba szöveg",
+    "s_c_slot_error_card": "Hiba kártya",
+    "s_c_title_style_header": "Címek stílusa",
+    "s_c_title_weight_header": "Címek vastagsága",
+    "s_c_title_weight_subtitle": "Ezt nem mindegyik betűtípus támogatja",
+    "s_c_title_weight_thin": "Vékony",
+    "s_c_title_weight_thick": "Vastag",
+    "s_c_capitalization_header": "Kapitalizáció",
+    "s_c_capitalization_lower": "kisbetűs",
+    "s_c_capitalization_normal": "Normál",
+    "s_c_capitalization_upper": "NAGYBETŰS",
+    "s_c_change": "Csere",
+    "s_c_customize": "Személyre szabás",
+    "s_c_themes_current": "Jelenlegi",
+    "s_c_themes_own": "Saját",
+    "s_c_themes_downloaded": "Letöltött",
+    "s_c_themes_share_current": "Jelenlegi téma megosztása",
+    "s_c_themes_create_new": "Új téma létrehozása",
+    "s_c_themes_import": "Téma importálása",
+    "s_c_themes_use": "Használat",
+    "s_c_themes_continue": "Folytatás",
+    "s_c_themes_own_label": "Saját téma",
+    "s_c_themes_imported_label": "Importált téma",
+    "s_c_themes_builtin_label": "Beépített téma",
+    "s_c_themes_builtin_name": "Alapértelmezett",
+    "s_c_themes_create_title": "Új téma létrehozása",
+    "s_c_themes_create_subtitle": "Add meg a téma nevét",
+    "s_c_themes_create_placeholder": "A téma neve",
+    "s_c_themes_delete_title": "Téma törlése",
+    "s_c_themes_delete_subtitle": "Biztosan törölni szeretnéd ezt a témát? Ez a művelet visszavonható.",
+    "s_c_themes_delete_confirm": "Törlés",
+    "s_ci_child_protection": "Gyermekvédelem",
+    "ic_ace": "Aszexuális",
+    "ic_ace_f": "Aszexuális",
+    "ic_bi": "Biszexuális",
+    "ic_bi_f": "Biszexuális",
+    "ic_cactus": "Kaktuszliget",
+    "ic_cc": "Kreatív Felhő",
+    "ic_enby": "Nembináris",
+    "ic_enby_f": "Nembináris",
+    "ic_fidesz": "Narancs",
+    "ic_filc": "Filc Napló",
+    "ic_filco": "Filc . O",
+    "ic_galaxy": "Galaxis",
+    "ic_gay": "Meleg",
+    "ic_gay_f": "Meleg",
+    "ic_half_firka_2": "Revolution",
+    "ic_kreta": "eFIRKA",
+    "ic_lesb": "Leszbikus",
+    "ic_lesb_f": "Leszbikus",
+    "ic_lgbtq": "LMGBTQ+",
+    "ic_lgbtq_f": "LMGBTQ+",
+    "ic_lgbtqp": "Progresszió",
+    "ic_lgbtqp_f": "Progresszió",
+    "ic_lidl": "Bevásárlás",
+    "ic_mkkp": "Ingyen jegyek",
+    "ic_nuke": "Nukleáris",
+    "ic_modern": "Modern",
+    "ic_o1g": "O1G",
+    "ic_old": "Domain Dév Dévid",
+    "ic_original": "Az eredeti",
+    "ic_paper": "Papír",
+    "ic_pear": "Körte",
+    "ic_pixel": "Pixel",
+    "ic_pixelized": "Pixelizált",
+    "ic_pride": "Űrszívárvány",
+    "ic_proto": "Prototípus",
+    "ic_refilc": "reFilc",
+    "ic_refulc": "firk’a",
+    "ic_repont": "Ötven forint",
+    "ic_szivacs": "Szivacs",
+    "ic_tisza": "Árad a firka",
+    "ic_trans": "Transz",
+    "ic_trans_f": "Transz",
+    "ic_void_icon": "Semmi",
+    "ic_xmas1": "Rosszak listája",
+    "ic_xmas2": "Ajándék",
+    "ic_xmas3": "reKarácsony",
+    "s_your_account": "Fiókod",
+    "s_acc_kreta": "eKRÉTA Fiókok",
+    "s_acc_accounts": "Fiókok",
+    "s_neptun_title": "ELTE Neptun",
+    "s_neptun_user_hint": "Azonosító (pl. abc123)",
+    "s_neptun_password_hint": "Jelszó",
+    "s_neptun_totp_code_hint": "Add meg a 6-jegyős kódot",
+    "s_neptun_code_by_email": "e-mailben elküldve",
+    "s_neptun_confirm_code": "Kód megerősítése",
+    "s_neptun_login_btn": "Bejelentkezés",
+    "s_neptun_seed_hint": "Hitelesítő kulcs (opcionális)",
+    "s_neptun_seed_help": "Add meg a 2FA hitelesítőd titkos kulcsát. NEM a 6 jegyű kódot.",
+    "s_neptun_login_with_elte": "Bejelentkezés ELTE Neptunnal",
+    "s_neptun_seed_failed": "A 2FA automatikus kódgenerálás sikertelen — ellenőrizd a hitelesítő kulcsot.",
+    "s_neptun_2fa_rejected": "A 2FA kódot elutasította a rendszer — ha a kód helyes, indítsd újra a bejelentkezést és adj meg egy friss kódot.",
+    "s_neptun_login_failed": "Bejelentkezés sikertelen",
+    "s_acc_accounts": "Fiókok",
+    "s_acc_add": "Új diákfiók hozzáadása",
+    "s_acc_add_teacher": "Új tanárfiók hozzáadása",
+    "s_acc_logout": "Kijelentkezés",
+    "close": "Bezárás",
+    "s_about": "Névjegy",
+    "licensesLabel": "Licencek",
+    "licenseDescription": "Az alkalmazás által használt külső könyvtárak licencei",
+    "wear_phone_unpaired": "Az órád nincs párosítva a telefonoddal!",
+    "wear_phone_disconnected": "Az órád nincs csatlakoztatva a telefonoddal!",
+    "wear_pairing_request_sent": "Párosítás folyamatban, nyisd meg az appot a telefonodon",
+    "wear_pairing_check_phone": "Folytasd a párosítást a telefonodon",
+    "wear_try_again": "Újra",
+    "copied": "Másolva",
+    "breakTxt": "Szünet",
+    "empty_class": "Lyukasóra",
+    "timeLeft": "Még {mins} perc",
+    "@timeLeft": {
+        "placeholders": {
+            "mins": {
+                "type": "num"
+            }
+        }
+    },
+    "noClasses": "Nincs ma iskola, pihend ki magad!",
+    "noMoreClasses": "Nincs több órád ma",
+    "firstIn": "Első órád: {t}",
+    "@firstIn": {
+        "placeholders": {
+            "t": {
+                "type": "String"
+            }
+        }
+    },
+    "wearTitle": "{n}. óra",
+    "@wearTitle": {
+        "placeholders": {
+            "n": {
+                "type": "num"
+            }
+        }
+    },
+    "lessons_tomorrow": "{lessons} órád lesz",
+    "@lessons_tomorrow": {
+        "placeholders": {
+            "lessons": {
+                "type": "String"
+            }
+        }
+    },
+    "subject": "Tantárgy",
+    "grade_calculator": "Jegy kalkulátor",
+    "grade_calculator_add": "Hozzáadás",
+    "ghost_grade": "Szellem jegy",
+    "ghost_grades": "Szellem jegyek",
+    "gradesCount": "{count} jegy",
+    "@gradesCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "overall_avg": "Összesített átlag",
+    "now": "Most",
+    "s_n": "Értesítések",
+    "s_n_morning": "Reggeli értesítés",
+    "s_n_morning_time": "Értesítés ideje iskola előtt",
+    "s_n_live_activity": "Live Activity",
+    "s_n_test": "Teszt értesítés küldése",
+    "s_wear": "Wear OS",
+    "s_wear_os_support": "Wear OS támogatás",
+    "s_extras": "Extrák",
+    "s_other": "Egyéb",
+    "wearSyncNotificationTitle": "Szinkronizálás az órával",
+    "wearSyncNotificationText": "Óra adatainak szinkronban tartása",
+    "wear_sync_with_phone": "Nyisd meg a telefonos appot a szinkronizáláshoz",
+    "wear_syncing": "Szinkronizálás...",
+    "la_privacy_header": "Live Activity adatvédelmi tájékoztató",
+    "la_privacy_intro": "A Live Activity funkció használatához bizonyos adatokat kell tárolnunk és feldolgoznunk. Kérjük, olvasd el figyelmesen az alábbi tájékoztatót.",
+    "la_privacy_section1_title": "Milyen adatokat tárolunk?",
+    "la_privacy_section1_body": "A Live Activity működéséhez az alábbi adatokat tároljuk eszközazonosítóddal együtt:\n\n• Eszköz azonosító (UUID)\n• Eszköz token\n• Live Activity push token\n• APNs push token\n• Eszköz hash\n• Nyelvi beállítás\n• Csengő eltolódása\n\nAz órarendi adataid (lessons tábla) a következőket tartalmazzák:\n• Óra tárgya és időpontja\n• Tanár neve\n• Terem neve\n• Óra sorszáma\n• Óra témája\n• Helyettesítés adatai\n• Elmaradt óra jelzése\n\nAz időzített értesítések (scheduled_notifications tábla) a következőket tartalmazzák:\n• Azonosító\n• Eszköz azonosító\n• Időzített időpont\n• Küldés állapota és ideje\n• Létrehozás és frissítés ideje",
+    "la_privacy_section2_title": "Hogyan védjük az adataidat?",
+    "la_privacy_section2_body": "Komolyan vesszük az adataid biztonságát:\n\n• A devices és lessons táblákban lévő összes adat titkosítva van\n• Az adatokat biztonságos szerveren tároljuk\n• Csak a szükséges időtartamig tároljuk az adatokat",
+    "la_privacy_section3_title": "Meddig tároljuk az adatokat?",
+    "la_privacy_section3_body": "Az adatok tárolása minimális időtartamra korlátozódik:\n\n• Live Activity push token: Addig van tárolva, amíg óráid vannak az adott napon (beleértve az első óra előtti 2 órás időszakot is). Ha nincs több órád, az érték null lesz.\n\n• Órarendi adatok: Csak az órák időtartamára tárolódnak, majd automatikusan törlődnek. Pénteken az utolsó óra után az órarendet tartalmazó tábla teljesen üres lesz.\n\n• Eszközadatok (token, azonosítók): Addig van tárolva, amíg a Live Activity funkció engedélyezve van. A funkció kikapcsolásakor ezek az adatok azonnal törlésre kerülnek.",
+    "la_privacy_section4_title": "Mire használjuk az adatokat?",
+    "la_privacy_section4_body": "Az adatokat kizárólag a Live Activity funkció működtetésére használjuk:\n\n• Élő órarend megjelenítése a lezárási képernyőn\n• Push értesítések küldése óraváltásokkor\n• Az órarend szinkronizálása az eszközödön\n• A hétfő reggeli értesítések kézbesítésének biztosítása a heti adatbázis-ürítés után is\n\nAz adataidat nem adjuk át harmadik félnek, és nem használjuk marketing célokra.",
+    "la_privacy_section5_title": "Jogaid",
+    "la_privacy_section5_body": "A GDPR alapján az alábbi jogokkal rendelkezel:\n\n• Hozzáférési jog: A tárolt adatok típusát ebben az adatvédelmi tájékoztatóban tekintheted meg.\n• Törlési jog: A Live Activity funkció kikapcsolásával minden, a funkcióhoz kapcsolódó adat (eszközazonosítók, órarend) azonnal és véglegesen törlődik a szervereinkről.\n• Módosítási jog: Az órarendi adatok módosítása a Kréta rendszerben történik, az arra jogosult személyek (pl. tanárok) által.\n• Tiltakozási jog: Az adatkezelés ellen bármikor tiltakozhatsz a Live Activity funkció kikapcsolásával.",
+    "la_privacy_footer": "Az adatvédelmi tájékoztató utolsó frissítése: 2025. november",
+    "la_privacy_contact": "Kérdésed van? Keress minket a support @firka.app címen.",
+    "la_privacy_summary1": "Eszköz tokenek, Live Activity tokenek, órarendi adatok",
+    "la_privacy_summary2": "Titkosított tárolás, biztonságos szerverek",
+    "la_privacy_summary3": "Az adatok automatikusan törlődnek, ha már nincs rájuk szükség",
+    "la_title": "Live Activity",
+    "la_subtitle": "Az órarended élő megjelenítése az eszköz lezárási képernyőjén",
+    "la_privacy_title": "Adatvédelmi tájékoztató",
+    "la_privacy_required": "A Live Activity használatához el kell fogadnod az adatvédelmi tájékoztatót",
+    "la_learn_more": "Bővebben",
+    "la_accept": "Elfogadom",
+    "la_decline": "Elutasítom",
+    "omission": "Hiányzás",
+    "omissions": "Hiányzások",
+    "omission_state_excused": "Igazolt",
+    "omission_state_unexcused": "Igazolatlan",
+    "omission_state_pending": "Függőben",
+    "omissions_count": "{state, select, unexcused{{count} igazolatlan} pending{{count} igazolandó} other{{count}}} hiányzás",
+    "@omissions_count": {
+        "placeholders": {
+            "state": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "grade_weight_x1": "egyszeres súllyal",
+    "grade_weight_x2": "dupla súllyal",
+    "grade_weight_x3": "tripla súllyal",
+    "grade_weight_x4": "négyszeres súllyal",
+    "grade_weight_x5": "ötszörös súllyal",
+    "grade_weight_percent": "{percent}%-os súllyal",
+    "@grade_weight_percent": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "surprise_grade_rank_5": "LEGENDÁS",
+    "surprise_grade_rank_4": "KIVÁLÓ",
+    "surprise_grade_rank_3": "RENDBEN",
+    "surprise_grade_rank_2": "GYENGE",
+    "surprise_grade_rank_1": "KATASZTRÓFA",
+    "new_grades_card": "Új jegyeid vannak",
+    "s_notifications": "Értesítések",
+    "s_sticker_map": "Matrica térkép",
+    "s_qr_reader": "QR-kód olvasó",
+    "s_feedback": "Visszajelzés",
+    "s_a_desc": "Navigáció, nyelv, csengő, kerekítés",
+    "s_c_desc": "Jegyek színe, téma, app ikon",
+    "s_todo": "túdú: program this",
+    "s_surprise_grades": "Meglepetés jegyek",
+    "s_seasonal_icons": "Szezonális app ikonok",
+    "s_uwu_mode": "UwU mód",
+    "s_calendar_sync": "Naptár szinkronizálás",
+    "s_save_grades": "Jegyek mentése",
+    "s_welcome_msg": "Üdvözlő üzenet",
+    "s_extras_desc": "Meglepetés jegyek, naptár szinkronizálás",
+    "s_notifications_desc": "Jegyek, órarend változások, hiányok",
+    "s_notif_push_enabled": "Push értesítések engedélyezése",
+    "s_notif_delivery_method_header": "Kézbesítési mód",
+    "s_notif_delivery_auto": "Automatikus",
+    "s_notif_delivery_fcm": "Firebase Cloud Messaging (FCM)",
+    "s_notif_delivery_alarm": "Ébresztő (háttérellenőrzés)",
+    "s_notif_wakeup_interval_header": "Ellenőrzési gyakoriság",
+    "s_notif_wakeup_hourly": "Óránként",
+    "s_notif_wakeup_two_hourly": "Kétóránként",
+    "s_notif_categories_header": "Kategóriák",
+    "s_notif_grades": "Jegyek",
+    "s_notif_homework_tests": "Házi feladatok és dolgozatok",
+    "s_notif_absences": "Hiányzások",
+    "s_notif_lessons": "Órarendváltozások",
+    "s_notif_lessons_cancelled": "Elmaradt órák",
+    "s_notif_lessons_substituted": "Helyettesítések",
+    "s_notif_messages": "Üzenetek",
+    "s_progress_notification": "Folyamatjelző értesítés",
+    "s_progress_notification_desc": "Élő folyamatjelző értesítés a tanítási nap óráiról és szüneteiről",
+    "progress_notif_channel_name": "Tanítási nap folyamata",
+    "progress_notif_channel_desc": "Élő értesítés a mai órák és szünetek állapotáról",
+    "progress_notif_lesson_title": "{number}. óra: {name}",
+    "@progress_notif_lesson_title": {
+        "placeholders": {
+            "number": {"type": "String"},
+            "name": {"type": "String"}
+        }
+    },
+    "progress_notif_substitution": " (Helyettesítés)",
+    "progress_notif_case1_text": "{minutes} perc múlva ({timeRange}){room}{substitution}{remaining}",
+    "@progress_notif_case1_text": {
+        "placeholders": {
+            "minutes": {"type": "String"},
+            "timeRange": {"type": "String"},
+            "room": {"type": "String"},
+            "substitution": {"type": "String"},
+            "remaining": {"type": "String"}
+        }
+    },
+    "progress_notif_case2_lesson_text": "{minutes} perc van hátra ({timeRange}){room}{substitution}{remaining}",
+    "@progress_notif_case2_lesson_text": {
+        "placeholders": {
+            "minutes": {"type": "String"},
+            "timeRange": {"type": "String"},
+            "room": {"type": "String"},
+            "substitution": {"type": "String"},
+            "remaining": {"type": "String"}
+        }
+    },
+    "progress_notif_case2_break_title": "Szünet",
+    "progress_notif_case2_break_text": "{minutes} perc van hátra{remaining}",
+    "@progress_notif_case2_break_text": {
+        "placeholders": {
+            "minutes": {"type": "String"},
+            "remaining": {"type": "String"}
+        }
+    },
+    "progress_notif_critical_text": "{minutes}p",
+    "@progress_notif_critical_text": {
+        "placeholders": {
+            "minutes": {"type": "String"}
+        }
+    },
+    "progress_notif_remaining_lessons_one": " - Még 1 óra van hátra",
+    "progress_notif_remaining_lessons_other": " - Még {count} óra van hátra",
+    "@progress_notif_remaining_lessons_other": {
+        "placeholders": {
+            "count": {"type": "String"}
+        }
+    },
+    "s_fcm_status_title": "FCM állapot",
+    "s_fcm_status_initialized": "Inicializálva",
+    "s_fcm_status_not_initialized": "Nincs inicializálva",
+    "s_fcm_status_token_present": "Token megvan",
+    "s_fcm_status_token_missing": "Nincs token",
+    "s_fcm_status_permission_label": "Értesítési engedély",
+    "s_fcm_status_permission_granted": "Engedélyezve",
+    "s_fcm_status_permission_denied": "Elutasítva",
+    "s_fcm_status_permission_unknown": "Ismeretlen",
+    "s_fcm_status_topic_label": "Feliratkozott téma",
+    "s_fcm_status_last_refresh_label": "Utolsó token frissítés",
+    "s_fcm_status_last_refresh_never": "Még nem történt",
+    "s_fcm_status_refresh_button": "Frissítés",
+    "s_fcm_notify_on_message": "Értesítés FCM üzenetkor",
+    "s_fcm_test_notifications_title": "Teszt értesítések",
+    "s_fcm_test_notifications_multi_title": "Több fiók szimulálása",
+    "s_n_all": "Összes",
+    "s_n_grades": "Új jegyek",
+    "s_n_homework_tests": "Feladatok & Számonkérések",
+    "s_n_absences": "Hiányzások",
+    "s_n_lessons": "Órák",
+    "s_n_messages": "Üzenetek",
+    "s_n_by_subject": "Tantárgyak szerint"
+}

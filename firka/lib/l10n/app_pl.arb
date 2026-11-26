@@ -1,0 +1,406 @@
+{
+    "tt_settings_toast_lesson_ab_timetable": "Dwutygodniowy plan lekcji",
+    "restart_title": "Uruchom ponownie aplikację",
+    "s_wear": "Wear OS",
+    "s_ag_navbar_home": "Strona główna",
+    "tt_holiday": "Dzień świąteczny",
+    "pairing": "Łączenie lekcji",
+    "s_c_replace_icon": "­Zmiana ikony",
+    "close": "Zamknij",
+    "ghost_grade": "Szellem jegy",
+    "la_privacy_required": "A Live Activity használatához el kell fogadnod az adatvédelmi tájékoztatót",
+    "debug_screen": "Menu deweloperskie",
+    "save": "Zapisz",
+    "starting_hour_plural": "godzina",
+    "ic_void_icon": "Nic",
+    "wearSyncNotificationText": "Óra adatainak szinkronban tartása",
+    "wear_pairing_check_phone": "Folytasd a párosítást a telefonodon",
+    "la_privacy_section2_body": "Komolyan vesszük az adataid biztonságát:\n\n• A devices és lessons táblákban lévő összes adat titkosítva van\n• Az adatokat biztonságos szerveren tároljuk\n• Csak a szükséges időtartamig tároljuk az adatokat",
+    "unknown_teacher": "Nieznany nauczyciel",
+    "la_privacy_header": "Live Activity adatvédelmi tájékoztató",
+    "title4": "Wiele dodatkowych rzeczy, których nigdy nie znajdziesz w Kréta.",
+    "gradesCount": "{count} jegy",
+    "@gradesCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "s_ag_rounding": "Domyślne zaokrąglanie",
+    "wear_syncing": "Szinkronizálás...",
+    "s_ci_icon_g8": "Pride ",
+    "ic_lgbtq_f": "LGBTQ+",
+    "licensesLabel": "Licencek",
+    "s_c": "Dostosowanie",
+    "starting_hour": "godzina",
+    "wear_try_again": "Újra",
+    "title1": "Poznaj wszystko na pierwszy rzut oka",
+    "subtitle1": "Na górze strony głównej możesz zobaczyć przydatne informacje o swoim dniu.",
+    "subject_avg": "Średnia z przedmiotu",
+    "view_subject_btn": "Zobacz przedmiot",
+    "tt_winter_break": "Zimowa przerwa",
+    "stats_created_at": "Utworzono",
+    "s_n": "Értesítések",
+    "tt_settings_toast": "Ustawienia planu lekcji",
+    "refreshing": "Aktualizowanie danych...",
+    "la_privacy_footer": "Az adatvédelmi tájékoztató utolsó frissítése: 2025. november",
+    "la_privacy_section5_body": "A GDPR alapján az alábbi jogokkal rendelkezel:\n\n• Hozzáférési jog: A tárolt adatok típusát ebben az adatvédelmi tájékoztatóban tekintheted meg.\n• Törlési jog: A Live Activity funkció kikapcsolásával minden, a funkcióhoz kapcsolódó adat (eszközazonosítók, órarend) azonnal és véglegesen törlődik a szervereinkről.\n• Módosítási jog: Az órarendi adatok módosítása a Kréta rendszerben történik, az arra jogosult személyek (pl. tanárok) által.\n• Tiltakozási jog: Az adatkezelés ellen bármikor tiltakozhatsz a Live Activity funkció kikapcsolásával.",
+    "grades": "Oceny",
+    "good_afternoon": "Miłego popołudnia, {p}!",
+    "@good_afternoon": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "tt_last_instructional_day_graduates": "Ostatni dzień zajęć dla klas kończących szkołę",
+    "s_ci_icon_g3": "Nostalgia",
+    "tt_first_instructional_day": "Pierwszy dzień nauki",
+    "ic_gay": "Gej",
+    "ic_nuke": "Nuklearny",
+    "noMoreClasses": "Nincs több órád ma",
+    "ic_lesb_f": "Lesbijka",
+    "s_acc_add": "Dodaj nowe konto",
+    "ic_old": "Domain Dave",
+    "licenseDescription": "Az alkalmazás által használt külső könyvtárak licencei",
+    "tt_autumn_break": "Jesienna przerwa",
+    "s_ci_icon_header": "Ikona aplikacji",
+    "empty_class": "Lyukasóra",
+    "lesson_subject": "Przedmiot lekcji",
+    "pairing_description": "Czy chcesz połączyć tę lekcję z aplikacją Firka?\nPo połączeniu zobaczysz plan lekcji oraz swoje najnowsze oceny, sprawdziany i zadania.",
+    "date": "Godzina lekcji",
+    "ic_szivacs": "Gąbka",
+    "starting_sec_plural": "sekunda",
+    "s_ci_icon_g6_desc": "przez @emilia6_6",
+    "ic_filco": "Filc . O",
+    "good_day": "Miłego dnia, {p}!",
+    "@good_day": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "tt_full_day_trip": "Całodniowa wycieczka",
+    "wear_pairing_request_sent": "Párosítás folyamatban, nyisd meg az appot a telefonodon",
+    "grade_calculator_add": "Hozzáadás",
+    "ic_kreta": "eFIRKA",
+    "subtitle2": "Zobacz statystyki, nadchodzące sprawdziany, a nawet oceny z poprzednich lat szkolnych.",
+    "s_n_live_activity": "Live Activity",
+    "wear_phone_disconnected": "Az órád nincs csatlakoztatva a telefonoddal!",
+    "la_privacy_section3_body": "Az adatok tárolása minimális időtartamra korlátozódik:\n\n• Live Activity push token: Addig van tárolva, amíg óráid vannak az adott napon (beleértve az első óra előtti 2 órás időszakot is). Ha nincs több órád, az érték null lesz.\n\n• Órarendi adatok: Csak az órák időtartamára tárolódnak, majd automatikusan törlődnek. Pénteken az utolsó óra után az órarendet tartalmazó tábla teljesen üres lesz.\n\n• Eszközadatok (token, azonosítók): Addig van tárolva, amíg a Live Activity funkció engedélyezve van. A funkció kikapcsolásakor ezek az adatok azonnal törlésre kerülnek.",
+    "tt_last_instructional_day": "Ostatni dzień nauki",
+    "tt_settings_toast_lesson_nos": "Numery lekcji",
+    "s_ci_icon_g5": "Referencja",
+    "tt_settings_toast_lesson_substitution": "Zastępstwa",
+    "tt_added": "Utworzono: ",
+    "la_privacy_section3_title": "Meddig tároljuk az adatokat?",
+    "school_ending": "Denerwujesz się, {p}?",
+    "@school_ending": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "s_wear_os_support": "Wear OS támogatás",
+    "ic_enby": "Niebinarna",
+    "tt_settings_toast_lesson_tests": "Sprawdziany i inne",
+    "happy_birthday": "Wszystkiego najlepszego, {p}!",
+    "@happy_birthday": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "api_error": "Błąd API Kréta",
+    "ic_trans_f": "Trans",
+    "ic_enby_f": "Niebinarna",
+    "ic_lidl": "Zakupy",
+    "tests_tomorrow": "Masz {tests} sprawdzianów",
+    "@tests_tomorrow": {
+        "placeholders": {
+            "tests": {
+                "type": "String"
+            }
+        }
+    },
+    "ic_trans": "Trans",
+    "s_ci_icon_g4": "Przeprojektowany",
+    "tt_public_holiday": "Dzień wolny od pracy",
+    "s_ag_language_header": "Język",
+    "tt_instructional_day": "Dzień zajęć szkolnych",
+    "ic_cc": "Chmura Kreatywna",
+    "la_privacy_title": "Adatvédelmi tájékoztató",
+    "s_ag_r1": "1 → 2",
+    "s_c_theme_light": "Jasny",
+    "title2": "Twoje przedmioty wygodnie się tutaj mieszczą",
+    "tomorrow_subtitle": "Oto Twój jutrzejszy dzień.",
+    "s_n_test": "Teszt értesítés küldése",
+    "starting_min_plural": "minuta",
+    "ic_mkkp": "Darmowe oceny",
+    "subjects": "­Przedmioty",
+    "s_c_theme_header": "Motyw",
+    "s_a": "Aplikacja",
+    "loginBtn": "Zaloguj się za pomocą konta E-Kréta",
+    "mark_as_not_done": "Oznacz jako nieukończone",
+    "wearSyncNotificationTitle": "Szinkronizálás az órával",
+    "mark_as_done": "­Oznacz jako ukończone",
+    "s_ag": "Ogólne",
+    "ic_xmas3": "FirŚwięta",
+    "data": "Dane",
+    "la_learn_more": "Bővebben",
+    "ic_pixelized": "Spikselizowany",
+    "other": "Więcej",
+    "ic_o1g": "Orbán to pizda",
+    "la_privacy_section2_title": "Hogyan védjük az adataidat?",
+    "good_night": "Miłego wieczoru, {p}!",
+    "@good_night": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "s_ag_r4": "4 → 5",
+    "s_ci_icon_g1": "Catboy domain",
+    "starting_min": "minuta",
+    "ic_pride": "Kosmiczna tęcza",
+    "suffering_almost_over_subtitle": "Już niedługo będziesz wolny. Uważaj na nauczyciela.",
+    "la_privacy_section5_title": "Jogaid",
+    "ghost_grades": "Szellem jegyek",
+    "s_customization": "Personalizacja",
+    "tomorrow": "Jutro",
+    "breakTxt": "Szünet",
+    "la_privacy_section1_title": "Milyen adatokat tárolunk?",
+    "s_ci_warning_header": "[!] W trybie debug zmiana ikony nie będzie działać",
+    "tt_spring_break": "Wiosenna przerwa",
+    "s_ag_language_hu": "Węgierski",
+    "tt_no_classes_l2": "Yippee!",
+    "class_n": "­Liczba godzin tygodniowo",
+    "s_settings": "Ustawienia",
+    "subject_avg_rounded": "Średnia z przedmiotu po zaokrągleniu",
+    "class_dismissed": "Odwołana lekcja",
+    "s_ci_icon_subtitle": "Wybierz piękną ikonę aplikacji, jeśli znudził Ci się zielony kolor.",
+    "s_ci_icon_g6": "Konkurs na świąteczne logo 2024",
+    "ic_lgbtqp": "Postęp",
+    "beta_title": "Firka – publiczna beta",
+    "la_title": "Live Activity",
+    "n_left_subtitle": "Wytrzymaj, zostało tylko {n} godzin!",
+    "@n_left_subtitle": {
+        "placeholders": {
+            "n": {
+                "type": "num"
+            }
+        }
+    },
+    "pair": "Parowanie",
+    "grade_strValue": "Ocena opisowa: ",
+    "s_acc_kreta": "Konta eKRÉTA",
+    "ic_pear": "Gruszka",
+    "s_ag_bell_delay": "Przesunięcie dzwonka",
+    "s_your_account": "Twoje konto",
+    "wear_phone_unpaired": "Az órád nincs párosítva a telefonoddal!",
+    "tt_non_instructional_day": "Dzień wolny od zajęć dydaktycznych",
+    "b_week": "Tydzień B",
+    "home": "Strona główna",
+    "subject": "Tantárgy",
+    "s_c_icon_header": "Ikony aplikacji",
+    "cancel": "Anuluj",
+    "yesterday": "Wczoraj",
+    "ic_repont": "Pięćdziesiąt groszy",
+    "ic_cactus": "Kaktusowy zagajnik",
+    "get_ready": "Odpocznij i przygotuj się",
+    "ic_lesb": "Lesbijka",
+    "s_acc_logout": "Wyloguj się",
+    "stats_date": "Data",
+    "your_subjects": "Twoje przedmioty",
+    "reauth": "Wymagane logowanie",
+    "good_morning": "Dzień dobry, {p}!",
+    "@good_morning": {
+        "placeholders": {
+            "p": {
+                "type": "String"
+            }
+        }
+    },
+    "firstIn": "Első órád: {t}",
+    "@firstIn": {
+        "placeholders": {
+            "t": {
+                "type": "String"
+            }
+        }
+    },
+    "la_privacy_section4_title": "Mire használjuk az adatokat?",
+    "ic_xmas2": "Prezent",
+    "settings_screen": "Ustawienia",
+    "la_privacy_summary1": "Eszköz tokenek, Live Activity tokenek, órarendi adatok",
+    "title3": "Personalizowany plan lekcji",
+    "ic_filc": "Filc Dziennik",
+    "s_c_theme_dark": "Ciemny",
+    "grade_calculator": "Jegy kalkulátor",
+    "la_accept": "Elfogadom",
+    "s_stats_for_nerds": "Pokaż dodatkowe informacje",
+    "s_ag_r3": "3 → 4",
+    "ic_tisza": "Árad a firka",
+    "okay": "Ok",
+    "s_developer": "Ustawienia deweloperskie",
+    "privacyLabel": "Polityka prywatności",
+    "stats_last_mod": "Ostatnio zmodyfikowano",
+    "s_ag_navbar_desc": "Wybierz, co ma się wyświetlać na pasku nawigacyjnym, i uporządkuj elementy. Pozostałe strony są dostępne przez przycisk „więcej”. Możesz przypiąć maksymalnie 4 strony.",
+    "a_week": "Tydzień",
+    "s_ag_r2": "2 → 3",
+    "wearTitle": "{n}. óra",
+    "@wearTitle": {
+        "placeholders": {
+            "n": {
+                "type": "num"
+            }
+        }
+    },
+    "timetable": "Plan lekcji",
+    "ic_ace": "Aseksualny",
+    "s_ci_icon_g2": "­Pisak",
+    "s_ci_child_protection": "Ochrona dzieci",
+    "s_ag_navbar_hidden": "Ukryte",
+    "runningInDomainBrowser": "Przeglądarka domen",
+    "noClasses": "Nincs ma iskola, pihend ki magad!",
+    "ic_bi": "Biseksualny",
+    "ic_proto": "Prototyp",
+    "tt_first_semester_end": "Koniec pierwszego semestru",
+    "la_decline": "Elutasítom",
+    "s_c_theme_auto": "Automatyczny",
+    "ic_paper": "Papier",
+    "ic_xmas1": "Lista złych",
+    "s_ci_icon_g7": "Pride",
+    "lessons_tomorrow": "{lessons} órád lesz",
+    "@lessons_tomorrow": {
+        "placeholders": {
+            "lessons": {
+                "type": "String"
+            }
+        }
+    },
+    "ic_lgbtq": "LGBTQ+",
+    "subtitle3": "Wybierz, co chcesz widzieć na stronie planu lekcji. Włącz lub wyłącz sprawdziany, prace domowe, przerwy oraz okienka.",
+    "ic_original": "Oryginał",
+    "ic_refilc": "reFilc",
+    "la_privacy_contact": "Kérdésed van? Keress minket a support @firka.app címen.",
+    "tt_no_classes_l1": "W tym dniu nie masz lekcji!",
+    "s_ag_class_avg_on_graph": "Średnia klasy na wykresie",
+    "class_substitution": "Zastępstwo",
+    "ic_half_firka_2": "Rewolucja",
+    "no_tests_tomorrow": "Jutro nie masz sprawdzianu",
+    "overall_avg": "Összesített átlag",
+    "s_n_morning_time": "Értesítés ideje iskola előtt",
+    "ic_ace_f": "Aseksualny",
+    "wear_sync_with_phone": "Nyisd meg a telefonos appot a szinkronizáláshoz",
+    "s_ag_navbar": "Pasek nawigacyjny",
+    "class_avg": "Średnia klasy",
+    "tt_quarter_end": "koniec kwartału",
+    "la_privacy_section4_body": "Az adatokat kizárólag a Live Activity funkció működtetésére használjuk:\n\n• Élő órarend megjelenítése a lezárási képernyőn\n• Push értesítések küldése óraváltásokkor\n• Az órarend szinkronizálása az eszközödön\n• A hétfő reggeli értesítések kézbesítésének biztosítása a heti adatbázis-ürítés után is\n\nAz adataidat nem adjuk át harmadik félnek, és nem használjuk marketing célokra.",
+    "no_grades": "Z tego przedmiotu nie masz jeszcze ocen.",
+    "la_privacy_summary2": "Titkosított tárolás, biztonságos szerverek",
+    "ic_lgbtqp_f": "Postęp",
+    "ic_bi_f": "Biseksualny",
+    "now": "Most",
+    "la_privacy_section1_body": "A Live Activity működéséhez az alábbi adatokat tároljuk eszközazonosítóddal együtt:\n\n• Eszköz azonosító (UUID)\n• Eszköz token\n• Live Activity push token\n• APNs push token\n• Eszköz hash\n• Nyelvi beállítás\n• Csengő eltolódása\n\nAz órarendi adataid (lessons tábla) a következőket tartalmazzák:\n• Óra tárgya és időpontja\n• Tanár neve\n• Terem neve\n• Óra sorszáma\n• Óra témája\n• Helyettesítés adatai\n• Elmaradt óra jelzése\n\nAz időzített értesítések (scheduled_notifications tábla) a következőket tartalmazzák:\n• Azonosító\n• Eszköz azonosító\n• Időzített időpont\n• Küldés állapota és ideje\n• Létrehozás és frissítés ideje",
+    "starting_soon": "Już wkrótce zaczyna się Twoja pierwsza lekcja!",
+    "ic_refulc": "firk’a",
+    "s_ag_left_handed_mode": "Tryb dla leworęcznych",
+    "tt_rest_day": "Dzień wolny",
+    "la_privacy_summary3": "Az adatok automatikusan törlődnek, ha már nincs rájuk szükség",
+    "tt_settings_toast_lesson_breaks": "Przerwy",
+    "s_ag_language_auto": "Automatyczny",
+    "s_ag_navbar_visible": "Wyświetlane",
+    "starting_sec": "sekunda",
+    "la_subtitle": "Az órarended élő megjelenítése az eszköz lezárási képernyőjén",
+    "grade_teacherName": "Imię i nazwisko nauczyciela: ",
+    "ic_modern": "Nowoczesny",
+    "timeLeft": "Még {mins} perc",
+    "@timeLeft": {
+        "placeholders": {
+            "mins": {
+                "type": "num"
+            }
+        }
+    },
+    "s_ag_language_de": "Niemiecki",
+    "today": "Dziś",
+    "ic_gay_f": "Gej",
+    "ic_fidesz": "Fidesz",
+    "s_n_morning": "Reggeli értesítés",
+    "restart_body": "Kliknij tutaj, aby otworzyć aplikację.",
+    "s_ag_language_en": "Angielski",
+    "homework": "Praca domowa",
+    "ic_pixel": "Pixel",
+    "view_lesson_btn": "Zobacz lekcję",
+    "la_privacy_intro": "A Live Activity funkció használatához bizonyos adatokat kell tárolnunk és feldolgoznunk. Kérjük, olvasd el figyelmesen az alábbi tájékoztatót.",
+    "beta_body": "Aplikacja jest w trakcie rozwoju; niektóre funkcje mogą działać nieprawidłowo, nie działać lub jeszcze nie być ukończone.",
+    "ic_galaxy": "Galaktyka",
+    "copied": "Másolva",
+    "view_day_btn": "Zobacz dzień",
+    "omission": "Hiányzás",
+    "omissions": "Hiányzások",
+    "omission_state_excused": "Igazolt",
+    "omission_state_unexcused": "Igazolatlan",
+    "omission_state_pending": "Függőben",
+    "omissions_count": "{state, select, unexcused{{count} igazolatlan} pending{{count} igazolandó} other{{count}}} hiányzás",
+    "@omissions_count": {
+        "placeholders": {
+            "state": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "s_beta_warning": "Ostrzeżenie beta",
+    "s_ag_privacy_ever_declined": "Wcześniej odrzucono politykę prywatności",
+    "s_c_tab_appearance": "Wygląd aplikacji",
+    "s_c_tab_subjects": "Przedmioty",
+    "s_c_tab_fonts": "Czcionki",
+    "s_c_my_themes": "Moje motywy",
+    "s_c_manage_subjects": "Zarządzaj przedmiotami",
+    "s_c_change_app_icon": "Zmień ikonę aplikacji",
+    "s_c_colors_header": "Kolory",
+    "s_c_grade_colors_header": "Kolory ocen",
+    "s_c_title_style_header": "Styl tytułów",
+    "s_c_title_weight_header": "Grubość tytułów",
+    "s_c_title_weight_subtitle": "Nie wszystkie czcionki to obsługują",
+    "s_c_title_weight_thin": "Cienka",
+    "s_c_title_weight_thick": "Gruba",
+    "s_c_capitalization_header": "Wielkość liter",
+    "s_c_capitalization_lower": "małe litery",
+    "s_c_capitalization_normal": "Normalna",
+    "s_c_capitalization_upper": "WIELKIE LITERY",
+    "s_c_change": "Zmień",
+    "s_c_customize": "Dostosuj",
+    "s_c_themes_current": "Bieżący",
+    "s_c_themes_own": "Własne",
+    "s_c_themes_downloaded": "Pobrane",
+    "s_c_themes_share_current": "Udostępnij bieżący motyw",
+    "s_c_themes_create_new": "Utwórz nowy motyw",
+    "s_c_themes_import": "Importuj motyw",
+    "s_c_themes_use": "Użyj",
+    "s_c_themes_continue": "Kontynuuj",
+    "s_c_themes_own_label": "Własny motyw",
+    "s_c_themes_imported_label": "Zaimportowany motyw",
+    "s_c_themes_builtin_label": "Wbudowany motyw",
+    "s_c_themes_builtin_name": "Domyślny",
+    "s_c_themes_create_title": "Utwórz nowy motyw",
+    "s_c_themes_create_subtitle": "Podaj nazwę motywu",
+    "s_c_themes_create_placeholder": "Nazwa motywu",
+    "s_c_themes_delete_title": "Usuń motyw",
+    "s_c_themes_delete_subtitle": "Czy na pewno chcesz usunąć ten motyw? Tę czynność można cofnąć.",
+    "s_c_themes_delete_confirm": "Usuń",
+    "s_about": "O aplikacji",
+    "s_extras": "Dodatki",
+    "s_other": "Inne",
+    "subtitle4": ""
+}
