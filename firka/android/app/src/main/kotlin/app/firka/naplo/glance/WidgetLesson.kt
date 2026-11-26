@@ -46,4 +46,9 @@ class WidgetLesson(data: JSONObject) {
     val substituteTeacher: String? = (data.getStringOrNull("substituteTeacher") ?: data.getStringOrNull("HelyettesTanarNeve"))
         ?.takeIf { it != "null" && it != "-" && it.isNotBlank() }
     val icon: String? = data.getStringOrNull("icon")
+    val state: String? = data.getStringOrNull("state")
+
+    /** Kréta state labels aren't a stable enum; "elmarad" marks cancelled lessons. */
+    val isCancelled: Boolean
+        get() = state?.lowercase()?.contains("elmarad") == true
 }

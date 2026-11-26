@@ -176,6 +176,11 @@ class ProgressNotificationService {
             .findAll();
       }
 
+      // Cancelled lessons don't happen; ignore them (matches the native service).
+      lessons = lessons
+          .where((l) => !l.state.toLowerCase().contains('elmarad'))
+          .toList();
+
       if (lessons.isEmpty) {
         _logger.info('No lessons for today; not starting progress service on app open');
         return;

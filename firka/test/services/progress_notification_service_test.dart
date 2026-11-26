@@ -266,6 +266,40 @@ void main() {
     expect(progressCalls.any((c) => c.method == 'stopProgressService'), isTrue);
   });
 
+  test('checkAndStartOnAppOpen ignores cancelled lessons when computing the school day', () async {
+    final isar = isarInit;
+    final today = DateTime.now();
+    final lesson1 = makeLesson('l1', 'Math', DateTime(today.year, today.month, today.day, 8, 0), DateTime(today.year, today.month, today.day, 8, 45));
+    final cancelled = makeLesson('l2', 'History', DateTime(today.year, today.month, today.day, 9, 0), DateTime(today.year, today.month, today.day, 9, 45))
+      ..state = 'Elmaradt';
+
+    await isar.writeTxn(() async {
+      await isar.lessonCacheModels.putAll([lesson1, cancelled]);
+    });
+
+    await Settings.notifyAll.set(true);
+    await Settings.progressNotificationEnabled.set(true);
+
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      progressChannel,
+      (MethodCall call) async {
+        progressCalls.add(call);
+        if (call.method == 'isProgressServiceRunning') return true;
+        return true;
+      },
+    );
+
+    // 09:10 falls inside the cancelled lesson, which is after the last real lesson.
+    debugFakeTime = DateTime(today.year, today.month, today.day, 9, 10);
+    progressCalls.clear();
+
+    await ProgressNotificationService.checkAndStartOnAppOpen();
+
+    expect(progressCalls.any((c) => c.method == 'startProgressService'), isFalse);
+    expect(progressCalls.any((c) => c.method == 'stopProgressService'), isTrue);
+  });
+
   test('syncStrings sends Hungarian strings map to native platform without Unicode symbols', () async {
     progressCalls.clear();
     await ProgressNotificationService.syncStrings(AppLocalizationsHu());

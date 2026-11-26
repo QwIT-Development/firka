@@ -40,6 +40,9 @@ class ProgressNotificationForegroundService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var tickerJob: Job? = null
     private var isForegroundStarted = false
+    // Set when started via startForegroundService(): Android then requires a
+    // startForeground() call, even if we immediately decide to stop.
+    private var awaitingStartForeground = false
     private var transitionPendingIntent: PendingIntent? = null
 
     private val timeReceiver = object : BroadcastReceiver() {
@@ -88,6 +91,7 @@ class ProgressNotificationForegroundService : Service() {
         createNotificationChannel()
         when (intent?.action) {
             ACTION_START, ACTION_UPDATE -> {
+                if (intent.action == ACTION_START) awaitingStartForeground = true
                 isRunning = true
                 refreshAndPostNotification()
                 startTicker()
@@ -98,6 +102,7 @@ class ProgressNotificationForegroundService : Service() {
                 return START_NOT_STICKY
             }
             else -> {
+                awaitingStartForeground = true
                 isRunning = true
                 refreshAndPostNotification()
                 startTicker()
@@ -165,17 +170,7 @@ class ProgressNotificationForegroundService : Service() {
         }
 
         if (!isForegroundStarted) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(
-                    notificationId,
-                    notification,
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                startForeground(notificationId, notification)
-            }
-            isForegroundStarted = true
+            promoteToForeground(notification)
         }
 
         val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -550,7 +545,37 @@ class ProgressNotificationForegroundService : Service() {
         }
     }
 
+    private fun promoteToForeground(notification: Notification) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                notificationId,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            startForeground(notificationId, notification)
+        }
+        isForegroundStarted = true
+        awaitingStartForeground = false
+    }
+
     private fun stopForegroundService() {
+        // Stopping before startForeground() after startForegroundService() crashes
+        // with ForegroundServiceDidNotStartInTimeException. Satisfy the contract
+        // with a throwaway notification; STOP_FOREGROUND_REMOVE below removes it.
+        if (awaitingStartForeground && !isForegroundStarted) {
+            try {
+                promoteToForeground(
+                    NotificationCompat.Builder(this, channelId)
+                        .setSmallIcon(R.drawable.ic_notification)
+                        .setSilent(true)
+                        .build()
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not enter foreground before stopping", e)
+            }
+        }
         isRunning = false
         cancelTransitionAlarm()
         tickerJob?.cancel()
@@ -626,6 +651,8 @@ class ProgressNotificationForegroundService : Service() {
                         } catch (_: Exception) {}
                     }
                 }
+                // Cancelled lessons don't happen, so treat their slot as a break.
+                todayLessons = todayLessons.filterNot { it.isCancelled }
 
                 val colorsObj = json.optJSONObject("colors")
                 val accent = colorsObj?.optInt("accent", 0xFF4C662B.toInt()) ?: 0xFF4C662B.toInt()
