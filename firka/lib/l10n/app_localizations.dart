@@ -1275,6 +1275,12 @@ abstract class AppLocalizations {
   /// **'Text-based rating: '**
   String get grade_strValue;
 
+  /// No description provided for @grade_not_taken.
+  ///
+  /// In hu, this message translates to:
+  /// **'Nem írt'**
+  String get grade_not_taken;
+
   /// No description provided for @no_grades.
   ///
   /// In en, this message translates to:

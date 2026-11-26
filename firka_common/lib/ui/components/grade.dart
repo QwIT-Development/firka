@@ -2,6 +2,7 @@ import 'package:firka_common/core/grade_helper.dart';
 import 'package:firka_common/data/models/grade_cache_model.dart';
 import 'package:flutter/material.dart';
 
+import 'package:firka_common/ui/shared/firka_icon.dart';
 import 'package:firka_common/ui/theme/style.dart';
 
 import 'filled_circle.dart';
@@ -30,6 +31,20 @@ class GradeWidget extends StatelessWidget {
     }
 
     final g = grade!;
+
+    if (g.isNotTaken()) {
+      final color = appStyle.colors.errorAccent;
+      return FilledCircle(
+        diameter: size,
+        color: appStyle.colors.error15p,
+        child: FirkaIconWidget(
+          FirkaIconType.majesticonsLocal,
+          'circleSlashLine',
+          color: color,
+          size: size * 0.6,
+        ),
+      );
+    }
 
     if (g.numericValue == null) {
       final gradeColor = appStyle.colors.accent;

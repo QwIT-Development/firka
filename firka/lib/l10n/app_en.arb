@@ -279,6 +279,7 @@
     "mark_as_not_done": "Mark as unfinished",
     "grade_teacherName": "Teacher's name: ",
     "grade_strValue": "Text-based rating: ",
+    "grade_not_taken": "Not taken",
     "no_grades": "You don't have any grades for this subject yet.",
     "unknown_teacher": "Unknown teacher",
     "tt_added": "Created at: ",

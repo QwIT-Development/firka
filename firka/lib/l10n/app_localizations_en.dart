@@ -627,6 +627,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get grade_strValue => 'Text-based rating: ';
 
   @override
+  String get grade_not_taken => 'Not taken';
+
+  @override
   String get no_grades => 'You don\'t have any grades for this subject yet.';
 
   @override

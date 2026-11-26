@@ -174,6 +174,10 @@ extension GradeCacheModelExtension on GradeCacheModel {
     return valueType == "Osztalyzat";
   }
 
+  bool isNotTaken() {
+    return valueType == "Szoveges" && textValue.trim() == "Nem írt";
+  }
+
   // https://tudasbazis.ekreta.hu/pages/viewpage.action?pageId=2426172
   bool shouldIncludeInAverage() {
     return weightPercentage != null && hasClassicValue();

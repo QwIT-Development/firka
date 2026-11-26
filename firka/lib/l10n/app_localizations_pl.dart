@@ -621,6 +621,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get grade_strValue => 'Ocena opisowa: ';
 
   @override
+  String get grade_not_taken => 'Nem írt';
+
+  @override
   String get no_grades => 'Z tego przedmiotu nie masz jeszcze ocen.';
 
   @override

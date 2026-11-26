@@ -621,6 +621,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get grade_strValue => 'Szöveges értékelés: ';
 
   @override
+  String get grade_not_taken => 'Nem írt';
+
+  @override
   String get no_grades => 'Ebből a tantárgyból még nincsen jegyed.';
 
   @override

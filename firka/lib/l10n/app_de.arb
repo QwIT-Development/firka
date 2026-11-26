@@ -251,6 +251,7 @@
     "mark_as_not_done": "Als unvollständig markieren",
     "grade_teacherName": "Name des Lehrers: ",
     "grade_strValue": "Textbasierte Bewertung: ",
+    "grade_not_taken": "Nicht absolviert",
     "no_grades": "Du hast noch keine Noten für dieses Fach.",
     "unknown_teacher": "Unbekannter Lehrer",
     "s_your_account": "Dein Konto",

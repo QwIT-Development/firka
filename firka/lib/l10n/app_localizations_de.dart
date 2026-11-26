@@ -621,6 +621,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get grade_strValue => 'Textbasierte Bewertung: ';
 
   @override
+  String get grade_not_taken => 'Nicht absolviert';
+
+  @override
   String get no_grades => 'Du hast noch keine Noten für dieses Fach.';
 
   @override

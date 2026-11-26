@@ -119,6 +119,7 @@
     "class_n": "Heti óraszám",
     "grade_teacherName": "Tanár neve: ",
     "grade_strValue": "Szöveges értékelés: ",
+    "grade_not_taken": "Nem írt",
     "no_grades": "Ebből a tantárgyból még nincsen jegyed.",
     "unknown_teacher": "Ismeretlen tanár",
     "tt_no_classes_l1": "Ezen a napon nincsenek óráid!",

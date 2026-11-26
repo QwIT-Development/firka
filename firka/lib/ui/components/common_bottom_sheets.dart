@@ -466,8 +466,13 @@ Future<void> showGradeBottomSheet(
   AppInitialization data,
   GradeCacheModel grade,
 ) async {
+  final notTaken = grade.isNotTaken();
+  final pillColor = notTaken
+      ? appStyle.colors.errorAccent
+      : appStyle.colors.accent;
+
   showFirkaBottomSheet(context, [
-    grade.numericValue == null
+    grade.numericValue == null || notTaken
         ? Container(
             height: 40,
             padding: EdgeInsets.symmetric(horizontal: 16),
@@ -475,16 +480,23 @@ Future<void> showGradeBottomSheet(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              color: appStyle.colors.a15p,
+              color: notTaken ? appStyle.colors.error15p : appStyle.colors.a15p,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  grade.textValue,
-                  style: appStyle.fonts.H_18px.apply(
-                    color: appStyle.colors.accent,
+                if (notTaken) ...[
+                  FirkaIconWidget(
+                    FirkaIconType.majesticonsLocal,
+                    'circleSlashLine',
+                    color: pillColor,
+                    size: 20,
                   ),
+                  SizedBox(width: 6),
+                ],
+                Text(
+                  notTaken ? data.l10n.grade_not_taken : grade.textValue,
+                  style: appStyle.fonts.H_18px.apply(color: pillColor),
                 ),
               ],
             ),
