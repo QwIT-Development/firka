@@ -255,6 +255,7 @@ SettingsUiGroup buildSettingsTree(AppLocalizations l10n) {
           SettingsRegistry.leftHandedMode,
           never,
         ),
+        SettingsUiPadding(20, always),
         SettingsUiHeaderSmall(l10n.s_ag_language_header, always),
         SettingsUiEnum(SettingsRegistry.language, [
           l10n.s_ag_language_auto,

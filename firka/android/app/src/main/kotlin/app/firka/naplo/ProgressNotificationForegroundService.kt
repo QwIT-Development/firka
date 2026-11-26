@@ -280,8 +280,10 @@ class ProgressNotificationForegroundService : Service() {
                     .setContentIntent(pendingIntent)
                     .setOngoing(true)
                     .setOnlyAlertOnce(true)
-                    .setRequestPromotedOngoing(true)
-                    .setShortCriticalText(criticalText.take(7))
+                if (supportsPromotedOngoing()) {
+                    builder.setRequestPromotedOngoing(true)
+                        .setShortCriticalText(criticalText.take(7))
+                }
 
                 return builder.build()
             } else {
@@ -397,8 +399,10 @@ class ProgressNotificationForegroundService : Service() {
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
-                .setRequestPromotedOngoing(true)
-                .setShortCriticalText(criticalText.take(7))
+            if (supportsPromotedOngoing()) {
+                builder.setRequestPromotedOngoing(true)
+                    .setShortCriticalText(criticalText.take(7))
+            }
 
             return builder.build()
         } else {
@@ -486,6 +490,11 @@ class ProgressNotificationForegroundService : Service() {
             else -> R.drawable.ic_subject_unknown
         }
     }
+
+    private fun supportsPromotedOngoing(): Boolean =
+        Build.VERSION.SDK_INT > 36 ||
+            (Build.VERSION.SDK_INT == 36 &&
+                Build.VERSION.SDK_INT_FULL >= Build.VERSION_CODES_FULL.BAKLAVA_1)
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

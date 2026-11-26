@@ -276,7 +276,7 @@ class _SettingsScreenState extends FirkaState<SettingsScreen> {
                             item.iconData!,
                             color: appStyle.colors.accent,
                           ),
-                          SizedBox(width: 4),
+                          SizedBox(width: 12 * scale),
                         ],
                       )
                     : SizedBox(),
