@@ -122,6 +122,8 @@ steps:
       - BUILD_NAME="$BASE_VERSION-$SHA"
       - VERSION_CODE=$((2000 + COMMIT_COUNT))
       - flutter build appbundle --release --build-name="$BUILD_NAME" --build-number="$VERSION_CODE"
+      # universal apk for the website's download button, the .aab is for stores
+      - flutter build apk --release --build-name="$BUILD_NAME" --build-number="$VERSION_CODE"
 
   - name: build-debug
     image: git.firka.app/firka/firka-builder:latest
@@ -155,6 +157,23 @@ steps:
       package_version: ${CI_COMMIT_SHA}
       file_source: ./firka/build/app/outputs/bundle/release/app-release.aab
       file_name: app-release.aab
+      update: 'true'
+
+  - name: publish-release-apk
+    image: woodpeckercommunity/plugin-gitea-package:latest
+    pull: true
+    when:
+      - branch: [main, staging]
+    settings:
+      user:
+        from_secret: gitea_username
+      password:
+        from_secret: gitea_token
+      owner: firka
+      package_name: firka
+      package_version: ${CI_COMMIT_SHA}
+      file_source: ./firka/build/app/outputs/flutter-apk/app-release.apk
+      file_name: app-release.apk
       update: 'true'
 
   - name: publish-debug-arm64-v8a
